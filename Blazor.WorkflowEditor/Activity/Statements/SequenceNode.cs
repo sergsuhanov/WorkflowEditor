@@ -80,8 +80,8 @@ public class SequenceNode : DefaultNode {
             return;
         }
 
-        if (service.Items.Count() > 2) {
-            var last = service.Items.SkipLast(1).Last();
+        if (this.sequenceActivity.Activities.Count() > 0) {
+            var last = service.GetPair(this.sequenceActivity.Activities.Last());
             linkFromTo(last, child);
         }
 

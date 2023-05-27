@@ -81,26 +81,11 @@
         groups.Add(testGroup);
 
 
-        Type getTypeByName(string name) {
-            return Type.GetType(name) ?? throw new NotSupportedException();
-        }
-
-        TypeCollection.Add(getTypeByName("System.Object"));
-        TypeCollection.Add(getTypeByName("System.Int32"));
-        TypeCollection.Add(getTypeByName("System.String"));
-        TypeCollection.Add(getTypeByName("System.Boolean"));
-
-        Assembly[] assemblies = AppDomain.CurrentDomain.GetAssemblies();
-        var names = new string[]{
-            ".List`1[T]"
-        };
-        foreach (var assembly in assemblies)
-        {
-            var types = assembly.GetTypes().Where(t=>names.FirstOrDefault(p=>t.ToString().IndexOf(p)!=-1)!=null).ToArray();
-            if(types.Count()>0){
-                TypeCollection.AddRange(types);
-            }
-        }
+        TypeCollection.Add(typeof(System.Object));
+        TypeCollection.Add(typeof(System.Int32));
+        TypeCollection.Add(typeof(System.String));
+        TypeCollection.Add(typeof(System.Boolean));
+        TypeCollection.Add(typeof(System.Collections.Generic.List<>));
     }
 
     protected override void OnAfterRender(bool firstRender)
@@ -112,9 +97,7 @@
     private void New()
     {
         if (editor != null)
-        {
             editor.New();
-        }
     }
 
     private async void Save()

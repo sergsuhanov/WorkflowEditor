@@ -89,8 +89,6 @@
 
 
 @code {
-    [CascadingParameter]
-    private ModalService? _modalService{get;set;}
 
     public class GroupedActivityVariable
     {
@@ -129,6 +127,9 @@
         }
     }
 
+    [CascadingParameter]
+    private ModalService? _modalService { get; set; }
+
     [Parameter, EditorRequired]
     public Service Service { get; set; } = default!;
 
@@ -148,22 +149,28 @@
 
     private async void removeVariable(Blazor.WorkflowEditor.Variable variable){
         if(_modalService==null)return;
+
         var modal = await   _modalService.ShowModal<ConfirmationModal>(new (){
-      {"Title","Delete variable"},
-      {"Message",$"Delete variable {variable.Name}?"},
-      {"ApplyButtonText","Delete"},
-    });
+          {"Title","Delete variable"},
+          {"Message",$"Delete variable {variable.Name}?"},
+          {"ApplyButtonText","Delete"},
+        });
+
         if(modal.ModalResult==ModalResult.Applied){
             Service.RemoveVariable(
                 variable.Activity,
                 variable.Name);
+
             Service.RefreshVariables();
         }
+
         StateHasChanged();
     }
 
     private  async void editVariable(Blazor.WorkflowEditor.Variable variable){
-        if(_modalService==null)return;
+        if(_modalService==null)
+            return;
+        
         var defaultValue = variable.DefaultValue?.ToString() ?? "";
         var oldName = variable.Name;
         var modal = await   _modalService.ShowModal<VariableCreateModal>(new (){
@@ -184,7 +191,7 @@
                 modal?.BuildedType ?? typeof(object), 
                 modal?.DefaultValue?? string.Empty);
 
-            Service.RefreshVariables();
+            //Service.RefreshVariables();
         }
 
         StateHasChanged();
