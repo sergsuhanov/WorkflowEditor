@@ -21,7 +21,7 @@
         <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="7.0.4" />
         <PackageReference Include="UiPath.Workflow" Version="6.0.3" />
         <PackageReference Include="UiPath.Workflow.Runtime" Version="6.0.3" />
-        <PackageReference Include="Z.Blazor.Diagrams" Version="2.1.6" />
-        <PackageReference Include="Z.Blazor.Diagrams.Core" Version="2.1.6" />
+        <PackageReference Include="Z.Blazor.Diagrams" Version="3.0.1" />
+        <PackageReference Include="Z.Blazor.Diagrams.Core" Version="3.0.1" />
     </ItemGroup>
 </Project>

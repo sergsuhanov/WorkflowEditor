@@ -1,4 +1,5 @@
 ﻿using System.Activities;
+using Blazor.Diagrams.Core.Anchors;
 using Blazor.Diagrams.Core.Geometry;
 using Blazor.Diagrams.Core.Models;
 
@@ -204,18 +205,18 @@ public class DefaultNode : NodeModel {
     public void SetOutcoming(PortModel port) {
         if (this.OutcomingPort == port)
             return;
-        var links = this.AllLinks.Where(p => p.SourcePort == this.OutcomingPort).ToList();
+        var links = this.PortLinks.Where(p => p.SourcePort() == this.OutcomingPort).ToList();
         this.OutcomingPort = port;
-        links.ForEach(p => p.SetSourcePort(this.OutcomingPort));
+        links.ForEach(p => p.SetSource(new SinglePortAnchor(this.OutcomingPort)));
         this.RefreshAll();
     }
 
     public void SetIncoming(PortModel port) {
         if (this.IncomingPort == port)
             return;
-        var links = this.AllLinks.Where(p => p.TargetPort == this.IncomingPort).ToList();
+        var links = this.PortLinks.Where(p => p.TargetPort() == this.IncomingPort).ToList();
         this.IncomingPort = port;
-        links.ForEach(p => p.SetTargetPort(this.IncomingPort));
+        links.ForEach(p => p.SetTarget(new SinglePortAnchor(this.IncomingPort)));
         this.RefreshAll();
     }
 

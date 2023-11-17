@@ -1,5 +1,6 @@
 ﻿using System.Activities;
 using System.Collections.ObjectModel;
+using Blazor.Diagrams;
 using Blazor.Diagrams.Core;
 using Blazor.Diagrams.Core.Models;
 using Blazor.Diagrams.Core.Models.Base;
@@ -19,7 +20,7 @@ namespace Blazor.WorkflowEditor {
         }
 
         private ActivityBuilder activityBuilder = default!;
-        private readonly Diagram designer = default!;
+        private readonly BlazorDiagram designer = default!;
         private readonly Action updateState = default!;
         private readonly List<ActivityDesignerPair> items = new();
         private readonly List<ActivityDesignerPair> selectedItems = new();
@@ -39,23 +40,24 @@ namespace Blazor.WorkflowEditor {
 
         public event Action? SelectedOnMove;
 
-        public Service(Diagram designer, Action updateState) {
+        public Service(BlazorDiagram designer, Action updateState) {
             this.designer = designer;
 
             this.designer.SelectionChanged += selectionChanged;
-            this.designer.MouseDoubleClick += mouseDoubleClick;
-            this.designer.MouseUp += mouseUp;
+            this.designer.PointerDoubleClick += pointerDoubleClick;
+            this.designer.PointerUp += pointerUp;
             this.designer.PanChanged += panChanged;
             this.designer.ZoomChanged += zoomChanged;
 
             this.updateState = updateState;
         }
 
+
         public void Dispose() {
             this.designer.SelectionChanged -= selectionChanged;
-            this.designer.MouseDoubleClick -= mouseDoubleClick;
+            this.designer.PointerDoubleClick -= pointerDoubleClick;
 
-            this.designer.MouseUp -= mouseUp;
+            this.designer.PointerUp -= pointerUp;
 
             this.designer.PanChanged -= panChanged;
             this.designer.ZoomChanged -= zoomChanged;
@@ -163,7 +165,7 @@ namespace Blazor.WorkflowEditor {
             return linkModel;
         }
         internal void RemoveLinkFromTo(ActivityDesignerPair from, ActivityDesignerPair to) {
-            var link = designer.Links.FirstOrDefault(p => p.SourceNode == from.Node && p.TargetNode == to.Node);
+            var link = designer.Links.FirstOrDefault(p => p.SourceNode() == from.Node && p.TargetNode() == to.Node);
             if (link != null)
                 designer.Links.Remove(link);
 
@@ -188,11 +190,11 @@ namespace Blazor.WorkflowEditor {
 
             } else
             if (obj is LinkModel link) {
-                if (link.TargetNode == null)
+                if (link.TargetNode() == null)
                     return;
 
-                var source = getById(link.SourceNode.Id);
-                var target = getById(link.TargetNode.Id);
+                var source = getById(link.SourceNode()?.Id ?? string.Empty);
+                var target = getById(link.TargetNode()?.Id ?? string.Empty);
 
                 if (source == null || target == null)
                     return;
@@ -205,7 +207,10 @@ namespace Blazor.WorkflowEditor {
             }
         }
 
-        private void mouseDoubleClick(Diagrams.Core.Models.Base.Model arg1, Microsoft.AspNetCore.Components.Web.MouseEventArgs arg2) {
+        private void pointerDoubleClick(Model? arg1, Diagrams.Core.Events.PointerEventArgs arg2) {
+            if(arg1 is null)
+                return;
+
             var item = getById(arg1.Id);
             if (item == null || item.Node.IsContainer == false)
                 return;
@@ -213,8 +218,11 @@ namespace Blazor.WorkflowEditor {
             Open(item.Node);
         }
 
-        private void mouseUp(Model model, MouseEventArgs arg) {
-            if (arg.OffsetX > 50 || arg.OffsetY > 50) {
+        private void pointerUp(Model? model, Diagrams.Core.Events.PointerEventArgs arg) {
+            if (model is null)
+                return;
+
+            if (arg.ClientX > 50 || arg.ClientY > 50) {
                 if (model is DefaultNode node) {
                     SelectedOnMove?.Invoke();
 
@@ -273,20 +281,20 @@ namespace Blazor.WorkflowEditor {
                 if (activityType.IsGenericType) {
                     var genericTypes = activityType.GenericTypeArguments;
                     node = (Activator.CreateInstance(pairT.Type.MakeGenericType(genericTypes), this, activity) as Activity.DefaultNode)!;
-                    if (designer.GetComponentForModel(node) == null) {
-                        designer.RegisterModelComponent(pairT.Type.MakeGenericType(genericTypes), pairT.PairAttribute.Control.MakeGenericType(genericTypes));
+                    if (designer.GetComponent(node) == null) {
+                        designer.RegisterComponent(pairT.Type.MakeGenericType(genericTypes), pairT.PairAttribute.Control.MakeGenericType(genericTypes));
                     }
                 } else {
                     node = (Activator.CreateInstance(pairT.Type, this, activity) as Activity.DefaultNode)!;
-                    if (designer.GetComponentForModel(node) == null) {
-                        designer.RegisterModelComponent(pairT.Type, pairT.PairAttribute.Control);
+                    if (designer.GetComponent(node) == null) {
+                        designer.RegisterComponent(pairT.Type, pairT.PairAttribute.Control);
                     }
                 }
 
             } else {
                 node = new DefaultNode(this, activity);
-                if (designer.GetComponentForModel(node) == null) {
-                    designer.RegisterModelComponent(typeof(DefaultNode), typeof(DefaultControl));
+                if (designer.GetComponent(node) == null) {
+                    designer.RegisterComponent(typeof(DefaultNode), typeof(DefaultControl));
                 }
             }
             designer.Nodes.Add(node);
