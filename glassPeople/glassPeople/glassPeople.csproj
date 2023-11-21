@@ -36,9 +36,6 @@
     <StartupObject />
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Newtonsoft.Json, Version=13.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Newtonsoft.Json.13.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Activities" />
     <Reference Include="System.Core" />
@@ -52,13 +49,9 @@
   <ItemGroup>
     <Compile Include="Activities.cs" />
     <Compile Include="Classes.cs" />
-    <Compile Include="Code\Classes.cs" />
-    <Compile Include="Code\EnumVisiter.cs" />
-    <Compile Include="Code\LibraryGeneratorFromFile.cs" />
-    <Compile Include="Code\LibraryGeneratorFromHttp.cs" />
-    <Compile Include="Code\LibraryGeneratorFromMetadata.cs" />
     <Compile Include="Enums.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Stubs.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

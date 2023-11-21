@@ -1,7 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
-// See the LICENSE file in the project root for more information.
-
+﻿
 using System;
 using System.Activities.Core.Presentation;
 using System.Activities.Presentation;
@@ -18,7 +15,7 @@ using Microsoft.Win32;
 namespace WorkflowEditor.Win {
 
     public partial class MainWindow : Window {
-        private readonly string _layoutPath = string.Format(@"{0}layout.xml", System.AppDomain.CurrentDomain.BaseDirectory);
+        private readonly string layoutPath = string.Format(@"{0}layout.xml", System.AppDomain.CurrentDomain.BaseDirectory);
 
         private RoslynExpressionEditorService expressionEditorService;
 
@@ -127,22 +124,22 @@ namespace WorkflowEditor.Win {
             foreach (var categories in MainToolbox.Categories) {
                 toolbarView.Add(categories);
             }
-            toolbarView.RestoreLayoutFromXml(_layoutPath);
+            toolbarView.RestoreLayoutFromXml(layoutPath);
             toolBarViewList.ItemsSource = toolbarView.Items.Keys.ToList();
 
             newWorkflow();
 
             try {
-                if (File.Exists(_layoutPath)) {
-                    layoutManager.RestoreLayoutFromXml(_layoutPath);
+                if (File.Exists(layoutPath)) {
+                    layoutManager.RestoreLayoutFromXml(layoutPath);
                 }
             } catch (Exception) {
             }
         }
 
         private void MainWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e) {
-            layoutManager.SaveLayoutToXml(_layoutPath);
-            toolbarView.SaveLayoutFromXml(_layoutPath);
+            layoutManager.SaveLayoutToXml(layoutPath);
+            toolbarView.SaveLayoutFromXml(layoutPath);
         }
 
         private void initDesigner() {

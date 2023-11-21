@@ -1,13 +1,9 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
-// See the LICENSE file in the project root for more information.
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
-namespace glassPeople.Code {
+namespace glassPeople.gen {
     public abstract class LibraryGeneratorFromMetadata {
         protected string json;
         protected Metadata metadata;
@@ -19,6 +15,8 @@ namespace glassPeople.Code {
         public void Execute() {
             metadata = Newtonsoft.Json.JsonConvert.DeserializeObject<Metadata>(json);
 
+
+            //Enums
             {
                 var enumVisiter = new EnumVisiter();
 
@@ -33,14 +31,36 @@ namespace glassPeople.Code {
                 File.WriteAllLines(outPath + "Enums.cs", text);
             }
 
+            //Classes
             {
+                var classesVisiter = new ClassesVisiter();
+
                 var text = new List<string>() {
-                    "using System;",
-                    "using System.Collections.Generic;",
-                    "using System.Linq;",
-                    "using System.Text;",
-                    "using System.Threading.Tasks;"
                 };
+
+                metadata.Types.ToList().ForEach(p => {
+                    classesVisiter.Visit(p);
+                    text.AddRange(classesVisiter.Result.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries));
+                });
+
+                File.WriteAllLines(outPath + "Classes.cs", text);
+
+            }
+
+            //Activities
+            {
+                var activityVisiter = new ActivityVisiter();
+
+                var text = new List<string>() {
+                };
+
+                metadata.Activities.ToList().ForEach(p => {
+                    activityVisiter.Visit(p);
+                    text.AddRange(activityVisiter.Result.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries));
+                });
+
+                File.WriteAllLines(outPath + "Activities.cs", text);
+
             }
         }
     }

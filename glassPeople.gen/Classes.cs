@@ -1,21 +1,12 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
-// See the LICENSE file in the project root for more information.
-
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace glassPeople.Code {
+﻿
+namespace glassPeople.gen {
 
     public class Metadata {
         public LocalType[] Activities { get; set; }
         public LocalType[] Types { get; set; }
     }
 
-    interface ILocalTypeVisiter {
+    internal interface ILocalTypeVisiter {
         void Visit(LocalType source);
     }
 
@@ -36,5 +27,4 @@ namespace glassPeople.Code {
         public bool CanWrite { get; set; } = true;
         public bool CanRead { get; set; } = true;
     }
-
 }
