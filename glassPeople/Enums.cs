@@ -1,3 +1,28 @@
+namespace glassPeople.CRM {
+    public enum IssueStatus {
+        Opened, Сlosed, InWork, InTest, InDiscuss, InGrayFolder
+    }
+}
+namespace glassPeople.CRM {
+    public enum IssuePriority {
+        Low, Normal, Hight
+    }
+}
+namespace glassPeople.CRM {
+    public enum IssueMemberType {
+        None, Responsible, Performe, ResponsiblePerforme
+    }
+}
+namespace glassPeople.CRM {
+    public enum IssueFilterList {
+        BY_STATUS, BY_PRIORITY, BY_PERFORME_MEMBER, BY_CREATED_AT, BY_LAST_COMMENT, BY_STATUS_CHNAGED
+    }
+}
+namespace glassPeople.CRM {
+    public enum IssueHistoryType {
+        CreateIssue, CreateIssueComment, ChangeIssueStatus, ChangeIssuePriority, ChangeIssueMembers, ChangeIssuePerformeMembers, ViewIssue
+    }
+}
 namespace glassPeople.Model.Workflow {
     public enum State {
         Created, Running, Idle, Freeze, Complited, Error, Paused, Stopped, Cancel, Empty, Kill
@@ -131,5 +156,10 @@ namespace glassPeople.ActivityLibrary.glassCAD.Planing.Activity.Actualisation {
 namespace glassPeople.ActivityLibrary.Core {
     public enum InvokeMode {
         InMemory, Task, Freeze, BuildReport
+    }
+}
+namespace glassPeople.ActivityLibrary.glassCAD.Planing.Activity.Actualisation {
+    public enum MarkingMode {
+        Default, OnlyPyramidInfo, OnlyBufferSecondName
     }
 }

@@ -1,0 +1,121 @@
+﻿<sap:ActivityDesigner x:Class="glassPeople.ActivityLibrary.Core.SwitchActivityDesigner"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:sap="clr-namespace:System.Activities.Presentation;assembly=System.Activities.Presentation"
+    xmlns:sapc="clr-namespace:System.Activities.Presentation.Converters;assembly=System.Activities.Presentation"
+
+    xmlns:sapv="clr-namespace:System.Activities.Presentation.View;assembly=System.Activities.Presentation"
+    xmlns:activityCore="clr-namespace:glassPeople.ActivityLibrary.Core"     
+               
+ >
+
+
+    <sap:ActivityDesigner.Resources>
+        <sapc:ArgumentToExpressionConverter x:Key="argumentToExpressionConverter" />
+     
+        <HierarchicalDataTemplate x:Key="treeViewDataTemplate" DataType="{x:Type activityCore:SwitchItem}" 
+                                  ItemsSource="{Binding Items}">
+            <TextBlock TextWrapping="Wrap" Text="{Binding Text}"></TextBlock>
+        </HierarchicalDataTemplate>
+
+    </sap:ActivityDesigner.Resources>
+
+    <Expander IsExpanded="False">
+        <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition></RowDefinition>
+            <RowDefinition></RowDefinition>
+        </Grid.RowDefinitions>
+
+        <sapv:ExpressionTextBox 
+                            Grid.Row="0"
+                            Margin="0,4,0,4"
+                            Padding="2"
+                            BorderThickness="0" 
+                            Visibility="Visible" 
+                            Expression="{Binding Path=ModelItem.Text, Mode=TwoWay, Converter= {StaticResource argumentToExpressionConverter}, ConverterParameter=In}"
+                            ExpressionType="{Binding Path=InArgumentModelItem.ArgumentType}"
+                            OwnerActivity="{Binding Path=ModelItem}" 
+                            Background="Beige"
+                            >
+        </sapv:ExpressionTextBox>
+        
+        <DockPanel Grid.Row="1" LastChildFill="True">
+
+            <Grid DockPanel.Dock="Right" Width="250">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"></RowDefinition>
+                    <RowDefinition Height="8"></RowDefinition>
+                    <RowDefinition Height="Auto"></RowDefinition>
+                    <RowDefinition Height="8"></RowDefinition>
+                    <RowDefinition Height="Auto"></RowDefinition>
+                    <RowDefinition Height="8"></RowDefinition>
+                    <RowDefinition Height="Auto"></RowDefinition>
+                    <RowDefinition Height="8"></RowDefinition>
+                    <RowDefinition Height="Auto"></RowDefinition>
+                    <RowDefinition Height="8"></RowDefinition>
+                    <RowDefinition Height="Auto"></RowDefinition>
+                    <RowDefinition MinHeight="8" Height="*"></RowDefinition>
+                    <RowDefinition Height="Auto"></RowDefinition>
+                </Grid.RowDefinitions>
+                
+                <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"></ColumnDefinition>
+                        <ColumnDefinition Width="*"></ColumnDefinition>
+                    </Grid.ColumnDefinitions>
+
+                    <Grid.Resources>
+                        <Style TargetType="TextBox">
+                            <Setter Property="MinHeight" Value="24"></Setter>
+                            <Setter Property="TextWrapping" Value="Wrap"></Setter>
+                            <Setter Property="VerticalContentAlignment" Value="Center"></Setter>
+                            <Setter Property="Margin" Value="4,0,0,0"></Setter>
+                        </Style>
+                        
+                    </Grid.Resources>
+
+                    <TextBlock Grid.Column="0" Grid.Row="0" VerticalAlignment="Center">Text</TextBlock>
+                    <TextBox Grid.Column="1" Grid.Row="0" Text="{Binding SelectedItem.Text, ElementName=treeView, Mode=TwoWay}"/>
+
+                    <TextBlock Grid.Column="0" Grid.Row="2" VerticalAlignment="Center" >Name</TextBlock>
+                    <TextBox Grid.Column="1" Grid.Row="2" Text="{Binding SelectedItem.Name, ElementName=treeView, Mode=TwoWay}"/>
+
+                    <TextBlock Grid.Column="0" Grid.Row="4" VerticalAlignment="Center">Group</TextBlock>
+                    <TextBox Grid.Column="1" Grid.Row="4"  Text="{Binding SelectedItem.Group, ElementName=treeView, Mode=TwoWay}"/>
+
+                    <TextBlock Grid.Column="0" Grid.Row="6" VerticalAlignment="Center">Image</TextBlock>
+                    <TextBox Grid.Column="1" Grid.Row="6" Text="{Binding SelectedItem.Image, ElementName=treeView, Mode=TwoWay}"/>
+
+                <TextBlock Name="htCaption"  Grid.Column="0" Grid.Row="8" VerticalAlignment="Center">Header text</TextBlock>
+                <TextBox Name="htText" Grid.Column="1" Grid.Row="8" Text="{Binding SelectedItem.HeaderText, ElementName=treeView, Mode=TwoWay}"/>
+
+                <TextBlock Name="hdCaption" Grid.Column="0" Grid.Row="10" VerticalAlignment="Center">Header description</TextBlock>
+                <TextBox Name="hdText" Grid.Column="1" Grid.Row="10" Text="{Binding SelectedItem.HeaderDescription, ElementName=treeView, Mode=TwoWay}"/>
+
+
+                <DockPanel Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="12">
+                    <Button DockPanel.Dock="Left" Command="{Binding AddCommand}">Add</Button>
+                    <Button DockPanel.Dock="Left" Margin="4,0,0,0" Command="{Binding AddChildCommand}">Add Child</Button>
+                    <Button DockPanel.Dock="Right" Command="{Binding DeleteCommand}">Remove</Button>
+                    <Border></Border>
+                </DockPanel>
+
+            </Grid>
+
+            <StackPanel DockPanel.Dock="Left" VerticalAlignment="Center">
+                    <Button Command="{Binding UpCommand}">↑</Button>
+                <Border Height="4"></Border>
+                    <Button Command="{Binding DownCommand}">↓</Button>
+            </StackPanel>
+            
+            <TreeView x:Name="treeView" Margin="4,0,4,0"
+                      ItemsSource="{Binding ModelItem.Items}"  
+                      ItemTemplate="{StaticResource ResourceKey=treeViewDataTemplate}"
+                      Width="150"
+                      />
+        </DockPanel>
+
+        </Grid>
+    </Expander>
+
+</sap:ActivityDesigner>

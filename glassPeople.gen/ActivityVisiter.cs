@@ -9,32 +9,10 @@ namespace glassPeople.gen {
         public ActivityVisiter() {
         }
 
-        public new void Visit(LocalType source) {
-            Result = string.Empty;
-
-            if ((source?.EnumNames?.Length ?? 0) > 0) {
-                return;
-            }
-
-            var modifer = "public";
-            if (source.IsAbstract) {
-                modifer += " abstract";
-            }
-
-            var properties = new List<string>();
-            foreach (var property in source.Properties ?? Enumerable.Empty<LocalProperty>()) {
-                if (property.Name == "SetMarkingMode") { 
-                }
-
-                var get_set = "get;";
-                if (property.CanWrite)
-                    get_set += " set;";
-                properties.Add("\t\t" + $@"public {getTextTypeForProperty(property.Type)} {property.Name} {Op_Br} {get_set} {Cl_Br}");
-            }
-
+        protected string getImplementation(LocalType source) {
             var implementation = string.Empty;
 
-            if (source.BaseType.Name.StartsWith("NativeActivity") || 
+            if (source.BaseType.Name.StartsWith("NativeActivity") ||
                 source.BaseType.Name.StartsWith("ListActivity") ||
                 source.BaseType.Name.StartsWith("AttributesActivity")) {
                 implementation = @"
@@ -43,10 +21,9 @@ namespace glassPeople.gen {
         }";
             }
 
-
             if (source.BaseType.Name.StartsWith("CodeActivity")) {
                 var filterType = "void";
-                if(source.BaseType.GenericTypes?.Any() == true)
+                if (source.BaseType.GenericTypes?.Any() == true)
                     filterType = getTextTypeForProperty(source.BaseType.GenericTypes.First());
 
                 implementation = $@"
@@ -67,12 +44,35 @@ namespace glassPeople.gen {
         }}";
             }
 
+            return implementation;
+        }
 
+        protected string getCasheMetadata(LocalType source) {
+            var metadataText = source.Properties
+                .Where(p => p.Type.Name.StartsWith("ActivityFunc") || p.Type.Name.StartsWith("ActivityAction"))
+                .Select(p => "\t\t\t" + $"metadata.AddDelegate(this.{p.Name});")
+                .DefaultIfEmpty<string>(string.Empty)
+                .Aggregate((p1, p2) => p1 + Environment.NewLine + p2);
+
+            if(metadataText == string.Empty)
+                return string.Empty;
+
+            var implementation = $@"
+        protected override void CacheMetadata(System.Activities.NativeActivityMetadata metadata) {{
+{metadataText}
+            base.CacheMetadata(metadata);
+        }}";
+            return implementation;
+        }
+
+        public new void Visit(LocalType source) {
             Result = $@"
 namespace {source.Namespace} {Op_Br}
-    {modifer} class {getTextTypeForClass(source)} {Op_Br}
-{string.Join(Environment.NewLine, properties)}
-{implementation}
+    {string.Join(Environment.NewLine, getCustomAttributes(source))}
+    {getModifer(source)} class {getTextTypeForClass(source)} {Op_Br}
+{string.Join(Environment.NewLine, getProperties(source))}
+{getCasheMetadata(source)}
+{getImplementation(source)}
     {Cl_Br}
 {Cl_Br}
 ";

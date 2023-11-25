@@ -13,10 +13,9 @@ namespace Microsoft.EntityFrameworkCore {
     public class DbSet<T> {
     }
 
-    public class DbContext { 
+    public class DbContext {
     }
 }
-
 
 namespace Microsoft.AspNetCore.Identity {
     public class IdentityUser {
@@ -25,11 +24,6 @@ namespace Microsoft.AspNetCore.Identity {
 
 namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore {
     public class IdentityDbContext<T> {
-    }
-}
-
-namespace Stimulsoft.Report {
-    public class StiReport {
     }
 }
 

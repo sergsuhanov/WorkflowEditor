@@ -19,6 +19,12 @@ namespace glassPeople.gen {
         public LocalType BaseType { get; set; }
         public LocalProperty[] Properties { get; set; }
         public string[] EnumNames { get; set; }
+        public LocalType DeclaringType { get; set; }
+        public string[] CustomAttributes { get; set; }
+
+        public bool IsEnum => (this?.EnumNames?.Length ?? 0) > 0;
+        public bool IsClass => !IsEnum;
+        public bool IsNestedClass => IsClass && DeclaringType != null;
     }
 
     public class LocalProperty {
@@ -26,5 +32,6 @@ namespace glassPeople.gen {
         public LocalType Type { get; set; }
         public bool CanWrite { get; set; } = true;
         public bool CanRead { get; set; } = true;
+        public string[] CustomAttributes { get; set; }
     }
 }

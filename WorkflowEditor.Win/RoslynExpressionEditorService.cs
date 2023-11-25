@@ -1,7 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
-// See the LICENSE file in the project root for more information.
-
+﻿
 using System;
 using System.Activities.Presentation.Hosting;
 using System.Activities.Presentation.Model;
@@ -14,14 +11,14 @@ using Microsoft.CodeAnalysis;
 namespace WorkflowEditor.Win {
 
     public class RoslynExpressionEditorService : IExpressionEditorService {
-        private static MetadataReference[] baseAssemblies = new MetadataReference[0];
+        private static MetadataReference[] s_baseAssemblies = new MetadataReference[0];
 
         public static RoslynExpressionEditorService Instance { get; } = new RoslynExpressionEditorService();
 
         internal string UsingNamespaces { get; private set; } = string.Empty;
 
         internal MetadataReference[] BaseAssemblies {
-            get { return baseAssemblies; }
+            get { return s_baseAssemblies; }
         }
 
         public void CloseExpressionEditors() {
@@ -48,7 +45,7 @@ namespace WorkflowEditor.Win {
         }
 
         public void UpdateContext(AssemblyContextControlItem assemblies, ImportedNamespaceContextItem importedNamespaces) {
-            if (baseAssemblies.Length != 0) {
+            if (s_baseAssemblies.Length != 0) {
                 return;
             }
 
@@ -56,14 +53,11 @@ namespace WorkflowEditor.Win {
 
             var mscorlib = MetadataReference.CreateFromFile(typeof(object).Assembly.Location);
             references.Add(mscorlib);
-            /*
+
             var model = MetadataReference.CreateFromFile(typeof(glassPeople.Model.Context).Assembly.Location);
             references.Add(model);
-            var activity = MetadataReference.CreateFromFile(typeof(glassPeople.ActivityLibrary.BookmarkActivityUserAction).Assembly.Location);
-            references.Add(activity);
-            */
 
-            baseAssemblies = references.ToArray();
+            s_baseAssemblies = references.ToArray();
             UsingNamespaces = string.Join("", importedNamespaces.ImportedNamespaces.Select(ns => "using " + ns + ";\n").ToArray());
         }
     }

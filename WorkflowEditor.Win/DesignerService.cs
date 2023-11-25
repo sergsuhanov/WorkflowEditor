@@ -1,8 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
-// The .NET Foundation licenses this file to you under the MIT license.
-// See the LICENSE file in the project root for more information.
-
-using System;
+﻿using System;
 using System.Activities;
 using System.Activities.Core.Presentation.Factories;
 using System.Activities.Expressions;
@@ -22,7 +18,6 @@ namespace WorkflowEditor.Win {
                     "System",
                     "System.Linq",
                     "System.Collections.Generic",
-                    //"???"
                 });
 
             // Add assembly references for the assemblies that end user can reference in expressions.
@@ -30,10 +25,8 @@ namespace WorkflowEditor.Win {
                 builder,
                 new List<AssemblyReference>
                 {
-                    //typeof(glassPeople.ActivityLibrary.Core.SelectDateTimeActivity).Assembly.GetName(),
                     typeof(object).Assembly.GetName(), // mscorlib
                     typeof(Activity).Assembly.GetName(), // System.Activities
-                    //new System.Reflection.AssemblyName("netstandard, Version=2.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51")
                 });
 
         }
@@ -55,7 +48,7 @@ namespace WorkflowEditor.Win {
 
             var c4 = new ToolboxCategory("Other") {
                 new ToolboxItemWrapper(typeof(Assign)),
-                new ToolboxItemWrapper(typeof(TerminateWorkflow))
+                new ToolboxItemWrapper(typeof(TerminateWorkflow)),
             };
             toolbox.Categories.Add(c4);
 
@@ -95,7 +88,7 @@ namespace WorkflowEditor.Win {
             var ca1 = typeof(CodeActivity<>);
 
             {
-                var types = System.Reflection.Assembly.GetAssembly(typeof(glassPeople.Code.Metadata)).GetTypes();
+                var types = System.Reflection.Assembly.GetAssembly(typeof(glassPeople.Model.BusinessRole)).GetTypes();
                 foreach (var item in types.OrderBy(p => p.FullName)) {
                     if (item.IsAbstract == false && (item.IsSubclassOf(na) || IsSubclassOfRawGeneric(item, na1) || item.IsSubclassOf(ca) || IsSubclassOfRawGeneric(item, ca1))) {
                         var name = item.Name;
@@ -106,7 +99,7 @@ namespace WorkflowEditor.Win {
                             category = new ToolboxCategory(categoryName);
                             toolbox.Categories.Add(category);
                         }
-
+          
                         category.Add(new ToolboxItemWrapper(item, name));
                     }
                 }
