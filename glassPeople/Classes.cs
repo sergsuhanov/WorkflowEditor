@@ -1263,6 +1263,8 @@ namespace glassPeople.ActivityLibrary.glassCAD.Planing.Packing {
 		public System.Decimal Thickness { get; set; } 
 		public System.Int32 Position { get; set; } 
 		public System.Int32 Index { get; set; } 
+		[System.ComponentModel.DataAnnotations.Schema.NotMappedAttribute()]
+		public System.Int32 OrderIndex { get; set; } 
 		public System.Collections.Generic.List<glassPeople.ActivityLibrary.glassCAD.Planing.Packing.Item> Items { get; set; } 
 		[System.ComponentModel.DataAnnotations.Schema.NotMappedAttribute()]
 		public System.Collections.Generic.IEnumerable<glassPeople.ActivityLibrary.glassCAD.Planing.Packing.Item> AllItems { get; } 
@@ -1342,6 +1344,11 @@ namespace glassPeople.ActivityLibrary.glassCAD.Planing.Packing.Strategy.M1 {
 namespace glassPeople.ActivityLibrary.glassCAD.Planing.Packing.Strategy.Harval {
     
     public partial class ItemComparer {
+    }
+}
+namespace glassPeople.ActivityLibrary.glassCAD.Planing.Packing.Strategy.Harval {
+    
+    public partial class ItemViewComparer {
     }
 }
 namespace glassPeople.ActivityLibrary.glassCAD.Planing.Packing.Strategy.Harval {

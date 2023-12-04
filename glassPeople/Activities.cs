@@ -1982,6 +1982,7 @@ namespace glassPeople.ActivityLibrary.Account {
 		public System.Activities.OutArgument<System.Boolean> UserNotFound { get; set; } 
 		public System.Activities.OutArgument<System.Boolean> UserHasAdded { get; set; } 
 		public System.Activities.OutArgument<System.Boolean> Result { get; set; } 
+		public System.Activities.OutArgument<System.Int32> AccountUserId { get; set; } 
         protected override void Execute(System.Activities.NativeActivityContext context) {
             throw new System.NotImplementedException();
         }
@@ -1994,6 +1995,20 @@ namespace glassPeople.ActivityLibrary.Account {
 		public System.Activities.InArgument<System.Int32> AccountUserId { get; set; } 
 		[System.Activities.RequiredArgumentAttribute()]
 		public System.Activities.InOutArgument<glassPeople.Model.Account.AccountUsersAttributes> AccountUsersAttributes { get; set; } 
+        protected override void Execute(System.Activities.NativeActivityContext context) {
+            throw new System.NotImplementedException();
+        }
+    }
+}
+namespace glassPeople.ActivityLibrary.Account {
+    
+    public partial class AccountUsersEMailNotifyActivity : System.Activities.NativeActivity {
+		[System.Activities.RequiredArgumentAttribute()]
+		public System.Activities.InArgument<System.Int32> AccountUserId { get; set; } 
+		[System.Activities.RequiredArgumentAttribute()]
+		public System.Activities.InArgument<System.String> Subject { get; set; } 
+		[System.Activities.RequiredArgumentAttribute()]
+		public System.Activities.InArgument<System.String> Body { get; set; } 
         protected override void Execute(System.Activities.NativeActivityContext context) {
             throw new System.NotImplementedException();
         }
