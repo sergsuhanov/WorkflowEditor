@@ -150,7 +150,7 @@ namespace glassPeople.ActivityLibrary.glassCAD.Planing.Activity.Actualisation {
 }
 namespace glassPeople.ActivityLibrary.glassCAD.Planing.Activity.Actualisation {
     public enum ScanerDataMode {
-        None, GlassPack, AppointmentItems
+        None, GlassPack, AppointmentItems, GlassPack_and_Parents
     }
 }
 namespace glassPeople.ActivityLibrary.Core {

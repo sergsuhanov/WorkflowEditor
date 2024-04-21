@@ -1160,6 +1160,7 @@ namespace glassPeople.ActivityLibrary.glassCAD.Planing.Packing {
     public partial class ArmPacking {
 		public System.Int32 Id { get; set; } 
 		public System.String NmDoc { get; set; } 
+		public System.String Comment { get; set; } 
 		public System.Int32 IdExternal { get; set; } 
 		public System.Int32 IdExternalType { get; set; } 
 		[System.ComponentModel.DataAnnotations.Schema.NotMappedAttribute()]
@@ -1326,9 +1327,14 @@ namespace glassPeople.ActivityLibrary.glassCAD.Planing.Packing.Strategy {
     public partial class Simple2 : glassPeople.ActivityLibrary.glassCAD.Planing.Packing.Strategy.Simple {
     }
 }
-namespace glassPeople.ActivityLibrary.glassCAD.Planing.Packing.Strategy.PV {
+namespace glassPeople.ActivityLibrary.glassCAD.Planing.Packing.Strategy.SM {
     
     public partial class AStrategy : glassPeople.ActivityLibrary.glassCAD.Planing.Packing.Strategy.Simple {
+    }
+}
+namespace glassPeople.ActivityLibrary.glassCAD.Planing.Packing.Strategy.SM {
+    
+    public partial class PackingStrategy : glassPeople.ActivityLibrary.glassCAD.Planing.Packing.Strategy.Simple {
     }
 }
 namespace glassPeople.ActivityLibrary.glassCAD.Planing.Packing.Strategy.M1 {
@@ -1442,10 +1448,6 @@ namespace glassPeople.ActivityLibrary.glassCAD.Planing.Model {
 		public System.String ThreadPartName { get; set; } 
 		public System.Collections.Generic.ICollection<glassPeople.ActivityLibrary.glassCAD.Planing.Model.AppointmentsItemsRelations> ChildsKeys { get; set; } 
 		public System.Collections.Generic.ICollection<glassPeople.ActivityLibrary.glassCAD.Planing.Model.AppointmentsItemsRelations> ParentsKeys { get; set; } 
-		[System.ComponentModel.DataAnnotations.Schema.NotMappedAttribute()]
-		public System.Collections.Generic.IEnumerable<glassPeople.ActivityLibrary.glassCAD.Planing.Model.AppointmentItem> Parents { get; } 
-		[System.ComponentModel.DataAnnotations.Schema.NotMappedAttribute()]
-		public System.Collections.Generic.IEnumerable<glassPeople.ActivityLibrary.glassCAD.Planing.Model.AppointmentItem> Childs { get; } 
 		[System.ComponentModel.DataAnnotations.Schema.NotMappedAttribute()]
 		public glassPeople.ActivityLibrary.glassCAD.Planing.Model.AppointmentItem Child { get; } 
     }
@@ -1785,7 +1787,6 @@ namespace glassPeople.ActivityLibrary.glassCAD.Planing.Model.Capacity {
 		public System.Int32 MaxGlassPackDHeight { get; set; } 
 		public System.Int32 WidthMiddlePack { get; set; } 
 		public System.Int32 MaxThicknessPack { get; set; } 
-		public System.Int32 MaxCountGlassPackInPack { get; set; } 
 		public System.Int32 MaxMassPyramid { get; set; } 
 		public System.Int32 dmaxWidthPack { get; set; } 
 		public System.Int32 dmaxHeightPack { get; set; } 
@@ -1897,7 +1898,7 @@ namespace glassPeople.ActivityLibrary.glassCAD.Planing.Cutting {
 		public System.String Marking { get; set; } 
 		public System.Decimal Width { get; set; } 
 		public System.Decimal Height { get; set; } 
-		public System.Nullable<System.Int32> OptIndex { get; set; } 
+		public System.String OptData { get; set; } 
 		public System.Int32 IDExternalObject { get; set; } 
 		public System.Int32 IDExternalObject1 { get; set; } 
 		public System.Decimal WorkSquare { get; set; } 

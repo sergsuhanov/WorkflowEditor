@@ -162,6 +162,21 @@ namespace glassPeople.ActivityLibrary.Scheduler {
 }
 namespace glassPeople.ActivityLibrary.glassCAD.Utilites {
     
+    public partial class ExecProcedureActivity : System.Activities.NativeActivity {
+		[System.Activities.RequiredArgumentAttribute()]
+		public System.Activities.InArgument<System.String> ConnectionString { get; set; } 
+		[System.Activities.RequiredArgumentAttribute()]
+		public System.Activities.InArgument<System.String> Procedure { get; set; } 
+		public System.Int32 TimeOut { get; set; } 
+		public System.Activities.InArgument<System.String> AdminEmail { get; set; } 
+		public System.Activities.InArgument<System.String> Subject { get; set; } 
+        protected override void Execute(System.Activities.NativeActivityContext context) {
+            throw new System.NotImplementedException();
+        }
+    }
+}
+namespace glassPeople.ActivityLibrary.glassCAD.Utilites {
+    
     public partial class LogActivity : System.Activities.NativeActivity {
 		[System.Activities.RequiredArgumentAttribute()]
 		public System.Activities.InArgument<System.String> ConnectionString { get; set; } 
@@ -782,6 +797,12 @@ namespace glassPeople.ActivityLibrary.glassCAD.Planing.Union.Strategy {
     public partial class ToOneGroup : glassPeople.ActivityLibrary.glassCAD.Planing.Union.OneGroupActivity {
     }
 }
+namespace glassPeople.ActivityLibrary.glassCAD.Planing.Union.Strategy.SM {
+    
+    public partial class ByPackingInfo : glassPeople.ActivityLibrary.glassCAD.Planing.Union.MultiGroupActivity {
+		public System.Activities.InArgument<glassPeople.ActivityLibrary.glassCAD.Planing.Model.PlanningContext> SchedulerContext { get; set; } 
+    }
+}
 namespace glassPeople.ActivityLibrary.glassCAD.Planing.Status {
     
     public partial class UpdateStatusActivity : System.Activities.NativeActivity {
@@ -1180,32 +1201,6 @@ namespace glassPeople.ActivityLibrary.glassCAD.Planing.Activity.Orders {
 		public System.Activities.OutArgument<System.Boolean> IsNothing { get; set; } 
 		[System.ComponentModel.CategoryAttribute("Out")]
 		public System.Activities.OutArgument<System.Boolean> IsStatusFailed { get; set; } 
-        protected override void Execute(System.Activities.NativeActivityContext context) {
-            throw new System.NotImplementedException();
-        }
-    }
-}
-namespace glassPeople.ActivityLibrary.glassCAD.Planing.Activity.Orders {
-    
-    public partial class SetFabricaDiractionPlanDateActivity : System.Activities.NativeActivity {
-		[System.Activities.RequiredArgumentAttribute()]
-		public System.Activities.InArgument<glassPeople.ActivityLibrary.glassCAD.Planing.Model.PlanningContext> PlanningContext { get; set; } 
-		[System.Activities.RequiredArgumentAttribute()]
-		public System.Activities.InArgument<System.Int32> IDOrder { get; set; } 
-		[System.Activities.RequiredArgumentAttribute()]
-		public System.Activities.InArgument<System.DateTime> Dt { get; set; } 
-        protected override void Execute(System.Activities.NativeActivityContext context) {
-            throw new System.NotImplementedException();
-        }
-    }
-}
-namespace glassPeople.ActivityLibrary.glassCAD.Planing.Activity.Orders {
-    
-    public partial class RemoveFabricaDiractionPlanDateActivity : System.Activities.NativeActivity {
-		[System.Activities.RequiredArgumentAttribute()]
-		public System.Activities.InArgument<glassPeople.ActivityLibrary.glassCAD.Planing.Model.PlanningContext> PlanningContext { get; set; } 
-		[System.Activities.RequiredArgumentAttribute()]
-		public System.Activities.InArgument<System.Int32> IDOrder { get; set; } 
         protected override void Execute(System.Activities.NativeActivityContext context) {
             throw new System.NotImplementedException();
         }
