@@ -268,6 +268,7 @@ namespace glassPeople.ActivityLibrary.glassCAD.Scanner {
 		[System.ComponentModel.CategoryAttribute("Property")]
 		public System.Activities.InArgument<System.String> CharacteristicUUID { get; set; } 
 		public System.Activities.InArgument<System.String> Mode { get; set; } 
+		public System.Activities.InArgument<glassPeople.ActivityLibrary.glassCAD.Scanner.Parser.DefaultParser> Parser { get; set; } 
 		public System.Activities.OutArgument<glassPeople.ActivityLibrary.glassCAD.Scanner.Scancode[]> Result { get; set; } 
 		public System.Activities.OutArgument<System.Boolean> HasData { get; set; } 
         protected override void Execute(System.Activities.NativeActivityContext context) {
@@ -290,6 +291,7 @@ namespace glassPeople.ActivityLibrary.glassCAD.Scanner {
 		public System.Activities.InArgument<System.String> ServiceUUID { get; set; } 
 		[System.ComponentModel.CategoryAttribute("Property")]
 		public System.Activities.InArgument<System.String> CharacteristicUUID { get; set; } 
+		public System.Activities.InArgument<glassPeople.ActivityLibrary.glassCAD.Scanner.Parser.DefaultParser> Parser { get; set; } 
         protected override void Execute(System.Activities.NativeActivityContext context) {
             throw new System.NotImplementedException();
         }
@@ -310,6 +312,7 @@ namespace glassPeople.ActivityLibrary.glassCAD.Scanner {
 		[System.ComponentModel.Browsable(false)]
 		public System.Boolean AutoTerminate { get; set; } 
 		public System.Activities.InArgument<System.String> Mode { get; set; } 
+		public System.Activities.InArgument<glassPeople.ActivityLibrary.glassCAD.Scanner.Parser.DefaultParser> Parser { get; set; } 
 		public System.Activities.OutArgument<glassPeople.ActivityLibrary.glassCAD.Scanner.Scancode[]> Result { get; set; } 
 		public System.Activities.OutArgument<System.Boolean> HasData { get; set; } 
         protected override void Execute(System.Activities.NativeActivityContext context) {
@@ -502,6 +505,7 @@ namespace glassPeople.ActivityLibrary.glassCAD.Scanner {
 		[System.ComponentModel.Browsable(false)]
 		public System.Boolean AutoTerminate { get; set; } 
 		public System.Activities.InArgument<System.String> Mode { get; set; } 
+		public System.Activities.InArgument<glassPeople.ActivityLibrary.glassCAD.Scanner.Parser.DefaultParser> Parser { get; set; } 
 		public System.Activities.OutArgument<glassPeople.ActivityLibrary.glassCAD.Scanner.Scancode[]> Result { get; set; } 
 		public System.Activities.OutArgument<System.Boolean> HasData { get; set; } 
         protected override void Execute(System.Activities.NativeActivityContext context) {
@@ -1725,6 +1729,18 @@ namespace glassPeople.ActivityLibrary.glassCAD.Planing.Activity.Actualisation {
 		public System.Activities.InArgument<glassPeople.ActivityLibrary.glassCAD.Planing.Model.PlanningContext> PlanningContext { get; set; } 
 		[System.Activities.RequiredArgumentAttribute()]
 		public System.Activities.InArgument<System.Collections.Generic.List<System.Int32>> GroupCodesId { get; set; } 
+        protected override void Execute(System.Activities.NativeActivityContext context) {
+            throw new System.NotImplementedException();
+        }
+    }
+}
+namespace glassPeople.ActivityLibrary.glassCAD.Planing.Activity.Actualisation {
+    
+    public partial class UnionGroupCodesByParentUnionActivity : System.Activities.NativeActivity {
+		[System.Activities.RequiredArgumentAttribute()]
+		public System.Activities.InArgument<glassPeople.ActivityLibrary.glassCAD.Planing.Model.PlanningContext> PlanningContext { get; set; } 
+		[System.Activities.RequiredArgumentAttribute()]
+		public System.Activities.InArgument<System.Collections.Generic.List<glassPeople.ActivityLibrary.glassCAD.Planing.Model.GroupCode>> GroupCodes { get; set; } 
         protected override void Execute(System.Activities.NativeActivityContext context) {
             throw new System.NotImplementedException();
         }

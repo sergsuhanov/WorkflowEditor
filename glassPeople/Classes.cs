@@ -975,6 +975,16 @@ namespace glassPeople.ActivityLibrary.glassCAD.Scanner.Workers {
 		public System.Nullable<System.Int32> IDScanProcessing { get; set; } 
     }
 }
+namespace glassPeople.ActivityLibrary.glassCAD.Scanner.Parser {
+    
+    public partial class DefaultParser {
+    }
+}
+namespace glassPeople.ActivityLibrary.glassCAD.Scanner.Parser.SM {
+    
+    public partial class Parser : glassPeople.ActivityLibrary.glassCAD.Scanner.Parser.DefaultParser {
+    }
+}
 namespace glassPeople.ActivityLibrary.glassCAD.Planing {
     
     public abstract partial class DateTimeExtensions {
@@ -1337,16 +1347,6 @@ namespace glassPeople.ActivityLibrary.glassCAD.Planing.Packing.Strategy.SM {
     public partial class PackingStrategy : glassPeople.ActivityLibrary.glassCAD.Planing.Packing.Strategy.Simple {
     }
 }
-namespace glassPeople.ActivityLibrary.glassCAD.Planing.Packing.Strategy.M1 {
-    
-    public partial class AStrategy : glassPeople.ActivityLibrary.glassCAD.Planing.Packing.Strategy.Simple {
-    }
-}
-namespace glassPeople.ActivityLibrary.glassCAD.Planing.Packing.Strategy.M1 {
-    
-    public partial class PackingStrategy : glassPeople.ActivityLibrary.glassCAD.Planing.Packing.Strategy.Simple {
-    }
-}
 namespace glassPeople.ActivityLibrary.glassCAD.Planing.Packing.Strategy.Harval {
     
     public partial class ItemComparer {
@@ -1375,6 +1375,21 @@ namespace glassPeople.ActivityLibrary.glassCAD.Planing.Packing.Strategy.GGC {
 namespace glassPeople.ActivityLibrary.glassCAD.Planing.Packing.Strategy.GGC {
     
     public partial class PackingStrategy : glassPeople.ActivityLibrary.glassCAD.Planing.Packing.Strategy.Simple {
+    }
+}
+namespace glassPeople.ActivityLibrary.glassCAD.Planing.Packing.MathPacksPosition {
+    
+    public abstract partial class IStrategy {
+    }
+}
+namespace glassPeople.ActivityLibrary.glassCAD.Planing.Packing.MathPacksPosition {
+    
+    public partial class WithoutPillarsStrategy {
+    }
+}
+namespace glassPeople.ActivityLibrary.glassCAD.Planing.Packing.MathPacksPosition {
+    
+    public partial class WithPillarsStrategy {
     }
 }
 namespace glassPeople.ActivityLibrary.glassCAD.Planing.Model {

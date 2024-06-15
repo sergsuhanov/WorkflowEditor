@@ -5,7 +5,7 @@ namespace glassPeople.CRM {
 }
 namespace glassPeople.CRM {
     public enum IssuePriority {
-        Low, Normal, Hight
+        Low, Normal, High
     }
 }
 namespace glassPeople.CRM {
