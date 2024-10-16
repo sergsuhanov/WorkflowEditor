@@ -24,6 +24,19 @@ namespace {source.Namespace} {Op_Br}
     {Cl_Br}
 {Cl_Br}
 ";
+
+            if (source.DeclaringType != null) {
+                Result = $@"
+namespace {source.Namespace} {Op_Br}
+    public partial class {source.DeclaringType.Name} {Op_Br}
+        public enum {source.Name} {Op_Br}
+            {string.Join(Sp, source.EnumNames)}
+        {Cl_Br}
+    {Cl_Br}
+{Cl_Br}
+";
+
+            }
         }
     }
 }

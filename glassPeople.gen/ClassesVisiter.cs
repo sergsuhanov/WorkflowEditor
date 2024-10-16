@@ -1,9 +1,8 @@
 ﻿
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
+using System.Data;
 using System.Linq;
-using System.Runtime.CompilerServices;
 
 namespace glassPeople.gen {
     internal class ClassesVisiter : ILocalTypeVisiter {
@@ -18,6 +17,8 @@ namespace glassPeople.gen {
             }
 
             var result = $"{localType.Namespace}.{localType.Name}";
+            if (localType.DeclaringType != null)
+                result = $"{localType.DeclaringType.Namespace}.{localType.DeclaringType.Name}.{localType.Name}";
 
             if (localType.GenericTypes?.Any() == true) {
                 result += "<" + string.Join(", ", localType.GenericTypes.Select(p => getTextTypeForProperty(p))) + ">";
@@ -75,44 +76,69 @@ namespace glassPeople.gen {
             return properties.ToArray();
         }
 
+        private void replace(List<string> data, string testSource, string textDest) {
+            if (data.Contains(testSource)) {
+                data.Remove(testSource);
+                data.Add(textDest);
+            }
+        }
+
+        private void getCustomAttributesReplace(List<string> result) {
+            replace(result,
+                "[System.ComponentModel.BrowsableAttribute((Boolean)False)]",
+                "[System.ComponentModel.Browsable(false)]"
+            );
+            replace(result,
+                "[System.ComponentModel.DefaultValueAttribute((String)null)]",
+                "[System.ComponentModel.DefaultValue(null)]"
+            );
+            replace(result,
+                "[System.ComponentModel.DefaultValueAttribute((Boolean)False)]",
+                "[System.ComponentModel.DefaultValue(false)]"
+            );
+            replace(result,
+                "[System.ComponentModel.DefaultValueAttribute((Boolean)True)]",
+                "[System.ComponentModel.DefaultValue(true)]"
+            );
+            replace(result,
+                "[System.ComponentModel.ToolboxItemAttribute((Boolean)True)]",
+                "[System.ComponentModel.ToolboxItemAttribute(true)]"
+            );
+            replace(result,
+                "[System.AttributeUsageAttribute((System.AttributeTargets)4, AllowMultiple = True)]",
+                "[System.AttributeUsageAttribute((System.AttributeTargets)4, AllowMultiple = true)]"
+            );
+        }
+
         protected string[] getCustomAttributes(LocalType source) {
             var result = (source.CustomAttributes ?? Array.Empty<string>()).ToList();
 
             result.Remove("[System.Runtime.CompilerServices.ExtensionAttribute()]");
             result.Remove("[System.SerializableAttribute()]");
             result.RemoveAll(p => p.Contains("DebuggerDisplayAttribute"));
-    
+            getCustomAttributesReplace(result);
             return result.ToArray();
         }
 
         protected string[] getCustomAttributes(LocalProperty source) {
-            void replace(List<string> data, string testSource, string textDest) {
-                if (data.Contains(testSource)) { 
-                    data.Remove(testSource);
-                    data.Add(textDest);
-                }
-            }
-
             var result = (source.CustomAttributes ?? Array.Empty<string>()).ToList();
-
             result.RemoveAll(p => p.Contains("TupleElementNamesAttribute"));
-
-            replace(result,
-                "[System.ComponentModel.BrowsableAttribute((Boolean)False)]",
-                "[System.ComponentModel.Browsable(false)]"
-            );
-            replace(result,
-                 "[System.ComponentModel.DefaultValueAttribute((String)null)]",
-                 "[System.ComponentModel.DefaultValue(null)]"
-            );
-            replace(result,
-                 "[System.ComponentModel.DefaultValueAttribute((Boolean)False)]",
-                 "[System.ComponentModel.DefaultValue(false)]"
-            );
-         
+            getCustomAttributesReplace(result);
             return result.ToArray();
         }
 
+        protected string getImplementation(LocalType source) {
+            var implementation = string.Empty;
+
+            if (source.BaseType != null && source.BaseType.Name == "DataRow") {
+                implementation = $@"
+        protected internal {source.Name}(System.Data.DataRowBuilder builder) : base(builder) {Op_Br}
+            throw new System.NotImplementedException();
+        {Cl_Br}";
+            }
+
+            return implementation;
+        }
 
         public void Visit(LocalType source) {
             Result = $@"
@@ -120,6 +146,7 @@ namespace {source.Namespace} {Op_Br}
     {string.Join(Environment.NewLine, getCustomAttributes(source))}
     {getModifer(source)} class {getTextTypeForClass(source)} {Op_Br}
 {string.Join(Environment.NewLine, getProperties(source))}
+{string.Join(Environment.NewLine, getImplementation(source))}
     {Cl_Br}
 {Cl_Br}
 ";
@@ -134,6 +161,7 @@ namespace {source.Namespace} {Op_Br}
     {string.Join(Environment.NewLine, getCustomAttributes(source))}
     {getModifer(source)} class {getTextTypeForClass(source)} {Op_Br}
 {string.Join(Environment.NewLine, getProperties(source))}
+{string.Join(Environment.NewLine, getImplementation(source))}
     {Cl_Br}
     {Cl_Br}
 {Cl_Br}

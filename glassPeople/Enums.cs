@@ -1,3 +1,103 @@
+namespace ITAP.Components.Enums {
+    public enum SelectFormType {
+        MultiRecord, OnlyRecord, None, MultiRecordAndCount
+    }
+}
+namespace ITAP.Components.Enums {
+    public enum SortOrder {
+        Unspecified, Ascending, Descending
+    }
+}
+namespace ITAP.Components.Enums {
+    public enum LogImage {
+        Default, Save, Info, Alert, Start, End
+    }
+}
+namespace ITAP.Components.Enums {
+    public enum LogCriticalLevel {
+        Low, Medium, Hight
+    }
+}
+namespace ITAP.Components.Dialog {
+    public enum SelectViewType {
+        EditableForm, SelectForm, TokenEditForm
+    }
+}
+namespace ITAP.Components.Dialog.InputEditors {
+    public enum EditorType {
+        Simple, Diapason, List
+    }
+}
+namespace ITAP.glassCAD {
+    public enum CriterionFilterMode {
+        All, Current
+    }
+}
+namespace ITAP.glassCAD {
+    public enum CriterionGroupResultMode {
+        Overwrite, All
+    }
+}
+namespace ITAP.glassCAD.Workflow {
+    public enum WorkflowResult {
+        Terminate, Success, Exception
+    }
+}
+namespace ITAP.glassCAD.Workflow.Components {
+    public enum NDSCalculationMode {
+        CalcNDSThenCalcValue, CalcValueThenCalcNDS
+    }
+}
+namespace ITAP.glassCAD.Workflow.Components {
+    public enum RoundMode {
+        Up, Down, Bankers
+    }
+}
+namespace ITAP.glassCAD.Equipment.Model {
+    public enum AppointmentItemStatus {
+        Normal, WorkIn, WorkOut, Defective, MovedToNextOperation, Suspend, PreDefective, PreWorkIn
+    }
+}
+namespace ITAP.glassCAD.Equipment.Model {
+    public enum AppointmentStatus {
+        Normal, WorkIn, WorkOut, Mixed, Reserved, Defective, MovedToNextOperation, Suspend, PreDefective, PreWorkIn
+    }
+}
+namespace ITAP.glassCAD.Equipment.Model {
+    public enum Direction {
+        Forward, Reverse
+    }
+}
+namespace ITAP.glassCAD.Equipment.Model {
+    public enum GroupCodeStatus {
+        Normal, WorkIn, WorkOut, Mixed, Reserved, Defective, MovedToNextOperation, Suspend, PreDefective, PreWorkIn
+    }
+}
+namespace ITAP.glassCAD.Documents.Orders {
+    public enum ProductionModelElementType {
+        Good, Operation, Halfproduction, Production
+    }
+}
+namespace ITAP.glassCAD.Documents.Orders.WorkFlow.Context {
+    public enum OperationConstraintMode {
+        Full, Simple, Disabled
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlowDocumentTemplate {
+    public enum DocumentDocOper {
+        Orders, ExternalRequest, GoodsHouse, ServiceDocument, Selling, BoxProduction
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlowDocumentTemplate {
+    public enum WorkFlowDocumentType {
+        Document, DocumentItems, Goods, Service, Name, GroupItems
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities {
+    public enum InterfaceItemMode {
+        Default, ReadOnly, Hidden, Filter
+    }
+}
 namespace glassPeople.CRM {
     public enum IssueStatus {
         Opened, Сlosed, InWork, InTest, InDiscuss, InGrayFolder
@@ -83,6 +183,11 @@ namespace glassPeople.ActivityLibrary.glassCAD.Scanner.Workers {
         People, Shift, Calendar
     }
 }
+namespace glassPeople.ActivityLibrary.glassCAD.Scanner.Parser {
+    public enum CheckDublicateMode {
+        Ignore, CheckLastCode, CheckAll
+    }
+}
 namespace glassPeople.ActivityLibrary.glassCAD.Planing.Tasks {
     public enum TaskStatus {
         Default, WorkIn, WorkOut
@@ -158,8 +263,38 @@ namespace glassPeople.ActivityLibrary.Core {
         InMemory, Task, Freeze, BuildReport
     }
 }
+namespace ITAP.Components {
+    public partial class Useful {
+        public enum RoundType {
+            Ceiling, Floor
+        }
+    }
+}
+namespace ITAP.glassCAD.Helpers {
+    public partial class FormParameters {
+        public enum FormMode {
+            List, Select
+        }
+    }
+}
+namespace ITAP.glassCAD.Helpers {
+    public partial class FormParameters {
+        public enum SelectedMode {
+            Single, Multiple
+        }
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities {
+    public partial class DGML {
+        public enum Mode {
+            Default, Hidden, BeginRegion, EndRegion
+        }
+    }
+}
 namespace glassPeople.ActivityLibrary.glassCAD.Planing.Activity.Actualisation {
-    public enum MarkingMode {
-        Default, OnlyPyramidInfo, OnlyBufferSecondName
+    public partial class CreateArmSquareCuttingActivity {
+        public enum MarkingMode {
+            Default, OnlyPyramidInfo, OnlyBufferSecondName
+        }
     }
 }

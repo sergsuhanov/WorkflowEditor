@@ -1,11 +1,10 @@
 ﻿
 using System;
-using System.Collections.Generic;
 using System.Linq;
 
 namespace glassPeople.gen {
     internal class ActivityVisiter : ClassesVisiter {
- 
+
         public ActivityVisiter() {
         }
 
@@ -31,8 +30,7 @@ namespace glassPeople.gen {
             throw new System.NotImplementedException();
         }}";
             }
-
-            if (source.BaseType.Name.StartsWith("FilterActivity")) {
+            if (source.BaseType.Namespace == "glassPeople.ActivityLibrary" && source.BaseType.Name.StartsWith("FilterActivity")) {
                 var filterType = getTextTypeForProperty(source.BaseType.GenericTypes.First());
                 implementation = $@"
         protected override System.Collections.Generic.List<{filterType}> Filter(System.Activities.NativeActivityContext context, System.Collections.Generic.IEnumerable<{filterType}> source) {{
@@ -54,7 +52,7 @@ namespace glassPeople.gen {
                 .DefaultIfEmpty<string>(string.Empty)
                 .Aggregate((p1, p2) => p1 + Environment.NewLine + p2);
 
-            if(metadataText == string.Empty)
+            if (metadataText == string.Empty)
                 return string.Empty;
 
             var implementation = $@"

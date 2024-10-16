@@ -1,10 +1,29 @@
-﻿using System.Activities;
+﻿using System;
+using System.Activities;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 
 namespace System {
     public class ValueType {
+
+    }
+    public class MulticastDelegate {
+
+    }
+}
+
+namespace System.Drawing {
+    public class Color {
+
+    }
+    public class Image {
+
+    }
+}
+
+namespace System.Transactions {
+    public class TransactionScope {
 
     }
 }
@@ -24,6 +43,11 @@ namespace Microsoft.AspNetCore.Identity {
 
 namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore {
     public class IdentityDbContext<T> {
+    }
+}
+
+namespace Newtonsoft.Json {
+    public class JsonIgnoreAttribute : Attribute {
     }
 }
 

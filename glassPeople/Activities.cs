@@ -1,3 +1,686 @@
+namespace ITAP.glassCAD.Documents.BoxProduction.Workflow.Activities {
+    
+    public partial class BoxProductionItemAddGoodActivity : System.Activities.NativeActivity {
+		[System.Activities.RequiredArgumentAttribute()]
+		public System.Activities.InArgument<System.Int32> IDGood { get; set; } 
+		[System.Activities.RequiredArgumentAttribute()]
+		public System.Activities.InArgument<System.Decimal> Expression { get; set; } 
+		[System.Activities.RequiredArgumentAttribute()]
+		public System.Activities.InArgument<System.Int32> Qu { get; set; } 
+		public System.Activities.InArgument<System.String> Marking { get; set; } 
+        protected override void Execute(System.Activities.NativeActivityContext context) {
+            throw new System.NotImplementedException();
+        }
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities {
+    
+    public partial class SelectDateTimeActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.EditFormNativeActivity {
+		[System.ComponentModel.DisplayNameAttribute("Отображать диалог")]
+		public System.Boolean Show { get; set; } 
+		[System.ComponentModel.DisplayNameAttribute("Заголовок формы выбора")]
+		public System.String Caption { get; set; } 
+		[System.ComponentModel.Browsable(false)]
+		public System.Int32 TypePeriod { get; set; } 
+		[System.ComponentModel.DisplayNameAttribute("Дата С")]
+		public System.Activities.OutArgument<System.DateTime> DateFrom { get; set; } 
+		[System.ComponentModel.DisplayNameAttribute("Дата По")]
+		public System.Activities.OutArgument<System.DateTime> DateTo { get; set; } 
+		[System.ComponentModel.DisplayNameAttribute("Период выбран")]
+		[System.ComponentModel.Browsable(false)]
+		public System.Activities.OutArgument<System.Boolean> PeriodSelected { get; set; } 
+		public System.Activities.OutArgument<System.Boolean> IsCanceled { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities {
+    
+    public partial class ShowMessageActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.EditFormNativeActivity {
+		public System.Activities.InArgument<System.String> Message { get; set; } 
+		public System.Boolean ShowInLog { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities {
+    
+    public abstract partial class CustomActionsActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.EditFormNativeActivity {
+		[System.ComponentModel.Browsable(false)]
+		public System.Collections.ObjectModel.Collection<ITAP.glassCAD.Dictionary.WorkFlow.Activities.Input.Button> Buttons { get; set; } = new System.Collections.ObjectModel.Collection<ITAP.glassCAD.Dictionary.WorkFlow.Activities.Input.Button>();
+		[System.ComponentModel.Browsable(false)]
+		public System.Collections.ObjectModel.Collection<ITAP.glassCAD.Dictionary.WorkFlow.Activities.Input.Button> ToolBar { get; set; } = new System.Collections.ObjectModel.Collection<ITAP.glassCAD.Dictionary.WorkFlow.Activities.Input.Button>();
+		[System.ComponentModel.Browsable(false)]
+		public System.Collections.ObjectModel.Collection<ITAP.glassCAD.Dictionary.WorkFlow.Activities.Input.Button> BottomBar { get; set; } = new System.Collections.ObjectModel.Collection<ITAP.glassCAD.Dictionary.WorkFlow.Activities.Input.Button>();
+		[System.ComponentModel.Browsable(false)]
+		public System.Collections.ObjectModel.Collection<ITAP.glassCAD.Dictionary.WorkFlow.Activities.Input.Button> Custom { get; set; } = new System.Collections.ObjectModel.Collection<ITAP.glassCAD.Dictionary.WorkFlow.Activities.Input.Button>();
+		public System.Activities.InArgument<ITAP.glassCAD.Dictionary.WorkFlow.Activities.InterfacePreset> InterfacePreset { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Out")]
+		public System.Activities.OutArgument<System.String> Action { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Out")]
+		public System.Activities.OutArgument<System.Int32> ActionKey { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities {
+    
+    public abstract partial class DataLayerNativeActivity : System.Activities.NativeActivity {
+        protected override void Execute(System.Activities.NativeActivityContext context) {
+            throw new System.NotImplementedException();
+        }
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities {
+    
+    public abstract partial class DataLayerNativeActivity<T> : ITAP.glassCAD.Dictionary.WorkFlow.Activities.DataLayerNativeActivity {
+		public System.Activities.OutArgument<T> Result { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities {
+    
+    public abstract partial class EditFormNativeActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.DataLayerNativeActivity {
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities {
+    
+    public partial class ExecuteTemplateActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.DataLayerNativeActivity {
+		[System.ComponentModel.DisplayNameAttribute("ИД шаблона")]
+		public System.Nullable<System.Int32> IDWorkFlowTemplate { get; set; } 
+		[System.ComponentModel.DisplayNameAttribute("Guid шаблона")]
+		public System.Guid GuidWorkFlowTemplate { get; set; } 
+		[System.ComponentModel.DisplayNameAttribute("Входные параметры")]
+		public System.Collections.ObjectModel.Collection<ITAP.glassCAD.Dictionary.WorkFlow.Activities.TemplateInArg> InArguments { get; set; } = new System.Collections.ObjectModel.Collection<ITAP.glassCAD.Dictionary.WorkFlow.Activities.TemplateInArg>();
+		[System.ComponentModel.DisplayNameAttribute("Выходные параметры")]
+		public System.Collections.ObjectModel.Collection<ITAP.glassCAD.Dictionary.WorkFlow.Activities.TemplateOutArg> OutArguments { get; set; } = new System.Collections.ObjectModel.Collection<ITAP.glassCAD.Dictionary.WorkFlow.Activities.TemplateOutArg>();
+		[System.ComponentModel.DefaultValue(true)]
+		public System.Boolean WaitForExecute { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities {
+    
+    public abstract partial class FilterActivity<T> : ITAP.glassCAD.Dictionary.WorkFlow.Activities.DataLayerNativeActivity {
+		[System.ComponentModel.CategoryAttribute("Source")]
+		public System.Activities.InArgument<System.Collections.Generic.List<T>> Source { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Result")]
+		public System.Activities.OutArgument<System.Collections.Generic.List<T>> Result { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities {
+    
+    public abstract partial class FilterDataSetActivity<T> : ITAP.glassCAD.Dictionary.WorkFlow.Activities.DataLayerNativeActivity<T> {
+		public System.Activities.InArgument<T> Source { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities {
+    
+    public partial class InterfacePresetAddActivity : System.Activities.NativeActivity {
+		public System.Activities.InOutArgument<ITAP.glassCAD.Dictionary.WorkFlow.Activities.InterfacePreset> Source { get; set; } 
+		public System.String Name { get; set; } 
+		public ITAP.glassCAD.Dictionary.WorkFlow.Activities.InterfaceItemMode Mode { get; set; } 
+		public System.Activities.InArgument<System.Object> FilterValue { get; set; } 
+        protected override void Execute(System.Activities.NativeActivityContext context) {
+            throw new System.NotImplementedException();
+        }
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities {
+    
+    public abstract partial class ListActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.CustomActionsActivity {
+		[System.ComponentModel.CategoryAttribute("Out")]
+		public System.Activities.InOutArgument<System.Nullable<System.Int32>> IdObject { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Out")]
+		public System.Activities.OutArgument<System.Collections.Generic.List<System.Int32>> IdObjects { get; set; } 
+		public ITAP.glassCAD.Helpers.FormParameters.FormMode FormMode { get; set; } 
+		public ITAP.glassCAD.Helpers.FormParameters.SelectedMode SelectedMode { get; set; } 
+		public System.String DoubleClickActionName { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities {
+    
+    public partial class ObjectAddHistoryActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.DataLayerNativeActivity {
+		[System.Activities.RequiredArgumentAttribute()]
+		public System.Activities.InArgument<System.Int32> IDDocOper { get; set; } 
+		[System.Activities.RequiredArgumentAttribute()]
+		public System.Activities.InArgument<System.Int32> IDDoc { get; set; } 
+		public System.Activities.InArgument<System.Int32> IDPeople { get; set; } 
+		public System.Activities.InArgument<System.String> Name { get; set; } 
+		[System.Activities.RequiredArgumentAttribute()]
+		public System.Activities.InArgument<System.String> Text { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities {
+    
+    public partial class ObjectGetEditModeActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.DataLayerNativeActivity {
+		[System.Activities.RequiredArgumentAttribute()]
+		public System.Activities.InArgument<System.Int32> IDDocOper { get; set; } 
+		[System.Activities.RequiredArgumentAttribute()]
+		public System.Activities.InArgument<System.Int32> IDDoc { get; set; } 
+		[System.Activities.RequiredArgumentAttribute()]
+		public System.Activities.OutArgument<System.Int32> Mode { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities {
+    
+    public partial class ObjectSetEditModeActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.DataLayerNativeActivity {
+		[System.Activities.RequiredArgumentAttribute()]
+		public System.Activities.InArgument<System.Int32> IDDocOper { get; set; } 
+		[System.Activities.RequiredArgumentAttribute()]
+		public System.Activities.InArgument<System.Int32> IDDoc { get; set; } 
+		[System.Activities.RequiredArgumentAttribute()]
+		public System.Activities.InArgument<System.Int32> Mode { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities {
+    
+    public partial class ReturnActivity : System.Activities.NativeActivity {
+        protected override void Execute(System.Activities.NativeActivityContext context) {
+            throw new System.NotImplementedException();
+        }
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities {
+    
+    public partial class EditOrderActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.Documents.Orders.EditOrderActivity {
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities {
+    
+    public partial class FilterByDatesActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.Documents.Orders.FilterByDatesActivity {
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities {
+    
+    public partial class LoadOrderActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.Documents.Orders.LoadOrderActivity {
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities {
+    
+    public partial class OrdersActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.Documents.Orders.EditActivity {
+		public System.Activities.InArgument<System.Collections.Generic.List<System.Int32>> Filter { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Documents.Orders {
+    
+    public partial class EditActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.ListActivity {
+		public System.Activities.InArgument<ITAP.glassCAD.Documents.Orders.OrdersDataSet> Source { get; set; } 
+        protected override void Execute(System.Activities.NativeActivityContext context) {
+            throw new System.NotImplementedException();
+        }
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Documents.Orders {
+    
+    public partial class EditOrderActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.CustomActionsActivity {
+		public System.Activities.InArgument<System.Int32> IDOrder { get; set; } 
+		public System.Activities.InArgument<ITAP.glassCAD.Documents.Orders.OrdersDataSet> OrdersDataSet { get; set; } 
+		[System.ComponentModel.DisplayNameAttribute("Права доступа")]
+		[System.ComponentModel.DescriptionAttribute("0 = Нет доступа, 2 = Полный доступ")]
+		public System.Nullable<System.Int32> RightAccessMode { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Documents.Orders {
+    
+    public partial class FilterByDatesActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.FilterActivity<System.Int32> {
+		[System.Activities.RequiredArgumentAttribute()]
+		public System.Activities.InArgument<System.DateTime> StartDate { get; set; } 
+		[System.Activities.RequiredArgumentAttribute()]
+		public System.Activities.InArgument<System.DateTime> EndDate { get; set; } 
+		public System.Boolean IncludeOrderLink { get; set; } 
+		public System.Boolean IncludeOrderDefective { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Documents.Orders {
+    
+    public partial class LoadOrderActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.DataLayerNativeActivity {
+		public System.Activities.InArgument<System.Int32> IDOrder { get; set; } 
+		public System.Activities.InArgument<ITAP.glassCAD.Documents.Orders.OrdersDataSet> OrdersDataSet { get; set; } 
+		public System.Activities.OutArgument<ITAP.glassCAD.Documents.Orders.OrdersDataSet> Result { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Documents.Orders {
+    
+    public partial class RefreshOrderActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.EditFormNativeActivity {
+		public System.Activities.InArgument<System.Int32> IDOrder { get; set; } 
+		public System.Activities.InArgument<ITAP.glassCAD.Documents.Orders.OrdersDataSet> OrdersDataSet { get; set; } 
+		public System.Boolean PriceRefreshOnly { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Documents.Orders {
+    
+    public partial class SaveOrdersDataSet : ITAP.glassCAD.Dictionary.WorkFlow.Activities.DataLayerNativeActivity {
+		[System.ComponentModel.Browsable(false)]
+		public System.Boolean EnabledEntry { get; set; } 
+		public System.Activities.InArgument<ITAP.glassCAD.Documents.Orders.OrdersDataSet> OrdersDataSet { get; set; } 
+		public System.Boolean ForcedSave { get; set; } 
+		public System.Activities.OutArgument<System.Boolean> Result { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Documents.BoxProduction {
+    
+    public partial class CalculationBoxProductionActivity : System.Activities.NativeActivity {
+		[System.Activities.RequiredArgumentAttribute()]
+		public System.Activities.InArgument<ITAP.glassCAD.Documents.BoxProduction.BoxProductionDataSet> Source { get; set; } 
+        protected override void Execute(System.Activities.NativeActivityContext context) {
+            throw new System.NotImplementedException();
+        }
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Documents.BoxProduction {
+    
+    public partial class CompareBoxProductionActivity : System.Activities.NativeActivity {
+		[System.Activities.RequiredArgumentAttribute()]
+		public System.Activities.InArgument<ITAP.glassCAD.Documents.BoxProduction.BoxProductionDataSet> PrevDataSet { get; set; } 
+		[System.Activities.RequiredArgumentAttribute()]
+		public System.Activities.InArgument<ITAP.glassCAD.Documents.BoxProduction.BoxProductionDataSet> DataSet { get; set; } 
+		[System.ComponentModel.DisplayNameAttribute("Есть изменение данных")]
+		public System.Activities.OutArgument<System.Boolean> HasChanges { get; set; } 
+        protected override void Execute(System.Activities.NativeActivityContext context) {
+            throw new System.NotImplementedException();
+        }
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Documents.BoxProduction {
+    
+    public partial class CreateBoxProductionActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.DataLayerNativeActivity {
+		[System.ComponentModel.DisplayNameAttribute("ИД документа")]
+		public System.Activities.OutArgument<System.Int32> IDBoxProduction { get; set; } 
+		public System.Activities.OutArgument<ITAP.glassCAD.Documents.BoxProduction.BoxProductionDataSet> BoxProductionDataSet { get; set; } 
+		public System.Boolean SaveToBase { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Documents.BoxProduction {
+    
+    public partial class CreateBoxProductionByOrderActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.DataLayerNativeActivity {
+		[System.Activities.RequiredArgumentAttribute()]
+		public System.Activities.InArgument<System.Int32> IDOrder { get; set; } 
+		public System.Boolean SaveToBase { get; set; } 
+		[System.ComponentModel.DisplayNameAttribute("ИД документа")]
+		public System.Activities.OutArgument<System.Int32> IDBoxProduction { get; set; } 
+		public System.Activities.OutArgument<ITAP.glassCAD.Documents.BoxProduction.BoxProductionDataSet> BoxProductionDataSet { get; set; } 
+		public System.Activities.OutArgument<System.Boolean> Result { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Documents.BoxProduction {
+    
+    public partial class DeleteBoxProductionActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.DataLayerNativeActivity {
+		public System.Activities.InArgument<System.Int32> IDBoxProduction { get; set; } 
+		public System.Activities.InArgument<ITAP.glassCAD.Documents.BoxProduction.BoxProductionDataSet> BoxProductionDataSet { get; set; } 
+		public System.Activities.OutArgument<System.Boolean> Result { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Documents.BoxProduction {
+    
+    public partial class DublicateBoxProductionActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.DataLayerNativeActivity {
+		[System.ComponentModel.DisplayNameAttribute("ИД исходного документa")]
+		public System.Activities.InArgument<System.Int32> IDBoxProduction { get; set; } 
+		public System.Activities.InArgument<ITAP.glassCAD.Documents.BoxProduction.BoxProductionDataSet> BoxProductionDataSetIn { get; set; } 
+		public System.Boolean SetNewNmDoc { get; set; } 
+		public System.Boolean SetCurrentDtDoc { get; set; } 
+		public System.Boolean SetCurrentUser { get; set; } 
+		public System.Activities.OutArgument<ITAP.glassCAD.Documents.BoxProduction.BoxProductionDataSet> BoxProductionDataSetOut { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Documents.BoxProduction {
+    
+    public partial class EditActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.ListActivity {
+		public System.Activities.InArgument<ITAP.glassCAD.Documents.BoxProduction.BoxProductionDataSet> Source { get; set; } 
+        protected override void Execute(System.Activities.NativeActivityContext context) {
+            throw new System.NotImplementedException();
+        }
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Documents.BoxProduction {
+    
+    public partial class EditBoxProductionActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.CustomActionsActivity {
+		[System.ComponentModel.DisplayNameAttribute("ИД документа ")]
+		public System.Activities.InArgument<System.Int32> IDBoxProduction { get; set; } 
+		public System.Activities.InArgument<ITAP.glassCAD.Documents.BoxProduction.BoxProductionDataSet> BoxProductionDataSet { get; set; } 
+		[System.ComponentModel.DisplayNameAttribute("Права доступа")]
+		[System.ComponentModel.DescriptionAttribute("0 = Нет доступа, 1 = Только для чтения, 2 = Полный доступ")]
+		public System.Nullable<System.Int32> RightAccessMode { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Documents.BoxProduction {
+    
+    public partial class FilterByDatesActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.FilterDataSetActivity<ITAP.glassCAD.Documents.BoxProduction.BoxProductionDataSet> {
+		[System.Activities.RequiredArgumentAttribute()]
+		public System.Activities.InArgument<System.DateTime> StartDate { get; set; } 
+		[System.Activities.RequiredArgumentAttribute()]
+		public System.Activities.InArgument<System.DateTime> EndDate { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Documents.BoxProduction {
+    
+    public partial class LoadBoxProductionActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.DataLayerNativeActivity {
+		public System.Activities.InArgument<System.Int32> IDBoxProduction { get; set; } 
+		public System.Activities.InArgument<ITAP.glassCAD.Documents.BoxProduction.BoxProductionDataSet> BoxProductionDataSet { get; set; } 
+		public System.Activities.OutArgument<ITAP.glassCAD.Documents.BoxProduction.BoxProductionDataSet> Result { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Documents.BoxProduction {
+    
+    public partial class SaveBoxProductionDataSet : ITAP.glassCAD.Dictionary.WorkFlow.Activities.DataLayerNativeActivity {
+		public System.Activities.InArgument<ITAP.glassCAD.Documents.BoxProduction.BoxProductionDataSet> BoxProductionDataSet { get; set; } 
+		public System.Boolean ForcedSave { get; set; } 
+		[System.ComponentModel.Browsable(false)]
+		public System.Boolean EnabledEntry { get; set; } 
+		public System.Activities.OutArgument<System.Boolean> Result { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Dictionaries.WorkFlowDocumentTemplate {
+    
+    public partial class EditActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.ListActivity {
+		public System.Activities.InArgument<ITAP.glassCAD.Dictionary.WorkFlowDocumentTemplate.WorkFlowDocumentTemplateDataSet> Source { get; set; } 
+        protected override void Execute(System.Activities.NativeActivityContext context) {
+            throw new System.NotImplementedException();
+        }
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Dictionaries.Storehouse {
+    
+    public partial class EditActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.ListActivity {
+		public System.Activities.InArgument<ITAP.glassCAD.Dictionary.Storehouse.StorehouseDataSet> Source { get; set; } 
+        protected override void Execute(System.Activities.NativeActivityContext context) {
+            throw new System.NotImplementedException();
+        }
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Dictionaries.Sign {
+    
+    public partial class EditActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.ListActivity {
+		public System.Activities.InArgument<ITAP.glassCAD.Dictionary.Sign.SignDataSet> Source { get; set; } 
+        protected override void Execute(System.Activities.NativeActivityContext context) {
+            throw new System.NotImplementedException();
+        }
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Dictionaries.Services {
+    
+    public partial class EditActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.ListActivity {
+		public System.Activities.InArgument<ITAP.glassCAD.Dictionary.Services.ServicesDataSet> Source { get; set; } 
+        protected override void Execute(System.Activities.NativeActivityContext context) {
+            throw new System.NotImplementedException();
+        }
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Dictionaries.ScanRole {
+    
+    public partial class EditActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.ListActivity {
+		public System.Activities.InArgument<ITAP.glassCAD.Dictionary.ScanRole.ScanRoleDataSet> Source { get; set; } 
+        protected override void Execute(System.Activities.NativeActivityContext context) {
+            throw new System.NotImplementedException();
+        }
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Dictionaries.ScanActivity {
+    
+    public partial class EditActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.ListActivity {
+		public System.Activities.InArgument<ITAP.glassCAD.Dictionary.ScanActivity.ScanActivityDataSet> Source { get; set; } 
+        protected override void Execute(System.Activities.NativeActivityContext context) {
+            throw new System.NotImplementedException();
+        }
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Dictionaries.Production {
+    
+    public partial class EditActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.ListActivity {
+		public System.Activities.InArgument<ITAP.glassCAD.Dictionary.Production.ProductionDataSet> Source { get; set; } 
+        protected override void Execute(System.Activities.NativeActivityContext context) {
+            throw new System.NotImplementedException();
+        }
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Dictionaries.PriceForms {
+    
+    public partial class EditActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.ListActivity {
+		public System.Activities.InArgument<ITAP.glassCAD.Dictionary.PriceForms.PriceFormsDataSet> Source { get; set; } 
+        protected override void Execute(System.Activities.NativeActivityContext context) {
+            throw new System.NotImplementedException();
+        }
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Dictionaries.People {
+    
+    public partial class EditActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.ListActivity {
+		public System.Activities.InArgument<ITAP.glassCAD.Dictionary.People.PeopleDataSet> Source { get; set; } 
+        protected override void Execute(System.Activities.NativeActivityContext context) {
+            throw new System.NotImplementedException();
+        }
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Dictionaries.People {
+    
+    public partial class FilterByEmptyActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.FilterDataSetActivity<ITAP.glassCAD.Dictionary.People.PeopleDataSet> {
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Dictionaries.People {
+    
+    public partial class FilterByListActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.FilterDataSetActivity<ITAP.glassCAD.Dictionary.People.PeopleDataSet> {
+		public System.Activities.InArgument<System.Collections.Generic.List<System.Int32>> Ids { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Dictionaries.People {
+    
+    public partial class FilterByGlassTypeActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.FilterDataSetActivity<ITAP.glassCAD.Dictionary.People.PeopleDataSet> {
+		public System.Activities.InArgument<System.Int32> IDDepart { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Dictionaries.People {
+    
+    public partial class FilterByPhoneActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.FilterDataSetActivity<ITAP.glassCAD.Dictionary.People.PeopleDataSet> {
+		[System.Activities.RequiredArgumentAttribute()]
+		public System.Activities.InArgument<System.String> Phone { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Dictionaries.PaymentType {
+    
+    public partial class EditActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.ListActivity {
+		public System.Activities.InArgument<ITAP.glassCAD.Dictionary.PaymentType.PaymentTypeDataSet> Source { get; set; } 
+        protected override void Execute(System.Activities.NativeActivityContext context) {
+            throw new System.NotImplementedException();
+        }
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Dictionaries.Operation {
+    
+    public partial class EditActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.ListActivity {
+		public System.Activities.InArgument<ITAP.glassCAD.Dictionary.Operation.OperationDataSet> Source { get; set; } 
+        protected override void Execute(System.Activities.NativeActivityContext context) {
+            throw new System.NotImplementedException();
+        }
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Dictionaries.Measure {
+    
+    public partial class EditActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.ListActivity {
+		public System.Activities.InArgument<ITAP.glassCAD.Dictionary.Measure.MeasureDataSet> Source { get; set; } 
+        protected override void Execute(System.Activities.NativeActivityContext context) {
+            throw new System.NotImplementedException();
+        }
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Dictionaries.Marshrut {
+    
+    public partial class EditActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.ListActivity {
+		public System.Activities.InArgument<ITAP.glassCAD.Dictionary.Marshrut.MarshrutDataSet> Source { get; set; } 
+        protected override void Execute(System.Activities.NativeActivityContext context) {
+            throw new System.NotImplementedException();
+        }
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Dictionaries.GrOpt {
+    
+    public partial class EditActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.ListActivity {
+		public System.Activities.InArgument<ITAP.glassCAD.Dictionary.GrOpt.GrOptDataSet> Source { get; set; } 
+        protected override void Execute(System.Activities.NativeActivityContext context) {
+            throw new System.NotImplementedException();
+        }
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Dictionaries.GrOptPacking {
+    
+    public partial class EditActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.ListActivity {
+		public System.Activities.InArgument<ITAP.glassCAD.Dictionary.GrOptPacking.GrOptPackingDataSet> Source { get; set; } 
+        protected override void Execute(System.Activities.NativeActivityContext context) {
+            throw new System.NotImplementedException();
+        }
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Dictionaries.Goods {
+    
+    public partial class EditActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.ListActivity {
+		public System.Activities.InArgument<ITAP.glassCAD.Dictionary.Goods.GoodsDataSet> Source { get; set; } 
+        protected override void Execute(System.Activities.NativeActivityContext context) {
+            throw new System.NotImplementedException();
+        }
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Dictionaries.GoodParties {
+    
+    public partial class EditActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.ListActivity {
+		public System.Activities.InArgument<ITAP.glassCAD.Dictionary.GoodParties.GoodPartiesDataSet> Source { get; set; } 
+        protected override void Execute(System.Activities.NativeActivityContext context) {
+            throw new System.NotImplementedException();
+        }
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Dictionaries.Equipment {
+    
+    public partial class EditActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.ListActivity {
+		public System.Activities.InArgument<ITAP.glassCAD.Dictionary.Equipment.EquipmentDataSet> Source { get; set; } 
+        protected override void Execute(System.Activities.NativeActivityContext context) {
+            throw new System.NotImplementedException();
+        }
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Dictionaries.DocOper {
+    
+    public partial class EditActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.ListActivity {
+		public System.Activities.InArgument<ITAP.glassCAD.Dictionary.DocOper.DocOperDataSet> Source { get; set; } 
+        protected override void Execute(System.Activities.NativeActivityContext context) {
+            throw new System.NotImplementedException();
+        }
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Dictionaries.Diraction {
+    
+    public partial class EditActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.ListActivity {
+		public System.Activities.InArgument<ITAP.glassCAD.Dictionary.Diraction.DiractionDataSet> Source { get; set; } 
+        protected override void Execute(System.Activities.NativeActivityContext context) {
+            throw new System.NotImplementedException();
+        }
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Dictionaries.Depart {
+    
+    public partial class EditActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.ListActivity {
+		public System.Activities.InArgument<ITAP.glassCAD.Dictionary.Depart.DepartDataSet> Source { get; set; } 
+        protected override void Execute(System.Activities.NativeActivityContext context) {
+            throw new System.NotImplementedException();
+        }
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Dictionaries.Customer {
+    
+    public partial class EditActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.ListActivity {
+		public System.Activities.InArgument<ITAP.glassCAD.Dictionary.Customer.CustomerDataSet> Source { get; set; } 
+        protected override void Execute(System.Activities.NativeActivityContext context) {
+            throw new System.NotImplementedException();
+        }
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Dictionaries.Customer {
+    
+    public partial class EditItemActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.CustomActionsActivity {
+		public System.Activities.InArgument<System.Int32> IDCustomer { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Dictionaries.Customer {
+    
+    public abstract partial class Filter : ITAP.glassCAD.Dictionary.WorkFlow.Activities.FilterDataSetActivity<ITAP.glassCAD.Dictionary.Customer.CustomerDataSet> {
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Dictionaries.Customer {
+    
+    public partial class FilterByEmptyActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.Dictionaries.Customer.Filter {
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Dictionaries.Currency {
+    
+    public partial class CurrencyCourceActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.ListActivity {
+		[System.Activities.RequiredArgumentAttribute()]
+		public System.Activities.InArgument<System.Int32> IDCurrency { get; set; } 
+        protected override void Execute(System.Activities.NativeActivityContext context) {
+            throw new System.NotImplementedException();
+        }
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Dictionaries.Currency {
+    
+    public partial class CurrencyCourceGetActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.DataLayerNativeActivity {
+		[System.Activities.RequiredArgumentAttribute()]
+		public System.Activities.InArgument<System.Int32> IDCurrency { get; set; } 
+		public System.Activities.InArgument<System.DateTime> Date { get; set; } 
+		public System.Activities.OutArgument<System.Decimal> Value { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Dictionaries.Currency {
+    
+    public partial class EditActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.ListActivity {
+		public System.Activities.InArgument<ITAP.glassCAD.Dictionary.Currency.CurrencyDataSet> Source { get; set; } 
+        protected override void Execute(System.Activities.NativeActivityContext context) {
+            throw new System.NotImplementedException();
+        }
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Dictionaries.Company {
+    
+    public partial class EditActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.ListActivity {
+		public System.Activities.InArgument<ITAP.glassCAD.Dictionary.Company.CompanyDataSet> Source { get; set; } 
+        protected override void Execute(System.Activities.NativeActivityContext context) {
+            throw new System.NotImplementedException();
+        }
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Dictionaries.Calendar {
+    
+    public partial class EditActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.ListActivity {
+		public System.Activities.InArgument<ITAP.glassCAD.Dictionary.Calendar.CalendarDataSet> Source { get; set; } 
+        protected override void Execute(System.Activities.NativeActivityContext context) {
+            throw new System.NotImplementedException();
+        }
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Dictionaries.Calculation {
+    
+    public partial class EditActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.ListActivity {
+		public System.Activities.InArgument<ITAP.glassCAD.Dictionary.Calculation.CalculationDataSet> Source { get; set; } 
+        protected override void Execute(System.Activities.NativeActivityContext context) {
+            throw new System.NotImplementedException();
+        }
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Dictionaries.CalculationVariables {
+    
+    public partial class EditActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.ListActivity {
+		public System.Activities.InArgument<ITAP.glassCAD.Dictionary.CalculationVariables.CalculationVariablesDataSet> Source { get; set; } 
+        protected override void Execute(System.Activities.NativeActivityContext context) {
+            throw new System.NotImplementedException();
+        }
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Input {
+    
+    public partial class GetStringActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.EditFormNativeActivity {
+		[System.ComponentModel.DisplayNameAttribute("Заголовок")]
+		public System.Activities.InArgument<System.String> Caption { get; set; } 
+		[System.ComponentModel.DisplayNameAttribute("Строка по-умолчанию")]
+		public System.Activities.InArgument<System.String> DefaultString { get; set; } 
+		public System.Activities.InArgument<System.String> Mask { get; set; } 
+		public System.Boolean Multiline { get; set; } 
+		public System.Boolean IsPassword { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Out")]
+		[System.ComponentModel.DisplayNameAttribute("Строка")]
+		public System.Activities.OutArgument<System.String> String { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Out")]
+		public System.Activities.OutArgument<System.Boolean> IsCanceled { get; set; } 
+    }
+}
 namespace glassPeople.CRM {
     
     public partial class AddIssueAttributeActivity : System.Activities.NativeActivity {
@@ -1041,18 +1724,6 @@ namespace glassPeople.ActivityLibrary.glassCAD.Planing.Activity {
 }
 namespace glassPeople.ActivityLibrary.glassCAD.Planing.Activity {
     
-    public partial class GetPlanningJsonDataActivity : System.Activities.NativeActivity<System.String> {
-		[System.Activities.RequiredArgumentAttribute()]
-		public System.Activities.InArgument<glassPeople.ActivityLibrary.glassCAD.Planing.Period> Period { get; set; } 
-		[System.Activities.RequiredArgumentAttribute()]
-		public System.Activities.InArgument<glassPeople.ActivityLibrary.glassCAD.Planing.Model.PlanningContext> PlanningContext { get; set; } 
-        protected override void Execute(System.Activities.NativeActivityContext context) {
-            throw new System.NotImplementedException();
-        }
-    }
-}
-namespace glassPeople.ActivityLibrary.glassCAD.Planing.Activity {
-    
     public partial class SavePlanningContextActivity : System.Activities.NativeActivity<System.Boolean> {
 		[System.Activities.RequiredArgumentAttribute()]
 		public System.Activities.InArgument<glassPeople.ActivityLibrary.glassCAD.Planing.Model.PlanningContext> PlanningContext { get; set; } 
@@ -1079,7 +1750,7 @@ namespace glassPeople.ActivityLibrary.glassCAD.Planing.Activity {
 }
 namespace glassPeople.ActivityLibrary.glassCAD.Planing.Activity {
     
-    public partial class SettingsGetActivity : System.Activities.NativeActivity<glassPeople.ActivityLibrary.glassCAD.Planing.Settings> {
+    public partial class SettingsGetActivity : System.Activities.NativeActivity<glassPeople.ActivityLibrary.glassCAD.Planing.Model.Settings> {
 		[System.Activities.RequiredArgumentAttribute()]
 		public System.Activities.InArgument<glassPeople.ActivityLibrary.glassCAD.Planing.Model.PlanningContext> PlanningContext { get; set; } 
 		[System.Activities.RequiredArgumentAttribute()]
@@ -1095,7 +1766,7 @@ namespace glassPeople.ActivityLibrary.glassCAD.Planing.Activity {
 		[System.Activities.RequiredArgumentAttribute()]
 		public System.Activities.InArgument<glassPeople.ActivityLibrary.glassCAD.Planing.Model.PlanningContext> PlanningContext { get; set; } 
 		[System.Activities.RequiredArgumentAttribute()]
-		public System.Activities.InArgument<glassPeople.ActivityLibrary.glassCAD.Planing.Settings> Source { get; set; } 
+		public System.Activities.InArgument<glassPeople.ActivityLibrary.glassCAD.Planing.Model.Settings> Source { get; set; } 
         protected override void Execute(System.Activities.NativeActivityContext context) {
             throw new System.NotImplementedException();
         }
@@ -1326,7 +1997,7 @@ namespace glassPeople.ActivityLibrary.glassCAD.Planing.Activity.Actualisation {
 		public System.Activities.InArgument<System.Collections.Generic.List<glassPeople.ActivityLibrary.glassCAD.Planing.Model.GroupCode>> Source { get; set; } 
 		[System.Activities.RequiredArgumentAttribute()]
 		public System.Activities.InArgument<glassPeople.ActivityLibrary.glassCAD.Planing.Model.PlanningContext> SchedulerContext { get; set; } 
-		public glassPeople.ActivityLibrary.glassCAD.Planing.Activity.Actualisation.MarkingMode SetMarkingMode { get; set; } 
+		public glassPeople.ActivityLibrary.glassCAD.Planing.Activity.Actualisation.CreateArmSquareCuttingActivity.MarkingMode SetMarkingMode { get; set; } 
 		public System.Boolean DiasbleRemoveCoatingRule { get; set; } 
         protected override void Execute(System.Activities.NativeActivityContext context) {
             throw new System.NotImplementedException();
@@ -1822,6 +2493,18 @@ namespace glassPeople.ActivityLibrary.Dialog {
 		public System.Activities.InOutArgument<System.String> Text { get; set; } 
 		[System.ComponentModel.CategoryAttribute("Out")]
 		public System.Activities.OutArgument<System.Boolean> IsCanceled { get; set; } 
+        protected override void Execute(System.Activities.NativeActivityContext context) {
+            throw new System.NotImplementedException();
+        }
+    }
+}
+namespace glassPeople.ActivityLibrary.Core {
+    
+    public partial class BuildReportActivity : System.Activities.NativeActivity {
+		[System.Activities.RequiredArgumentAttribute()]
+		public System.Activities.InArgument<System.String> Name { get; set; } 
+		public System.Activities.InArgument<System.String> ConnectionString { get; set; } 
+		public System.Activities.OutArgument<Stimulsoft.Report.StiReport> Result { get; set; } 
         protected override void Execute(System.Activities.NativeActivityContext context) {
             throw new System.NotImplementedException();
         }
