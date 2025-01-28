@@ -53,6 +53,11 @@ namespace ITAP.glassCAD.Workflow.Components {
         Up, Down, Bankers
     }
 }
+namespace ITAP.glassCAD.Equipment {
+    public enum ExportLogMessageType {
+        Info, Warning, Error, Alert
+    }
+}
 namespace ITAP.glassCAD.Equipment.Model {
     public enum AppointmentItemStatus {
         Normal, WorkIn, WorkOut, Defective, MovedToNextOperation, Suspend, PreDefective, PreWorkIn
@@ -241,6 +246,11 @@ namespace glassPeople.ActivityLibrary.glassCAD.Planing.Activity {
 namespace glassPeople.ActivityLibrary.glassCAD.Planing.Activity.Orders {
     public enum DeliverStatus {
         Normal, Suspend
+    }
+}
+namespace glassPeople.ActivityLibrary.glassCAD.Planing.Activity.Actualisation {
+    public enum GroupCodesFilterByChildsStateActivityMode {
+        All, Any
     }
 }
 namespace glassPeople.ActivityLibrary.glassCAD.Planing.Activity.Actualisation {

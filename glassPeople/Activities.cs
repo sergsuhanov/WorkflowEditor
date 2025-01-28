@@ -362,6 +362,15 @@ namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Documents.BoxProduction {
 		public System.Activities.OutArgument<System.Boolean> Result { get; set; } 
     }
 }
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Documents.BoxProduction {
+    
+    public partial class SetStatusActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.DataLayerNativeActivity {
+		[System.Activities.RequiredArgumentAttribute()]
+		public System.Activities.InArgument<ITAP.glassCAD.Documents.BoxProduction.BoxProductionDataSet> BoxProductionDataSet { get; set; } 
+		[System.Activities.RequiredArgumentAttribute()]
+		public System.Activities.InArgument<System.String> Status { get; set; } 
+    }
+}
 namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Dictionaries.WorkFlowDocumentTemplate {
     
     public partial class EditActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.ListActivity {
@@ -546,6 +555,13 @@ namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Dictionaries.Equipment {
         protected override void Execute(System.Activities.NativeActivityContext context) {
             throw new System.NotImplementedException();
         }
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Dictionaries.Equipment {
+    
+    public partial class EditExportParametersActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.EditFormNativeActivity {
+		[System.Activities.RequiredArgumentAttribute()]
+		public System.Activities.InArgument<System.Int32> IDEquipment { get; set; } 
     }
 }
 namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Dictionaries.DocOper {
@@ -1376,6 +1392,7 @@ namespace glassPeople.ActivityLibrary.glassCAD.Planing.Union.Strategy {
 		public System.Activities.InArgument<glassPeople.ActivityLibrary.glassCAD.Planing.Model.PlanningContext> PlanningContext { get; set; } 
 		[System.Activities.RequiredArgumentAttribute()]
 		public System.Activities.InArgument<glassPeople.ActivityLibrary.glassCAD.Planing.Packing.Strategy.BaseStrategy> Startegy { get; set; } 
+		public System.Activities.InArgument<System.Int32> IDOptStartegy { get; set; } 
 		[System.Activities.RequiredArgumentAttribute()]
 		public System.Activities.InArgument<System.Boolean> EnabledParentRelation { get; set; } 
     }
@@ -1403,6 +1420,20 @@ namespace glassPeople.ActivityLibrary.glassCAD.Planing.Union.Strategy {
     public partial class ByChildCalendar : glassPeople.ActivityLibrary.glassCAD.Planing.Union.MultiGroupActivity {
 		public System.Activities.InArgument<glassPeople.ActivityLibrary.glassCAD.Planing.Model.PlanningContext> SchedulerContext { get; set; } 
 		public System.Boolean ByAllChild { get; set; } 
+    }
+}
+namespace glassPeople.ActivityLibrary.glassCAD.Planing.Union.Strategy {
+    
+    public partial class ByChildGroupcodeState : glassPeople.ActivityLibrary.glassCAD.Planing.Union.MultiGroupActivity {
+		public System.Activities.InArgument<glassPeople.ActivityLibrary.glassCAD.Planing.Model.PlanningContext> SchedulerContext { get; set; } 
+		[System.ComponentModel.CategoryAttribute("State")]
+		public System.Activities.InArgument<System.Nullable<System.Boolean>> IsPrepared { get; set; } 
+		[System.ComponentModel.CategoryAttribute("State")]
+		public System.Activities.InArgument<System.Nullable<System.Boolean>> IsOptimazied { get; set; } 
+		[System.ComponentModel.CategoryAttribute("State")]
+		public System.Activities.InArgument<System.Nullable<System.Boolean>> IsAccepted { get; set; } 
+		[System.ComponentModel.CategoryAttribute("State")]
+		public System.Activities.InArgument<System.Nullable<System.Boolean>> IsProcessed { get; set; } 
     }
 }
 namespace glassPeople.ActivityLibrary.glassCAD.Planing.Union.Strategy {
@@ -1750,7 +1781,7 @@ namespace glassPeople.ActivityLibrary.glassCAD.Planing.Activity {
 }
 namespace glassPeople.ActivityLibrary.glassCAD.Planing.Activity {
     
-    public partial class SettingsGetActivity : System.Activities.NativeActivity<glassPeople.ActivityLibrary.glassCAD.Planing.Model.Settings> {
+    public partial class SettingsGetActivity : System.Activities.NativeActivity<glassPeople.ActivityLibrary.glassCAD.Planing.Settings> {
 		[System.Activities.RequiredArgumentAttribute()]
 		public System.Activities.InArgument<glassPeople.ActivityLibrary.glassCAD.Planing.Model.PlanningContext> PlanningContext { get; set; } 
 		[System.Activities.RequiredArgumentAttribute()]
@@ -1766,7 +1797,7 @@ namespace glassPeople.ActivityLibrary.glassCAD.Planing.Activity {
 		[System.Activities.RequiredArgumentAttribute()]
 		public System.Activities.InArgument<glassPeople.ActivityLibrary.glassCAD.Planing.Model.PlanningContext> PlanningContext { get; set; } 
 		[System.Activities.RequiredArgumentAttribute()]
-		public System.Activities.InArgument<glassPeople.ActivityLibrary.glassCAD.Planing.Model.Settings> Source { get; set; } 
+		public System.Activities.InArgument<glassPeople.ActivityLibrary.glassCAD.Planing.Settings> Source { get; set; } 
         protected override void Execute(System.Activities.NativeActivityContext context) {
             throw new System.NotImplementedException();
         }
@@ -1851,9 +1882,10 @@ namespace glassPeople.ActivityLibrary.glassCAD.Planing.Activity.Orders {
     
     public partial class OrderItemsIdentCanceledActivity : System.Activities.NativeActivity {
 		[System.Activities.RequiredArgumentAttribute()]
-		public System.Activities.InArgument<System.Collections.Generic.List<System.Int32>> IDOrderItemsIdentList { get; set; } 
-		[System.Activities.RequiredArgumentAttribute()]
 		public System.Activities.InArgument<glassPeople.ActivityLibrary.glassCAD.Planing.Model.PlanningContext> PlanningContext { get; set; } 
+		[System.Activities.RequiredArgumentAttribute()]
+		public System.Activities.InArgument<System.Collections.Generic.List<System.Int32>> IDOrderItemsIdentList { get; set; } 
+		public System.Activities.InArgument<System.Boolean> CheckDOrderItemsIdentWorkStatus { get; set; } 
 		public System.Activities.OutArgument<System.Int32> Result { get; set; } 
         protected override void Execute(System.Activities.NativeActivityContext context) {
             throw new System.NotImplementedException();
@@ -2112,6 +2144,20 @@ namespace glassPeople.ActivityLibrary.glassCAD.Planing.Activity.Actualisation {
 		public System.Activities.InArgument<System.Nullable<System.Boolean>> IsAccepted { get; set; } 
 		[System.ComponentModel.CategoryAttribute("State")]
 		public System.Activities.InArgument<System.Nullable<System.Boolean>> IsProcessed { get; set; } 
+		public glassPeople.ActivityLibrary.glassCAD.Planing.Activity.Actualisation.GroupCodesFilterByChildsStateActivityMode Mode { get; set; } 
+		[System.Activities.RequiredArgumentAttribute()]
+		public System.Activities.InArgument<glassPeople.ActivityLibrary.glassCAD.Planing.Model.PlanningContext> SchedulerContext { get; set; } 
+        protected override System.Collections.Generic.List<glassPeople.ActivityLibrary.glassCAD.Planing.Model.GroupCode> Filter(System.Activities.NativeActivityContext context, System.Collections.Generic.IEnumerable<glassPeople.ActivityLibrary.glassCAD.Planing.Model.GroupCode> source) {
+            throw new System.NotImplementedException();
+        }
+        protected override System.Linq.IQueryable<glassPeople.ActivityLibrary.glassCAD.Planing.Model.GroupCode> GetByDefault(System.Activities.NativeActivityContext context) {
+            throw new System.NotImplementedException();
+        }
+    }
+}
+namespace glassPeople.ActivityLibrary.glassCAD.Planing.Activity.Actualisation {
+    
+    public partial class GroupCodesFilterByNoChildsActivity : glassPeople.ActivityLibrary.FilterActivity<glassPeople.ActivityLibrary.glassCAD.Planing.Model.GroupCode> {
 		[System.Activities.RequiredArgumentAttribute()]
 		public System.Activities.InArgument<glassPeople.ActivityLibrary.glassCAD.Planing.Model.PlanningContext> SchedulerContext { get; set; } 
         protected override System.Collections.Generic.List<glassPeople.ActivityLibrary.glassCAD.Planing.Model.GroupCode> Filter(System.Activities.NativeActivityContext context, System.Collections.Generic.IEnumerable<glassPeople.ActivityLibrary.glassCAD.Planing.Model.GroupCode> source) {
@@ -2504,6 +2550,7 @@ namespace glassPeople.ActivityLibrary.Core {
 		[System.Activities.RequiredArgumentAttribute()]
 		public System.Activities.InArgument<System.String> Name { get; set; } 
 		public System.Activities.InArgument<System.String> ConnectionString { get; set; } 
+		public System.Activities.InArgument<System.Collections.Generic.Dictionary<System.String, System.Object>> Variables { get; set; } 
 		public System.Activities.OutArgument<Stimulsoft.Report.StiReport> Result { get; set; } 
         protected override void Execute(System.Activities.NativeActivityContext context) {
             throw new System.NotImplementedException();
@@ -2813,5 +2860,11 @@ namespace glassPeople.ActivityLibrary.Account {
         protected override void Execute(System.Activities.NativeActivityContext context) {
             throw new System.NotImplementedException();
         }
+    }
+}
+namespace glassPeople.ActivityLibrary.glassCAD.Planing.Activity.Actualisation {
+    
+    public partial class ByChildOrCalendar : glassPeople.ActivityLibrary.glassCAD.Planing.Union.MultiGroupActivity {
+		public System.Activities.InArgument<glassPeople.ActivityLibrary.glassCAD.Planing.Model.PlanningContext> SchedulerContext { get; set; } 
     }
 }

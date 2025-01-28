@@ -71,7 +71,8 @@ namespace WorkflowEditor.Win {
                 new ToolboxItemWrapper(typeof(Switch<>), "Switch<T>"),
                 new ToolboxItemWrapper(typeof(Cast<,>), "Cast<T1,T2>"),
                 new ToolboxItemWrapper(typeof(While)),
-                new ToolboxItemWrapper(typeof(TryCatch))
+                new ToolboxItemWrapper(typeof(TryCatch)),
+                new ToolboxItemWrapper(typeof(AddToCollection<>)),
             };
             toolbox.Categories.Add(c1);
 
@@ -99,7 +100,7 @@ namespace WorkflowEditor.Win {
                             category = new ToolboxCategory(categoryName);
                             toolbox.Categories.Add(category);
                         }
-          
+
                         category.Add(new ToolboxItemWrapper(item, name));
                     }
                 }

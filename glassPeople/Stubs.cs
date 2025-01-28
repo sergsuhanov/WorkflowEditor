@@ -4,6 +4,10 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 
+namespace Microsoft.Data.SqlClient {
+    public class SqlConnection { }
+}
+
 namespace System {
     public class ValueType {
 

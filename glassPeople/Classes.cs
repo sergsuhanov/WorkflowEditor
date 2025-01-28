@@ -92,11 +92,6 @@ namespace ITAP.Components.Delegates {
 }
 namespace ITAP.Components.Data {
     
-    public partial class IdCollection {
-    }
-}
-namespace ITAP.Components.Data {
-    
     public partial class DBConn {
 		public System.Transactions.TransactionScope DefaultTransactionScope { get; } 
 		public System.Transactions.TransactionScope IsolatedTransactionScope { get; } 
@@ -253,9 +248,24 @@ namespace ITAP.glassCAD.Extensions {
 }
 namespace ITAP.glassCAD.Equipment {
     
+    public partial class ExportLogMessage {
+		public ITAP.glassCAD.Equipment.ExportLogMessageType MessageType { get; set; } 
+		public System.String Message { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Equipment {
+    
     public abstract partial class Export {
+		public System.String OutputPath { get; set; } 
+		public System.Boolean IsPathTransliterate { get; set; } 
+		public System.Boolean ClearFolderBeforeExport { get; set; } 
 		public ITAP.glassCAD.Data.DataLayer DataLayer { get; set; } 
 		public ITAP.glassCAD.Equipment.Model.DataContext DataContext { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Equipment {
+    
+    public abstract partial class GlassCuttingExport : ITAP.glassCAD.Equipment.Export {
     }
 }
 namespace ITAP.glassCAD.Equipment.Model {
@@ -342,6 +352,7 @@ namespace ITAP.glassCAD.Equipment.Model {
 		public System.String Comment { get; set; } 
 		public System.Nullable<System.Int32> IDOptStrategy { get; set; } 
 		public System.String PyramidInfo { get; set; } 
+		public System.Nullable<System.Boolean> IsCutting { get; set; } 
 		[System.ComponentModel.DataAnnotations.Schema.NotMappedAttribute()]
 		public System.Collections.Generic.List<ITAP.glassCAD.Equipment.Model.ArmSquareCuttingItem> Items { get; set; } 
 		public System.Nullable<System.Int32> IDGlassStorehouseOstOut { get; set; } 
@@ -449,6 +460,9 @@ namespace ITAP.glassCAD.Equipment.Model {
     public partial class OrderItem {
 		[System.ComponentModel.DataAnnotations.KeyAttribute()]
 		public System.Int32 Id { get; set; } 
+		public System.String Name { get; set; } 
+		public System.Int32 Width { get; set; } 
+		public System.Int32 Height { get; set; } 
 		public System.Int32 Count { get; set; } 
 		public System.Int32 NumPos { get; set; } 
 		public System.Int32 OrderId { get; set; } 
@@ -494,6 +508,19 @@ namespace ITAP.glassCAD.Equipment.Model {
 }
 namespace ITAP.glassCAD.Equipment.Model {
     
+    public partial class OrderItemProductionModelGood {
+		[System.ComponentModel.DataAnnotations.KeyAttribute()]
+		public System.Int32 Id { get; set; } 
+		public System.Int32 IDGood { get; set; } 
+		public System.Byte[] ShapeData { get; set; } 
+		public System.Int32 Shape { get; set; } 
+		public System.Int32 ChildId { get; set; } 
+		[System.ComponentModel.DataAnnotations.Schema.NotMappedAttribute()]
+		public ITAP.glassCAD.Equipment.Model.OrderItemProductionModel Operation { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Equipment.Model {
+    
     public partial class OrderItemProductionModel {
 		[System.ComponentModel.DataAnnotations.KeyAttribute()]
 		public System.Int32 Id { get; set; } 
@@ -501,6 +528,8 @@ namespace ITAP.glassCAD.Equipment.Model {
 		public System.Nullable<System.Int32> ChildId { get; set; } 
 		[System.ComponentModel.DataAnnotations.Schema.NotMappedAttribute()]
 		public ITAP.glassCAD.Equipment.Model.OrderItemProductionModel Child { get; set; } 
+		[System.ComponentModel.DataAnnotations.Schema.NotMappedAttribute()]
+		public ITAP.glassCAD.Equipment.Model.OrderItemProductionModelGood Good { get; set; } 
 		[System.ComponentModel.DataAnnotations.Schema.NotMappedAttribute()]
 		public System.Collections.Generic.IEnumerable<ITAP.glassCAD.Equipment.Model.OrderItemProductionModel> TreeDown { get; } 
 		public System.Int32 OrderItemId { get; set; } 
@@ -532,6 +561,8 @@ namespace ITAP.glassCAD.Equipment.Model {
 		public System.Collections.Generic.IEnumerable<ITAP.glassCAD.Equipment.Model.OrderItemProductionModelOperationParam> OperationParams { get; set; } 
 		[System.ComponentModel.DataAnnotations.Schema.NotMappedAttribute()]
 		public System.Collections.Generic.IEnumerable<ITAP.glassCAD.Equipment.Model.PropertyItem> Properties { get; set; } 
+		public System.Byte[] ShapeData { get; set; } 
+		public System.Int32 Shape { get; set; } 
     }
 }
 namespace ITAP.glassCAD.Equipment.Model {
@@ -539,13 +570,6 @@ namespace ITAP.glassCAD.Equipment.Model {
     public partial class PropertyItem {
 		public System.String N { get; set; } 
 		public System.String V { get; set; } 
-    }
-}
-namespace ITAP.glassCAD.Equipment.Model {
-    [System.Reflection.DefaultMemberAttribute("Item")]
-    public partial class PropertyItemAdapter {
-		public System.Collections.Generic.IEnumerable<ITAP.glassCAD.Equipment.Model.PropertyItem> Items { get; set; } 
-		public System.String Item { get; } 
     }
 }
 namespace ITAP.glassCAD.Equipment.Lisec.TransferFileLayout.Ver2_90 {
@@ -1114,6 +1138,12 @@ namespace ITAP.glassCAD.Equipment.Lisec.TransferFileLayout.Ver2_40 {
 namespace ITAP.glassCAD.Equipment.Lisec.TRF {
     
     public partial class BSV_2_4 : ITAP.glassCAD.Equipment.Export {
+		public System.String Company { get; set; } 
+		public System.String GOST { get; set; } 
+		public System.String DateTemplate { get; set; } 
+		public System.Int32 GenerateMode { get; set; } 
+		public System.Boolean AddGlasspackIdent { get; set; } 
+		public System.Decimal RamkaThikness { get; set; } 
     }
 }
 namespace ITAP.glassCAD.Documents.Orders {
@@ -1744,6 +1774,7 @@ namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Input {
 namespace ITAP.glassCAD.Data {
     
     public partial class DataLayer {
+		public Microsoft.Data.SqlClient.SqlConnection Connection { get; } 
 		[Newtonsoft.Json.JsonIgnoreAttribute()]
 		public ITAP.glassCAD.Dictionary.CalculationVariables.CalculationVariablesDataSet CalculationVariablesDataSet { get; } 
 		[Newtonsoft.Json.JsonIgnoreAttribute()]
@@ -2960,6 +2991,13 @@ namespace glassPeople.ActivityLibrary.glassCAD.Planing {
     public abstract partial class PeriodExtension {
     }
 }
+namespace glassPeople.ActivityLibrary.glassCAD.Planing {
+    [System.ComponentModel.DataAnnotations.Schema.TableAttribute("PlaningSettings")]
+    public partial class Settings : glassPeople.Model.Dictionaries.AttributeValue {
+		public System.Int32 IDPlaningSettings { get; set; } 
+		public System.String Name { get; set; } 
+    }
+}
 namespace glassPeople.ActivityLibrary.glassCAD.Planing.Union {
     
     public partial class Group {
@@ -2988,6 +3026,7 @@ namespace glassPeople.ActivityLibrary.glassCAD.Planing.Tasks {
     
     public partial class CanceledOrderItemsIdentTask : glassPeople.ActivityLibrary.glassCAD.Planing.Tasks.Task {
 		public System.Collections.Generic.List<System.Int32> IDOrderItemsIdentList { get; set; } 
+		public System.Boolean CheckDOrderItemsIdentWorkStatus { get; set; } 
     }
 }
 namespace glassPeople.ActivityLibrary.glassCAD.Planing.Tasks {
@@ -3668,20 +3707,13 @@ namespace glassPeople.ActivityLibrary.glassCAD.Planing.Model {
 namespace glassPeople.ActivityLibrary.glassCAD.Planing.Model {
     
     public partial class PlanningContext : Microsoft.EntityFrameworkCore.DbContext {
-		public Microsoft.EntityFrameworkCore.DbSet<glassPeople.ActivityLibrary.glassCAD.Planing.Model.Settings> Settings { get; set; } 
+		public Microsoft.EntityFrameworkCore.DbSet<glassPeople.ActivityLibrary.glassCAD.Planing.Settings> Settings { get; set; } 
 		public System.Collections.Generic.List<glassPeople.ActivityLibrary.glassCAD.Planing.Model.CalendarIteration> DefaultCalendarIterations { get; set; } 
 		public System.Collections.Generic.List<glassPeople.ActivityLibrary.glassCAD.Planing.Model.Calendar> Calendars { get; set; } 
 		public System.Collections.Generic.List<glassPeople.ActivityLibrary.glassCAD.Planing.Model.Capacity.CapacitySettings> CapacitySettings { get; set; } 
 		public System.Collections.Generic.List<glassPeople.ActivityLibrary.glassCAD.Planing.Deliver.CalendarMovementDuration> CalendarMovementDurations { get; set; } 
 		public System.String ConnectionString { get; set; } 
 		public System.Boolean flagForSave { get; set; } 
-    }
-}
-namespace glassPeople.ActivityLibrary.glassCAD.Planing.Model {
-    [System.ComponentModel.DataAnnotations.Schema.TableAttribute("PlaningSettings")]
-    public partial class Settings : glassPeople.Model.Dictionaries.AttributeValue {
-		public System.Int32 IDPlaningSettings { get; set; } 
-		public System.String Name { get; set; } 
     }
 }
 namespace glassPeople.ActivityLibrary.glassCAD.Planing.Model {
@@ -4451,6 +4483,7 @@ namespace ITAP.glassCAD.Documents.BoxProduction {
 		public System.Int32 IDDocOperItems { get; set; } 
 		public System.DateTime DtDoc { get; set; } 
 		public System.String Comment { get; set; } 
+		public System.String Status { get; set; } 
 		public System.Nullable<System.Int32> IDPeople { get; set; } 
 		public System.Nullable<System.Int32> IDCompany { get; set; } 
 		public System.String CalculationResult { get; set; } 
