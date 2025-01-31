@@ -2008,6 +2008,19 @@ namespace glassPeople.ActivityLibrary.glassCAD.Planing.Activity.Helpers {
         }
     }
 }
+namespace glassPeople.ActivityLibrary.glassCAD.Planing.Activity.Helpers {
+    
+    public partial class GetGroupCodesByIdsActivity : System.Activities.NativeActivity {
+		[System.Activities.RequiredArgumentAttribute()]
+		public System.Activities.InArgument<glassPeople.ActivityLibrary.glassCAD.Planing.Model.PlanningContext> SchedulerContext { get; set; } 
+		[System.Activities.RequiredArgumentAttribute()]
+		public System.Activities.InArgument<System.Int32[]> GroupCodeIds { get; set; } 
+		public System.Activities.OutArgument<glassPeople.ActivityLibrary.glassCAD.Planing.Model.GroupCode> Result { get; set; } 
+        protected override void Execute(System.Activities.NativeActivityContext context) {
+            throw new System.NotImplementedException();
+        }
+    }
+}
 namespace glassPeople.ActivityLibrary.glassCAD.Planing.Activity.Actualisation {
     
     public partial class BackToPreWorkInGroupCodeAcitvity : System.Activities.NativeActivity {
