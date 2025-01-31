@@ -2015,7 +2015,7 @@ namespace glassPeople.ActivityLibrary.glassCAD.Planing.Activity.Helpers {
 		public System.Activities.InArgument<glassPeople.ActivityLibrary.glassCAD.Planing.Model.PlanningContext> SchedulerContext { get; set; } 
 		[System.Activities.RequiredArgumentAttribute()]
 		public System.Activities.InArgument<System.Int32[]> GroupCodeIds { get; set; } 
-		public System.Activities.OutArgument<glassPeople.ActivityLibrary.glassCAD.Planing.Model.GroupCode> Result { get; set; } 
+		public System.Activities.OutArgument<System.Collections.Generic.List<glassPeople.ActivityLibrary.glassCAD.Planing.Model.GroupCode>> Result { get; set; } 
         protected override void Execute(System.Activities.NativeActivityContext context) {
             throw new System.NotImplementedException();
         }
