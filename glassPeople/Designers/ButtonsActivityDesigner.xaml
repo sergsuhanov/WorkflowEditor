@@ -1,0 +1,209 @@
+﻿<sap:ActivityDesigner x:Class="glassPeople.Designers.ButtonsActivityDesigner"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:sap="clr-namespace:System.Activities.Presentation;assembly=System.Activities.Presentation"
+    xmlns:sapv="clr-namespace:System.Activities.Presentation.View;assembly=System.Activities.Presentation"
+    xmlns:sapc="clr-namespace:System.Activities.Presentation.Converters;assembly=System.Activities.Presentation">
+
+    <sap:ActivityDesigner.Resources>
+        <sapc:ArgumentToExpressionConverter x:Key="argumentToExpressionConverter" />
+    </sap:ActivityDesigner.Resources>
+
+    <StackPanel>
+
+    <Expander Header="Context menu">
+        <StackPanel>
+            <ListBox Name="buttonsList" ItemsSource="{Binding Path=ModelItem.Buttons}">
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <Expander Padding="1" Margin="1" Header="{Binding Text}" IsExpanded="False">
+                            <Border Padding="1" BorderThickness="1" BorderBrush="LightBlue">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition></RowDefinition>
+                                        <RowDefinition></RowDefinition>
+                                        <RowDefinition></RowDefinition>
+                                        <RowDefinition></RowDefinition>
+                                        <RowDefinition></RowDefinition>
+                                    </Grid.RowDefinitions>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"></ColumnDefinition>
+                                        <ColumnDefinition Width="Auto" MinWidth="300"></ColumnDefinition>
+                                    </Grid.ColumnDefinitions>
+
+                                    <TextBlock Grid.Column="0" Grid.Row="0" VerticalAlignment="Center" HorizontalAlignment="Right">Имя:</TextBlock>
+                                    <TextBox Grid.Column="1" Grid.Row="0" BorderThickness="0" Margin="1" Text="{Binding Path=Name, Mode=TwoWay}"/>
+
+                                    <TextBlock Grid.Column="0" Grid.Row="1" VerticalAlignment="Center" HorizontalAlignment="Right">Текст:</TextBlock>
+                                    <TextBox Grid.Column="1" Grid.Row="1" BorderThickness="0" Margin="1" Text="{Binding Path=Text, Mode=TwoWay}"/>
+
+                                    <TextBlock Grid.Column="0" Grid.Row="4" VerticalAlignment="Center" HorizontalAlignment="Right">Изображение:</TextBlock>
+                                    <DockPanel Margin="1"  Grid.Column="1" Grid.Row="4" LastChildFill="True">
+                                        <Button Click="imageSelectButton_Click" >...</Button>
+                                        <TextBox BorderThickness="0" Text="{Binding Path=ImageName, Mode=TwoWay}"/>
+                                    </DockPanel>
+                                </Grid>
+                            </Border>
+                        </Expander>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                <Button Content="*" Margin="2" Command="{Binding Path=AddDefaultButtonCommand}" CommandParameter="Buttons" />
+                    <Button Content="Добавить" Margin="2" Command="{Binding Path=AddButtonCommand}"  CommandParameter="Buttons"/>
+                    <Button Content="Удалить" Margin="2" Command="{Binding Path=RemoveButtonCommand}" CommandParameter="Buttons"/>
+                    <Button Content="Вверх" Margin="2" Command="{Binding Path=UpButtonCommand}" CommandParameter="Buttons"/>
+                    <Button Content="Вниз" Margin="2" Command="{Binding Path=DownButtonCommand}" CommandParameter="Buttons"/>
+            </StackPanel>
+
+        </StackPanel>
+    </Expander>
+
+    <Expander Header="Tool bar">
+        <StackPanel>
+            <ListBox Name="toolbarList" ItemsSource="{Binding Path=ModelItem.ToolBar}">
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <Expander Padding="1" Margin="1" Header="{Binding Text}" IsExpanded="False">
+                            <Border Padding="1" BorderThickness="1" BorderBrush="LightBlue">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition></RowDefinition>
+                                        <RowDefinition></RowDefinition>
+                                        <RowDefinition></RowDefinition>
+                                        <RowDefinition></RowDefinition>
+                                        <RowDefinition></RowDefinition>
+                                    </Grid.RowDefinitions>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"></ColumnDefinition>
+                                        <ColumnDefinition Width="Auto" MinWidth="300"></ColumnDefinition>
+                                    </Grid.ColumnDefinitions>
+
+                                    <TextBlock Grid.Column="0" Grid.Row="0" VerticalAlignment="Center" HorizontalAlignment="Right">Имя:</TextBlock>
+                                    <TextBox Grid.Column="1" Grid.Row="0" BorderThickness="0" Margin="1" Text="{Binding Path=Name, Mode=TwoWay}"/>
+
+                                    <TextBlock Grid.Column="0" Grid.Row="1" VerticalAlignment="Center" HorizontalAlignment="Right">Текст:</TextBlock>
+                                    <TextBox Grid.Column="1" Grid.Row="1" BorderThickness="0" Margin="1" Text="{Binding Path=Text, Mode=TwoWay}"/>
+
+                                    <TextBlock Grid.Column="0" Grid.Row="4" VerticalAlignment="Center" HorizontalAlignment="Right">Изображение:</TextBlock>
+                                    <DockPanel Margin="1"  Grid.Column="1" Grid.Row="4" LastChildFill="True">
+                                        <Button Click="imageSelectButton_Click" >...</Button>
+                                        <TextBox BorderThickness="0" Text="{Binding Path=ImageName, Mode=TwoWay}"/>
+                                    </DockPanel>
+                                </Grid>
+                            </Border>
+                        </Expander>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                    <Button Content="*" Margin="2" Command="{Binding Path=AddDefaultButtonCommand}"  CommandParameter="ToolBar"/>
+                    <Button Content="Добавить" Margin="2" Command="{Binding Path=AddButtonCommand}" CommandParameter="ToolBar"/>
+                    <Button Content="Удалить" Margin="2" Command="{Binding Path=RemoveButtonCommand}" CommandParameter="ToolBar"/>
+                    <Button Content="Вверх" Margin="2" Command="{Binding Path=UpButtonCommand}" CommandParameter="ToolBar"/>
+                    <Button Content="Вниз" Margin="2" Command="{Binding Path=DownButtonCommand}" CommandParameter="ToolBar"/>
+            </StackPanel>
+
+        </StackPanel>
+    </Expander>
+
+    <Expander Header="Bottom bar">
+            <StackPanel>
+                <ListBox Name="bottombarList" ItemsSource="{Binding Path=ModelItem.BottomBar}">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <Expander Padding="1" Margin="1" Header="{Binding Text}" IsExpanded="False">
+                                <Border Padding="1" BorderThickness="1" BorderBrush="LightBlue">
+                                    <Grid>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition></RowDefinition>
+                                            <RowDefinition></RowDefinition>
+                                            <RowDefinition></RowDefinition>
+                                            <RowDefinition></RowDefinition>
+                                            <RowDefinition></RowDefinition>
+                                        </Grid.RowDefinitions>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"></ColumnDefinition>
+                                            <ColumnDefinition Width="Auto" MinWidth="300"></ColumnDefinition>
+                                        </Grid.ColumnDefinitions>
+
+                                        <TextBlock Grid.Column="0" Grid.Row="0" VerticalAlignment="Center" HorizontalAlignment="Right">Имя:</TextBlock>
+                                        <TextBox Grid.Column="1" Grid.Row="0" BorderThickness="0" Margin="1" Text="{Binding Path=Name, Mode=TwoWay}"/>
+
+                                        <TextBlock Grid.Column="0" Grid.Row="1" VerticalAlignment="Center" HorizontalAlignment="Right">Текст:</TextBlock>
+                                        <TextBox Grid.Column="1" Grid.Row="1" BorderThickness="0" Margin="1" Text="{Binding Path=Text, Mode=TwoWay}"/>
+
+                                        <TextBlock Grid.Column="0" Grid.Row="4" VerticalAlignment="Center" HorizontalAlignment="Right">Изображение:</TextBlock>
+                                        <DockPanel Margin="1"  Grid.Column="1" Grid.Row="4" LastChildFill="True">
+                                            <Button Click="imageSelectButton_Click" >...</Button>
+                                            <TextBox BorderThickness="0" Text="{Binding Path=ImageName, Mode=TwoWay}"/>
+                                        </DockPanel>
+                                    </Grid>
+                                </Border>
+                            </Expander>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                    <Button Content="*" Margin="2" Command="{Binding Path=AddDefaultButtonCommand}"  CommandParameter="BottomBar"/>
+                    <Button Content="Добавить" Margin="2" Command="{Binding Path=AddButtonCommand}" CommandParameter="BottomBar"/>
+                    <Button Content="Удалить" Margin="2" Command="{Binding Path=RemoveButtonCommand}" CommandParameter="BottomBar"/>
+                    <Button Content="Вверх" Margin="2" Command="{Binding Path=UpButtonCommand}" CommandParameter="BottomBar"/>
+                    <Button Content="Вниз" Margin="2" Command="{Binding Path=DownButtonCommand}" CommandParameter="BottomBar"/>
+                </StackPanel>
+
+            </StackPanel>
+        </Expander>
+
+        <Expander Header="Custom">
+            <StackPanel>
+                <ListBox Name="customList" ItemsSource="{Binding Path=ModelItem.Custom}">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <Expander Padding="1" Margin="1" Header="{Binding Text}" IsExpanded="False">
+                                <Border Padding="1" BorderThickness="1" BorderBrush="LightBlue">
+                                    <Grid>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition></RowDefinition>
+                                            <RowDefinition></RowDefinition>
+                                            <RowDefinition></RowDefinition>
+                                            <RowDefinition></RowDefinition>
+                                            <RowDefinition></RowDefinition>
+                                        </Grid.RowDefinitions>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"></ColumnDefinition>
+                                            <ColumnDefinition Width="Auto" MinWidth="300"></ColumnDefinition>
+                                        </Grid.ColumnDefinitions>
+
+                                        <TextBlock Grid.Column="0" Grid.Row="0" VerticalAlignment="Center" HorizontalAlignment="Right">Имя:</TextBlock>
+                                        <TextBox Grid.Column="1" Grid.Row="0" BorderThickness="0" Margin="1" Text="{Binding Path=Name, Mode=TwoWay}"/>
+
+                                        <TextBlock Grid.Column="0" Grid.Row="1" VerticalAlignment="Center" HorizontalAlignment="Right">Текст:</TextBlock>
+                                        <TextBox Grid.Column="1" Grid.Row="1" BorderThickness="0" Margin="1" Text="{Binding Path=Text, Mode=TwoWay}"/>
+
+                                        <TextBlock Grid.Column="0" Grid.Row="4" VerticalAlignment="Center" HorizontalAlignment="Right">Изображение:</TextBlock>
+                                        <DockPanel Margin="1"  Grid.Column="1" Grid.Row="4" LastChildFill="True">
+                                            <Button Click="imageSelectButton_Click" >...</Button>
+                                            <TextBox BorderThickness="0" Text="{Binding Path=ImageName, Mode=TwoWay}"/>
+                                        </DockPanel>
+                                    </Grid>
+                                </Border>
+                            </Expander>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                    <Button Content="Добавить" Margin="2" Command="{Binding Path=AddButtonCommand}" CommandParameter="Custom"/>
+                    <Button Content="Удалить" Margin="2" Command="{Binding Path=RemoveButtonCommand}" CommandParameter="Custom"/>
+                </StackPanel>
+
+            </StackPanel>
+        </Expander>
+
+    </StackPanel>
+    
+</sap:ActivityDesigner>

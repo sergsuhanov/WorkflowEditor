@@ -110,6 +110,13 @@ namespace glassPeople.gen {
             );
         }
 
+        protected string[] getDesignerAttribute(LocalType localType) {
+            if (localType?.BaseType?.FullName == "ITAP.glassCAD.Dictionary.WorkFlow.Activities.ListActivity") {
+                return new[] { "[System.ComponentModel.Designer(typeof(glassPeople.Designers.ButtonsActivityDesigner))]" };
+            }
+            return Array.Empty<string>();
+        }
+
         protected string[] getCustomAttributes(LocalType source) {
             var result = (source.CustomAttributes ?? Array.Empty<string>()).ToList();
 
@@ -117,6 +124,9 @@ namespace glassPeople.gen {
             result.Remove("[System.SerializableAttribute()]");
             result.RemoveAll(p => p.Contains("DebuggerDisplayAttribute"));
             getCustomAttributesReplace(result);
+
+            result.AddRange(getDesignerAttribute(source));
+
             return result.ToArray();
         }
 

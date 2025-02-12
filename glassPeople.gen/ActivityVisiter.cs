@@ -8,7 +8,7 @@ namespace glassPeople.gen {
         public ActivityVisiter() {
         }
 
-        protected string getImplementation(LocalType source) {
+        protected new string getImplementation(LocalType source) {
             var implementation = string.Empty;
 
             if (source.BaseType.Name.StartsWith("NativeActivity") ||

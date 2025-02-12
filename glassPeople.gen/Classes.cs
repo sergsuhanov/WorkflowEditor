@@ -25,6 +25,8 @@ namespace glassPeople.gen {
         public bool IsEnum => (this?.EnumNames?.Length ?? 0) > 0;
         public bool IsClass => !IsEnum;
         public bool IsNestedClass => IsClass && DeclaringType != null;
+
+        public string FullName => $"{Namespace}.{Name}";
     }
 
     public class LocalProperty {

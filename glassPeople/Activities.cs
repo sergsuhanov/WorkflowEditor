@@ -195,7 +195,7 @@ namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities {
     }
 }
 namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Documents.Orders {
-    
+    [System.ComponentModel.Designer(typeof(glassPeople.Designers.ButtonsActivityDesigner))]
     public partial class EditActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.ListActivity {
 		public System.Activities.InArgument<ITAP.glassCAD.Documents.Orders.OrdersDataSet> Source { get; set; } 
         protected override void Execute(System.Activities.NativeActivityContext context) {
@@ -316,7 +316,7 @@ namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Documents.BoxProduction {
     }
 }
 namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Documents.BoxProduction {
-    
+    [System.ComponentModel.Designer(typeof(glassPeople.Designers.ButtonsActivityDesigner))]
     public partial class EditActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.ListActivity {
 		public System.Activities.InArgument<ITAP.glassCAD.Documents.BoxProduction.BoxProductionDataSet> Source { get; set; } 
         protected override void Execute(System.Activities.NativeActivityContext context) {
@@ -372,7 +372,7 @@ namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Documents.BoxProduction {
     }
 }
 namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Dictionaries.WorkFlowDocumentTemplate {
-    
+    [System.ComponentModel.Designer(typeof(glassPeople.Designers.ButtonsActivityDesigner))]
     public partial class EditActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.ListActivity {
 		public System.Activities.InArgument<ITAP.glassCAD.Dictionary.WorkFlowDocumentTemplate.WorkFlowDocumentTemplateDataSet> Source { get; set; } 
         protected override void Execute(System.Activities.NativeActivityContext context) {
@@ -381,7 +381,7 @@ namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Dictionaries.WorkFlowDocu
     }
 }
 namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Dictionaries.Storehouse {
-    
+    [System.ComponentModel.Designer(typeof(glassPeople.Designers.ButtonsActivityDesigner))]
     public partial class EditActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.ListActivity {
 		public System.Activities.InArgument<ITAP.glassCAD.Dictionary.Storehouse.StorehouseDataSet> Source { get; set; } 
         protected override void Execute(System.Activities.NativeActivityContext context) {
@@ -390,7 +390,7 @@ namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Dictionaries.Storehouse {
     }
 }
 namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Dictionaries.Sign {
-    
+    [System.ComponentModel.Designer(typeof(glassPeople.Designers.ButtonsActivityDesigner))]
     public partial class EditActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.ListActivity {
 		public System.Activities.InArgument<ITAP.glassCAD.Dictionary.Sign.SignDataSet> Source { get; set; } 
         protected override void Execute(System.Activities.NativeActivityContext context) {
@@ -399,7 +399,7 @@ namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Dictionaries.Sign {
     }
 }
 namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Dictionaries.Services {
-    
+    [System.ComponentModel.Designer(typeof(glassPeople.Designers.ButtonsActivityDesigner))]
     public partial class EditActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.ListActivity {
 		public System.Activities.InArgument<ITAP.glassCAD.Dictionary.Services.ServicesDataSet> Source { get; set; } 
         protected override void Execute(System.Activities.NativeActivityContext context) {
@@ -408,7 +408,7 @@ namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Dictionaries.Services {
     }
 }
 namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Dictionaries.ScanRole {
-    
+    [System.ComponentModel.Designer(typeof(glassPeople.Designers.ButtonsActivityDesigner))]
     public partial class EditActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.ListActivity {
 		public System.Activities.InArgument<ITAP.glassCAD.Dictionary.ScanRole.ScanRoleDataSet> Source { get; set; } 
         protected override void Execute(System.Activities.NativeActivityContext context) {
@@ -417,7 +417,7 @@ namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Dictionaries.ScanRole {
     }
 }
 namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Dictionaries.ScanActivity {
-    
+    [System.ComponentModel.Designer(typeof(glassPeople.Designers.ButtonsActivityDesigner))]
     public partial class EditActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.ListActivity {
 		public System.Activities.InArgument<ITAP.glassCAD.Dictionary.ScanActivity.ScanActivityDataSet> Source { get; set; } 
         protected override void Execute(System.Activities.NativeActivityContext context) {
@@ -426,7 +426,7 @@ namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Dictionaries.ScanActivity
     }
 }
 namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Dictionaries.Production {
-    
+    [System.ComponentModel.Designer(typeof(glassPeople.Designers.ButtonsActivityDesigner))]
     public partial class EditActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.ListActivity {
 		public System.Activities.InArgument<ITAP.glassCAD.Dictionary.Production.ProductionDataSet> Source { get; set; } 
         protected override void Execute(System.Activities.NativeActivityContext context) {
@@ -435,7 +435,7 @@ namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Dictionaries.Production {
     }
 }
 namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Dictionaries.PriceForms {
-    
+    [System.ComponentModel.Designer(typeof(glassPeople.Designers.ButtonsActivityDesigner))]
     public partial class EditActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.ListActivity {
 		public System.Activities.InArgument<ITAP.glassCAD.Dictionary.PriceForms.PriceFormsDataSet> Source { get; set; } 
         protected override void Execute(System.Activities.NativeActivityContext context) {
@@ -444,7 +444,7 @@ namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Dictionaries.PriceForms {
     }
 }
 namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Dictionaries.People {
-    
+    [System.ComponentModel.Designer(typeof(glassPeople.Designers.ButtonsActivityDesigner))]
     public partial class EditActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.ListActivity {
 		public System.Activities.InArgument<ITAP.glassCAD.Dictionary.People.PeopleDataSet> Source { get; set; } 
         protected override void Execute(System.Activities.NativeActivityContext context) {
@@ -477,7 +477,7 @@ namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Dictionaries.People {
     }
 }
 namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Dictionaries.PaymentType {
-    
+    [System.ComponentModel.Designer(typeof(glassPeople.Designers.ButtonsActivityDesigner))]
     public partial class EditActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.ListActivity {
 		public System.Activities.InArgument<ITAP.glassCAD.Dictionary.PaymentType.PaymentTypeDataSet> Source { get; set; } 
         protected override void Execute(System.Activities.NativeActivityContext context) {
@@ -486,7 +486,7 @@ namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Dictionaries.PaymentType 
     }
 }
 namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Dictionaries.Operation {
-    
+    [System.ComponentModel.Designer(typeof(glassPeople.Designers.ButtonsActivityDesigner))]
     public partial class EditActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.ListActivity {
 		public System.Activities.InArgument<ITAP.glassCAD.Dictionary.Operation.OperationDataSet> Source { get; set; } 
         protected override void Execute(System.Activities.NativeActivityContext context) {
@@ -495,7 +495,7 @@ namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Dictionaries.Operation {
     }
 }
 namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Dictionaries.Measure {
-    
+    [System.ComponentModel.Designer(typeof(glassPeople.Designers.ButtonsActivityDesigner))]
     public partial class EditActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.ListActivity {
 		public System.Activities.InArgument<ITAP.glassCAD.Dictionary.Measure.MeasureDataSet> Source { get; set; } 
         protected override void Execute(System.Activities.NativeActivityContext context) {
@@ -504,7 +504,7 @@ namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Dictionaries.Measure {
     }
 }
 namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Dictionaries.Marshrut {
-    
+    [System.ComponentModel.Designer(typeof(glassPeople.Designers.ButtonsActivityDesigner))]
     public partial class EditActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.ListActivity {
 		public System.Activities.InArgument<ITAP.glassCAD.Dictionary.Marshrut.MarshrutDataSet> Source { get; set; } 
         protected override void Execute(System.Activities.NativeActivityContext context) {
@@ -513,7 +513,7 @@ namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Dictionaries.Marshrut {
     }
 }
 namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Dictionaries.GrOpt {
-    
+    [System.ComponentModel.Designer(typeof(glassPeople.Designers.ButtonsActivityDesigner))]
     public partial class EditActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.ListActivity {
 		public System.Activities.InArgument<ITAP.glassCAD.Dictionary.GrOpt.GrOptDataSet> Source { get; set; } 
         protected override void Execute(System.Activities.NativeActivityContext context) {
@@ -522,7 +522,7 @@ namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Dictionaries.GrOpt {
     }
 }
 namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Dictionaries.GrOptPacking {
-    
+    [System.ComponentModel.Designer(typeof(glassPeople.Designers.ButtonsActivityDesigner))]
     public partial class EditActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.ListActivity {
 		public System.Activities.InArgument<ITAP.glassCAD.Dictionary.GrOptPacking.GrOptPackingDataSet> Source { get; set; } 
         protected override void Execute(System.Activities.NativeActivityContext context) {
@@ -531,7 +531,7 @@ namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Dictionaries.GrOptPacking
     }
 }
 namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Dictionaries.Goods {
-    
+    [System.ComponentModel.Designer(typeof(glassPeople.Designers.ButtonsActivityDesigner))]
     public partial class EditActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.ListActivity {
 		public System.Activities.InArgument<ITAP.glassCAD.Dictionary.Goods.GoodsDataSet> Source { get; set; } 
         protected override void Execute(System.Activities.NativeActivityContext context) {
@@ -540,7 +540,7 @@ namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Dictionaries.Goods {
     }
 }
 namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Dictionaries.GoodParties {
-    
+    [System.ComponentModel.Designer(typeof(glassPeople.Designers.ButtonsActivityDesigner))]
     public partial class EditActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.ListActivity {
 		public System.Activities.InArgument<ITAP.glassCAD.Dictionary.GoodParties.GoodPartiesDataSet> Source { get; set; } 
         protected override void Execute(System.Activities.NativeActivityContext context) {
@@ -549,7 +549,7 @@ namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Dictionaries.GoodParties 
     }
 }
 namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Dictionaries.Equipment {
-    
+    [System.ComponentModel.Designer(typeof(glassPeople.Designers.ButtonsActivityDesigner))]
     public partial class EditActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.ListActivity {
 		public System.Activities.InArgument<ITAP.glassCAD.Dictionary.Equipment.EquipmentDataSet> Source { get; set; } 
         protected override void Execute(System.Activities.NativeActivityContext context) {
@@ -565,7 +565,7 @@ namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Dictionaries.Equipment {
     }
 }
 namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Dictionaries.DocOper {
-    
+    [System.ComponentModel.Designer(typeof(glassPeople.Designers.ButtonsActivityDesigner))]
     public partial class EditActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.ListActivity {
 		public System.Activities.InArgument<ITAP.glassCAD.Dictionary.DocOper.DocOperDataSet> Source { get; set; } 
         protected override void Execute(System.Activities.NativeActivityContext context) {
@@ -574,7 +574,7 @@ namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Dictionaries.DocOper {
     }
 }
 namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Dictionaries.Diraction {
-    
+    [System.ComponentModel.Designer(typeof(glassPeople.Designers.ButtonsActivityDesigner))]
     public partial class EditActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.ListActivity {
 		public System.Activities.InArgument<ITAP.glassCAD.Dictionary.Diraction.DiractionDataSet> Source { get; set; } 
         protected override void Execute(System.Activities.NativeActivityContext context) {
@@ -583,7 +583,7 @@ namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Dictionaries.Diraction {
     }
 }
 namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Dictionaries.Depart {
-    
+    [System.ComponentModel.Designer(typeof(glassPeople.Designers.ButtonsActivityDesigner))]
     public partial class EditActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.ListActivity {
 		public System.Activities.InArgument<ITAP.glassCAD.Dictionary.Depart.DepartDataSet> Source { get; set; } 
         protected override void Execute(System.Activities.NativeActivityContext context) {
@@ -592,7 +592,7 @@ namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Dictionaries.Depart {
     }
 }
 namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Dictionaries.Customer {
-    
+    [System.ComponentModel.Designer(typeof(glassPeople.Designers.ButtonsActivityDesigner))]
     public partial class EditActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.ListActivity {
 		public System.Activities.InArgument<ITAP.glassCAD.Dictionary.Customer.CustomerDataSet> Source { get; set; } 
         protected override void Execute(System.Activities.NativeActivityContext context) {
@@ -617,7 +617,7 @@ namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Dictionaries.Customer {
     }
 }
 namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Dictionaries.Currency {
-    
+    [System.ComponentModel.Designer(typeof(glassPeople.Designers.ButtonsActivityDesigner))]
     public partial class CurrencyCourceActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.ListActivity {
 		[System.Activities.RequiredArgumentAttribute()]
 		public System.Activities.InArgument<System.Int32> IDCurrency { get; set; } 
@@ -636,7 +636,7 @@ namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Dictionaries.Currency {
     }
 }
 namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Dictionaries.Currency {
-    
+    [System.ComponentModel.Designer(typeof(glassPeople.Designers.ButtonsActivityDesigner))]
     public partial class EditActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.ListActivity {
 		public System.Activities.InArgument<ITAP.glassCAD.Dictionary.Currency.CurrencyDataSet> Source { get; set; } 
         protected override void Execute(System.Activities.NativeActivityContext context) {
@@ -645,7 +645,7 @@ namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Dictionaries.Currency {
     }
 }
 namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Dictionaries.Company {
-    
+    [System.ComponentModel.Designer(typeof(glassPeople.Designers.ButtonsActivityDesigner))]
     public partial class EditActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.ListActivity {
 		public System.Activities.InArgument<ITAP.glassCAD.Dictionary.Company.CompanyDataSet> Source { get; set; } 
         protected override void Execute(System.Activities.NativeActivityContext context) {
@@ -654,7 +654,7 @@ namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Dictionaries.Company {
     }
 }
 namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Dictionaries.Calendar {
-    
+    [System.ComponentModel.Designer(typeof(glassPeople.Designers.ButtonsActivityDesigner))]
     public partial class EditActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.ListActivity {
 		public System.Activities.InArgument<ITAP.glassCAD.Dictionary.Calendar.CalendarDataSet> Source { get; set; } 
         protected override void Execute(System.Activities.NativeActivityContext context) {
@@ -663,7 +663,7 @@ namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Dictionaries.Calendar {
     }
 }
 namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Dictionaries.Calculation {
-    
+    [System.ComponentModel.Designer(typeof(glassPeople.Designers.ButtonsActivityDesigner))]
     public partial class EditActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.ListActivity {
 		public System.Activities.InArgument<ITAP.glassCAD.Dictionary.Calculation.CalculationDataSet> Source { get; set; } 
         protected override void Execute(System.Activities.NativeActivityContext context) {
@@ -672,7 +672,7 @@ namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Dictionaries.Calculation 
     }
 }
 namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Dictionaries.CalculationVariables {
-    
+    [System.ComponentModel.Designer(typeof(glassPeople.Designers.ButtonsActivityDesigner))]
     public partial class EditActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.ListActivity {
 		public System.Activities.InArgument<ITAP.glassCAD.Dictionary.CalculationVariables.CalculationVariablesDataSet> Source { get; set; } 
         protected override void Execute(System.Activities.NativeActivityContext context) {

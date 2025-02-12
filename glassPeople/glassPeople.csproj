@@ -124,6 +124,9 @@
   <ItemGroup>
     <Compile Include="Activities.cs" />
     <Compile Include="Classes.cs" />
+    <Compile Include="Designers\ButtonsActivityDesigner.xaml.cs">
+      <DependentUpon>ButtonsActivityDesigner.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Designers\DelegateCommand.cs" />
     <Compile Include="Designers\InvokeActivity.cs" />
     <Compile Include="Designers\InvokeActivityDesigner.xaml.cs">
@@ -142,6 +145,10 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <Page Include="Designers\ButtonsActivityDesigner.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
     <Page Include="Designers\InvokeActivityDesigner.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
