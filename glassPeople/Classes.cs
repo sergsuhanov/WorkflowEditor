@@ -3270,6 +3270,7 @@ namespace glassPeople.ActivityLibrary.glassCAD.Planing.Packing {
 		public System.Int32 Count { get; } 
 		public System.Decimal Weight { get; } 
 		public System.Decimal WidthInStorage { get; } 
+		public System.Decimal MinWidthInStorage { get; } 
 		public System.Decimal HeightInStorage { get; } 
     }
 }
@@ -3375,6 +3376,11 @@ namespace glassPeople.ActivityLibrary.glassCAD.Planing.Packing.Strategy.GGC {
 namespace glassPeople.ActivityLibrary.glassCAD.Planing.Packing.MathPacksPosition {
     
     public abstract partial class IStrategy {
+    }
+}
+namespace glassPeople.ActivityLibrary.glassCAD.Planing.Packing.MathPacksPosition {
+    
+    public partial class KPIPillarsStrategy : glassPeople.ActivityLibrary.glassCAD.Planing.Packing.MathPacksPosition.WithPillarsStrategy {
     }
 }
 namespace glassPeople.ActivityLibrary.glassCAD.Planing.Packing.MathPacksPosition {
@@ -5855,6 +5861,16 @@ namespace glassPeople.ActivityLibrary.glassCAD.Scanner {
 		public System.Int32 IDPyramid { get; set; } 
 		public System.Int32 IDGlassPack { get; set; } 
 		public System.Int32 IDOrderItemsIdent { get; set; } 
+    }
+    }
+}
+namespace glassPeople.ActivityLibrary.glassCAD.Planing.Packing.MathPacksPosition {
+    public partial class WithPillarsStrategy {
+    
+    public partial class _Pillar {
+		public glassPeople.ActivityLibrary.glassCAD.Planing.Packing.MathPacksPosition.WithPillarsStrategy._Pillar NextPillar { get; set; } 
+		public System.Int32 Offcet { get; set; } 
+		public System.Int32 Value { get; set; } 
     }
     }
 }

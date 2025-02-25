@@ -1641,6 +1641,18 @@ namespace glassPeople.ActivityLibrary.glassCAD.Planing.Coloring {
         }
     }
 }
+namespace glassPeople.ActivityLibrary.glassCAD.Planing.Coloring.SM {
+    
+    public partial class RamkaActivity : System.Activities.NativeActivity {
+		[System.Activities.RequiredArgumentAttribute()]
+		public System.Activities.InArgument<glassPeople.ActivityLibrary.glassCAD.Planing.Model.PlanningContext> PlanningContext { get; set; } 
+		[System.Activities.RequiredArgumentAttribute()]
+		public System.Activities.InArgument<glassPeople.ActivityLibrary.glassCAD.Planing.Model.GroupCode> Source { get; set; } 
+        protected override void Execute(System.Activities.NativeActivityContext context) {
+            throw new System.NotImplementedException();
+        }
+    }
+}
 namespace glassPeople.ActivityLibrary.glassCAD.Planing.Coloring.GGC {
     
     public partial class RamkaActivity : System.Activities.NativeActivity {
