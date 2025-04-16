@@ -74,6 +74,16 @@ namespace ITAP.glassCAD.Equipment.Model {
     }
 }
 namespace ITAP.glassCAD.Equipment.Model {
+    public enum FrameType {
+        Aluminum, PVC, TPS, Structural, StainlessSteel, WarmEdge
+    }
+}
+namespace ITAP.glassCAD.Equipment.Model {
+    public enum GlassType {
+        Transparent, LowEmissivitySoftCoating, Triplex, Tempered, Tinted, Reinforced, LowEmissivityHardCoating, TriplexSoftCoating, Frosted, ReflectiveCoating, ReflectiveCoatingTinted, MultifunctionalHardCoatingTinted, MultifunctionalSoftCoating, FrostedTinted, Mirrored, SelfCleaning, SelfCleaningTinted, Colored, MultifunctionalHardCoating, Patterned, FireResistant, MultifunctionalSoftCoatingTinted, Painted, Clarified, SunProtectiveHardCoating, SunProtectiveSoftCoating, DecorativeHardCoating, DecorativeSoftCoating
+    }
+}
+namespace ITAP.glassCAD.Equipment.Model {
     public enum GroupCodeStatus {
         Normal, WorkIn, WorkOut, Mixed, Reserved, Defective, MovedToNextOperation, Suspend, PreDefective, PreWorkIn
     }
@@ -260,7 +270,7 @@ namespace glassPeople.ActivityLibrary.glassCAD.Planing.Activity.Actualisation {
 }
 namespace glassPeople.ActivityLibrary.glassCAD.Planing.Activity.Actualisation {
     public enum BufferSecondNameMode {
-        None, Default, ByInternalEticets, OrderInfo, ChildNumPos
+        None, Default, ByInternalEticets, OrderInfo, ChildNumPos, ReverseChildNumPos
     }
 }
 namespace glassPeople.ActivityLibrary.glassCAD.Planing.Activity.Actualisation {

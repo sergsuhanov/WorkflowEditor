@@ -1144,6 +1144,125 @@ namespace ITAP.glassCAD.Equipment.Lisec.TRF {
 		public System.Int32 GenerateMode { get; set; } 
 		public System.Boolean AddGlasspackIdent { get; set; } 
 		public System.Decimal RamkaThikness { get; set; } 
+		public System.Boolean Transliterate { get; set; } 
+		public System.Boolean GroupByGoods { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Equipment.Bystronic.Bend.Ver5_8 {
+    
+    public partial class HL {
+		public System.String HEAD { get; } 
+		public System.String DATE { get; } 
+		public System.String TIME { get; } 
+		public System.String DES { get; set; } 
+		public System.String KATALOG { get; set; } 
+		public System.DateTime ProductionDateTime { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Equipment.Bystronic.Bend.Ver5_8 {
+    
+    public partial class P {
+		public System.String HEAD { get; } 
+		public System.Int32 IKEY { get; set; } 
+		public System.Int32 NOFU { get; set; } 
+		public System.Int32 NOFS { get; set; } 
+		public System.Int32 IWID { get; set; } 
+		public System.Int32 IHIG { get; set; } 
+		public System.String IORD { get; set; } 
+		public System.Int32 OPOS { get; set; } 
+		public System.Int32 SIGN { get; set; } 
+		public System.Int32 SIGK { get; set; } 
+		public System.Int32 SIGS { get; set; } 
+		public System.Int32 SIGR { get; set; } 
+		public System.Int32 SORT { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Equipment.Bystronic.Bend.Ver5_8 {
+    
+    public partial class S {
+		public System.String HEAD { get; } 
+		public System.Int32 SORT { get; set; } 
+		public System.Int32 BOCK { get; set; } 
+		public System.Int32 THICK { get; set; } 
+		public System.Int32 STRUC { get; set; } 
+		public System.Int32 COAT1 { get; set; } 
+		public System.Int32 COAT2 { get; set; } 
+		public System.Int32 STURN { get; set; } 
+		public System.Int32 SNUM { get; set; } 
+		public System.Int32 BREC { get; set; } 
+		public System.Int32 SROT { get; set; } 
+		public System.Int32 SMOD { get; set; } 
+		public System.Int32 REZQ { get; set; } 
+		public System.Int32 REZM { get; set; } 
+		public System.Int32 SKAT { get; set; } 
+		public System.String KATALOG { get; set; } 
+		public System.Int32 BENDING { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Equipment.Bystronic.Bend.Ver5_8 {
+    
+    public partial class M {
+		public System.String HEAD { get; } 
+		public System.Int32 NDIM { get; } 
+		public System.Int32 W { get; set; } 
+		public System.Int32 H { get; set; } 
+		public System.Collections.Generic.List<System.Int32> DIMS { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Equipment.Bystronic.Bend.Ver5_8 {
+    
+    public partial class R {
+		public System.String HEAD { get; } 
+		public System.Int32 SZR { get; set; } 
+		public System.Int32 GAS { get; set; } 
+		public System.Int32 GRIN { get; set; } 
+		public System.Int32 RTYP { get; set; } 
+		public System.Int32 SEAL { get; set; } 
+		public System.Int32 SPROS { get; set; } 
+		public System.Int32 OFSX { get; set; } 
+		public System.Int32 OFSY { get; set; } 
+		public System.Int32 FROT { get; set; } 
+		public System.Int32 FANG { get; set; } 
+		public System.Int32 FMOD { get; set; } 
+		public System.String FINK { get; set; } 
+		public System.Int32 REIN { get; set; } 
+		public System.Int32 FKAT { get; set; } 
+		public System.String KATALOG { get; set; } 
+		public System.Int32 SEALING { get; set; } 
+		public System.Int32 N1BREAK { get; set; } 
+		public System.Int32 N2BREAK { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Equipment.Bystronic.Bend.Ver5_8 {
+    
+    public partial class T {
+		public System.String HEAD { get; } 
+		public System.Int32 NCHAR { get; set; } 
+		public System.Int32 CUST { get; set; } 
+		public System.String CNAM { get; set; } 
+		public System.String CSTR { get; set; } 
+		public System.String CVIL { get; set; } 
+		public System.String COMM { get; set; } 
+		public System.String ISO { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Equipment.Bystronic.Bend.Ver5_8 {
+    
+    public partial class E {
+		public System.String HEAD { get; } 
+    }
+}
+namespace ITAP.glassCAD.Equipment.Bystronic.Bend.Ver5_8 {
+    
+    public partial class Export : ITAP.glassCAD.Equipment.Export {
+		public System.String Company { get; set; } 
+		public System.String GOST { get; set; } 
+		public System.String DateTemplate { get; set; } 
+		public System.Int32 GenerateMode { get; set; } 
+		public System.Boolean AddGlasspackIdent { get; set; } 
+		public System.Decimal RamkaThikness { get; set; } 
+		public System.Boolean Transliterate { get; set; } 
+		public System.Boolean GroupByGoods { get; set; } 
     }
 }
 namespace ITAP.glassCAD.Documents.Orders {
@@ -3311,6 +3430,11 @@ namespace glassPeople.ActivityLibrary.glassCAD.Planing.Packing.Strategy {
     
     public abstract partial class BaseStrategy {
 		public System.Collections.Generic.IDictionary<System.String, System.String> Parameters { get; set; } 
+    }
+}
+namespace glassPeople.ActivityLibrary.glassCAD.Planing.Packing.Strategy {
+    
+    public partial class FrameStrategy : glassPeople.ActivityLibrary.glassCAD.Planing.Packing.Strategy.BaseStrategy {
     }
 }
 namespace glassPeople.ActivityLibrary.glassCAD.Planing.Packing.Strategy {

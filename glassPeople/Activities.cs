@@ -1323,6 +1323,8 @@ namespace glassPeople.ActivityLibrary.glassCAD.Planing.Union {
 		public System.Activities.InArgument<System.Collections.Generic.List<glassPeople.ActivityLibrary.glassCAD.Planing.Union.Group>> PrevoisGroups { get; set; } 
 		[System.ComponentModel.CategoryAttribute("Group (In)")]
 		public System.Activities.InArgument<System.Collections.Generic.List<glassPeople.ActivityLibrary.glassCAD.Planing.Union.Group>> NewGroups { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Flags")]
+		public System.Boolean DefectiveToMainGroupCode { get; set; } 
 		[System.ComponentModel.CategoryAttribute("GroupCodes (Out)")]
 		public System.Activities.OutArgument<System.Collections.Generic.List<glassPeople.ActivityLibrary.glassCAD.Planing.Model.GroupCode>> NewGroupCodes { get; set; } 
 		[System.ComponentModel.CategoryAttribute("GroupCodes (Out)")]
@@ -1440,6 +1442,13 @@ namespace glassPeople.ActivityLibrary.glassCAD.Planing.Union.Strategy {
     
     public partial class ByCustomer : glassPeople.ActivityLibrary.glassCAD.Planing.Union.MultiGroupActivity {
 		public System.Activities.InArgument<glassPeople.ActivityLibrary.glassCAD.Planing.Model.PlanningContext> SchedulerContext { get; set; } 
+    }
+}
+namespace glassPeople.ActivityLibrary.glassCAD.Planing.Union.Strategy {
+    
+    public partial class ByExpression : glassPeople.ActivityLibrary.glassCAD.Planing.Union.TwoGroupActivity {
+		public System.Activities.InArgument<glassPeople.ActivityLibrary.glassCAD.Planing.Model.PlanningContext> schedulerContext { get; set; } 
+		public System.Activities.InArgument<System.Func<glassPeople.ActivityLibrary.glassCAD.Planing.Model.AppointmentItem, System.Boolean>> Expression { get; set; } 
     }
 }
 namespace glassPeople.ActivityLibrary.glassCAD.Planing.Union.Strategy {
