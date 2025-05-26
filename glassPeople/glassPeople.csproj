@@ -124,6 +124,7 @@
   <ItemGroup>
     <Compile Include="Activities.cs" />
     <Compile Include="Classes.cs" />
+    <Compile Include="Classes_Extension.cs" />
     <Compile Include="Designers\ButtonsActivityDesigner.xaml.cs">
       <DependentUpon>ButtonsActivityDesigner.xaml</DependentUpon>
     </Compile>
