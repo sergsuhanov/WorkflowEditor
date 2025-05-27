@@ -29,6 +29,21 @@ namespace ITAP.Components.Dialog.InputEditors {
     }
 }
 namespace ITAP.glassCAD {
+    public enum FrameType {
+        Aluminum, PVC, TPS, Structural, StainlessSteel, WarmEdge
+    }
+}
+namespace ITAP.glassCAD {
+    public enum GlassType {
+        Transparent, SoftCoatedLowE, Triplex, Tempered, Tinted, Reinforced, HardCoatedLowE, TriplexSoftCoated, Frosted, ReflectiveCoating, TintedReflectiveCoating, TintedHardCoatedMultifunctional, SoftCoatedMultifunctional, TintedFrosted, Mirrored, SelfCleaning, TintedSelfCleaning, Colored, HardCoatedMultifunctional, Patterned, FireResistant, TintedSoftCoatedMultifunctional, Painted, Lightened, HardCoatedSunProtection, SoftCoatedSunProtection, HardCoatedDecorative, SoftCoatedDecorative
+    }
+}
+namespace ITAP.glassCAD {
+    public enum GoodsType {
+        Glass, Frame, Film, ShprossProfile, ShprossPlusFitting, ShprossY90Fitting, ShprossTFitting, ShprossFrameRightAngle, ShprossPlusOverlay, Gas, ShprossFrameAnyAngle, TriplexFilm, TriplexFillingMaterial, Butil, Polysulfide, Absorbent, GlassPaint, ShprossFrameRightAngleOverlay, ShprossFrameAnyAngleOverlay, ShprossSunFitting, ShprossY30Fitting, ShprossY60Fitting, ShprossY120Fitting, ShprossIFitting, ShprossAngleFitting, ShprossTOverlay, ShprossY90Overlay, ShprossIOverlay, ShprossSunCompleteFitting, ShprossAngleOverlay, StructuralSealant, ShprossRivet, DecorativeFilm, Fittings, TradeGlass, CustomerMaterial, CustomerGlass, Other
+    }
+}
+namespace ITAP.glassCAD {
     public enum CriterionFilterMode {
         All, Current
     }
@@ -36,6 +51,11 @@ namespace ITAP.glassCAD {
 namespace ITAP.glassCAD {
     public enum CriterionGroupResultMode {
         Overwrite, All
+    }
+}
+namespace ITAP.glassCAD {
+    public enum OperationType {
+        GlassCutting, FrameCutting, FrameBending, ProductionAssembly, Tempering, Packaging, FrameManufacturing, Shipment, StraightEdgeProcessing, ProcessingCenter, ShprossManufacturing, Lamination, SupplierGlassPreparation, InternalSemiFinishedPreparation, Painting, PurchasedSemiFinishedPreparation, QualityControl, Other
     }
 }
 namespace ITAP.glassCAD.Workflow {
@@ -51,41 +71,6 @@ namespace ITAP.glassCAD.Workflow.Components {
 namespace ITAP.glassCAD.Workflow.Components {
     public enum RoundMode {
         Up, Down, Bankers
-    }
-}
-namespace ITAP.glassCAD.Equipment {
-    public enum ExportLogMessageType {
-        Info, Warning, Error, Alert
-    }
-}
-namespace ITAP.glassCAD.Equipment.Model {
-    public enum AppointmentItemStatus {
-        Normal, WorkIn, WorkOut, Defective, MovedToNextOperation, Suspend, PreDefective, PreWorkIn
-    }
-}
-namespace ITAP.glassCAD.Equipment.Model {
-    public enum AppointmentStatus {
-        Normal, WorkIn, WorkOut, Mixed, Reserved, Defective, MovedToNextOperation, Suspend, PreDefective, PreWorkIn
-    }
-}
-namespace ITAP.glassCAD.Equipment.Model {
-    public enum Direction {
-        Forward, Reverse
-    }
-}
-namespace ITAP.glassCAD.Equipment.Model {
-    public enum FrameType {
-        Aluminum, PVC, TPS, Structural, StainlessSteel, WarmEdge
-    }
-}
-namespace ITAP.glassCAD.Equipment.Model {
-    public enum GlassType {
-        Transparent, LowEmissivitySoftCoating, Triplex, Tempered, Tinted, Reinforced, LowEmissivityHardCoating, TriplexSoftCoating, Frosted, ReflectiveCoating, ReflectiveCoatingTinted, MultifunctionalHardCoatingTinted, MultifunctionalSoftCoating, FrostedTinted, Mirrored, SelfCleaning, SelfCleaningTinted, Colored, MultifunctionalHardCoating, Patterned, FireResistant, MultifunctionalSoftCoatingTinted, Painted, Clarified, SunProtectiveHardCoating, SunProtectiveSoftCoating, DecorativeHardCoating, DecorativeSoftCoating
-    }
-}
-namespace ITAP.glassCAD.Equipment.Model {
-    public enum GroupCodeStatus {
-        Normal, WorkIn, WorkOut, Mixed, Reserved, Defective, MovedToNextOperation, Suspend, PreDefective, PreWorkIn
     }
 }
 namespace ITAP.glassCAD.Documents.Orders {
@@ -283,13 +268,6 @@ namespace glassPeople.ActivityLibrary.Core {
         InMemory, Task, Freeze, BuildReport
     }
 }
-namespace ITAP.Components {
-    public partial class Useful {
-        public enum RoundType {
-            Ceiling, Floor
-        }
-    }
-}
 namespace ITAP.glassCAD.Helpers {
     public partial class FormParameters {
         public enum FormMode {
@@ -315,6 +293,13 @@ namespace glassPeople.ActivityLibrary.glassCAD.Planing.Activity.Actualisation {
     public partial class CreateArmSquareCuttingActivity {
         public enum MarkingMode {
             Default, OnlyPyramidInfo, OnlyBufferSecondName
+        }
+    }
+}
+namespace glassPeople.ActivityLibrary.glassCAD.Planing.Activity.Actualisation {
+    public partial class CreateArmSquareCuttingActivity {
+        public enum RemoveCoatingVariant {
+            ParametrValue_and_GlassType, ParamertValueOnly, Obsolette
         }
     }
 }

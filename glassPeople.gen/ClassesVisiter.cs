@@ -123,6 +123,7 @@ namespace glassPeople.gen {
             result.Remove("[System.Runtime.CompilerServices.ExtensionAttribute()]");
             result.Remove("[System.SerializableAttribute()]");
             result.RemoveAll(p => p.Contains("DebuggerDisplayAttribute"));
+            result.RemoveAll(p => p.Contains("NullableContextAttribute((Byte)") || p.Contains("NullableAttribute((Byte)"));
             getCustomAttributesReplace(result);
 
             result.AddRange(getDesignerAttribute(source));

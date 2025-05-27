@@ -1662,6 +1662,18 @@ namespace glassPeople.ActivityLibrary.glassCAD.Planing.Coloring.SM {
         }
     }
 }
+namespace glassPeople.ActivityLibrary.glassCAD.Planing.Coloring.KPI {
+    
+    public partial class RamkaActivity : System.Activities.NativeActivity {
+		[System.Activities.RequiredArgumentAttribute()]
+		public System.Activities.InArgument<glassPeople.ActivityLibrary.glassCAD.Planing.Model.PlanningContext> PlanningContext { get; set; } 
+		[System.Activities.RequiredArgumentAttribute()]
+		public System.Activities.InArgument<glassPeople.ActivityLibrary.glassCAD.Planing.Model.GroupCode> Source { get; set; } 
+        protected override void Execute(System.Activities.NativeActivityContext context) {
+            throw new System.NotImplementedException();
+        }
+    }
+}
 namespace glassPeople.ActivityLibrary.glassCAD.Planing.Coloring.GGC {
     
     public partial class RamkaActivity : System.Activities.NativeActivity {
@@ -2075,6 +2087,14 @@ namespace glassPeople.ActivityLibrary.glassCAD.Planing.Activity.Actualisation {
 		[System.Activities.RequiredArgumentAttribute()]
 		public System.Activities.InArgument<glassPeople.ActivityLibrary.glassCAD.Planing.Model.PlanningContext> SchedulerContext { get; set; } 
 		public glassPeople.ActivityLibrary.glassCAD.Planing.Activity.Actualisation.CreateArmSquareCuttingActivity.MarkingMode SetMarkingMode { get; set; } 
+		public glassPeople.ActivityLibrary.glassCAD.Planing.Activity.Actualisation.CreateArmSquareCuttingActivity.RemoveCoatingVariant SetRemoveCoatingVariant { get; set; } 
+		[System.ComponentModel.DefaultValueAttribute("A{0}/П{1}")]
+		public System.Activities.InArgument<System.String> StringTemplateForAPyramid { get; set; } 
+		public System.String StringTemplateForLPyramid { get; set; } 
+		public System.String StringTemplateForArfa { get; set; } 
+		public System.String StringTemplateForBox { get; set; } 
+		public System.String StringTemplateForSpace { get; set; } 
+		[System.ComponentModel.DisplayNameAttribute("Не использовать - Отключить правило разделения по флагу снятия покрытия")]
 		public System.Boolean DiasbleRemoveCoatingRule { get; set; } 
         protected override void Execute(System.Activities.NativeActivityContext context) {
             throw new System.NotImplementedException();
