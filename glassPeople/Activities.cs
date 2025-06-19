@@ -2088,8 +2088,7 @@ namespace glassPeople.ActivityLibrary.glassCAD.Planing.Activity.Actualisation {
 		public System.Activities.InArgument<glassPeople.ActivityLibrary.glassCAD.Planing.Model.PlanningContext> SchedulerContext { get; set; } 
 		public glassPeople.ActivityLibrary.glassCAD.Planing.Activity.Actualisation.CreateArmSquareCuttingActivity.MarkingMode SetMarkingMode { get; set; } 
 		public glassPeople.ActivityLibrary.glassCAD.Planing.Activity.Actualisation.CreateArmSquareCuttingActivity.RemoveCoatingVariant SetRemoveCoatingVariant { get; set; } 
-		[System.ComponentModel.DefaultValueAttribute("A{0}/П{1}")]
-		public System.Activities.InArgument<System.String> StringTemplateForAPyramid { get; set; } 
+		public System.String StringTemplateForAPyramid { get; set; } 
 		public System.String StringTemplateForLPyramid { get; set; } 
 		public System.String StringTemplateForArfa { get; set; } 
 		public System.String StringTemplateForBox { get; set; } 

@@ -2453,6 +2453,11 @@ namespace glassPeople.ActivityLibrary.glassCAD.Planing.Packing.Strategy.SM {
     public partial class PackingStrategy : glassPeople.ActivityLibrary.glassCAD.Planing.Packing.Strategy.Simple {
     }
 }
+namespace glassPeople.ActivityLibrary.glassCAD.Planing.Packing.Strategy.RSK {
+    
+    public partial class MixStrategy : glassPeople.ActivityLibrary.glassCAD.Planing.Packing.Strategy.Simple {
+    }
+}
 namespace glassPeople.ActivityLibrary.glassCAD.Planing.Packing.Strategy.KPI {
     
     public partial class FullPackPackingStrategy : glassPeople.ActivityLibrary.glassCAD.Planing.Packing.Strategy.Simple {
@@ -4454,6 +4459,7 @@ namespace ITAP.glassCAD.Dictionary.Equipment {
 		public System.String Name { get; set; } 
 		public System.Int32 IDOperationType { get; set; } 
 		public System.Int32 IDCalendar { get; set; } 
+		public System.Nullable<System.Guid> GUID { get; set; } 
 		public System.Nullable<System.Guid> Ident { get; set; } 
 		public System.String Settings { get; set; } 
         protected internal EquipmentRow(System.Data.DataRowBuilder builder) : base(builder) {
