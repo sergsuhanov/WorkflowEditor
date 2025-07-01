@@ -1,3 +1,8 @@
+namespace ITAP.glassCAD.Production {
+    
+    public partial class TestActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.EditFormNativeActivity {
+    }
+}
 namespace ITAP.glassCAD.Documents.BoxProduction.Workflow.Activities {
     
     public partial class BoxProductionItemAddGoodActivity : System.Activities.NativeActivity {

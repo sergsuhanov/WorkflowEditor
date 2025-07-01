@@ -54,6 +54,11 @@ namespace ITAP.glassCAD {
     }
 }
 namespace ITAP.glassCAD {
+    public enum OperationParamValueType {
+        String, Decimal, DateTime, Boolean, Bytes, Enums, Dxf
+    }
+}
+namespace ITAP.glassCAD {
     public enum OperationType {
         GlassCutting, FrameCutting, FrameBending, ProductionAssembly, Tempering, Packaging, FrameManufacturing, Shipment, StraightEdgeProcessing, ProcessingCenter, ShprossManufacturing, Lamination, SupplierGlassPreparation, InternalSemiFinishedPreparation, Painting, PurchasedSemiFinishedPreparation, QualityControl, Other
     }
@@ -71,6 +76,11 @@ namespace ITAP.glassCAD.Workflow.Components {
 namespace ITAP.glassCAD.Workflow.Components {
     public enum RoundMode {
         Up, Down, Bankers
+    }
+}
+namespace ITAP.glassCAD.Production.Model {
+    public enum ViewSide {
+        External, Internal
     }
 }
 namespace ITAP.glassCAD.Documents.Orders {

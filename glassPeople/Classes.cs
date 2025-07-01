@@ -202,6 +202,96 @@ namespace ITAP.glassCAD.Workflow.Components {
 		public System.String InProperty { get; set; } 
     }
 }
+namespace ITAP.glassCAD.Production {
+    
+    public partial class ViewModel {
+    }
+}
+namespace ITAP.glassCAD.Production.Model {
+    
+    public partial class Good : ITAP.glassCAD.Production.Model.Item {
+		public ITAP.glassCAD.GoodsType GoodsType { get; set; } 
+		public ITAP.glassCAD.Dictionary.Goods.GoodsDataSet.GoodsRow GoodsRow { get; set; } 
+		public System.Boolean InvertInShape { get; set; } 
+		public System.String Formula { get; set; } 
+		public System.String Comment { get; set; } 
+		public System.Int32 SideSputtering { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Production.Model {
+    
+    public partial class HalfProduction : ITAP.glassCAD.Production.Model.Item {
+		public System.Collections.Generic.List<ITAP.glassCAD.Production.Model.HalfProductionProperty> Properties { get; set; } 
+		public System.Boolean IsCanceled { get; } 
+		public System.Nullable<System.Int32> IDOrderItemsIdentCanceled { get; set; } 
+		public System.Nullable<System.Int32> IDOrderItemsProductionModelCanceled { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Production.Model {
+    [System.Xml.Serialization.XmlRootAttribute()]
+[System.Xml.Serialization.XmlTypeAttribute(TypeName = "P")]
+    public partial class HalfProductionProperty {
+		[System.Xml.Serialization.XmlIgnoreAttribute()]
+		public System.Int32 ID { get; set; } 
+		[System.Xml.Serialization.XmlElementAttribute(ElementName = "N")]
+		public System.String Name { get; set; } 
+		[System.Xml.Serialization.XmlElementAttribute(ElementName = "V")]
+		public System.String Value { get; set; } 
+		[System.Xml.Serialization.XmlElementAttribute(ElementName = "IC")]
+		public System.Boolean IsCurrent { get; set; } 
+		[System.Xml.Serialization.XmlIgnoreAttribute()]
+		public System.String DisplayName { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Production.Model {
+    
+    public abstract partial class IItemVisitor {
+    }
+}
+namespace ITAP.glassCAD.Production.Model {
+    
+    public abstract partial class Item {
+		public System.Int32 Id { get; set; } 
+		public System.String Name { get; set; } 
+		public System.String NameManual { get; set; } 
+		public System.Boolean IsShapeManualSetting { get; set; } 
+		public System.Byte[] ShapeData { get; set; } 
+		public System.Int32 Level { get; } 
+		public System.Int32 NumPos { get; set; } 
+		public System.Collections.Generic.List<ITAP.glassCAD.Production.Model.Item> Parents { get; set; } 
+		public ITAP.glassCAD.Production.Model.Item Child { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Production.Model {
+    
+    public partial class MainModel {
+		public ITAP.glassCAD.Production.Model.ViewSide ViewSide { get; set; } 
+		public System.Collections.Generic.List<ITAP.glassCAD.Production.Model.Item> Items { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Production.Model {
+    
+    public partial class Operation : ITAP.glassCAD.Production.Model.Item {
+		public ITAP.glassCAD.OperationType OperationType { get; set; } 
+		public ITAP.glassCAD.Dictionary.Operation.OperationDataSet.OperationRow OperationRow { get; set; } 
+		public System.Nullable<System.Decimal> Duration { get; set; } 
+		public System.Nullable<System.Decimal> Cost { get; set; } 
+		public System.Collections.Generic.List<ITAP.glassCAD.Production.Model.OperationParam> OperationParams { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Production.Model {
+    
+    public partial class OperationParam {
+		public ITAP.glassCAD.Dictionary.Operation.OperationDataSet.OperationParamRow OperationParamRow { get; set; } 
+		public System.String Value { get; set; } 
+		public ITAP.glassCAD.OperationParamValueType ValueType { get; } 
+    }
+}
+namespace ITAP.glassCAD.Production.Model {
+    
+    public partial class Production : ITAP.glassCAD.Production.Model.HalfProduction {
+    }
+}
 namespace ITAP.glassCAD.Utilites {
     
     public partial class CriterionList {
@@ -3103,6 +3193,38 @@ namespace ITAP.glassCAD {
     public partial class Program {
     
     public abstract partial class Enumerables {
+    }
+    }
+}
+namespace ITAP.glassCAD.Production {
+    public partial class ViewModel {
+    
+    public partial class Vector2 : System.ValueType {
+		public System.Int32 X { get; set; } 
+		public System.Int32 Y { get; set; } 
+    }
+    }
+}
+namespace ITAP.glassCAD.Production {
+    public partial class ViewModel {
+    
+    public partial class RectObject {
+		public ITAP.glassCAD.Production.Model.Item Item { get; set; } 
+		public ITAP.glassCAD.Production.ViewModel.Vector2 Center { get; set; } 
+		public ITAP.glassCAD.Production.ViewModel.Vector2 Size { get; set; } 
+		public System.Boolean IsSelected { get; set; } 
+		public System.String Color { get; } 
+		public System.String Caption { get; } 
+		public System.Collections.Generic.List<System.ValueTuple<System.String, System.String>> Details { get; } 
+    }
+    }
+}
+namespace ITAP.glassCAD.Production {
+    public partial class ViewModel {
+    
+    public partial class LineObject {
+		public ITAP.glassCAD.Production.ViewModel.RectObject Start { get; set; } 
+		public ITAP.glassCAD.Production.ViewModel.RectObject End { get; set; } 
     }
     }
 }
