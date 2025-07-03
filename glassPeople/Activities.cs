@@ -35,13 +35,21 @@ namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities {
 		[System.ComponentModel.Browsable(false)]
 		public System.Activities.OutArgument<System.Boolean> PeriodSelected { get; set; } 
 		public System.Activities.OutArgument<System.Boolean> IsCanceled { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Scheme")]
+		[System.ComponentModel.TypeConverterAttribute(typeof(System.ComponentModel.ExpandableObjectConverter))]
+		[System.ComponentModel.RefreshPropertiesAttribute((System.ComponentModel.RefreshProperties)1)]
+		public ITAP.glassCAD.Dictionary.WorkFlow.Activities.DGML Dgml { get; set; } 
     }
 }
 namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities {
     
     public partial class ShowMessageActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.EditFormNativeActivity {
+		public System.Activities.InArgument<System.String> Caption { get; set; } 
 		public System.Activities.InArgument<System.String> Message { get; set; } 
 		public System.Boolean ShowInLog { get; set; } 
+		public System.Activities.OutArgument<System.Boolean> Result { get; set; } 
+		[System.ComponentModel.Browsable(false)]
+		public ITAP.glassCAD.Dictionary.WorkFlow.Activities.DGML Dgml { get; set; } 
     }
 }
 namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities {
@@ -79,6 +87,7 @@ namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities {
 namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities {
     
     public abstract partial class EditFormNativeActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.DataLayerNativeActivity {
+		public ITAP.glassCAD.Dictionary.WorkFlow.Activities.DGML Dgml { get; set; } 
     }
 }
 namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities {
@@ -94,6 +103,10 @@ namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities {
 		public System.Collections.ObjectModel.Collection<ITAP.glassCAD.Dictionary.WorkFlow.Activities.TemplateOutArg> OutArguments { get; set; } = new System.Collections.ObjectModel.Collection<ITAP.glassCAD.Dictionary.WorkFlow.Activities.TemplateOutArg>();
 		[System.ComponentModel.DefaultValue(true)]
 		public System.Boolean WaitForExecute { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Scheme")]
+		[System.ComponentModel.TypeConverterAttribute(typeof(System.ComponentModel.ExpandableObjectConverter))]
+		[System.ComponentModel.RefreshPropertiesAttribute((System.ComponentModel.RefreshProperties)1)]
+		public ITAP.glassCAD.Dictionary.WorkFlow.Activities.DGML Dgml { get; set; } 
     }
 }
 namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities {
@@ -137,42 +150,8 @@ namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities {
 }
 namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities {
     
-    public partial class ObjectAddHistoryActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.DataLayerNativeActivity {
-		[System.Activities.RequiredArgumentAttribute()]
-		public System.Activities.InArgument<System.Int32> IDDocOper { get; set; } 
-		[System.Activities.RequiredArgumentAttribute()]
-		public System.Activities.InArgument<System.Int32> IDDoc { get; set; } 
-		public System.Activities.InArgument<System.Int32> IDPeople { get; set; } 
-		public System.Activities.InArgument<System.String> Name { get; set; } 
-		[System.Activities.RequiredArgumentAttribute()]
-		public System.Activities.InArgument<System.String> Text { get; set; } 
-    }
-}
-namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities {
-    
-    public partial class ObjectGetEditModeActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.DataLayerNativeActivity {
-		[System.Activities.RequiredArgumentAttribute()]
-		public System.Activities.InArgument<System.Int32> IDDocOper { get; set; } 
-		[System.Activities.RequiredArgumentAttribute()]
-		public System.Activities.InArgument<System.Int32> IDDoc { get; set; } 
-		[System.Activities.RequiredArgumentAttribute()]
-		public System.Activities.OutArgument<System.Int32> Mode { get; set; } 
-    }
-}
-namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities {
-    
-    public partial class ObjectSetEditModeActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.DataLayerNativeActivity {
-		[System.Activities.RequiredArgumentAttribute()]
-		public System.Activities.InArgument<System.Int32> IDDocOper { get; set; } 
-		[System.Activities.RequiredArgumentAttribute()]
-		public System.Activities.InArgument<System.Int32> IDDoc { get; set; } 
-		[System.Activities.RequiredArgumentAttribute()]
-		public System.Activities.InArgument<System.Int32> Mode { get; set; } 
-    }
-}
-namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities {
-    
     public partial class ReturnActivity : System.Activities.NativeActivity {
+		public ITAP.glassCAD.Dictionary.WorkFlow.Activities.DGML Dgml { get; set; } 
         protected override void Execute(System.Activities.NativeActivityContext context) {
             throw new System.NotImplementedException();
         }
@@ -216,6 +195,7 @@ namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Documents.Orders {
 		[System.ComponentModel.DisplayNameAttribute("Права доступа")]
 		[System.ComponentModel.DescriptionAttribute("0 = Нет доступа, 2 = Полный доступ")]
 		public System.Nullable<System.Int32> RightAccessMode { get; set; } 
+		public ITAP.glassCAD.Dictionary.WorkFlow.Activities.DGML Dgml { get; set; } 
     }
 }
 namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Documents.Orders {
@@ -285,6 +265,10 @@ namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Documents.BoxProduction {
 		[System.ComponentModel.DisplayNameAttribute("ИД документа")]
 		public System.Activities.OutArgument<System.Int32> IDBoxProduction { get; set; } 
 		public System.Activities.OutArgument<ITAP.glassCAD.Documents.BoxProduction.BoxProductionDataSet> BoxProductionDataSet { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Scheme")]
+		[System.ComponentModel.TypeConverterAttribute(typeof(System.ComponentModel.ExpandableObjectConverter))]
+		[System.ComponentModel.RefreshPropertiesAttribute((System.ComponentModel.RefreshProperties)1)]
+		public ITAP.glassCAD.Dictionary.WorkFlow.Activities.DGML Dgml { get; set; } 
 		public System.Boolean SaveToBase { get; set; } 
     }
 }
@@ -318,6 +302,8 @@ namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Documents.BoxProduction {
 		public System.Boolean SetCurrentDtDoc { get; set; } 
 		public System.Boolean SetCurrentUser { get; set; } 
 		public System.Activities.OutArgument<ITAP.glassCAD.Documents.BoxProduction.BoxProductionDataSet> BoxProductionDataSetOut { get; set; } 
+		[System.ComponentModel.Browsable(false)]
+		public ITAP.glassCAD.Dictionary.WorkFlow.Activities.DGML Dgml { get; set; } 
     }
 }
 namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Documents.BoxProduction {
@@ -374,6 +360,329 @@ namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Documents.BoxProduction {
 		public System.Activities.InArgument<ITAP.glassCAD.Documents.BoxProduction.BoxProductionDataSet> BoxProductionDataSet { get; set; } 
 		[System.Activities.RequiredArgumentAttribute()]
 		public System.Activities.InArgument<System.String> Status { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.User {
+    
+    public partial class GetUserBusinessLogicRightAccessActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.DataLayerNativeActivity {
+		public System.Activities.InArgument<System.Int32> UserID { get; set; } 
+		public System.Activities.OutArgument<System.Boolean> IsUser_SuperAdmin { get; set; } 
+		public System.Activities.OutArgument<System.Boolean> IsUser_OTK_DublMessage { get; set; } 
+		public System.Activities.OutArgument<System.Boolean> IsUser_OTK_REKL { get; set; } 
+		public System.Activities.OutArgument<System.Boolean> IsUser_OTK_REKL_ALTERATION { get; set; } 
+		public System.Activities.OutArgument<System.Boolean> IsUser_Constructor { get; set; } 
+		public System.Activities.OutArgument<System.Boolean> IsUser_Tehnolog { get; set; } 
+		public System.Activities.OutArgument<System.Boolean> IsUser_OPP { get; set; } 
+		public System.Activities.OutArgument<System.Boolean> IsUser_OTK_PRO_CEO { get; set; } 
+		public System.Activities.OutArgument<System.Boolean> IsUser_OTK_REKL_CEO2 { get; set; } 
+		public System.Activities.OutArgument<System.Boolean> IsUser_OTK_SGP_ALTERATION_ACCESS { get; set; } 
+		public System.Activities.OutArgument<System.Boolean> IsUser_OTK_SGP_CEO { get; set; } 
+		public System.Activities.OutArgument<System.Boolean> IsUser_PlanTransport { get; set; } 
+		public System.Activities.OutArgument<System.Boolean> IsUser_Logist { get; set; } 
+		public System.Activities.OutArgument<System.Boolean> IsUser_ZakupkiGlass { get; set; } 
+		public System.Activities.OutArgument<System.Boolean> IsUser_ZakupkiRows { get; set; } 
+		public System.Activities.OutArgument<System.Boolean> IsUser_SkladRowOperator { get; set; } 
+		public System.Activities.OutArgument<System.Boolean> IsUser_SkladGlass { get; set; } 
+		public System.Activities.OutArgument<System.Boolean> IsUser_SkladRow { get; set; } 
+		public System.Activities.OutArgument<System.Boolean> IsUser_SkladGlassOperator { get; set; } 
+		public System.Activities.OutArgument<System.Boolean> IsUser_OptDefective { get; set; } 
+		public System.Activities.OutArgument<System.Boolean> IsUser_Opt { get; set; } 
+		public System.Activities.OutArgument<System.Boolean> IsUser_OTK_PRO { get; set; } 
+		public System.Activities.OutArgument<System.Boolean> IsUser_OTK_REKL_ALTERATION_ACCESS { get; set; } 
+		public System.Activities.OutArgument<System.Boolean> IsUser_OTK_REKL_CEO { get; set; } 
+		public System.Activities.OutArgument<System.Boolean> IsUser_OTK_SGP { get; set; } 
+		public System.Activities.OutArgument<System.Boolean> IsUser_OTK_SGP_ALTERATION { get; set; } 
+		public System.Activities.OutArgument<System.Boolean> IsUser_BuhSelling { get; set; } 
+		public System.Activities.OutArgument<System.Boolean> IsUser_Analist { get; set; } 
+		public System.Activities.OutArgument<System.Boolean> IsUser_BuhZakupki { get; set; } 
+		public System.Activities.OutArgument<System.Boolean> IsUser_Sales_Dir { get; set; } 
+		public System.Activities.OutArgument<System.Boolean> IsUser_CEO { get; set; } 
+		public System.Activities.OutArgument<System.Boolean> IsUser_TehAdmin { get; set; } 
+		public System.Activities.OutArgument<System.Boolean> IsUsers_Transport { get; set; } 
+		public System.Activities.OutArgument<System.Boolean> IsUser_NachPro { get; set; } 
+		public System.Activities.OutArgument<System.Boolean> IsUsers_Orders { get; set; } 
+		public System.Activities.OutArgument<System.Boolean> IsUsers_GoodsCatalog { get; set; } 
+		public System.Activities.OutArgument<System.Boolean> IsUsers_BuhControlSklad { get; set; } 
+		public System.Activities.OutArgument<System.Boolean> IsUsers_Customers { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.User {
+    
+    public partial class GetUserInfoActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.Dictionaries.People.GetPeopleInfoActivity {
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Utilites {
+    
+    public partial class ReLoadDictionaryActivity : System.Activities.NativeActivity {
+		public System.Activities.InArgument<System.String> TypeName { get; set; } 
+        protected override void Execute(System.Activities.NativeActivityContext context) {
+            throw new System.NotImplementedException();
+        }
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Utilites {
+    
+    public partial class SqlSelectActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.DataLayerNativeActivity {
+		[System.Activities.RequiredArgumentAttribute()]
+		public System.Activities.InArgument<System.String> SelectText { get; set; } 
+		public System.Activities.OutArgument<System.Data.DataTable> Result { get; set; } 
+		public System.Activities.OutArgument<System.Boolean> HasResult { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Utilites {
+    
+    public partial class SqlExecActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.DataLayerNativeActivity {
+		[System.Activities.RequiredArgumentAttribute()]
+		public System.Activities.InArgument<System.String> SelectText { get; set; } 
+		public System.Int32 CommandTimeout { get; set; } 
+		public System.Activities.OutArgument<System.Boolean> HasResult { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Utilites {
+    
+    public partial class ObjectAddHistoryActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.DataLayerNativeActivity {
+		[System.Activities.RequiredArgumentAttribute()]
+		public System.Activities.InArgument<System.Int32> IDDocOper { get; set; } 
+		[System.Activities.RequiredArgumentAttribute()]
+		public System.Activities.InArgument<System.Int32> IDDoc { get; set; } 
+		public System.Activities.InArgument<System.Int32> IDPeople { get; set; } 
+		public System.Activities.InArgument<System.String> Name { get; set; } 
+		[System.Activities.RequiredArgumentAttribute()]
+		public System.Activities.InArgument<System.String> Text { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Utilites {
+    
+    public partial class SetObjectAttributesActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.DataLayerNativeActivity {
+		[System.ComponentModel.CategoryAttribute("Mode")]
+		public ITAP.glassCAD.Dictionary.WorkFlow.Activities.Utilites.SetObjectAttributesMode Mode { get; set; } 
+		[System.ComponentModel.CategoryAttribute("In")]
+		[System.Activities.RequiredArgumentAttribute()]
+		public System.Activities.InArgument<System.Int32> IDAttributes { get; set; } 
+		[System.ComponentModel.CategoryAttribute("In")]
+		[System.Activities.RequiredArgumentAttribute()]
+		public System.Activities.InArgument<System.Int32> IDDocOper { get; set; } 
+		[System.ComponentModel.CategoryAttribute("In")]
+		[System.Activities.RequiredArgumentAttribute()]
+		public System.Activities.InArgument<System.Int32> IDDoc { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Property")]
+		public System.Activities.InArgument<System.Int32> ReferenceIDDoc { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Property")]
+		public System.Activities.InArgument<System.Int32> ReferenceIDDocOper { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Property")]
+		public System.Activities.InArgument<System.Int32> IntValue1 { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Property")]
+		public System.Activities.InArgument<System.Int32> IntValue2 { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Property")]
+		public System.Activities.InArgument<System.Int32> IntValue3 { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Property")]
+		public System.Activities.InArgument<System.Decimal> DecimalValue1 { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Property")]
+		public System.Activities.InArgument<System.Decimal> DecimalValue2 { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Property")]
+		public System.Activities.InArgument<System.Decimal> DecimalValue3 { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Property")]
+		public System.Activities.InArgument<System.String> StringValue1 { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Property")]
+		public System.Activities.InArgument<System.String> StringValue2 { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Property")]
+		public System.Activities.InArgument<System.String> StringValue3 { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Property")]
+		public System.Activities.InArgument<System.DateTime> DateTimeValue1 { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Property")]
+		public System.Activities.InArgument<System.DateTime> DateTimeValue2 { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Property")]
+		public System.Activities.InArgument<System.DateTime> DateTimeValue3 { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Property")]
+		public System.Activities.InArgument<System.Boolean> BitValue1 { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Property")]
+		public System.Activities.InArgument<System.Boolean> BitValue2 { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Property")]
+		public System.Activities.InArgument<System.Boolean> BitValue3 { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Property")]
+		public System.Activities.InArgument<System.String> TextValue1 { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Property")]
+		public System.Activities.InArgument<System.String> TextValue2 { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Property")]
+		public System.Activities.InArgument<System.String> TextValue3 { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Property")]
+		public System.Activities.InArgument<System.Byte[]> BytesValue1 { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Property")]
+		public System.Activities.InArgument<System.Byte[]> BytesValue2 { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Property")]
+		public System.Activities.InArgument<System.Byte[]> BytesValue3 { get; set; } 
+		public System.Activities.OutArgument<System.Boolean> Result { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Utilites {
+    
+    public partial class GetObjectAttributesActivity : System.Activities.NativeActivity {
+		[System.ComponentModel.CategoryAttribute("In")]
+		[System.Activities.RequiredArgumentAttribute()]
+		public System.Activities.InArgument<System.Int32> IDAttributes { get; set; } 
+		[System.ComponentModel.CategoryAttribute("In")]
+		[System.Activities.RequiredArgumentAttribute()]
+		public System.Activities.InArgument<System.Int32> IDDocOper { get; set; } 
+		[System.ComponentModel.CategoryAttribute("In")]
+		[System.Activities.RequiredArgumentAttribute()]
+		public System.Activities.InArgument<System.Int32> IDDoc { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Out")]
+		public System.Activities.OutArgument<System.Int32> ReferenceIDDoc { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Out")]
+		public System.Activities.OutArgument<System.Int32> ReferenceIDDocOper { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Out")]
+		public System.Activities.OutArgument<System.Int32> IntValue1 { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Out")]
+		public System.Activities.OutArgument<System.Int32> IntValue2 { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Out")]
+		public System.Activities.OutArgument<System.Int32> IntValue3 { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Out")]
+		public System.Activities.OutArgument<System.Decimal> DecimalValue1 { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Out")]
+		public System.Activities.OutArgument<System.Decimal> DecimalValue2 { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Out")]
+		public System.Activities.OutArgument<System.Decimal> DecimalValue3 { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Out")]
+		public System.Activities.OutArgument<System.String> StringValue1 { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Out")]
+		public System.Activities.OutArgument<System.String> StringValue2 { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Out")]
+		public System.Activities.OutArgument<System.String> StringValue3 { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Property")]
+		public System.Activities.OutArgument<System.String> TextValue1 { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Property")]
+		public System.Activities.OutArgument<System.String> TextValue2 { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Property")]
+		public System.Activities.OutArgument<System.String> TextValue3 { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Out")]
+		public System.Activities.OutArgument<System.DateTime> DateTimeValue1 { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Out")]
+		public System.Activities.OutArgument<System.DateTime> DateTimeValue2 { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Out")]
+		public System.Activities.OutArgument<System.DateTime> DateTimeValue3 { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Out")]
+		public System.Activities.OutArgument<System.Boolean> BitValue1 { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Out")]
+		public System.Activities.OutArgument<System.Boolean> BitValue2 { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Out")]
+		public System.Activities.OutArgument<System.Boolean> BitValue3 { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Out")]
+		public System.Activities.OutArgument<System.Byte[]> BytesValue1 { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Out")]
+		public System.Activities.OutArgument<System.Byte[]> BytesValue2 { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Out")]
+		public System.Activities.OutArgument<System.Byte[]> BytesValue3 { get; set; } 
+		public System.Activities.OutArgument<System.Boolean> Result { get; set; } 
+        protected override void Execute(System.Activities.NativeActivityContext context) {
+            throw new System.NotImplementedException();
+        }
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Utilites {
+    
+    public partial class SetObjectAttributeListActivity : System.Activities.NativeActivity {
+		[System.ComponentModel.CategoryAttribute("In")]
+		[System.Activities.RequiredArgumentAttribute()]
+		public System.Activities.InArgument<System.Collections.Generic.List<ITAP.Components.Entities.Attribute>> Attributes { get; set; } 
+		[System.ComponentModel.CategoryAttribute("In")]
+		[System.Activities.RequiredArgumentAttribute()]
+		public System.Activities.InArgument<System.Int32> IDDocOper { get; set; } 
+		[System.ComponentModel.CategoryAttribute("In")]
+		[System.Activities.RequiredArgumentAttribute()]
+		public System.Activities.InArgument<System.Int32> IDDoc { get; set; } 
+        protected override void Execute(System.Activities.NativeActivityContext context) {
+            throw new System.NotImplementedException();
+        }
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Utilites {
+    
+    public partial class CopyObjectAttributesActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.DataLayerNativeActivity {
+		[System.Activities.RequiredArgumentAttribute()]
+		public System.Activities.InArgument<System.Int32> IDDocFrom { get; set; } 
+		[System.Activities.RequiredArgumentAttribute()]
+		public System.Activities.InArgument<System.Int32> IDDocTo { get; set; } 
+		[System.Activities.RequiredArgumentAttribute()]
+		public System.Activities.InArgument<System.Int32> IDDocOper { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Utilites {
+    
+    public partial class GetObjectAttributeActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.DataLayerNativeActivity<ITAP.Components.Entities.Attribute> {
+		[System.Activities.RequiredArgumentAttribute()]
+		public System.Activities.InArgument<System.Int32> IDDoc { get; set; } 
+		[System.Activities.RequiredArgumentAttribute()]
+		public System.Activities.InArgument<System.Int32> IDDocOper { get; set; } 
+		[System.Activities.RequiredArgumentAttribute()]
+		public System.Activities.InArgument<System.Int32> IDAttributes { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Utilites {
+    
+    public partial class FindObjectsByAttribute : ITAP.glassCAD.Dictionary.WorkFlow.Activities.DataLayerNativeActivity {
+		[System.Activities.RequiredArgumentAttribute()]
+		public System.Activities.InArgument<System.Int32> IDDocOper { get; set; } 
+		[System.Activities.RequiredArgumentAttribute()]
+		public System.Activities.InArgument<System.Int32> IDAttributes { get; set; } 
+		public System.Activities.OutArgument<System.Collections.Generic.List<System.Int32>> IDObjectList { get; set; } 
+		public System.Activities.OutArgument<System.Collections.Generic.List<System.Int32>> IDObjectAttributesList { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Utilites {
+    
+    public partial class ObjectGetEditModeActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.DataLayerNativeActivity {
+		[System.Activities.RequiredArgumentAttribute()]
+		public System.Activities.InArgument<System.Int32> IDDocOper { get; set; } 
+		[System.Activities.RequiredArgumentAttribute()]
+		public System.Activities.InArgument<System.Int32> IDDoc { get; set; } 
+		[System.Activities.RequiredArgumentAttribute()]
+		public System.Activities.OutArgument<System.Int32> Mode { get; set; } 
+		public System.Activities.OutArgument<System.Nullable<System.DateTime>> DateTime { get; set; } 
+		public System.Activities.OutArgument<System.String> UserName { get; set; } 
+		public System.Activities.OutArgument<System.Nullable<System.Int32>> IDUser { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Utilites {
+    
+    public partial class ObjectSetEditModeActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.DataLayerNativeActivity {
+		[System.Activities.RequiredArgumentAttribute()]
+		public System.Activities.InArgument<System.Int32> IDDocOper { get; set; } 
+		[System.Activities.RequiredArgumentAttribute()]
+		public System.Activities.InArgument<System.Int32> IDDoc { get; set; } 
+		[System.Activities.RequiredArgumentAttribute()]
+		public System.Activities.InArgument<System.Int32> Mode { get; set; } 
+		public System.Activities.InArgument<System.Nullable<System.DateTime>> DateTime { get; set; } 
+		public System.Activities.InArgument<System.String> UserName { get; set; } 
+		public System.Activities.InArgument<System.Int32> IDUser { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Utilites {
+    
+    public partial class SelectObjectAttributesActivity<T> : ITAP.glassCAD.Dictionary.WorkFlow.Activities.EditFormNativeActivity {
+		public ITAP.Components.Dialog.SelectViewType SelectViewType { get; set; } 
+		public System.Boolean AllowAddRow { get; set; } 
+		public System.Boolean MultiSelect { get; set; } 
+		public System.Activities.InArgument<System.Int32> IDDoc { get; set; } 
+		public System.Activities.InArgument<System.Int32> IDDocOper { get; set; } 
+		[System.Activities.RequiredArgumentAttribute()]
+		public System.Activities.InArgument<System.Int32> IDAttributes { get; set; } 
+		[System.Activities.RequiredArgumentAttribute()]
+		public System.String PropertyName { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Out")]
+		public System.Activities.OutArgument<System.Boolean> Selected { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Out")]
+		public System.Activities.OutArgument<T> Result { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Out")]
+		public System.Activities.OutArgument<System.Collections.Generic.List<T>> ResultList { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Dictionaries.WorkflowUserSettings {
+    [System.ComponentModel.Designer(typeof(glassPeople.Designers.ButtonsActivityDesigner))]
+    public partial class EditActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.ListActivity {
+		public System.Activities.InArgument<ITAP.glassCAD.Dictionary.WorkflowUserSettings.WorkflowUserSettingsDataSet> Source { get; set; } 
+        protected override void Execute(System.Activities.NativeActivityContext context) {
+            throw new System.NotImplementedException();
+        }
     }
 }
 namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Dictionaries.WorkFlowDocumentTemplate {
@@ -479,6 +788,22 @@ namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Dictionaries.People {
     public partial class FilterByPhoneActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.FilterDataSetActivity<ITAP.glassCAD.Dictionary.People.PeopleDataSet> {
 		[System.Activities.RequiredArgumentAttribute()]
 		public System.Activities.InArgument<System.String> Phone { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Dictionaries.People {
+    
+    public partial class GetPeopleInfoActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.DataLayerNativeActivity {
+		public System.Activities.InArgument<System.Int32> IDPeople { get; set; } 
+		public System.Activities.OutArgument<System.Int32> IDUser { get; set; } 
+		public System.Activities.OutArgument<System.String> FullName { get; set; } 
+		public System.Activities.OutArgument<System.String> EMail { get; set; } 
+		public System.Activities.OutArgument<System.Nullable<System.Int32>> IDJob { get; set; } 
+		public System.Activities.OutArgument<System.String> Comment { get; set; } 
+		public System.Activities.OutArgument<System.String> Name { get; set; } 
+		public System.Activities.OutArgument<System.String> MiddleName { get; set; } 
+		public System.Activities.OutArgument<System.String> LastName { get; set; } 
+		public System.Activities.OutArgument<System.Nullable<System.Int32>> IDDepart { get; set; } 
+		public System.Activities.OutArgument<System.Boolean> HasResult { get; set; } 
     }
 }
 namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Dictionaries.PaymentType {
@@ -688,6 +1013,7 @@ namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Dictionaries.CalculationV
 namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Input {
     
     public partial class GetStringActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.EditFormNativeActivity {
+		public ITAP.glassCAD.Dictionary.WorkFlow.Activities.DGML Dgml { get; set; } 
 		[System.ComponentModel.DisplayNameAttribute("Заголовок")]
 		public System.Activities.InArgument<System.String> Caption { get; set; } 
 		[System.ComponentModel.DisplayNameAttribute("Строка по-умолчанию")]

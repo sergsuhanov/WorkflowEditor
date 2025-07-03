@@ -108,6 +108,11 @@ namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities {
         Default, ReadOnly, Hidden, Filter
     }
 }
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Utilites {
+    public enum SetObjectAttributesMode {
+        Add, ReplaceIfExist, AddOrReplace, Delete
+    }
+}
 namespace glassPeople.CRM {
     public enum IssueStatus {
         Opened, Сlosed, InWork, InTest, InDiscuss, InGrayFolder
@@ -276,6 +281,13 @@ namespace glassPeople.ActivityLibrary.glassCAD.Planing.Activity.Actualisation {
 namespace glassPeople.ActivityLibrary.Core {
     public enum InvokeMode {
         InMemory, Task, Freeze, BuildReport
+    }
+}
+namespace ITAP.glassCAD.Production {
+    public partial class ViewModel {
+        public enum ShowMode {
+            Editor, DynamicComponent
+        }
     }
 }
 namespace ITAP.glassCAD.Helpers {

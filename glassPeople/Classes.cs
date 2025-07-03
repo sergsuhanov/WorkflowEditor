@@ -205,6 +205,13 @@ namespace ITAP.glassCAD.Workflow.Components {
 namespace ITAP.glassCAD.Production {
     
     public partial class ViewModel {
+		public System.String ViewBox { get; set; } 
+		public System.Decimal Scale { get; set; } 
+		public ITAP.glassCAD.Production.ViewModel.Rect Box { get; set; } 
+		public ITAP.glassCAD.Production.ViewModel.Vector2 SunPosition { get; set; } 
+		public ITAP.glassCAD.Production.ViewModel.Vector2 SmilePosition { get; set; } 
+		public ITAP.glassCAD.Production.ViewModel.Vector2 AddGoodsPosition { get; set; } 
+		public ITAP.glassCAD.Production.ViewModel.ShowMode Mode { get; set; } 
     }
 }
 namespace ITAP.glassCAD.Production.Model {
@@ -225,6 +232,7 @@ namespace ITAP.glassCAD.Production.Model {
 		public System.Boolean IsCanceled { get; } 
 		public System.Nullable<System.Int32> IDOrderItemsIdentCanceled { get; set; } 
 		public System.Nullable<System.Int32> IDOrderItemsProductionModelCanceled { get; set; } 
+		public ITAP.glassCAD.Production.Model.Operation Operation { get; } 
     }
 }
 namespace ITAP.glassCAD.Production.Model {
@@ -260,6 +268,7 @@ namespace ITAP.glassCAD.Production.Model {
 		public System.Int32 NumPos { get; set; } 
 		public System.Collections.Generic.List<ITAP.glassCAD.Production.Model.Item> Parents { get; set; } 
 		public ITAP.glassCAD.Production.Model.Item Child { get; set; } 
+		public System.Collections.Generic.IEnumerable<ITAP.glassCAD.Production.Model.Item> AllParents { get; } 
     }
 }
 namespace ITAP.glassCAD.Production.Model {
@@ -277,6 +286,7 @@ namespace ITAP.glassCAD.Production.Model {
 		public System.Nullable<System.Decimal> Duration { get; set; } 
 		public System.Nullable<System.Decimal> Cost { get; set; } 
 		public System.Collections.Generic.List<ITAP.glassCAD.Production.Model.OperationParam> OperationParams { get; set; } 
+		public ITAP.glassCAD.Production.Model.HalfProduction HalfProduction { get; } 
     }
 }
 namespace ITAP.glassCAD.Production.Model {
@@ -309,6 +319,7 @@ namespace ITAP.glassCAD.Helpers {
 		public ITAP.glassCAD.Helpers.FormParameters.SelectedMode Selected { get; set; } 
 		public System.String DoubleClickActionName { get; set; } 
 		public System.Nullable<System.Int32> FocusedIdObject { get; set; } 
+		public System.Action<System.String, System.Nullable<System.Int32>, System.Collections.Generic.List<System.Int32>> ButtonClick { get; set; } 
     }
 }
 namespace ITAP.glassCAD.Extensions {
@@ -671,6 +682,14 @@ namespace ITAP.glassCAD.Documents.BoxProduction.Workflow.Context {
 namespace ITAP.glassCAD.Dictionary.Shape {
     
     public partial class ShapeDataSet {
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkflowUserSettings {
+    
+    public partial class WorkflowUserSettingsDataSet : System.Data.DataSet {
+		public ITAP.glassCAD.Data.Metadata Metadata { get; } 
+		public System.Boolean IsModify { get; } 
+		public ITAP.glassCAD.Dictionary.WorkflowUserSettings.WorkflowUserSettingsDataSet.WorkflowUserSettingsDataTable WorkflowUserSettings { get; set; } 
     }
 }
 namespace ITAP.glassCAD.Dictionary.WorkFlowDocumentTemplate {
@@ -1120,6 +1139,10 @@ namespace ITAP.glassCAD.Data {
 		public ITAP.glassCAD.Dictionary.WorkFlowDocumentTemplate.WorkFlowDocumentTemplateDataSet WorkFlowDocumentTemplateDataSet { get; } 
 		[Newtonsoft.Json.JsonIgnoreAttribute()]
 		public ITAP.glassCAD.Dictionary.WorkFlowDocumentTemplate.WorkFlowDocumentTemplateDataSet.WorkFlowDocumentTemplateDataTable WorkFlowDocumentTemplateDataTable { get; } 
+		[Newtonsoft.Json.JsonIgnoreAttribute()]
+		public ITAP.glassCAD.Dictionary.WorkflowUserSettings.WorkflowUserSettingsDataSet WorkflowUserSettingsDataSet { get; } 
+		[Newtonsoft.Json.JsonIgnoreAttribute()]
+		public ITAP.glassCAD.Dictionary.WorkflowUserSettings.WorkflowUserSettingsDataSet.WorkflowUserSettingsDataTable WorkflowUserSettingsDataTable { get; } 
     }
 }
 namespace ITAP.glassCAD.Data {
@@ -3208,11 +3231,34 @@ namespace ITAP.glassCAD.Production {
 namespace ITAP.glassCAD.Production {
     public partial class ViewModel {
     
+    public partial class Rect : System.ValueType {
+		public ITAP.glassCAD.Production.ViewModel.Vector2 Min { get; set; } 
+		public ITAP.glassCAD.Production.ViewModel.Vector2 Max { get; set; } 
+		public System.Int32 Width { get; } 
+		public System.Int32 Height { get; } 
+		public ITAP.glassCAD.Production.ViewModel.Vector2 Left { get; } 
+		public ITAP.glassCAD.Production.ViewModel.Vector2 Right { get; } 
+    }
+    }
+}
+namespace ITAP.glassCAD.Production {
+    public partial class ViewModel {
+    
+    public partial class RectCommand {
+		public ITAP.glassCAD.Production.ViewModel.Vector2 Center { get; set; } 
+		public ITAP.glassCAD.Production.ViewModel.Vector2 Size { get; set; } 
+		public System.String Caption { get; set; } 
+		public System.String Action { get; set; } 
+    }
+    }
+}
+namespace ITAP.glassCAD.Production {
+    public partial class ViewModel {
+    
     public partial class RectObject {
 		public ITAP.glassCAD.Production.Model.Item Item { get; set; } 
 		public ITAP.glassCAD.Production.ViewModel.Vector2 Center { get; set; } 
 		public ITAP.glassCAD.Production.ViewModel.Vector2 Size { get; set; } 
-		public System.Boolean IsSelected { get; set; } 
 		public System.String Color { get; } 
 		public System.String Caption { get; } 
 		public System.Collections.Generic.List<System.ValueTuple<System.String, System.String>> Details { get; } 
@@ -3823,6 +3869,38 @@ namespace ITAP.glassCAD.Dictionary.Shape {
     }
     }
 }
+namespace ITAP.glassCAD.Dictionary.WorkflowUserSettings {
+    public partial class WorkflowUserSettingsDataSet {
+    
+    public partial class WorkflowUserSettingsDataTable : System.Data.DataTable {
+		public ITAP.glassCAD.Data.DictionaryMetadata DictionaryMetadata { get; } 
+		public System.Collections.Generic.IEnumerable<ITAP.glassCAD.Dictionary.WorkflowUserSettings.WorkflowUserSettingsDataSet.WorkflowUserSettingsRow> DataRows { get; } 
+		public System.Boolean IsModify { get; } 
+    }
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkflowUserSettings {
+    public partial class WorkflowUserSettingsDataSet {
+    
+    public partial class WorkflowUserSettingsRow : System.Data.DataRow {
+		public ITAP.glassCAD.Dictionary.WorkflowUserSettings.WorkflowUserSettingsDataSet.WorkflowUserSettingsDataTable WorkflowUserSettingsDataTable { get; } 
+		public ITAP.glassCAD.Dictionary.WorkflowUserSettings.WorkflowUserSettingsDataSet WorkflowUserSettingsDataSet { get; } 
+		public System.Int32 IDWorkflowUserSettings { get; set; } 
+		public System.String Name { get; set; } 
+		public System.String GroupName { get; set; } 
+		public System.String Comment { get; set; } 
+		public System.Nullable<System.Decimal> DoubleValue { get; set; } 
+		public System.String StrValue { get; set; } 
+		public System.DateTime DateValue { get; set; } 
+		public System.Byte[] BinaryValue { get; set; } 
+		public System.Boolean BitValue { get; set; } 
+		public System.Guid GUID { get; set; } 
+        protected internal WorkflowUserSettingsRow(System.Data.DataRowBuilder builder) : base(builder) {
+            throw new System.NotImplementedException();
+        }
+    }
+    }
+}
 namespace ITAP.glassCAD.Dictionary.WorkFlowDocumentTemplate {
     public partial class WorkFlowDocumentTemplateDataSet {
     
@@ -4231,7 +4309,7 @@ namespace ITAP.glassCAD.Dictionary.Operation {
 		public System.Int32 NumOperation { get; set; } 
 		public System.String Name { get; set; } 
 		public System.String CodeOperation { get; set; } 
-		public System.Int32 IDCalendar { get; set; } 
+		public System.Nullable<System.Int32> IDCalendar { get; set; } 
 		public System.Int32 OperationType { get; set; } 
 		public System.String CostWorkFlow { get; set; } 
 		public System.String DurationWorkFlow { get; set; } 
@@ -4527,7 +4605,7 @@ namespace ITAP.glassCAD.Dictionary.Goods {
 		public ITAP.glassCAD.Dictionary.Goods.GoodsDataSet.GroupGoodsDataTable GroupGoodsDataTable { get; } 
 		public ITAP.glassCAD.Dictionary.Goods.GoodsDataSet GoodsDataSet { get; } 
 		public System.Int32 IDGroup { get; set; } 
-		public System.Nullable<System.Int32> IDParent { get; set; } 
+		public System.Nullable<System.Int32> ParentID { get; set; } 
 		public System.String Name { get; set; } 
 		public System.Nullable<System.Int32> GroupGoodsExtKey { get; set; } 
         protected internal GroupGoodsRow(System.Data.DataRowBuilder builder) : base(builder) {
