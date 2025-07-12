@@ -129,6 +129,10 @@
       <DependentUpon>ButtonsActivityDesigner.xaml</DependentUpon>
     </Compile>
     <Compile Include="Designers\DelegateCommand.cs" />
+    <Compile Include="Designers\ExecuteTemplateActivityDesigner.xaml.cs">
+      <DependentUpon>ExecuteTemplateActivityDesigner.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Designers\ExecuteTemplateActivity.cs" />
     <Compile Include="Designers\InvokeActivity.cs" />
     <Compile Include="Designers\InvokeActivityDesigner.xaml.cs">
       <DependentUpon>InvokeActivityDesigner.xaml</DependentUpon>
@@ -138,6 +142,7 @@
       <DependentUpon>SwitchActivityDesigner.xaml</DependentUpon>
     </Compile>
     <Compile Include="Enums.cs" />
+    <Compile Include="Helper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Stubs.cs" />
   </ItemGroup>
@@ -147,6 +152,10 @@
   </ItemGroup>
   <ItemGroup>
     <Page Include="Designers\ButtonsActivityDesigner.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Designers\ExecuteTemplateActivityDesigner.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>

@@ -69,6 +69,12 @@ namespace glassPeople.gen {
 
                 foreach (var item in getCustomAttributes(property)) {
                     properties.Add("\t\t" + item);
+
+                    if (item == "[System.ComponentModel.DefaultValue(true)]")
+                        initial = "= true;";
+                    if (item == "[System.ComponentModel.DefaultValue(false)]")
+                        initial = "= false;";
+
                 }
 
                 properties.Add("\t\t" + $@"public {getTextTypeForProperty(property.Type)} {property.Name} {Op_Br} {get_set} {Cl_Br} {initial}");

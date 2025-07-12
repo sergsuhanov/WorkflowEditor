@@ -1,0 +1,78 @@
+﻿<sap:ActivityDesigner x:Class="ITAP.glassCAD.Dictionary.WorkFlow.Activities.ExecuteTemplateActivityDesigner"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:sap="clr-namespace:System.Activities.Presentation;assembly=System.Activities.Presentation"
+    xmlns:sapv="clr-namespace:System.Activities.Presentation.View;assembly=System.Activities.Presentation"
+    xmlns:sapc="clr-namespace:System.Activities.Presentation.Converters;assembly=System.Activities.Presentation"
+    Name="acDes">
+
+    <sap:ActivityDesigner.Resources>
+        <sapc:ArgumentToExpressionConverter x:Key="argumentToExpressionConverter" />
+        <BooleanToVisibilityConverter x:Key="boolConverter" />
+    </sap:ActivityDesigner.Resources>
+
+    <Expander Header="Параметры" IsExpanded="False">
+        <StackPanel>
+            <Button DockPanel.Dock="Right" Command="{Binding Path=SelectTemplate}">Выбрать шаблон</Button>
+
+            <TextBlock>Входные параметры:</TextBlock>
+            <ListBox ItemsSource="{Binding Path=ModelItem.InArguments}">
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="100"></ColumnDefinition>
+                                <ColumnDefinition Width="200"></ColumnDefinition>
+                                <ColumnDefinition Width="Auto"></ColumnDefinition>
+                            </Grid.ColumnDefinitions>
+
+                            <TextBlock Grid.Column="0" FontWeight="Bold"
+                               Text="{Binding Path=Name}" 
+                               VerticalAlignment="Center" />
+
+                            <sapv:ExpressionTextBox Grid.Column="1" 
+                                Expression="{Binding Path=Argument, Mode=TwoWay, Converter={StaticResource argumentToExpressionConverter}, ConverterParameter=In}"
+                                ExpressionType="{Binding Path=Argument.ArgumentType}"
+                                OwnerActivity="{Binding ElementName=acDes, Path=ModelItem}">
+                            </sapv:ExpressionTextBox>
+
+                            <TextBlock Margin="2,0,0,0" FontSize="8" VerticalAlignment="Center" Grid.Column="2" Text="{Binding Path=Argument.ArgumentType.Name}"></TextBlock>
+                        </Grid>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+
+            <TextBlock>Выходные параметры:</TextBlock>
+            <ListBox ItemsSource="{Binding Path=ModelItem.OutArguments}">
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="100"></ColumnDefinition>
+                                <ColumnDefinition Width="200"></ColumnDefinition>
+                                <ColumnDefinition Width="Auto"></ColumnDefinition>
+                            </Grid.ColumnDefinitions>
+
+                            <TextBlock Grid.Column="0" FontWeight="Bold"
+                               Text="{Binding Path=Name}" 
+                               VerticalAlignment="Center" />
+                            
+
+                            <sapv:ExpressionTextBox Grid.Column="1" 
+                                UseLocationExpression="True"
+                                Expression="{Binding Path=Argument, Mode=TwoWay, Converter={StaticResource argumentToExpressionConverter}, ConverterParameter=Out}"
+                                ExpressionType="{Binding Path=Argument.ArgumentType}"
+                                OwnerActivity="{Binding ElementName=acDes, Path=ModelItem}">
+                            </sapv:ExpressionTextBox>
+
+                            <TextBlock Margin="2,0,0,0" FontSize="8" VerticalAlignment="Center" Grid.Column="2" Text="{Binding Path=Argument.ArgumentType.Name}"></TextBlock>
+
+                        </Grid>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+
+        </StackPanel>
+    </Expander>
+
+</sap:ActivityDesigner>

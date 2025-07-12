@@ -217,11 +217,11 @@ namespace ITAP.glassCAD.Production {
 namespace ITAP.glassCAD.Production.Model {
     
     public partial class Good : ITAP.glassCAD.Production.Model.Item {
-		public ITAP.glassCAD.GoodsType GoodsType { get; set; } 
+		public ITAP.glassCAD.GoodsType GoodsType { get; } 
 		public ITAP.glassCAD.Dictionary.Goods.GoodsDataSet.GoodsRow GoodsRow { get; set; } 
-		public System.Boolean InvertInShape { get; set; } 
 		public System.String Formula { get; set; } 
 		public System.String Comment { get; set; } 
+		public System.Boolean InvertInShape { get; set; } 
 		public System.Int32 SideSputtering { get; set; } 
     }
 }
@@ -265,7 +265,7 @@ namespace ITAP.glassCAD.Production.Model {
 		public System.Boolean IsShapeManualSetting { get; set; } 
 		public System.Byte[] ShapeData { get; set; } 
 		public System.Int32 Level { get; } 
-		public System.Int32 NumPos { get; set; } 
+		public System.Nullable<System.Int32> NumPos { get; set; } 
 		public System.Collections.Generic.List<ITAP.glassCAD.Production.Model.Item> Parents { get; set; } 
 		public ITAP.glassCAD.Production.Model.Item Child { get; set; } 
 		public System.Collections.Generic.IEnumerable<ITAP.glassCAD.Production.Model.Item> AllParents { get; } 
@@ -281,7 +281,7 @@ namespace ITAP.glassCAD.Production.Model {
 namespace ITAP.glassCAD.Production.Model {
     
     public partial class Operation : ITAP.glassCAD.Production.Model.Item {
-		public ITAP.glassCAD.OperationType OperationType { get; set; } 
+		public ITAP.glassCAD.OperationType OperationType { get; } 
 		public ITAP.glassCAD.Dictionary.Operation.OperationDataSet.OperationRow OperationRow { get; set; } 
 		public System.Nullable<System.Decimal> Duration { get; set; } 
 		public System.Nullable<System.Decimal> Cost { get; set; } 
@@ -753,6 +753,10 @@ namespace ITAP.glassCAD.Dictionary.Production {
 		public ITAP.glassCAD.Dictionary.Production.ProductionDataSet.ProductionDataTable Production { get; set; } 
 		public ITAP.glassCAD.Dictionary.Production.ProductionDataSet.ProductionGroupDataTable ProductionGroup { get; set; } 
 		public ITAP.glassCAD.Dictionary.Production.ProductionDataSet.ProductionModelDataTable ProductionModel { get; set; } 
+		public ITAP.glassCAD.Dictionary.Production.ProductionDataSet.ProductionModelGoodDataTable ProductionModelGood { get; set; } 
+		public ITAP.glassCAD.Dictionary.Production.ProductionDataSet.ProductionModelHalfProductionDataTable ProductionModelHalfProduction { get; set; } 
+		public ITAP.glassCAD.Dictionary.Production.ProductionDataSet.ProductionModelOperationDataTable ProductionModelOperation { get; set; } 
+		public ITAP.glassCAD.Dictionary.Production.ProductionDataSet.ProductionModelOperationParamDataTable ProductionModelOperationParam { get; set; } 
     }
 }
 namespace ITAP.glassCAD.Dictionary.PriceForms {
@@ -1111,6 +1115,14 @@ namespace ITAP.glassCAD.Data {
 		public ITAP.glassCAD.Dictionary.Production.ProductionDataSet.ProductionGroupDataTable ProductionGroupDataTable { get; } 
 		[Newtonsoft.Json.JsonIgnoreAttribute()]
 		public ITAP.glassCAD.Dictionary.Production.ProductionDataSet.ProductionModelDataTable ProductionModelDataTable { get; } 
+		[Newtonsoft.Json.JsonIgnoreAttribute()]
+		public ITAP.glassCAD.Dictionary.Production.ProductionDataSet.ProductionModelGoodDataTable ProductionModelGoodDataTable { get; } 
+		[Newtonsoft.Json.JsonIgnoreAttribute()]
+		public ITAP.glassCAD.Dictionary.Production.ProductionDataSet.ProductionModelHalfProductionDataTable ProductionModelHalfProductionDataTable { get; } 
+		[Newtonsoft.Json.JsonIgnoreAttribute()]
+		public ITAP.glassCAD.Dictionary.Production.ProductionDataSet.ProductionModelOperationDataTable ProductionModelOperationDataTable { get; } 
+		[Newtonsoft.Json.JsonIgnoreAttribute()]
+		public ITAP.glassCAD.Dictionary.Production.ProductionDataSet.ProductionModelOperationParamDataTable ProductionModelOperationParamDataTable { get; } 
 		[Newtonsoft.Json.JsonIgnoreAttribute()]
 		public ITAP.glassCAD.Dictionary.ScanActivity.ScanActivityDataSet ScanActivityDataSet { get; } 
 		[Newtonsoft.Json.JsonIgnoreAttribute()]
@@ -4144,7 +4156,7 @@ namespace ITAP.glassCAD.Dictionary.Production {
 		public System.Int32 IDMeasure { get; set; } 
 		public System.Int32 ViewSide { get; set; } 
 		public System.Boolean ProductionModelHasError { get; set; } 
-		public System.Int32 IDShapeDefault { get; set; } 
+		public System.Nullable<System.Int32> IDShapeDefault { get; set; } 
 		public ITAP.glassCAD.Dictionary.Production.ProductionDataSet.ProductionGroupRow ProductionGroup { get; } 
         protected internal ProductionRow(System.Data.DataRowBuilder builder) : base(builder) {
             throw new System.NotImplementedException();
@@ -4195,9 +4207,143 @@ namespace ITAP.glassCAD.Dictionary.Production {
 		public ITAP.glassCAD.Dictionary.Production.ProductionDataSet ProductionDataSet { get; } 
 		public System.Int32 IDProductionModel { get; set; } 
 		public System.Nullable<System.Int32> IDProduction { get; set; } 
+		public System.Nullable<System.Int32> NumPos { get; set; } 
 		public System.String Name { get; set; } 
+		public System.Nullable<System.Int32> Level { get; set; } 
+		public System.String NameManual { get; set; } 
+		public System.String IDParentProductionModel { get; set; } 
+		public System.String IDChildProductionModel { get; set; } 
+		public System.Nullable<System.Int32> IDProductionModelHalfProduction { get; set; } 
+		public System.Nullable<System.Int32> IDProductionModelOperation { get; set; } 
+		public System.Nullable<System.Int32> IDProductionModelGood { get; set; } 
+		public System.Boolean IsShapeManualSetting { get; set; } 
+		public System.Nullable<System.Guid> GUID { get; set; } 
 		public ITAP.glassCAD.Dictionary.Production.ProductionDataSet.ProductionRow Production { get; } 
+		public ITAP.glassCAD.Dictionary.Production.ProductionDataSet.ProductionModelGoodRow ProductionModelGoodRow { get; } 
+		public ITAP.glassCAD.Dictionary.Production.ProductionDataSet.ProductionModelHalfProductionRow ProductionModelHalfProductionRow { get; } 
+		public ITAP.glassCAD.Dictionary.Production.ProductionDataSet.ProductionModelOperationRow ProductionModelOperationRow { get; } 
+		public System.Boolean IsGood { get; } 
+		public System.Boolean IsHalfProduction { get; } 
+		public System.Boolean IsOperation { get; } 
         protected internal ProductionModelRow(System.Data.DataRowBuilder builder) : base(builder) {
+            throw new System.NotImplementedException();
+        }
+    }
+    }
+}
+namespace ITAP.glassCAD.Dictionary.Production {
+    public partial class ProductionDataSet {
+    
+    public partial class ProductionModelGoodDataTable : System.Data.DataTable {
+		public ITAP.glassCAD.Data.DictionaryMetadata DictionaryMetadata { get; } 
+		public System.Collections.Generic.IEnumerable<ITAP.glassCAD.Dictionary.Production.ProductionDataSet.ProductionModelGoodRow> DataRows { get; } 
+		public System.Boolean IsModify { get; } 
+    }
+    }
+}
+namespace ITAP.glassCAD.Dictionary.Production {
+    public partial class ProductionDataSet {
+    
+    public partial class ProductionModelGoodRow : System.Data.DataRow {
+		public ITAP.glassCAD.Dictionary.Production.ProductionDataSet.ProductionModelGoodDataTable ProductionModelGoodDataTable { get; } 
+		public ITAP.glassCAD.Dictionary.Production.ProductionDataSet ProductionDataSet { get; } 
+		public System.Int32 IDProductionModelGood { get; set; } 
+		public System.Nullable<System.Int32> IDProduction { get; set; } 
+		public System.Int32 IDGood { get; set; } 
+		public System.String Formula { get; set; } 
+		public System.Boolean InvertInShape { get; set; } 
+		public System.Nullable<System.Guid> GUID { get; set; } 
+		public System.String Comment { get; set; } 
+		public System.Nullable<System.Int32> SideSputtering { get; set; } 
+		public ITAP.glassCAD.Dictionary.Production.ProductionDataSet.ProductionRow Production { get; } 
+        protected internal ProductionModelGoodRow(System.Data.DataRowBuilder builder) : base(builder) {
+            throw new System.NotImplementedException();
+        }
+    }
+    }
+}
+namespace ITAP.glassCAD.Dictionary.Production {
+    public partial class ProductionDataSet {
+    
+    public partial class ProductionModelHalfProductionDataTable : System.Data.DataTable {
+		public ITAP.glassCAD.Data.DictionaryMetadata DictionaryMetadata { get; } 
+		public System.Collections.Generic.IEnumerable<ITAP.glassCAD.Dictionary.Production.ProductionDataSet.ProductionModelHalfProductionRow> DataRows { get; } 
+		public System.Boolean IsModify { get; } 
+    }
+    }
+}
+namespace ITAP.glassCAD.Dictionary.Production {
+    public partial class ProductionDataSet {
+    
+    public partial class ProductionModelHalfProductionRow : System.Data.DataRow {
+		public ITAP.glassCAD.Dictionary.Production.ProductionDataSet.ProductionModelHalfProductionDataTable ProductionModelHalfProductionDataTable { get; } 
+		public ITAP.glassCAD.Dictionary.Production.ProductionDataSet ProductionDataSet { get; } 
+		public System.Int32 IDProductionModelHalfProduction { get; set; } 
+		public System.Nullable<System.Int32> IDProduction { get; set; } 
+		public System.Nullable<System.Guid> GUID { get; set; } 
+		public ITAP.glassCAD.Dictionary.Production.ProductionDataSet.ProductionRow Production { get; } 
+        protected internal ProductionModelHalfProductionRow(System.Data.DataRowBuilder builder) : base(builder) {
+            throw new System.NotImplementedException();
+        }
+    }
+    }
+}
+namespace ITAP.glassCAD.Dictionary.Production {
+    public partial class ProductionDataSet {
+    
+    public partial class ProductionModelOperationDataTable : System.Data.DataTable {
+		public ITAP.glassCAD.Data.DictionaryMetadata DictionaryMetadata { get; } 
+		public System.Collections.Generic.IEnumerable<ITAP.glassCAD.Dictionary.Production.ProductionDataSet.ProductionModelOperationRow> DataRows { get; } 
+		public System.Boolean IsModify { get; } 
+    }
+    }
+}
+namespace ITAP.glassCAD.Dictionary.Production {
+    public partial class ProductionDataSet {
+    
+    public partial class ProductionModelOperationRow : System.Data.DataRow {
+		public ITAP.glassCAD.Dictionary.Production.ProductionDataSet.ProductionModelOperationDataTable ProductionModelOperationDataTable { get; } 
+		public ITAP.glassCAD.Dictionary.Production.ProductionDataSet ProductionDataSet { get; } 
+		public System.Int32 IDProductionModelOperation { get; set; } 
+		public System.Nullable<System.Int32> IDProduction { get; set; } 
+		public System.Int32 IDOperation { get; set; } 
+		public System.Nullable<System.Guid> GUID { get; set; } 
+		public ITAP.glassCAD.Dictionary.Production.ProductionDataSet.ProductionRow Production { get; } 
+        protected internal ProductionModelOperationRow(System.Data.DataRowBuilder builder) : base(builder) {
+            throw new System.NotImplementedException();
+        }
+    }
+    }
+}
+namespace ITAP.glassCAD.Dictionary.Production {
+    public partial class ProductionDataSet {
+    
+    public partial class ProductionModelOperationParamDataTable : System.Data.DataTable {
+		public ITAP.glassCAD.Data.DictionaryMetadata DictionaryMetadata { get; } 
+		public System.Collections.Generic.IEnumerable<ITAP.glassCAD.Dictionary.Production.ProductionDataSet.ProductionModelOperationParamRow> DataRows { get; } 
+		public System.Boolean IsModify { get; } 
+    }
+    }
+}
+namespace ITAP.glassCAD.Dictionary.Production {
+    public partial class ProductionDataSet {
+    
+    public partial class ProductionModelOperationParamRow : System.Data.DataRow {
+		public ITAP.glassCAD.Dictionary.Production.ProductionDataSet.ProductionModelOperationParamDataTable ProductionModelOperationParamDataTable { get; } 
+		public ITAP.glassCAD.Dictionary.Production.ProductionDataSet ProductionDataSet { get; } 
+		public System.Int32 IDProductionModelOperationParam { get; set; } 
+		public System.Nullable<System.Int32> IDProduction { get; set; } 
+		public System.Int32 IDOperationParam { get; set; } 
+		public System.Int32 IDOperationParamValue { get; set; } 
+		public System.String Comment { get; set; } 
+		public System.Nullable<System.Guid> GUID { get; set; } 
+		public System.Byte[] BytesValue { get; set; } 
+		public System.String StringValue { get; set; } 
+		public System.Nullable<System.Decimal> DecimalValue { get; set; } 
+		public System.Nullable<System.DateTime> DateTimeValue { get; set; } 
+		public System.Nullable<System.Boolean> BoolValue { get; set; } 
+		public ITAP.glassCAD.Dictionary.Production.ProductionDataSet.ProductionRow Production { get; } 
+        protected internal ProductionModelOperationParamRow(System.Data.DataRowBuilder builder) : base(builder) {
             throw new System.NotImplementedException();
         }
     }

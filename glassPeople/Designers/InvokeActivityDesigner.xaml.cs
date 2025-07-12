@@ -1,36 +1,22 @@
 ﻿using System;
 using System.Activities;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace glassPeople.ActivityLibrary.Core {
-    public partial class InvokeActivityDesigner
-    {
+    public partial class InvokeActivityDesigner {
 
         public Object SelectedItem { get; set; }
 
         public ICommand SelectTemplate { get; set; }
 
-
-
-        public Visibility ArgumentsVisibility
-        {
+        public Visibility ArgumentsVisibility {
             get { return (Visibility)GetValue(ArgumentsVisibilityProperty); }
             set { SetValue(ArgumentsVisibilityProperty, value); }
         }
-        public Visibility OutputVisibility
-        {
+        public Visibility OutputVisibility {
             get { return (Visibility)GetValue(OutputVisibilityProperty); }
             set { SetValue(OutputVisibilityProperty, value); }
         }
@@ -41,7 +27,6 @@ namespace glassPeople.ActivityLibrary.Core {
 
         public static readonly DependencyProperty OutputVisibilityProperty =
             DependencyProperty.Register("OutputVisibility", typeof(Visibility), typeof(InvokeActivityDesigner), new PropertyMetadata(Visibility.Collapsed));
-
 
         public InvokeActivityDesigner() {
             InitializeComponent();
@@ -70,7 +55,7 @@ namespace glassPeople.ActivityLibrary.Core {
                         if (root != null) {
 
                             foreach (var args in root.Properties.Where(t => t.Type.BaseType == typeof(InArgument))) {
-                 
+
                                 arguments.Add(new InvokeInArgument() {
                                     Name = args.Name,
                                     Value = (InArgument)Activator.CreateInstance(args.Type)
@@ -83,7 +68,6 @@ namespace glassPeople.ActivityLibrary.Core {
                                     Value = (OutArgument)Activator.CreateInstance(args.Type)
                                 });
                             }
-
                         }
                     }
                     if (ext == ".mrt") {
@@ -91,21 +75,20 @@ namespace glassPeople.ActivityLibrary.Core {
 
                         var r = new Stimulsoft.Report.StiReport();
                         r.Load(ofd.FileName);
-                        
+
                         foreach (var args in r.Dictionary.Variables.ToList()) {
                             if (args.Name.ToLower() == "accountid")
                                 continue;
 
                             arguments.Add(new InvokeInArgument() {
                                 Name = args.Name,
-                                Value = (InArgument) InArgument.Create(args.Type, ArgumentDirection.In)
+                                Value = (InArgument)InArgument.Create(args.Type, ArgumentDirection.In)
                             });
                         }
 
-
                         output.Add(new InvokeOutArgument() {
                             Name = "Result",
-                            Value = (OutArgument) Argument.Create(typeof(Stimulsoft.Report.StiReport), ArgumentDirection.Out)
+                            Value = (OutArgument)Argument.Create(typeof(Stimulsoft.Report.StiReport), ArgumentDirection.Out)
                         });
                     }
                     #endregion
@@ -117,22 +100,17 @@ namespace glassPeople.ActivityLibrary.Core {
                     if (invokeMode == InvokeMode.Task)
                         OutputVisibility = Visibility.Collapsed;
 
-
                 }
-
-
             });
-
 
         }
 
-        protected override void OnModelItemChanged(object newItem)
-        {
+        protected override void OnModelItemChanged(object newItem) {
             base.OnModelItemChanged(newItem);
             base.OnModelItemChanged(newItem);
 
-            var invokeMode = (InvokeMode) this.ModelItem.Properties["Mode"].ComputedValue;
-            
+            var invokeMode = (InvokeMode)this.ModelItem.Properties["Mode"].ComputedValue;
+
             var arguments = this.ModelItem.Properties["Arguments"].Collection;
             ArgumentsVisibility = (arguments.Count > 0) ? Visibility.Visible : Visibility.Collapsed;
 
@@ -143,7 +121,7 @@ namespace glassPeople.ActivityLibrary.Core {
 
         }
 
-        System.Activities.ActivityBuilder load(String xaml) {
+        private System.Activities.ActivityBuilder load(String xaml) {
             System.Activities.ActivityBuilder root = null;
             try {
                 var stringReader = new System.IO.StringReader(xaml);
@@ -155,10 +133,5 @@ namespace glassPeople.ActivityLibrary.Core {
 
             return root;
         }
-
-  
-
- 
-
     }
 }
