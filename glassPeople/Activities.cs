@@ -675,6 +675,12 @@ namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Utilites {
 }
 namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Utilites {
     
+    public partial class OrderItemsIdentWorkingInformationActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.EditFormNativeActivity {
+		public System.Activities.InArgument<System.Int32> IDOrderItemsIdent { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Utilites {
+    
     public partial class SelectObjectAttributesActivity<T> : ITAP.glassCAD.Dictionary.WorkFlow.Activities.EditFormNativeActivity {
 		public ITAP.Components.Dialog.SelectViewType SelectViewType { get; set; } 
 		public System.Boolean AllowAddRow { get; set; } 

@@ -63,6 +63,16 @@ namespace ITAP.glassCAD {
         GlassCutting, FrameCutting, FrameBending, ProductionAssembly, Tempering, Packaging, FrameManufacturing, Shipment, StraightEdgeProcessing, ProcessingCenter, ShprossManufacturing, Lamination, SupplierGlassPreparation, InternalSemiFinishedPreparation, Painting, PurchasedSemiFinishedPreparation, QualityControl, Other
     }
 }
+namespace ITAP.glassCAD {
+    public enum OperationInModelRule {
+        MultipleOccurrences, SingleOccurrence, SingleOccurrenceInBranch, LastOperation, SingleInputMaterial
+    }
+}
+namespace ITAP.glassCAD {
+    public enum OperationRelationRule {
+        AllowedOperationsBefore, AllowedMaterialsBefore, ForbiddenOperationsBefore, ForbiddenMaterialsBefore, AllowedOperationsAfter, ForbiddenOperationsAfter
+    }
+}
 namespace ITAP.glassCAD.Workflow {
     public enum WorkflowResult {
         Terminate, Success, Exception
