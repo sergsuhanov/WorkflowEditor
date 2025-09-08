@@ -2638,6 +2638,11 @@ namespace glassPeople.ActivityLibrary.glassCAD.Planing.Packing.Strategy.RSK {
 }
 namespace glassPeople.ActivityLibrary.glassCAD.Planing.Packing.Strategy.KPI {
     
+    public partial class ArfaStrategy : glassPeople.ActivityLibrary.glassCAD.Planing.Packing.Strategy.Simple {
+    }
+}
+namespace glassPeople.ActivityLibrary.glassCAD.Planing.Packing.Strategy.KPI {
+    
     public partial class FullPackPackingStrategy : glassPeople.ActivityLibrary.glassCAD.Planing.Packing.Strategy.Simple {
     }
 }
@@ -4891,6 +4896,7 @@ namespace ITAP.glassCAD.Dictionary.GoodParties {
 		public System.Int32 IDGoodParties { get; set; } 
 		public System.String Name { get; set; } 
 		public System.String GroupName { get; set; } 
+		public System.Nullable<System.DateTime> Date { get; set; } 
         protected internal GoodPartiesRow(System.Data.DataRowBuilder builder) : base(builder) {
             throw new System.NotImplementedException();
         }
@@ -5403,6 +5409,28 @@ namespace ITAP.glassCAD.Dictionary.CalculationVariables {
         protected internal CalculationVariablesRow(System.Data.DataRowBuilder builder) : base(builder) {
             throw new System.NotImplementedException();
         }
+    }
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Utilites {
+    public partial class OrderItemsIdentWorkingInformationActivity {
+    
+    public partial class Operation {
+		public System.String Name { get; set; } 
+		public System.Int32 GroupCode { get; set; } 
+		public System.Int32 IDAppointmentsItems { get; set; } 
+		public System.String BufferSecondName { get; set; } 
+		public System.String ObjectInfo { get; set; } 
+		public System.Int32 Status { get; set; } 
+		public System.DateTime StatusDateTimeChanged { get; set; } 
+		public System.String PartialDefectLink { get; set; } 
+		public System.Nullable<System.Int32> CloneLink { get; set; } 
+		public System.String Parents { get; set; } 
+		public System.String Childrens { get; set; } 
+		public System.Collections.Generic.List<ITAP.glassCAD.Dictionary.WorkFlow.Activities.Utilites.OrderItemsIdentWorkingInformationActivity.Operation> ParentOperations { get; set; } 
+		public System.Collections.Generic.List<ITAP.glassCAD.Dictionary.WorkFlow.Activities.Utilites.OrderItemsIdentWorkingInformationActivity.Operation> ChildOperations { get; set; } 
+		public System.Collections.Generic.IEnumerable<ITAP.glassCAD.Dictionary.WorkFlow.Activities.Utilites.OrderItemsIdentWorkingInformationActivity.Operation> AllParentsOperations { get; } 
+		public System.Boolean IsExpanded { get; set; } 
     }
     }
 }
