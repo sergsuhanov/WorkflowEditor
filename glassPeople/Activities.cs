@@ -1824,7 +1824,20 @@ namespace glassPeople.ActivityLibrary.glassCAD.Planing.Union.Strategy {
 }
 namespace glassPeople.ActivityLibrary.glassCAD.Planing.Union.Strategy {
     
+    public partial class ByExpression<T> : glassPeople.ActivityLibrary.glassCAD.Planing.Union.MultiGroupActivity {
+		public System.Activities.InArgument<glassPeople.ActivityLibrary.glassCAD.Planing.Model.PlanningContext> schedulerContext { get; set; } 
+		public System.Activities.InArgument<System.Func<glassPeople.ActivityLibrary.glassCAD.Planing.Model.AppointmentItem, T>> Expression { get; set; } 
+    }
+}
+namespace glassPeople.ActivityLibrary.glassCAD.Planing.Union.Strategy {
+    
     public partial class ByGoods : glassPeople.ActivityLibrary.glassCAD.Planing.Union.MultiGroupActivity {
+		public System.Activities.InArgument<glassPeople.ActivityLibrary.glassCAD.Planing.Model.PlanningContext> SchedulerContext { get; set; } 
+    }
+}
+namespace glassPeople.ActivityLibrary.glassCAD.Planing.Union.Strategy {
+    
+    public partial class ByGoodsInTriplex : glassPeople.ActivityLibrary.glassCAD.Planing.Union.MultiGroupActivity {
 		public System.Activities.InArgument<glassPeople.ActivityLibrary.glassCAD.Planing.Model.PlanningContext> SchedulerContext { get; set; } 
     }
 }
