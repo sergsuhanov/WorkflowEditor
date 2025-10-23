@@ -1837,12 +1837,6 @@ namespace glassPeople.ActivityLibrary.glassCAD.Planing.Union.Strategy {
 }
 namespace glassPeople.ActivityLibrary.glassCAD.Planing.Union.Strategy {
     
-    public partial class ByGoodsInTriplex : glassPeople.ActivityLibrary.glassCAD.Planing.Union.MultiGroupActivity {
-		public System.Activities.InArgument<glassPeople.ActivityLibrary.glassCAD.Planing.Model.PlanningContext> SchedulerContext { get; set; } 
-    }
-}
-namespace glassPeople.ActivityLibrary.glassCAD.Planing.Union.Strategy {
-    
     public partial class ByLevel : glassPeople.ActivityLibrary.glassCAD.Planing.Union.MultiGroupActivity {
     }
 }
