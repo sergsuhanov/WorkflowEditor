@@ -369,6 +369,11 @@ namespace ITAP.glassCAD.Helpers {
 }
 namespace ITAP.glassCAD.Extensions {
     
+    public abstract partial class DataRowExtensions {
+    }
+}
+namespace ITAP.glassCAD.Extensions {
+    
     public abstract partial class DateTimeExtensions {
     }
 }
@@ -681,6 +686,17 @@ namespace ITAP.glassCAD.Documents.Orders.WorkFlow.Context {
 		public ITAP.glassCAD.Documents.Orders.WorkFlow.Context.OrderServiceCalculationContext OrderServiceCalculationContext { get; set; } 
 		public ITAP.glassCAD.Documents.Orders.WorkFlow.Context.OrderGoodCalculationContext OrderGoodCalculationContext { get; set; } 
 		public ITAP.glassCAD.Documents.Orders.WorkFlow.Context.OrderCalculationContext OrderCalculationContext { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Documents.GoodsHouse {
+    
+    public partial class GoodsHouseDataSet : System.Data.DataSet {
+		public ITAP.glassCAD.Data.Metadata Metadata { get; } 
+		public System.Boolean IsModify { get; } 
+		public ITAP.glassCAD.Documents.GoodsHouse.GoodsHouseDataSet.GoodsHouseRow HeaderRow { get; } 
+		public ITAP.glassCAD.Documents.GoodsHouse.GoodsHouseDataSet.GoodsHouseDataTable GoodsHouse { get; set; } 
+		public ITAP.glassCAD.Documents.GoodsHouse.GoodsHouseDataSet.GoodsHouseDiractionDataTable GoodsHouseDiraction { get; set; } 
+		public ITAP.glassCAD.Documents.GoodsHouse.GoodsHouseDataSet.GoodsHouseItemsDataTable GoodsHouseItems { get; set; } 
     }
 }
 namespace ITAP.glassCAD.Documents.BoxProduction {
@@ -2177,26 +2193,6 @@ namespace glassPeople.Model.Account {
     public partial class User : Microsoft.AspNetCore.Identity.IdentityUser {
     }
 }
-namespace glassPeople.ActivityLibrary.Sql {
-    
-    public partial class Field {
-		public System.String Name { get; set; } 
-		public System.Object Value { get; set; } 
-    }
-}
-namespace glassPeople.ActivityLibrary.Sql {
-    [System.Reflection.DefaultMemberAttribute("Item")]
-    public partial class Row : System.ValueType {
-		public System.Collections.Generic.List<glassPeople.ActivityLibrary.Sql.Field> Fields { get; set; } 
-		public System.Object[] ItemArray { get; } 
-		public System.Object Item { get; } 
-    }
-}
-namespace glassPeople.ActivityLibrary.Sql {
-    
-    public abstract partial class Helper {
-    }
-}
 namespace glassPeople.ActivityLibrary.glassCAD.Utilites {
     
     public partial class TestQueryItem {
@@ -3256,6 +3252,26 @@ namespace glassPeople.ActivityLibrary.glassCAD.Planing.Activity.Actualisation {
 		public System.Nullable<System.DateTime> ManualDateDeliver { get; set; } 
     }
 }
+namespace glassPeople.ActivityLibrary.Sql {
+    
+    public partial class Field {
+		public System.String Name { get; set; } 
+		public System.Object Value { get; set; } 
+    }
+}
+namespace glassPeople.ActivityLibrary.Sql {
+    [System.Reflection.DefaultMemberAttribute("Item")]
+    public partial class Row : System.ValueType {
+		public System.Collections.Generic.List<glassPeople.ActivityLibrary.Sql.Field> Fields { get; set; } 
+		public System.Object[] ItemArray { get; } 
+		public System.Object Item { get; } 
+    }
+}
+namespace glassPeople.ActivityLibrary.Sql {
+    
+    public abstract partial class Helper {
+    }
+}
 namespace glassPeople.ActivityLibrary.Core {
     
     public partial class InvokeInArgument {
@@ -3835,6 +3851,91 @@ namespace ITAP.glassCAD.Documents.Orders {
     }
     }
 }
+namespace ITAP.glassCAD.Documents.GoodsHouse {
+    public partial class GoodsHouseDataSet {
+    
+    public partial class GoodsHouseDataTable : System.Data.DataTable {
+		public ITAP.glassCAD.Data.DictionaryMetadata DictionaryMetadata { get; } 
+		public System.Collections.Generic.IEnumerable<ITAP.glassCAD.Documents.GoodsHouse.GoodsHouseDataSet.GoodsHouseRow> DataRows { get; } 
+		public System.Boolean IsModify { get; } 
+    }
+    }
+}
+namespace ITAP.glassCAD.Documents.GoodsHouse {
+    public partial class GoodsHouseDataSet {
+    
+    public partial class GoodsHouseRow : System.Data.DataRow {
+		public ITAP.glassCAD.Documents.GoodsHouse.GoodsHouseDataSet.GoodsHouseDataTable GoodsHouseDataTable { get; } 
+		public ITAP.glassCAD.Documents.GoodsHouse.GoodsHouseDataSet GoodsHouseDataSet { get; } 
+		public System.Int32 IDGoodsHouse { get; set; } 
+		public System.Int32 IDDocOper { get; set; } 
+		public System.String NmDoc { get; set; } 
+		public System.Int32 IDDocOperItems { get; set; } 
+		public System.DateTime DtDoc { get; set; } 
+		public System.String Comment { get; set; } 
+		public System.Nullable<System.Int32> IDPeople { get; set; } 
+		public System.Nullable<System.Int32> IDCompany { get; set; } 
+        protected internal GoodsHouseRow(System.Data.DataRowBuilder builder) : base(builder) {
+            throw new System.NotImplementedException();
+        }
+    }
+    }
+}
+namespace ITAP.glassCAD.Documents.GoodsHouse {
+    public partial class GoodsHouseDataSet {
+    
+    public partial class GoodsHouseDiractionDataTable : System.Data.DataTable {
+		public ITAP.glassCAD.Data.DictionaryMetadata DictionaryMetadata { get; } 
+		public System.Collections.Generic.IEnumerable<ITAP.glassCAD.Documents.GoodsHouse.GoodsHouseDataSet.GoodsHouseDiractionRow> DataRows { get; } 
+		public System.Boolean IsModify { get; } 
+    }
+    }
+}
+namespace ITAP.glassCAD.Documents.GoodsHouse {
+    public partial class GoodsHouseDataSet {
+    
+    public partial class GoodsHouseDiractionRow : System.Data.DataRow {
+		public ITAP.glassCAD.Documents.GoodsHouse.GoodsHouseDataSet.GoodsHouseDiractionDataTable GoodsHouseDiractionDataTable { get; } 
+		public ITAP.glassCAD.Documents.GoodsHouse.GoodsHouseDataSet GoodsHouseDataSet { get; } 
+		public System.Int32 IDGoodsHouseDiraction { get; set; } 
+		public System.Nullable<System.Int32> IDGoodsHouse { get; set; } 
+		public System.Int32 IDDiraction { get; set; } 
+		public System.DateTime PlanDate { get; set; } 
+		public System.DateTime FactDate { get; set; } 
+		public ITAP.glassCAD.Documents.GoodsHouse.GoodsHouseDataSet.GoodsHouseRow GoodsHouse { get; } 
+        protected internal GoodsHouseDiractionRow(System.Data.DataRowBuilder builder) : base(builder) {
+            throw new System.NotImplementedException();
+        }
+    }
+    }
+}
+namespace ITAP.glassCAD.Documents.GoodsHouse {
+    public partial class GoodsHouseDataSet {
+    
+    public partial class GoodsHouseItemsDataTable : System.Data.DataTable {
+		public ITAP.glassCAD.Data.DictionaryMetadata DictionaryMetadata { get; } 
+		public System.Collections.Generic.IEnumerable<ITAP.glassCAD.Documents.GoodsHouse.GoodsHouseDataSet.GoodsHouseItemsRow> DataRows { get; } 
+		public System.Boolean IsModify { get; } 
+    }
+    }
+}
+namespace ITAP.glassCAD.Documents.GoodsHouse {
+    public partial class GoodsHouseDataSet {
+    
+    public partial class GoodsHouseItemsRow : System.Data.DataRow {
+		public ITAP.glassCAD.Documents.GoodsHouse.GoodsHouseDataSet.GoodsHouseItemsDataTable GoodsHouseItemsDataTable { get; } 
+		public ITAP.glassCAD.Documents.GoodsHouse.GoodsHouseDataSet GoodsHouseDataSet { get; } 
+		public System.Int32 IDGoodsHouseItems { get; set; } 
+		public System.Nullable<System.Int32> IDGoodsHouse { get; set; } 
+		public System.Int32 NumPos { get; set; } 
+		public System.Int32 IDGood { get; set; } 
+		public ITAP.glassCAD.Documents.GoodsHouse.GoodsHouseDataSet.GoodsHouseRow GoodsHouse { get; } 
+        protected internal GoodsHouseItemsRow(System.Data.DataRowBuilder builder) : base(builder) {
+            throw new System.NotImplementedException();
+        }
+    }
+    }
+}
 namespace ITAP.glassCAD.Documents.BoxProduction {
     public partial class BoxProductionDataSet {
     
@@ -3959,6 +4060,7 @@ namespace ITAP.glassCAD.Dictionary.WorkflowUserSettings {
 		public System.String Name { get; set; } 
 		public System.String GroupName { get; set; } 
 		public System.String Comment { get; set; } 
+		public System.Nullable<System.Int32> IDValue { get; set; } 
 		public System.Nullable<System.Decimal> DoubleValue { get; set; } 
 		public System.String StrValue { get; set; } 
 		public System.DateTime DateValue { get; set; } 
@@ -4926,6 +5028,7 @@ namespace ITAP.glassCAD.Dictionary.Equipment {
 		public System.Nullable<System.Guid> GUID { get; set; } 
 		public System.Nullable<System.Guid> Ident { get; set; } 
 		public System.String Settings { get; set; } 
+		public System.String Specifications { get; set; } 
         protected internal EquipmentRow(System.Data.DataRowBuilder builder) : base(builder) {
             throw new System.NotImplementedException();
         }

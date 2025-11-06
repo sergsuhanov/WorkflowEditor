@@ -241,6 +241,35 @@ namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Documents.Orders {
 		public System.Activities.OutArgument<System.Boolean> Result { get; set; } 
     }
 }
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Documents.GoodsHouse {
+    [System.ComponentModel.Designer(typeof(glassPeople.Designers.ButtonsActivityDesigner))]
+    public partial class EditActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.ListActivity {
+		public System.Activities.InArgument<ITAP.glassCAD.Documents.GoodsHouse.GoodsHouseDataSet> Source { get; set; } 
+        protected override void Execute(System.Activities.NativeActivityContext context) {
+            throw new System.NotImplementedException();
+        }
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Documents.GoodsHouse {
+    
+    public partial class GetDocInfoActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.DataLayerNativeActivity {
+		[System.ComponentModel.CategoryAttribute("In")]
+		public System.Activities.InArgument<System.Int32> IDGoodsHouse { get; set; } 
+		[System.ComponentModel.CategoryAttribute("In")]
+		public System.Activities.InArgument<ITAP.glassCAD.Documents.GoodsHouse.GoodsHouseDataSet> DataSet { get; set; } 
+		public System.Activities.OutArgument<System.String> NmDoc { get; set; } 
+		public System.Activities.OutArgument<System.Nullable<System.Int32>> IDPeople { get; set; } 
+		public System.Activities.OutArgument<System.Nullable<System.Int32>> IDDocOperItems { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Documents.GoodsHouse {
+    
+    public partial class LoadGoodsHouseActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.DataLayerNativeActivity {
+		public System.Activities.InArgument<System.Int32> IDGoodsHouse { get; set; } 
+		public System.Activities.InArgument<ITAP.glassCAD.Documents.GoodsHouse.GoodsHouseDataSet> GoodsHouseDataSet { get; set; } 
+		public System.Activities.OutArgument<ITAP.glassCAD.Documents.GoodsHouse.GoodsHouseDataSet> Result { get; set; } 
+    }
+}
 namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Documents.BoxProduction {
     
     public partial class CalculationBoxProductionActivity : System.Activities.NativeActivity {
@@ -699,6 +728,40 @@ namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Utilites {
 		public System.Activities.OutArgument<System.Collections.Generic.List<T>> ResultList { get; set; } 
     }
 }
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Dictionaries.Workflow {
+    
+    public partial class GetWorkflowUserSettingsActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.DataLayerNativeActivity {
+		public System.Activities.InOutArgument<System.Int32> IDWorkflowUserSettings { get; set; } 
+		public System.Activities.InOutArgument<System.String> Name { get; set; } 
+		public System.Activities.InOutArgument<System.String> GroupName { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Out")]
+		public System.Activities.OutArgument<System.Boolean> HasResult { get; set; } 
+		public System.Activities.OutArgument<System.Byte[]> BinaryValue { get; set; } 
+		public System.Activities.OutArgument<System.Boolean> BoolValue { get; set; } 
+		public System.Activities.OutArgument<System.String> CommentValue { get; set; } 
+		public System.Activities.OutArgument<System.String> StringValue { get; set; } 
+		public System.Activities.OutArgument<System.Double> DoubleValue { get; set; } 
+		public System.Activities.OutArgument<System.DateTime> DateValue { get; set; } 
+		public System.Activities.OutArgument<System.Int32> IDValue { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Dictionaries.Workflow {
+    
+    public partial class SetWorkflowUserSettingsActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.DataLayerNativeActivity {
+		public System.Activities.InOutArgument<System.Int32> IDWorkflowUserSettings { get; set; } 
+		public System.Activities.InOutArgument<System.String> Name { get; set; } 
+		public System.Activities.InOutArgument<System.String> GroupName { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Out")]
+		public System.Activities.OutArgument<System.Boolean> HasResult { get; set; } 
+		public System.Activities.InArgument<System.Byte[]> BinaryValue { get; set; } 
+		public System.Activities.InArgument<System.Boolean> BoolValue { get; set; } 
+		public System.Activities.InArgument<System.String> CommetlValue { get; set; } 
+		public System.Activities.InArgument<System.String> StringValue { get; set; } 
+		public System.Activities.InArgument<System.Double> DoubleValue { get; set; } 
+		public System.Activities.InArgument<System.DateTime> DateValue { get; set; } 
+		public System.Activities.InArgument<System.Int32> IDValue { get; set; } 
+    }
+}
 namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Dictionaries.WorkflowUserSettings {
     [System.ComponentModel.Designer(typeof(glassPeople.Designers.ButtonsActivityDesigner))]
     public partial class EditActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.ListActivity {
@@ -934,6 +997,13 @@ namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Dictionaries.Equipment {
 		public System.Activities.InArgument<System.Int32> IDEquipment { get; set; } 
     }
 }
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Dictionaries.Equipment {
+    
+    public partial class EditGlassCuttingTableSpecificationActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.EditFormNativeActivity {
+		[System.Activities.RequiredArgumentAttribute()]
+		public System.Activities.InArgument<System.Int32> IDEquipment { get; set; } 
+    }
+}
 namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Dictionaries.DocOper {
     [System.ComponentModel.Designer(typeof(glassPeople.Designers.ButtonsActivityDesigner))]
     public partial class EditActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.ListActivity {
@@ -1048,6 +1118,14 @@ namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Dictionaries.CalculationV
         protected override void Execute(System.Activities.NativeActivityContext context) {
             throw new System.NotImplementedException();
         }
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Input {
+    
+    public partial class AutoCloseFormActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.EditFormNativeActivity {
+		public System.Activities.InArgument<System.String> Text { get; set; } 
+		public System.Activities.InArgument<System.Int32> Pause { get; set; } 
+		public System.Activities.InArgument<System.Boolean> MicroPause { get; set; } 
     }
 }
 namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Input {
@@ -1167,65 +1245,6 @@ namespace glassPeople.CRM {
 		[System.ComponentModel.CategoryAttribute("In")]
 		public System.Activities.InArgument<glassPeople.CRM.IssueFilter> Filter { get; set; } 
         protected override void Execute(System.Activities.NativeActivityContext context) {
-            throw new System.NotImplementedException();
-        }
-    }
-}
-namespace glassPeople.ActivityLibrary.Test {
-    
-    public partial class DebugActivity : System.Activities.NativeActivity {
-		public System.Activities.InArgument<System.Object> Source { get; set; } 
-        protected override void Execute(System.Activities.NativeActivityContext context) {
-            throw new System.NotImplementedException();
-        }
-    }
-}
-namespace glassPeople.ActivityLibrary.Test {
-    
-    public partial class GetActivityInfoFromTemplateActivity : System.Activities.NativeActivity {
-        protected override void Execute(System.Activities.NativeActivityContext context) {
-            throw new System.NotImplementedException();
-        }
-    }
-}
-namespace glassPeople.ActivityLibrary.Scheduler {
-    
-    public partial class ResourceFilterByNameActivity : glassPeople.ActivityLibrary.FilterActivity<glassPeople.Model.Scheduler.Resource> {
-		[System.ComponentModel.CategoryAttribute("Property")]
-		[System.Activities.RequiredArgumentAttribute()]
-		public System.Activities.InArgument<System.String> Name { get; set; } 
-        protected override System.Collections.Generic.List<glassPeople.Model.Scheduler.Resource> Filter(System.Activities.NativeActivityContext context, System.Collections.Generic.IEnumerable<glassPeople.Model.Scheduler.Resource> source) {
-            throw new System.NotImplementedException();
-        }
-        protected override System.Linq.IQueryable<glassPeople.Model.Scheduler.Resource> GetByDefault(System.Activities.NativeActivityContext context) {
-            throw new System.NotImplementedException();
-        }
-    }
-}
-namespace glassPeople.ActivityLibrary.Scheduler {
-    
-    public partial class ResourceFilterByResourceGroupIdActivity : glassPeople.ActivityLibrary.FilterActivity<glassPeople.Model.Scheduler.Resource> {
-		[System.ComponentModel.CategoryAttribute("Property")]
-		[System.Activities.RequiredArgumentAttribute()]
-		public System.Activities.InArgument<System.Int32> ResourceGroupId { get; set; } 
-        protected override System.Collections.Generic.List<glassPeople.Model.Scheduler.Resource> Filter(System.Activities.NativeActivityContext context, System.Collections.Generic.IEnumerable<glassPeople.Model.Scheduler.Resource> source) {
-            throw new System.NotImplementedException();
-        }
-        protected override System.Linq.IQueryable<glassPeople.Model.Scheduler.Resource> GetByDefault(System.Activities.NativeActivityContext context) {
-            throw new System.NotImplementedException();
-        }
-    }
-}
-namespace glassPeople.ActivityLibrary.Scheduler {
-    
-    public partial class ResourceGroupFilterByNameActivity : glassPeople.ActivityLibrary.FilterActivity<glassPeople.Model.Scheduler.ResourceGroup> {
-		[System.ComponentModel.CategoryAttribute("Property")]
-		[System.Activities.RequiredArgumentAttribute()]
-		public System.Activities.InArgument<System.String> Name { get; set; } 
-        protected override System.Collections.Generic.List<glassPeople.Model.Scheduler.ResourceGroup> Filter(System.Activities.NativeActivityContext context, System.Collections.Generic.IEnumerable<glassPeople.Model.Scheduler.ResourceGroup> source) {
-            throw new System.NotImplementedException();
-        }
-        protected override System.Linq.IQueryable<glassPeople.Model.Scheduler.ResourceGroup> GetByDefault(System.Activities.NativeActivityContext context) {
             throw new System.NotImplementedException();
         }
     }
@@ -1837,12 +1856,6 @@ namespace glassPeople.ActivityLibrary.glassCAD.Planing.Union.Strategy {
 }
 namespace glassPeople.ActivityLibrary.glassCAD.Planing.Union.Strategy {
     
-    public partial class ByGoodsInTriplex : glassPeople.ActivityLibrary.glassCAD.Planing.Union.MultiGroupActivity {
-		public System.Activities.InArgument<glassPeople.ActivityLibrary.glassCAD.Planing.Model.PlanningContext> SchedulerContext { get; set; } 
-    }
-}
-namespace glassPeople.ActivityLibrary.glassCAD.Planing.Union.Strategy {
-    
     public partial class ByLevel : glassPeople.ActivityLibrary.glassCAD.Planing.Union.MultiGroupActivity {
     }
 }
@@ -2325,6 +2338,32 @@ namespace glassPeople.ActivityLibrary.glassCAD.Planing.Activity.Orders {
 		public System.Activities.OutArgument<System.Boolean> IsNothing { get; set; } 
 		[System.ComponentModel.CategoryAttribute("Out")]
 		public System.Activities.OutArgument<System.Boolean> IsStatusFailed { get; set; } 
+        protected override void Execute(System.Activities.NativeActivityContext context) {
+            throw new System.NotImplementedException();
+        }
+    }
+}
+namespace glassPeople.ActivityLibrary.glassCAD.Planing.Activity.Orders {
+    
+    public partial class SetFabricaDiractionPlanDateActivity : System.Activities.NativeActivity {
+		[System.Activities.RequiredArgumentAttribute()]
+		public System.Activities.InArgument<glassPeople.ActivityLibrary.glassCAD.Planing.Model.PlanningContext> PlanningContext { get; set; } 
+		[System.Activities.RequiredArgumentAttribute()]
+		public System.Activities.InArgument<System.Int32> IDOrder { get; set; } 
+		[System.Activities.RequiredArgumentAttribute()]
+		public System.Activities.InArgument<System.DateTime> Dt { get; set; } 
+        protected override void Execute(System.Activities.NativeActivityContext context) {
+            throw new System.NotImplementedException();
+        }
+    }
+}
+namespace glassPeople.ActivityLibrary.glassCAD.Planing.Activity.Orders {
+    
+    public partial class RemoveFabricaDiractionPlanDateActivity : System.Activities.NativeActivity {
+		[System.Activities.RequiredArgumentAttribute()]
+		public System.Activities.InArgument<glassPeople.ActivityLibrary.glassCAD.Planing.Model.PlanningContext> PlanningContext { get; set; } 
+		[System.Activities.RequiredArgumentAttribute()]
+		public System.Activities.InArgument<System.Int32> IDOrder { get; set; } 
         protected override void Execute(System.Activities.NativeActivityContext context) {
             throw new System.NotImplementedException();
         }
@@ -2907,6 +2946,65 @@ namespace glassPeople.ActivityLibrary.glassCAD.Planing.Activity.Actualisation {
 		[System.Activities.RequiredArgumentAttribute()]
 		public System.Activities.InArgument<System.Collections.Generic.List<glassPeople.ActivityLibrary.glassCAD.Planing.Model.GroupCode>> GroupCodes { get; set; } 
         protected override void Execute(System.Activities.NativeActivityContext context) {
+            throw new System.NotImplementedException();
+        }
+    }
+}
+namespace glassPeople.ActivityLibrary.Test {
+    
+    public partial class DebugActivity : System.Activities.NativeActivity {
+		public System.Activities.InArgument<System.Object> Source { get; set; } 
+        protected override void Execute(System.Activities.NativeActivityContext context) {
+            throw new System.NotImplementedException();
+        }
+    }
+}
+namespace glassPeople.ActivityLibrary.Test {
+    
+    public partial class GetActivityInfoFromTemplateActivity : System.Activities.NativeActivity {
+        protected override void Execute(System.Activities.NativeActivityContext context) {
+            throw new System.NotImplementedException();
+        }
+    }
+}
+namespace glassPeople.ActivityLibrary.Scheduler {
+    
+    public partial class ResourceFilterByNameActivity : glassPeople.ActivityLibrary.FilterActivity<glassPeople.Model.Scheduler.Resource> {
+		[System.ComponentModel.CategoryAttribute("Property")]
+		[System.Activities.RequiredArgumentAttribute()]
+		public System.Activities.InArgument<System.String> Name { get; set; } 
+        protected override System.Collections.Generic.List<glassPeople.Model.Scheduler.Resource> Filter(System.Activities.NativeActivityContext context, System.Collections.Generic.IEnumerable<glassPeople.Model.Scheduler.Resource> source) {
+            throw new System.NotImplementedException();
+        }
+        protected override System.Linq.IQueryable<glassPeople.Model.Scheduler.Resource> GetByDefault(System.Activities.NativeActivityContext context) {
+            throw new System.NotImplementedException();
+        }
+    }
+}
+namespace glassPeople.ActivityLibrary.Scheduler {
+    
+    public partial class ResourceFilterByResourceGroupIdActivity : glassPeople.ActivityLibrary.FilterActivity<glassPeople.Model.Scheduler.Resource> {
+		[System.ComponentModel.CategoryAttribute("Property")]
+		[System.Activities.RequiredArgumentAttribute()]
+		public System.Activities.InArgument<System.Int32> ResourceGroupId { get; set; } 
+        protected override System.Collections.Generic.List<glassPeople.Model.Scheduler.Resource> Filter(System.Activities.NativeActivityContext context, System.Collections.Generic.IEnumerable<glassPeople.Model.Scheduler.Resource> source) {
+            throw new System.NotImplementedException();
+        }
+        protected override System.Linq.IQueryable<glassPeople.Model.Scheduler.Resource> GetByDefault(System.Activities.NativeActivityContext context) {
+            throw new System.NotImplementedException();
+        }
+    }
+}
+namespace glassPeople.ActivityLibrary.Scheduler {
+    
+    public partial class ResourceGroupFilterByNameActivity : glassPeople.ActivityLibrary.FilterActivity<glassPeople.Model.Scheduler.ResourceGroup> {
+		[System.ComponentModel.CategoryAttribute("Property")]
+		[System.Activities.RequiredArgumentAttribute()]
+		public System.Activities.InArgument<System.String> Name { get; set; } 
+        protected override System.Collections.Generic.List<glassPeople.Model.Scheduler.ResourceGroup> Filter(System.Activities.NativeActivityContext context, System.Collections.Generic.IEnumerable<glassPeople.Model.Scheduler.ResourceGroup> source) {
+            throw new System.NotImplementedException();
+        }
+        protected override System.Linq.IQueryable<glassPeople.Model.Scheduler.ResourceGroup> GetByDefault(System.Activities.NativeActivityContext context) {
             throw new System.NotImplementedException();
         }
     }

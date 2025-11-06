@@ -280,7 +280,7 @@ namespace glassPeople.ActivityLibrary.glassCAD.Planing.Activity.Actualisation {
 }
 namespace glassPeople.ActivityLibrary.glassCAD.Planing.Activity.Actualisation {
     public enum BufferSecondNameMode {
-        None, Default, ByInternalEticets, OrderInfo, ChildNumPos, ReverseChildNumPos, Parents
+        None, Default, ByInternalEticets, OrderInfo, ChildNumPos, ReverseChildNumPos, Parents, ByAssemblyNumPos
     }
 }
 namespace glassPeople.ActivityLibrary.glassCAD.Planing.Activity.Actualisation {
