@@ -1295,6 +1295,45 @@ namespace ITAP.glassCAD.Data {
 		public ITAP.glassCAD.Data.Metadata Item { get; } 
     }
 }
+namespace ITAP.glassCAD.Analytic {
+    
+    public abstract partial class AnalyticLog {
+		public System.Int32 Id { get; } 
+		public System.Object PayloadAsObject { get; set; } 
+		public System.DateTime Dt { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Analytic {
+    
+    public abstract partial class AnalitycLog<T> : ITAP.glassCAD.Analytic.AnalyticLog {
+		public T Payload { get; set; } 
+		public System.Object PayloadAsObject { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Analytic {
+    
+    public partial class Action4 : ITAP.glassCAD.Analytic.AnalitycLog<System.Int32[]> {
+		public System.Int32 Id { get; } 
+    }
+}
+namespace ITAP.glassCAD.Analytic {
+    
+    public partial class Action1 : ITAP.glassCAD.Analytic.AnalitycLog<System.Int32[]> {
+		public System.Int32 Id { get; } 
+    }
+}
+namespace ITAP.glassCAD.Analytic {
+    
+    public partial class Action2 : ITAP.glassCAD.Analytic.AnalitycLog<System.Int32[]> {
+		public System.Int32 Id { get; } 
+    }
+}
+namespace ITAP.glassCAD.Analytic {
+    
+    public partial class Action3 : ITAP.glassCAD.Analytic.AnalitycLog<System.Int32> {
+		public System.Int32 Id { get; } 
+    }
+}
 namespace glassPeople.CRM {
     
     public partial class IssueMember {

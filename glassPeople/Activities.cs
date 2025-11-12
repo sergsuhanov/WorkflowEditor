@@ -1146,6 +1146,47 @@ namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Input {
 		public System.Activities.OutArgument<System.Boolean> IsCanceled { get; set; } 
     }
 }
+namespace ITAP.glassCAD.Analytic {
+    
+    public partial class GetAnalyticLogActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.DataLayerNativeActivity {
+		[System.ComponentModel.CategoryAttribute("In")]
+		public System.Activities.InArgument<System.Int32[]> ActionIds { get; set; } 
+		[System.ComponentModel.CategoryAttribute("In")]
+		public System.Activities.InOutArgument<System.Int32> LastAnalyticLogId { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Out")]
+		public System.Activities.OutArgument<System.Collections.Generic.List<ITAP.glassCAD.Analytic.AnalyticLog>> Logs { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Analytic {
+    
+    public partial class GetLastAnalyticIdActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.DataLayerNativeActivity {
+		[System.ComponentModel.CategoryAttribute("In")]
+		public System.Activities.InArgument<System.String> AnalyticName { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Out")]
+		public System.Activities.OutArgument<System.Int32> LastAnalyticLogId { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Analytic {
+    
+    public partial class OrderActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.DataLayerNativeActivity {
+		public System.Activities.InArgument<System.Collections.Generic.List<ITAP.glassCAD.Analytic.AnalyticLog>> Logs { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Analytic {
+    
+    public partial class SetLastAnalyticIdActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.DataLayerNativeActivity {
+		[System.ComponentModel.CategoryAttribute("In")]
+		public System.Activities.InArgument<System.String> AnalyticName { get; set; } 
+		[System.ComponentModel.CategoryAttribute("In")]
+		public System.Activities.InArgument<System.Int32> LastAnalyticLogId { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Analytic {
+    
+    public partial class WageActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.DataLayerNativeActivity {
+		public System.Activities.InArgument<System.Collections.Generic.List<ITAP.glassCAD.Analytic.AnalyticLog>> Logs { get; set; } 
+    }
+}
 namespace glassPeople.CRM {
     
     public partial class AddIssueAttributeActivity : System.Activities.NativeActivity {
