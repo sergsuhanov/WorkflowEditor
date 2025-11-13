@@ -1149,6 +1149,8 @@ namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Input {
 namespace ITAP.glassCAD.Analytic {
     
     public partial class GetAnalyticLogActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.DataLayerNativeActivity {
+		[System.Activities.RequiredArgumentAttribute()]
+		public System.Activities.InArgument<System.String> ConnectionString { get; set; } 
 		[System.ComponentModel.CategoryAttribute("In")]
 		public System.Activities.InArgument<System.Int32[]> ActionIds { get; set; } 
 		[System.ComponentModel.CategoryAttribute("In")]
@@ -1160,6 +1162,8 @@ namespace ITAP.glassCAD.Analytic {
 namespace ITAP.glassCAD.Analytic {
     
     public partial class GetLastAnalyticIdActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.DataLayerNativeActivity {
+		[System.Activities.RequiredArgumentAttribute()]
+		public System.Activities.InArgument<System.String> ConnectionString { get; set; } 
 		[System.ComponentModel.CategoryAttribute("In")]
 		public System.Activities.InArgument<System.String> AnalyticName { get; set; } 
 		[System.ComponentModel.CategoryAttribute("Out")]
@@ -1169,12 +1173,16 @@ namespace ITAP.glassCAD.Analytic {
 namespace ITAP.glassCAD.Analytic {
     
     public partial class OrderActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.DataLayerNativeActivity {
+		[System.Activities.RequiredArgumentAttribute()]
+		public System.Activities.InArgument<System.String> ConnectionString { get; set; } 
 		public System.Activities.InArgument<System.Collections.Generic.List<ITAP.glassCAD.Analytic.AnalyticLog>> Logs { get; set; } 
     }
 }
 namespace ITAP.glassCAD.Analytic {
     
     public partial class SetLastAnalyticIdActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.DataLayerNativeActivity {
+		[System.Activities.RequiredArgumentAttribute()]
+		public System.Activities.InArgument<System.String> ConnectionString { get; set; } 
 		[System.ComponentModel.CategoryAttribute("In")]
 		public System.Activities.InArgument<System.String> AnalyticName { get; set; } 
 		[System.ComponentModel.CategoryAttribute("In")]
@@ -1184,6 +1192,8 @@ namespace ITAP.glassCAD.Analytic {
 namespace ITAP.glassCAD.Analytic {
     
     public partial class WageActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.DataLayerNativeActivity {
+		[System.Activities.RequiredArgumentAttribute()]
+		public System.Activities.InArgument<System.String> ConnectionString { get; set; } 
 		public System.Activities.InArgument<System.Collections.Generic.List<ITAP.glassCAD.Analytic.AnalyticLog>> Logs { get; set; } 
     }
 }
@@ -3202,6 +3212,18 @@ namespace glassPeople.ActivityLibrary.Core {
     public partial class SaveObjectActivity<T> : System.Activities.NativeActivity {
 		[System.Activities.RequiredArgumentAttribute()]
 		public System.Activities.InArgument<T> Source { get; set; } 
+        protected override void Execute(System.Activities.NativeActivityContext context) {
+            throw new System.NotImplementedException();
+        }
+    }
+}
+namespace glassPeople.ActivityLibrary.Core {
+    
+    public partial class SaveTextToFileActivity : System.Activities.NativeActivity {
+		[System.Activities.RequiredArgumentAttribute()]
+		public System.Activities.InArgument<System.String> FilePath { get; set; } 
+		[System.Activities.RequiredArgumentAttribute()]
+		public System.Activities.InArgument<System.String> Content { get; set; } 
         protected override void Execute(System.Activities.NativeActivityContext context) {
             throw new System.NotImplementedException();
         }

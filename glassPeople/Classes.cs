@@ -1318,6 +1318,18 @@ namespace ITAP.glassCAD.Analytic {
 }
 namespace ITAP.glassCAD.Analytic {
     
+    public partial class Action5 : ITAP.glassCAD.Analytic.AnalitycLog<System.Int32> {
+		public System.Int32 Id { get; } 
+    }
+}
+namespace ITAP.glassCAD.Analytic {
+    
+    public partial class Action6 : ITAP.glassCAD.Analytic.AnalitycLog<System.Int32> {
+		public System.Int32 Id { get; } 
+    }
+}
+namespace ITAP.glassCAD.Analytic {
+    
     public partial class Action1 : ITAP.glassCAD.Analytic.AnalitycLog<System.Int32[]> {
 		public System.Int32 Id { get; } 
     }
