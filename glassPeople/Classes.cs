@@ -1297,17 +1297,20 @@ namespace ITAP.glassCAD.Data {
 }
 namespace ITAP.glassCAD.Analytic {
     
-    public abstract partial class AnalyticLog {
+    public partial class Action1 : ITAP.glassCAD.Analytic.AnalitycLog<System.Int32[]> {
 		public System.Int32 Id { get; } 
-		public System.Object PayloadAsObject { get; set; } 
-		public System.DateTime Dt { get; set; } 
     }
 }
 namespace ITAP.glassCAD.Analytic {
     
-    public abstract partial class AnalitycLog<T> : ITAP.glassCAD.Analytic.AnalyticLog {
-		public T Payload { get; set; } 
-		public System.Object PayloadAsObject { get; set; } 
+    public partial class Action2 : ITAP.glassCAD.Analytic.AnalitycLog<System.Int32[]> {
+		public System.Int32 Id { get; } 
+    }
+}
+namespace ITAP.glassCAD.Analytic {
+    
+    public partial class Action3 : ITAP.glassCAD.Analytic.AnalitycLog<System.Int32> {
+		public System.Int32 Id { get; } 
     }
 }
 namespace ITAP.glassCAD.Analytic {
@@ -1330,20 +1333,83 @@ namespace ITAP.glassCAD.Analytic {
 }
 namespace ITAP.glassCAD.Analytic {
     
-    public partial class Action1 : ITAP.glassCAD.Analytic.AnalitycLog<System.Int32[]> {
+    public partial class Action7 : ITAP.glassCAD.Analytic.AnalitycLog<System.Int32> {
 		public System.Int32 Id { get; } 
     }
 }
 namespace ITAP.glassCAD.Analytic {
     
-    public partial class Action2 : ITAP.glassCAD.Analytic.AnalitycLog<System.Int32[]> {
+    public partial class Action8 : ITAP.glassCAD.Analytic.AnalitycLog<System.Int32> {
 		public System.Int32 Id { get; } 
     }
 }
 namespace ITAP.glassCAD.Analytic {
     
-    public partial class Action3 : ITAP.glassCAD.Analytic.AnalitycLog<System.Int32> {
+    public partial class Action9 : ITAP.glassCAD.Analytic.AnalitycLog<System.Int32> {
 		public System.Int32 Id { get; } 
+    }
+}
+namespace ITAP.glassCAD.Analytic {
+    
+    public partial class Action10 : ITAP.glassCAD.Analytic.AnalitycLog<System.Int32> {
+		public System.Int32 Id { get; } 
+    }
+}
+namespace ITAP.glassCAD.Analytic {
+    
+    public partial class Action11 : ITAP.glassCAD.Analytic.AnalitycLog<System.Int32[]> {
+		public System.Int32 Id { get; } 
+    }
+}
+namespace ITAP.glassCAD.Analytic {
+    
+    public partial class Action12 : ITAP.glassCAD.Analytic.AnalitycLog<System.Int32[]> {
+		public System.Int32 Id { get; } 
+    }
+}
+namespace ITAP.glassCAD.Analytic {
+    
+    public partial class Action13 : ITAP.glassCAD.Analytic.AnalitycLog<System.Int32[]> {
+		public System.Int32 Id { get; } 
+    }
+}
+namespace ITAP.glassCAD.Analytic {
+    
+    public partial class Action14 : ITAP.glassCAD.Analytic.AnalitycLog<System.Int32> {
+		public System.Int32 Id { get; } 
+    }
+}
+namespace ITAP.glassCAD.Analytic {
+    
+    public partial class Action15 : ITAP.glassCAD.Analytic.AnalitycLog<System.Int32[]> {
+		public System.Int32 Id { get; } 
+    }
+}
+namespace ITAP.glassCAD.Analytic {
+    
+    public partial class Action16 : ITAP.glassCAD.Analytic.AnalitycLog<System.Int32> {
+		public System.Int32 Id { get; } 
+    }
+}
+namespace ITAP.glassCAD.Analytic {
+    
+    public partial class Action17 : ITAP.glassCAD.Analytic.AnalitycLog<System.Int32> {
+		public System.Int32 Id { get; } 
+    }
+}
+namespace ITAP.glassCAD.Analytic {
+    
+    public abstract partial class AnalyticLog {
+		public System.Int32 Id { get; } 
+		public System.Object PayloadAsObject { get; set; } 
+		public System.DateTime Dt { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Analytic {
+    
+    public abstract partial class AnalitycLog<T> : ITAP.glassCAD.Analytic.AnalyticLog {
+		public T Payload { get; set; } 
+		public System.Object PayloadAsObject { get; set; } 
     }
 }
 namespace glassPeople.CRM {
