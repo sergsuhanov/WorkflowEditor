@@ -1173,7 +1173,6 @@ namespace ITAP.glassCAD.Analytic {
 namespace ITAP.glassCAD.Analytic {
     
     public partial class OrderActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.DataLayerNativeActivity {
-		public System.String AddOrder { get; } 
 		[System.Activities.RequiredArgumentAttribute()]
 		public System.Activities.InArgument<System.String> ConnectionString { get; set; } 
 		public System.Activities.InArgument<System.Collections.Generic.List<ITAP.glassCAD.Analytic.AnalyticLog>> Logs { get; set; } 
@@ -1182,6 +1181,14 @@ namespace ITAP.glassCAD.Analytic {
 namespace ITAP.glassCAD.Analytic {
     
     public partial class OrderItemsIdentActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.DataLayerNativeActivity {
+		[System.Activities.RequiredArgumentAttribute()]
+		public System.Activities.InArgument<System.String> ConnectionString { get; set; } 
+		public System.Activities.InArgument<System.Collections.Generic.List<ITAP.glassCAD.Analytic.AnalyticLog>> Logs { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Analytic {
+    
+    public partial class OrderReestrActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.DataLayerNativeActivity {
 		[System.Activities.RequiredArgumentAttribute()]
 		public System.Activities.InArgument<System.String> ConnectionString { get; set; } 
 		public System.Activities.InArgument<System.Collections.Generic.List<ITAP.glassCAD.Analytic.AnalyticLog>> Logs { get; set; } 
