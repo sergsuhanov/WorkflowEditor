@@ -3094,6 +3094,8 @@ namespace glassPeople.ActivityLibrary.Dictionaries {
 		public System.Activities.OutArgument<glassPeople.ActivityLibrary.BookmarkActivityUserAction> UserAction { get; set; } 
 		[System.ComponentModel.Browsable(false)]
 		public System.Boolean AutoTerminate { get; set; } 
+		[System.Activities.RequiredArgumentAttribute()]
+		public System.Activities.InArgument<System.Int32> AccountUserId { get; set; } 
 		public System.Activities.InArgument<System.String> Title { get; set; } 
 		public System.Activities.OutArgument<System.Collections.Generic.List<System.Int32>> SelectedRolesId { get; set; } 
         protected override void Execute(System.Activities.NativeActivityContext context) {

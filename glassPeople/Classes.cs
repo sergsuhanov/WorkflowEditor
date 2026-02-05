@@ -1417,13 +1417,43 @@ namespace ITAP.glassCAD.Analytic {
 }
 namespace ITAP.glassCAD.Analytic {
     
-    public partial class PaymentChange : ITAP.glassCAD.Analytic.AnalitycLog<System.Int32[]> {
+    public partial class PaymentChange : ITAP.glassCAD.Analytic.AnalitycLog<System.Int32> {
 		public System.Int32 ActionId { get; } 
     }
 }
 namespace ITAP.glassCAD.Analytic {
     
-    public partial class OrderEntryChange : ITAP.glassCAD.Analytic.AnalitycLog<System.Int32[]> {
+    public partial class OrderEntryChange : ITAP.glassCAD.Analytic.AnalitycLog<System.Int32> {
+		public System.Int32 ActionId { get; } 
+    }
+}
+namespace ITAP.glassCAD.Analytic {
+    
+    public partial class RegistrHalfProductionCreated : ITAP.glassCAD.Analytic.AnalitycLog<System.Int32[]> {
+		public System.Int32 ActionId { get; } 
+    }
+}
+namespace ITAP.glassCAD.Analytic {
+    
+    public partial class RegistrHalfProductionRemoved : ITAP.glassCAD.Analytic.AnalitycLog<System.Int32[]> {
+		public System.Int32 ActionId { get; } 
+    }
+}
+namespace ITAP.glassCAD.Analytic {
+    
+    public partial class OrderItemsChangedNames : ITAP.glassCAD.Analytic.AnalitycLog<System.Int32> {
+		public System.Int32 ActionId { get; } 
+    }
+}
+namespace ITAP.glassCAD.Analytic {
+    
+    public partial class OrderItemsChangedGeometry : ITAP.glassCAD.Analytic.AnalitycLog<System.Int32> {
+		public System.Int32 ActionId { get; } 
+    }
+}
+namespace ITAP.glassCAD.Analytic {
+    
+    public partial class OrderItemsChangedCalculation : ITAP.glassCAD.Analytic.AnalitycLog<System.Int32> {
 		public System.Int32 ActionId { get; } 
     }
 }
