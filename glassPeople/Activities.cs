@@ -728,6 +728,110 @@ namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Utilites {
 		public System.Activities.OutArgument<System.Collections.Generic.List<T>> ResultList { get; set; } 
     }
 }
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Utilites {
+    
+    public partial class LogActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.DataLayerNativeActivity {
+		[System.ComponentModel.DataAnnotations.RequiredAttribute()]
+		public System.Activities.InArgument<System.String> Info { get; set; } 
+		public System.Activities.InArgument<System.Int32> Critical { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Messages {
+    
+    public partial class SendEmailActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.DataLayerNativeActivity {
+		[System.ComponentModel.DisplayNameAttribute("SMTP хост")]
+		public System.Activities.InArgument<System.String> SmtpHostName { get; set; } 
+		[System.ComponentModel.DisplayNameAttribute("SMTP домен")]
+		public System.Activities.InArgument<System.String> Domain { get; set; } 
+		[System.ComponentModel.DisplayNameAttribute("SMTP порт")]
+		public System.Activities.InArgument<System.Int32> SmtpHostPort { get; set; } 
+		[System.ComponentModel.DisplayNameAttribute("Адрес От")]
+		public System.Activities.InArgument<System.String> From { get; set; } 
+		[System.ComponentModel.DisplayNameAttribute("Пользователь логин")]
+		public System.Activities.InArgument<System.String> Login { get; set; } 
+		[System.ComponentModel.DisplayNameAttribute("Пользователь пароль")]
+		public System.Activities.InArgument<System.String> Password { get; set; } 
+		[System.ComponentModel.DisplayNameAttribute("Шифрование SSL")]
+		public System.Activities.InArgument<System.Boolean> EnableSSL { get; set; } 
+		[System.ComponentModel.DisplayNameAttribute("Подпись glassCAD")]
+		[System.ComponentModel.DefaultValue(true)]
+		public System.Activities.InArgument<System.Boolean> EnableSubscription { get; set; } = true;
+		[System.ComponentModel.DisplayNameAttribute("Адрес Кому")]
+		public System.Activities.InArgument<System.String> To { get; set; } 
+		[System.ComponentModel.DisplayNameAttribute("Тема сообщения")]
+		public System.Activities.InArgument<System.String> Subject { get; set; } 
+		[System.ComponentModel.DisplayNameAttribute("Текст сообщения")]
+		public System.Activities.InArgument<System.String> Body { get; set; } 
+		[System.ComponentModel.DisplayNameAttribute("Вложение (наименование)")]
+		public System.Activities.InArgument<System.String> AttachmentName { get; set; } 
+		[System.ComponentModel.DisplayNameAttribute("Вложение")]
+		public System.Activities.InArgument<System.Byte[]> AttachmentContent { get; set; } 
+		public System.Activities.OutArgument<System.String> Error { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Файлы")]
+		[System.ComponentModel.DisplayNameAttribute("Вложение (наименование) 1")]
+		public System.Activities.InArgument<System.String> AttachmentName01 { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Файлы")]
+		[System.ComponentModel.DisplayNameAttribute("Вложение 1")]
+		public System.Activities.InArgument<System.Byte[]> AttachmentContent01 { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Файлы")]
+		[System.ComponentModel.DisplayNameAttribute("Вложение (наименование) 2")]
+		public System.Activities.InArgument<System.String> AttachmentName02 { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Файлы")]
+		[System.ComponentModel.DisplayNameAttribute("Вложение 2")]
+		public System.Activities.InArgument<System.Byte[]> AttachmentContent02 { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Файлы")]
+		[System.ComponentModel.DisplayNameAttribute("Вложение (наименование) 3")]
+		public System.Activities.InArgument<System.String> AttachmentName03 { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Файлы")]
+		[System.ComponentModel.DisplayNameAttribute("Вложение 3")]
+		public System.Activities.InArgument<System.Byte[]> AttachmentContent03 { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Файлы")]
+		[System.ComponentModel.DisplayNameAttribute("Вложение (наименование) 4")]
+		public System.Activities.InArgument<System.String> AttachmentName04 { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Файлы")]
+		[System.ComponentModel.DisplayNameAttribute("Вложение 4")]
+		public System.Activities.InArgument<System.Byte[]> AttachmentContent04 { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Файлы")]
+		[System.ComponentModel.DisplayNameAttribute("Вложение (наименование) 5")]
+		public System.Activities.InArgument<System.String> AttachmentName05 { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Файлы")]
+		[System.ComponentModel.DisplayNameAttribute("Вложение 5")]
+		public System.Activities.InArgument<System.Byte[]> AttachmentContent05 { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Файлы")]
+		[System.ComponentModel.DisplayNameAttribute("Вложение (наименование) 6")]
+		public System.Activities.InArgument<System.String> AttachmentName06 { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Файлы")]
+		[System.ComponentModel.DisplayNameAttribute("Вложение 6")]
+		public System.Activities.InArgument<System.Byte[]> AttachmentContent06 { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Файлы")]
+		[System.ComponentModel.DisplayNameAttribute("Вложение (наименование) 7")]
+		public System.Activities.InArgument<System.String> AttachmentName07 { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Файлы")]
+		[System.ComponentModel.DisplayNameAttribute("Вложение 7")]
+		public System.Activities.InArgument<System.Byte[]> AttachmentContent07 { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Файлы")]
+		[System.ComponentModel.DisplayNameAttribute("Вложение (наименование) 8")]
+		public System.Activities.InArgument<System.String> AttachmentName08 { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Файлы")]
+		[System.ComponentModel.DisplayNameAttribute("Вложение 8")]
+		public System.Activities.InArgument<System.Byte[]> AttachmentContent08 { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Файлы")]
+		[System.ComponentModel.DisplayNameAttribute("Вложение (наименование) 9")]
+		public System.Activities.InArgument<System.String> AttachmentName09 { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Файлы")]
+		[System.ComponentModel.DisplayNameAttribute("Вложение 9")]
+		public System.Activities.InArgument<System.Byte[]> AttachmentContent09 { get; set; } 
+		[System.ComponentModel.DisplayNameAttribute("E-Mail отправлен")]
+		public System.Activities.OutArgument<System.Boolean> Sended { get; set; } 
+		public System.Int32 Timeout { get; set; } 
+		public System.Activities.InArgument<System.String> Sender { get; set; } 
+		public System.Activities.InArgument<System.String> ReplyTo { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Scheme")]
+		[System.ComponentModel.TypeConverterAttribute(typeof(System.ComponentModel.ExpandableObjectConverter))]
+		[System.ComponentModel.RefreshPropertiesAttribute((System.ComponentModel.RefreshProperties)1)]
+		public ITAP.glassCAD.Dictionary.WorkFlow.Activities.DGML Dgml { get; set; } 
+    }
+}
 namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Dictionaries.Workflow {
     
     public partial class GetWorkflowUserSettingsActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.DataLayerNativeActivity {
@@ -1148,6 +1252,22 @@ namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Input {
 }
 namespace ITAP.glassCAD.Analytic {
     
+    public partial class DefectiveActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.DataLayerNativeActivity {
+		[System.Activities.RequiredArgumentAttribute()]
+		public System.Activities.InArgument<System.String> ConnectionString { get; set; } 
+		public System.Activities.InArgument<System.Collections.Generic.List<ITAP.glassCAD.Analytic.AnalyticLog>> Logs { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Analytic {
+    
+    public partial class FinishedStoreActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.DataLayerNativeActivity {
+		[System.Activities.RequiredArgumentAttribute()]
+		public System.Activities.InArgument<System.String> ConnectionString { get; set; } 
+		public System.Activities.InArgument<System.Collections.Generic.List<ITAP.glassCAD.Analytic.AnalyticLog>> Logs { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Analytic {
+    
     public partial class GetAnalyticLogActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.DataLayerNativeActivity {
 		[System.Activities.RequiredArgumentAttribute()]
 		public System.Activities.InArgument<System.String> ConnectionString { get; set; } 
@@ -1196,6 +1316,14 @@ namespace ITAP.glassCAD.Analytic {
 }
 namespace ITAP.glassCAD.Analytic {
     
+    public partial class SellingActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.DataLayerNativeActivity {
+		[System.Activities.RequiredArgumentAttribute()]
+		public System.Activities.InArgument<System.String> ConnectionString { get; set; } 
+		public System.Activities.InArgument<System.Collections.Generic.List<ITAP.glassCAD.Analytic.AnalyticLog>> Logs { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Analytic {
+    
     public partial class SetLastAnalyticIdActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.DataLayerNativeActivity {
 		[System.Activities.RequiredArgumentAttribute()]
 		public System.Activities.InArgument<System.String> ConnectionString { get; set; } 
@@ -1208,6 +1336,14 @@ namespace ITAP.glassCAD.Analytic {
 namespace ITAP.glassCAD.Analytic {
     
     public partial class WageActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.DataLayerNativeActivity {
+		[System.Activities.RequiredArgumentAttribute()]
+		public System.Activities.InArgument<System.String> ConnectionString { get; set; } 
+		public System.Activities.InArgument<System.Collections.Generic.List<ITAP.glassCAD.Analytic.AnalyticLog>> Logs { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Analytic {
+    
+    public partial class WriteOffHpActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.DataLayerNativeActivity {
 		[System.Activities.RequiredArgumentAttribute()]
 		public System.Activities.InArgument<System.String> ConnectionString { get; set; } 
 		public System.Activities.InArgument<System.Collections.Generic.List<ITAP.glassCAD.Analytic.AnalyticLog>> Logs { get; set; } 
@@ -1333,17 +1469,6 @@ namespace glassPeople.ActivityLibrary.glassCAD.Utilites {
 }
 namespace glassPeople.ActivityLibrary.glassCAD.Utilites {
     
-    public partial class LogActivity : System.Activities.NativeActivity {
-		[System.Activities.RequiredArgumentAttribute()]
-		public System.Activities.InArgument<System.String> ConnectionString { get; set; } 
-		public System.Activities.InArgument<System.String> Info { get; set; } 
-        protected override void Execute(System.Activities.NativeActivityContext context) {
-            throw new System.NotImplementedException();
-        }
-    }
-}
-namespace glassPeople.ActivityLibrary.glassCAD.Utilites {
-    
     public partial class Processing_AppointmentItemWorkStatus : System.Activities.NativeActivity {
 		[System.Activities.RequiredArgumentAttribute()]
 		public System.Activities.InArgument<System.String> ConnectionString { get; set; } 
@@ -1357,16 +1482,6 @@ namespace glassPeople.ActivityLibrary.glassCAD.Utilites {
 namespace glassPeople.ActivityLibrary.glassCAD.Utilites {
     
     public partial class Processing_GoodsReserv : System.Activities.NativeActivity {
-		[System.Activities.RequiredArgumentAttribute()]
-		public System.Activities.InArgument<System.String> ConnectionString { get; set; } 
-        protected override void Execute(System.Activities.NativeActivityContext context) {
-            throw new System.NotImplementedException();
-        }
-    }
-}
-namespace glassPeople.ActivityLibrary.glassCAD.Utilites {
-    
-    public partial class Processing_OrderItemsIdentWorkStatus : System.Activities.NativeActivity {
 		[System.Activities.RequiredArgumentAttribute()]
 		public System.Activities.InArgument<System.String> ConnectionString { get; set; } 
         protected override void Execute(System.Activities.NativeActivityContext context) {

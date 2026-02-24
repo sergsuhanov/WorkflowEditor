@@ -1387,7 +1387,7 @@ namespace ITAP.glassCAD.Analytic {
 }
 namespace ITAP.glassCAD.Analytic {
     
-    public partial class DevectiveIsEntryChanged : ITAP.glassCAD.Analytic.AnalitycLog<System.Int32> {
+    public partial class DefectiveIsEntryChanged : ITAP.glassCAD.Analytic.AnalitycLog<System.Int32> {
 		public System.Int32 ActionId { get; } 
     }
 }
@@ -1454,6 +1454,18 @@ namespace ITAP.glassCAD.Analytic {
 namespace ITAP.glassCAD.Analytic {
     
     public partial class OrderItemsChangedCalculation : ITAP.glassCAD.Analytic.AnalitycLog<System.Int32> {
+		public System.Int32 ActionId { get; } 
+    }
+}
+namespace ITAP.glassCAD.Analytic {
+    
+    public partial class WriteOffHp : ITAP.glassCAD.Analytic.AnalitycLog<System.Int32> {
+		public System.Int32 ActionId { get; } 
+    }
+}
+namespace ITAP.glassCAD.Analytic {
+    
+    public partial class Selling : ITAP.glassCAD.Analytic.AnalitycLog<System.Int32> {
 		public System.Int32 ActionId { get; } 
     }
 }
@@ -5727,22 +5739,6 @@ namespace glassPeople.CRM {
 		public System.String From { get; set; } 
 		public System.String Subj { get; set; } 
 		public System.String Text { get; set; } 
-    }
-    }
-}
-namespace glassPeople.ActivityLibrary.glassCAD.Utilites {
-    public partial class Processing_OrderItemsIdentWorkStatus {
-    
-    public partial class OrderResult {
-		public System.String OrderStatus { get; set; } 
-		public System.Decimal PercentWorkIn { get; set; } 
-		public System.Decimal PercentWorkDone { get; set; } 
-		public System.Decimal PercentStorehouseIn { get; set; } 
-		public System.Decimal PercentStorehouseOut { get; set; } 
-		public System.Decimal PercentCanceled { get; set; } 
-		public System.Decimal PercentStoreHouseDefective { get; set; } 
-		public System.Decimal Paid { get; set; } 
-		public System.Int32 OrderColor { get; set; } 
     }
     }
 }
