@@ -21,15 +21,6 @@ namespace ITAP.glassCAD.Exchange.Settings {
 		public System.Activities.OutArgument<System.Boolean> IsCanceled { get; set; } 
     }
 }
-namespace ITAP.glassCAD.Exchange.Settings {
-    
-    public partial class LoadMessageServerSettingsActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.DataLayerNativeActivity {
-		public System.Activities.OutArgument<System.Boolean> Enabled { get; set; } 
-		public System.Activities.OutArgument<System.String> ConnectionString { get; set; } 
-		public System.Activities.OutArgument<System.Int32> Queue { get; set; } 
-		public System.Activities.OutArgument<System.String> Version { get; set; } 
-    }
-}
 namespace ITAP.glassCAD.Exchange.Activity {
     
     public abstract partial class BaseExportActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.DataLayerNativeActivity {
@@ -259,6 +250,11 @@ namespace ITAP.glassCAD.Exchange.Activity.Configuration.US {
 namespace ITAP.glassCAD.Exchange.Activity.Configuration.SM {
     
     public partial class ExportGlassHouseActivity : ITAP.glassCAD.Exchange.Activity.Export.ExportGlassHouseDocumentActivity {
+    }
+}
+namespace ITAP.glassCAD.Exchange.Activity.Configuration.SM {
+    
+    public partial class ExportGoodsHouseDocumentExport : ITAP.glassCAD.Exchange.Activity.Export.ExportGoodsHouseDocumentActivity {
     }
 }
 namespace ITAP.glassCAD.Exchange.Activity.Configuration.SM {
