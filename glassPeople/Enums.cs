@@ -73,6 +73,11 @@ namespace ITAP.glassCAD {
         AllowedOperationsBefore, AllowedMaterialsBefore, ForbiddenOperationsBefore, ForbiddenMaterialsBefore, AllowedOperationsAfter, ForbiddenOperationsAfter
     }
 }
+namespace ITAP.glassCAD {
+    public enum Roles {
+        Constructor, Technologist, AccountantProcurement, AccountantSelling, Analyst, ProductionPreparation, SalesDirector, RawMaterialsWarehouse, GlassPurchaser, Logistician, PurchaserBackup, DepartmentProductionPreparation, DepartmentQualityControl, DepartmentOrders, QualityControlDuplicateMessage, DepartmentWarehouse, GoodsPurchaser, CEO, QualityControlProductionCEO, DepartmentDrivers, ProductionManager, TechnicalAdmin, OrdersUsers, GlassWarehouse, CheckOrdersProductionPreparation, CustomersUsers, GoodsCatalogUsers, GlassWarehouseOperator, DefectiveOptimizer, Optimizer, AccountantsWarehouseControl, RawMaterialsPurchaser, RawMaterialsWarehouseOperator, QualityControlProduction, QualityControlComplaints, QualityControlComplaintsAlteration, QualityControlComplaintsAlterationAccess, QualityControlComplaintsCEO, QualityControlComplaintsCEO2, QualityControlFinishedGoods, QualityControlFinishedGoodsAlteration, QualityControlFinishedGoodsAlterationAccess, QualityControlFinishedGoodsCEO, QualityControlDefectResponsible, TransportPlanner, TransportUsers
+    }
+}
 namespace ITAP.glassCAD.Workflow {
     public enum WorkflowResult {
         Terminate, Success, Exception
@@ -91,6 +96,26 @@ namespace ITAP.glassCAD.Workflow.Components {
 namespace ITAP.glassCAD.Production.Model {
     public enum ViewSide {
         External, Internal
+    }
+}
+namespace ITAP.glassCAD.Exchange.Activity {
+    public enum ExportTypeMode {
+        SeparateMessages, InOneMessage
+    }
+}
+namespace ITAP.glassCAD.Exchange.Activity {
+    public enum RowState {
+        Unchanged, Added, Modified, Deleted, Default
+    }
+}
+namespace ITAP.glassCAD.Exchange.Activity {
+    public enum Mode {
+        ChangedRecord, AllRecord
+    }
+}
+namespace ITAP.glassCAD.Exchange.Activity.Export {
+    public enum ExportFinishedStoreMode {
+        FinishedStore, Transport
     }
 }
 namespace ITAP.glassCAD.Documents.Orders {
@@ -116,6 +141,11 @@ namespace ITAP.glassCAD.Dictionary.WorkFlowDocumentTemplate {
 namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities {
     public enum InterfaceItemMode {
         Default, ReadOnly, Hidden, Filter
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Documents {
+    public enum EntryMode {
+        Entry, Cancel
     }
 }
 namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Utilites {
@@ -318,6 +348,13 @@ namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities {
     public partial class DGML {
         public enum Mode {
             Default, Hidden, BeginRegion, EndRegion
+        }
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Documents.Defective {
+    public partial class FilterByDefectiveTypeActivity {
+        public enum DefectiveType {
+            AppoitmentItems, FinishedStore, Reclamation
         }
     }
 }

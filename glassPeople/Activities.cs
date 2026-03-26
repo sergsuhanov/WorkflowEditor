@@ -3,6 +3,319 @@ namespace ITAP.glassCAD.Production {
     public partial class TestActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.EditFormNativeActivity {
     }
 }
+namespace ITAP.glassCAD.Exchange {
+    
+    public partial class WriteMessagesActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.DataLayerNativeActivity {
+		[System.ComponentModel.DefaultValue(null)]
+		public System.Activities.ActivityFunc<ITAP.glassCAD.Exchange.WriteMessage, System.Boolean> NextActivity { get; set; } 
+        protected override void CacheMetadata(System.Activities.NativeActivityMetadata metadata) {
+			metadata.AddDelegate(this.NextActivity);
+            base.CacheMetadata(metadata);
+        }
+    }
+}
+namespace ITAP.glassCAD.Exchange.Settings {
+    
+    public partial class EditMessageServerSettingsActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.DataLayerNativeActivity {
+		[System.ComponentModel.CategoryAttribute("Out")]
+		public System.Activities.OutArgument<System.Boolean> IsCanceled { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Exchange.Settings {
+    
+    public partial class LoadMessageServerSettingsActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.DataLayerNativeActivity {
+		public System.Activities.OutArgument<System.Boolean> Enabled { get; set; } 
+		public System.Activities.OutArgument<System.String> ConnectionString { get; set; } 
+		public System.Activities.OutArgument<System.Int32> Queue { get; set; } 
+		public System.Activities.OutArgument<System.String> Version { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Exchange.Activity {
+    
+    public abstract partial class BaseExportActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.DataLayerNativeActivity {
+		public ITAP.glassCAD.Exchange.Activity.ExportTypeMode ExportTypeMode { get; set; } 
+		public System.Activities.InArgument<System.String> Parameter { get; set; } 
+		[System.ComponentModel.Browsable(false)]
+		public ITAP.glassCAD.Exchange.Activity.RowState OvverideRowState { get; set; } 
+		[System.ComponentModel.Browsable(false)]
+		public ITAP.glassCAD.Dictionary.WorkFlow.Activities.DGML Dgml { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Exchange.Activity {
+    
+    public abstract partial class BaseImportActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.DataLayerNativeActivity {
+		public System.Activities.InArgument<ITAP.glassCAD.Exchange.MessageDataSet> MessageDataSet { get; set; } 
+		public System.String[] MessageDataType { get; } 
+    }
+}
+namespace ITAP.glassCAD.Exchange.Activity {
+    
+    public partial class ReadMessagesActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.DataLayerNativeActivity {
+		[System.ComponentModel.DefaultValue(null)]
+		public System.Activities.ActivityFunc<ITAP.glassCAD.Exchange.MessageDataSet, System.Boolean> NextActivity { get; set; } 
+        protected override void CacheMetadata(System.Activities.NativeActivityMetadata metadata) {
+			metadata.AddDelegate(this.NextActivity);
+            base.CacheMetadata(metadata);
+        }
+    }
+}
+namespace ITAP.glassCAD.Exchange.Activity.Import {
+    
+    public partial class ImportAgreementActivity : ITAP.glassCAD.Exchange.Activity.BaseImportActivity {
+		public System.String[] MessageDataType { get; } 
+    }
+}
+namespace ITAP.glassCAD.Exchange.Activity.Import {
+    
+    public partial class ImportCompanyActivity : ITAP.glassCAD.Exchange.Activity.BaseImportActivity {
+		public System.String[] MessageDataType { get; } 
+    }
+}
+namespace ITAP.glassCAD.Exchange.Activity.Import {
+    
+    public partial class ImportCurrencyHistoryActivity : ITAP.glassCAD.Exchange.Activity.BaseImportActivity {
+		public System.String[] MessageDataType { get; } 
+    }
+}
+namespace ITAP.glassCAD.Exchange.Activity.Import {
+    
+    public partial class ImportCustomerActivity : ITAP.glassCAD.Exchange.Activity.BaseImportActivity {
+		public System.String[] MessageDataType { get; } 
+    }
+}
+namespace ITAP.glassCAD.Exchange.Activity.Import {
+    
+    public partial class ImportGoodsActivity : ITAP.glassCAD.Exchange.Activity.BaseImportActivity {
+		public System.String[] MessageDataType { get; } 
+    }
+}
+namespace ITAP.glassCAD.Exchange.Activity.Import {
+    
+    public partial class ImportGoodsHouseActivity : ITAP.glassCAD.Exchange.Activity.BaseImportActivity {
+		public System.String[] MessageDataType { get; } 
+    }
+}
+namespace ITAP.glassCAD.Exchange.Activity.Import {
+    
+    public partial class ImportMeasureActivity : ITAP.glassCAD.Exchange.Activity.BaseImportActivity {
+		public System.String[] MessageDataType { get; } 
+    }
+}
+namespace ITAP.glassCAD.Exchange.Activity.Import {
+    
+    public partial class ImportPaymentsActivity : ITAP.glassCAD.Exchange.Activity.BaseImportActivity {
+		public System.String[] MessageDataType { get; } 
+    }
+}
+namespace ITAP.glassCAD.Exchange.Activity.Import {
+    
+    public partial class ImportProductionActivity : ITAP.glassCAD.Exchange.Activity.BaseImportActivity {
+		public System.String[] MessageDataType { get; } 
+    }
+}
+namespace ITAP.glassCAD.Exchange.Activity.Import {
+    
+    public partial class ImportServicesActivity : ITAP.glassCAD.Exchange.Activity.BaseImportActivity {
+		public System.String[] MessageDataType { get; } 
+    }
+}
+namespace ITAP.glassCAD.Exchange.Activity.Import {
+    
+    public partial class ImportStoreHouseActivity : ITAP.glassCAD.Exchange.Activity.BaseImportActivity {
+		public System.String[] MessageDataType { get; } 
+    }
+}
+namespace ITAP.glassCAD.Exchange.Activity.Import {
+    
+    public partial class ImportTransportActivity : ITAP.glassCAD.Exchange.Activity.BaseImportActivity {
+		public System.String[] MessageDataType { get; } 
+    }
+}
+namespace ITAP.glassCAD.Exchange.Activity.Export {
+    [System.ComponentModel.DisplayNameAttribute("Экспорт договора")]
+    public partial class ExportAgreementActivity : ITAP.glassCAD.Exchange.Activity.BaseExportActivity {
+    }
+}
+namespace ITAP.glassCAD.Exchange.Activity.Export {
+    [System.ComponentModel.DisplayNameAttribute("Экспорт компании")]
+    public partial class ExportCompanyActivity : ITAP.glassCAD.Exchange.Activity.BaseExportActivity {
+    }
+}
+namespace ITAP.glassCAD.Exchange.Activity.Export {
+    [System.ComponentModel.DisplayNameAttribute("Экспорт истории курса валюты")]
+    public partial class ExportCurrencyHistoryActivity : ITAP.glassCAD.Exchange.Activity.BaseExportActivity {
+    }
+}
+namespace ITAP.glassCAD.Exchange.Activity.Export {
+    [System.ComponentModel.DisplayNameAttribute("Экспорт контрагента")]
+    public partial class ExportCustomerActivity : ITAP.glassCAD.Exchange.Activity.BaseExportActivity {
+    }
+}
+namespace ITAP.glassCAD.Exchange.Activity.Export {
+    [System.ComponentModel.DisplayNameAttribute("Экспорт клиента")]
+    public partial class ExportCustomerDocumentActivity : ITAP.glassCAD.Exchange.Activity.BaseExportActivity {
+    }
+}
+namespace ITAP.glassCAD.Exchange.Activity.Export {
+    [System.ComponentModel.DisplayNameAttribute("Экспорт запроса на товары")]
+    public partial class ExportExternalRequestDocumentActivity : ITAP.glassCAD.Exchange.Activity.BaseExportActivity {
+    }
+}
+namespace ITAP.glassCAD.Exchange.Activity.Export {
+    [System.ComponentModel.DisplayNameAttribute("Экспорт документа готовой продукции")]
+    public partial class ExportFinishedStoreDocumentActivity : ITAP.glassCAD.Exchange.Activity.BaseExportActivity {
+    }
+}
+namespace ITAP.glassCAD.Exchange.Activity.Export {
+    [System.ComponentModel.DisplayNameAttribute("Экспорт документа движения стекла")]
+    public partial class ExportGlassHouseDocumentActivity : ITAP.glassCAD.Exchange.Activity.BaseExportActivity {
+    }
+}
+namespace ITAP.glassCAD.Exchange.Activity.Export {
+    [System.ComponentModel.DisplayNameAttribute("Экспорт товара")]
+    public partial class ExportGoodActivity : ITAP.glassCAD.Exchange.Activity.BaseExportActivity {
+    }
+}
+namespace ITAP.glassCAD.Exchange.Activity.Export {
+    [System.ComponentModel.DisplayNameAttribute("Экспорт документа движения стекла (товарный склад)")]
+    public partial class ExportGoodsHouseDocumentActivity : ITAP.glassCAD.Exchange.Activity.BaseExportActivity {
+    }
+}
+namespace ITAP.glassCAD.Exchange.Activity.Export {
+    [System.ComponentModel.DisplayNameAttribute("Экспорт единицы измерения")]
+    public partial class ExportMeasureActivity : ITAP.glassCAD.Exchange.Activity.BaseExportActivity {
+    }
+}
+namespace ITAP.glassCAD.Exchange.Activity.Export {
+    [System.ComponentModel.DisplayNameAttribute("Экспорт документа заказа")]
+    public partial class ExportOrderDocumentActivity : ITAP.glassCAD.Exchange.Activity.BaseExportActivity {
+    }
+}
+namespace ITAP.glassCAD.Exchange.Activity.Export {
+    [System.ComponentModel.DisplayNameAttribute("Экспорт платёжного документа")]
+    public partial class ExportPaymentDocumentActivity : ITAP.glassCAD.Exchange.Activity.BaseExportActivity {
+    }
+}
+namespace ITAP.glassCAD.Exchange.Activity.Export {
+    [System.ComponentModel.DisplayNameAttribute("Экспорт изделия")]
+    public partial class ExportProductionActivity : ITAP.glassCAD.Exchange.Activity.BaseExportActivity {
+    }
+}
+namespace ITAP.glassCAD.Exchange.Activity.Export {
+    [System.ComponentModel.DisplayNameAttribute("Экспорт документа реализации")]
+    public partial class ExportSellingDocumentActivity : ITAP.glassCAD.Exchange.Activity.BaseExportActivity {
+    }
+}
+namespace ITAP.glassCAD.Exchange.Activity.Export {
+    [System.ComponentModel.DisplayNameAttribute("Экспорт сервисного документа")]
+    public partial class ExportServiceDocumentActivity : ITAP.glassCAD.Exchange.Activity.BaseExportActivity {
+    }
+}
+namespace ITAP.glassCAD.Exchange.Activity.Export {
+    [System.ComponentModel.DisplayNameAttribute("Экспорт услуги")]
+    public partial class ExportServicesActivity : ITAP.glassCAD.Exchange.Activity.BaseExportActivity {
+    }
+}
+namespace ITAP.glassCAD.Exchange.Activity.Export {
+    [System.ComponentModel.DisplayNameAttribute("Экспорт транспорта")]
+    public partial class ExportTransportActivity : ITAP.glassCAD.Exchange.Activity.BaseExportActivity {
+    }
+}
+namespace ITAP.glassCAD.Exchange.Activity.Configuration.ZZS {
+    
+    public partial class ExportGoodsHouseDocumentActivity : ITAP.glassCAD.Exchange.Activity.Export.ExportGoodsHouseDocumentActivity {
+    }
+}
+namespace ITAP.glassCAD.Exchange.Activity.Configuration.ZZS {
+    
+    public partial class ExportOrderDocumentActivity : ITAP.glassCAD.Exchange.Activity.Export.ExportOrderDocumentActivity {
+    }
+}
+namespace ITAP.glassCAD.Exchange.Activity.Configuration.ZZS {
+    
+    public partial class ExportSellingDocumentActivity : ITAP.glassCAD.Exchange.Activity.Export.ExportSellingDocumentActivity {
+    }
+}
+namespace ITAP.glassCAD.Exchange.Activity.Configuration.US {
+    
+    public partial class ExportFinishedStoreDocumentActivity : ITAP.glassCAD.Exchange.Activity.Export.ExportFinishedStoreDocumentActivity {
+    }
+}
+namespace ITAP.glassCAD.Exchange.Activity.Configuration.US {
+    
+    public partial class ExportOrderDocumentActivity : ITAP.glassCAD.Exchange.Activity.Export.ExportOrderDocumentActivity {
+    }
+}
+namespace ITAP.glassCAD.Exchange.Activity.Configuration.US {
+    
+    public partial class ExportSellingDocumentActivity : ITAP.glassCAD.Exchange.Activity.Export.ExportSellingDocumentActivity {
+    }
+}
+namespace ITAP.glassCAD.Exchange.Activity.Configuration.US {
+    
+    public partial class ExportServiceDocumentActivity : ITAP.glassCAD.Exchange.Activity.Export.ExportServiceDocumentActivity {
+    }
+}
+namespace ITAP.glassCAD.Exchange.Activity.Configuration.SM {
+    
+    public partial class ExportGlassHouseActivity : ITAP.glassCAD.Exchange.Activity.Export.ExportGlassHouseDocumentActivity {
+    }
+}
+namespace ITAP.glassCAD.Exchange.Activity.Configuration.SM {
+    
+    public partial class ImportGoodsHouseActivity : ITAP.glassCAD.Exchange.Activity.Import.ImportGoodsHouseActivity {
+    }
+}
+namespace ITAP.glassCAD.Exchange.Activity.Configuration.HV {
+    
+    public partial class ExportOrderDocumentActivity : ITAP.glassCAD.Exchange.Activity.Export.ExportOrderDocumentActivity {
+    }
+}
+namespace ITAP.glassCAD.Exchange.Activity.Configuration.HV {
+    
+    public partial class ExportSellingDocumentActivity : ITAP.glassCAD.Exchange.Activity.Export.ExportSellingDocumentActivity {
+    }
+}
+namespace ITAP.glassCAD.Exchange.Activity.Configuration.HV {
+    
+    public partial class ExportServiceDocumentActivity : ITAP.glassCAD.Exchange.Activity.Export.ExportServiceDocumentActivity {
+    }
+}
+namespace ITAP.glassCAD.Exchange.Activity.Configuration.GT {
+    
+    public partial class ExportOrderDocumentActivity : ITAP.glassCAD.Exchange.Activity.Export.ExportOrderDocumentActivity {
+    }
+}
+namespace ITAP.glassCAD.Exchange.Activity.Configuration.GT {
+    
+    public partial class ExportSellingDocumentActivity : ITAP.glassCAD.Exchange.Activity.Export.ExportSellingDocumentActivity {
+    }
+}
+namespace ITAP.glassCAD.Exchange.Activity.Configuration.GT {
+    
+    public partial class ExportServiceDocumentActivity : ITAP.glassCAD.Exchange.Activity.Export.ExportServiceDocumentActivity {
+    }
+}
+namespace ITAP.glassCAD.Exchange.Activity.Configuration.GGC {
+    
+    public partial class ExportFinishedStoreDocumentActivity : ITAP.glassCAD.Exchange.Activity.Export.ExportFinishedStoreDocumentActivity {
+    }
+}
+namespace ITAP.glassCAD.Exchange.Activity.Configuration.GGC {
+    
+    public partial class ExportOrderDocumentActivity : ITAP.glassCAD.Exchange.Activity.Export.ExportOrderDocumentActivity {
+    }
+}
+namespace ITAP.glassCAD.Exchange.Activity.Configuration.GGC {
+    
+    public partial class ExportSellingDocumentActivity : ITAP.glassCAD.Exchange.Activity.Export.ExportSellingDocumentActivity {
+    }
+}
+namespace ITAP.glassCAD.Exchange.Activity.Configuration.GGC {
+    
+    public partial class ExportServiceDocumentActivity : ITAP.glassCAD.Exchange.Activity.Export.ExportServiceDocumentActivity {
+    }
+}
 namespace ITAP.glassCAD.Documents.BoxProduction.Workflow.Activities {
     
     public partial class BoxProductionItemAddGoodActivity : System.Activities.NativeActivity {
@@ -184,6 +497,45 @@ namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities {
 		public System.Activities.InArgument<System.Collections.Generic.List<System.Int32>> Filter { get; set; } 
     }
 }
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Documents {
+    
+    public partial class ReEntryDocumentActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.DataLayerNativeActivity {
+		[System.ComponentModel.DisplayNameAttribute("Проводить без проверки")]
+		[System.ComponentModel.Browsable(false)]
+		public System.Activities.InArgument<System.Boolean> NoCheckBeforeEntry { get; set; } 
+		[System.Activities.RequiredArgumentAttribute()]
+		[System.ComponentModel.DisplayNameAttribute("ИД документа")]
+		public System.Activities.InArgument<System.Int32> IDDoc { get; set; } 
+		[System.Activities.RequiredArgumentAttribute()]
+		[System.ComponentModel.DisplayNameAttribute("Тип документа")]
+		public System.Activities.InArgument<System.Int32> IDDocOper { get; set; } 
+		[System.ComponentModel.DisplayNameAttribute("Режим проводки")]
+		public ITAP.glassCAD.Dictionary.WorkFlow.Activities.Documents.EntryMode Mode { get; set; } 
+		[System.ComponentModel.DisplayNameAttribute("Результат")]
+		public System.Activities.OutArgument<System.Boolean> Result { get; set; } 
+		[System.ComponentModel.DisplayNameAttribute("Сообщение")]
+		public System.Activities.OutArgument<System.String> Message { get; set; } 
+		public ITAP.glassCAD.Dictionary.WorkFlow.Activities.DGML Dgml { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Documents.ServiceDocuments {
+    [System.ComponentModel.Designer(typeof(glassPeople.Designers.ButtonsActivityDesigner))]
+    public partial class EditActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.ListActivity {
+		public System.Activities.InArgument<ITAP.glassCAD.Documents.ServiceDocuments.ServiceDocumentsDataSet> Source { get; set; } 
+        protected override void Execute(System.Activities.NativeActivityContext context) {
+            throw new System.NotImplementedException();
+        }
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Documents.Selling {
+    [System.ComponentModel.Designer(typeof(glassPeople.Designers.ButtonsActivityDesigner))]
+    public partial class EditActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.ListActivity {
+		public System.Activities.InArgument<ITAP.glassCAD.Documents.Selling.SellingDataSet> Source { get; set; } 
+        protected override void Execute(System.Activities.NativeActivityContext context) {
+            throw new System.NotImplementedException();
+        }
+    }
+}
 namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Documents.Orders {
     [System.ComponentModel.Designer(typeof(glassPeople.Designers.ButtonsActivityDesigner))]
     public partial class EditActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.ListActivity {
@@ -268,6 +620,96 @@ namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Documents.GoodsHouse {
 		public System.Activities.InArgument<System.Int32> IDGoodsHouse { get; set; } 
 		public System.Activities.InArgument<ITAP.glassCAD.Documents.GoodsHouse.GoodsHouseDataSet> GoodsHouseDataSet { get; set; } 
 		public System.Activities.OutArgument<ITAP.glassCAD.Documents.GoodsHouse.GoodsHouseDataSet> Result { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Documents.GlassHouse {
+    [System.ComponentModel.Designer(typeof(glassPeople.Designers.ButtonsActivityDesigner))]
+    public partial class EditActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.ListActivity {
+		public System.Activities.InArgument<ITAP.glassCAD.Documents.GlassHouse.GlassHouseDataSet> Source { get; set; } 
+        protected override void Execute(System.Activities.NativeActivityContext context) {
+            throw new System.NotImplementedException();
+        }
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Documents.FinishedStore {
+    [System.ComponentModel.Designer(typeof(glassPeople.Designers.ButtonsActivityDesigner))]
+    public partial class EditActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.ListActivity {
+		public System.Activities.InArgument<ITAP.glassCAD.Documents.FinishedStore.FinishedStoreDataSet> Source { get; set; } 
+        protected override void Execute(System.Activities.NativeActivityContext context) {
+            throw new System.NotImplementedException();
+        }
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Documents.ExternalRequest {
+    [System.ComponentModel.Designer(typeof(glassPeople.Designers.ButtonsActivityDesigner))]
+    public partial class EditActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.ListActivity {
+		public System.Activities.InArgument<ITAP.glassCAD.Documents.ExternalRequest.ExternalRequestDataSet> Source { get; set; } 
+        protected override void Execute(System.Activities.NativeActivityContext context) {
+            throw new System.NotImplementedException();
+        }
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Documents.Defective {
+    [System.ComponentModel.Designer(typeof(glassPeople.Designers.ButtonsActivityDesigner))]
+    public partial class EditActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.ListActivity {
+		public System.Activities.InArgument<ITAP.glassCAD.Documents.Defective.DefectiveDataSet> Source { get; set; } 
+        protected override void Execute(System.Activities.NativeActivityContext context) {
+            throw new System.NotImplementedException();
+        }
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Documents.Defective {
+    
+    public partial class FilterByAttribute : ITAP.glassCAD.Dictionary.WorkFlow.Activities.FilterActivity<System.Int32> {
+		public System.Boolean HasAttribute { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Documents.Defective {
+    
+    public partial class FilterByDatesActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.FilterActivity<System.Int32> {
+		[System.Activities.RequiredArgumentAttribute()]
+		public System.Activities.InArgument<System.DateTime> StartDate { get; set; } 
+		[System.Activities.RequiredArgumentAttribute()]
+		public System.Activities.InArgument<System.DateTime> EndDate { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Documents.Defective {
+    
+    public partial class FilterByDefectiveTypeActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.FilterActivity<System.Int32> {
+		public ITAP.glassCAD.Dictionary.WorkFlow.Activities.Documents.Defective.FilterByDefectiveTypeActivity.DefectiveType FilterDefectiveType { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Documents.Defective {
+    
+    public partial class LoadDefectiveActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.DataLayerNativeActivity {
+		public System.Activities.InArgument<System.Int32> IDDefective { get; set; } 
+		public System.Activities.InArgument<ITAP.glassCAD.Documents.Defective.DefectiveDataSet> DefectiveDataSet { get; set; } 
+		public System.Activities.OutArgument<ITAP.glassCAD.Documents.Defective.DefectiveDataSet> Result { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Documents.Defective {
+    
+    public partial class ProccessingInManufactureDefectiveActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.DataLayerNativeActivity {
+		public System.String DocumentNameMask { get; set; } 
+		public System.Activities.InArgument<ITAP.glassCAD.Documents.Defective.DefectiveDataSet> DefectiveDataSet { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Documents.Defective {
+    
+    public partial class ProccessingInStoreOrReclamationDefectiveActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.DataLayerNativeActivity {
+		public System.String DocumentNameMask { get; set; } 
+		public System.Int32 DocOperItemType { get; set; } 
+		public System.Activities.InArgument<ITAP.glassCAD.Documents.Defective.DefectiveDataSet> DefectiveDataSet { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Documents.Defective {
+    
+    public partial class SaveDefectiveDataSet : ITAP.glassCAD.Dictionary.WorkFlow.Activities.DataLayerNativeActivity {
+		[System.ComponentModel.Browsable(false)]
+		public System.Boolean EnabledEntry { get; set; } 
+		public System.Activities.InArgument<ITAP.glassCAD.Documents.Defective.DefectiveDataSet> DefectiveDataSet { get; set; } 
+		public System.Boolean ForcedSave { get; set; } 
+		public System.Activities.OutArgument<System.Boolean> Result { get; set; } 
     }
 }
 namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Documents.BoxProduction {
@@ -884,6 +1326,24 @@ namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Dictionaries.WorkFlowDocu
         }
     }
 }
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Dictionaries.Transport {
+    [System.ComponentModel.Designer(typeof(glassPeople.Designers.ButtonsActivityDesigner))]
+    public partial class EditActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.ListActivity {
+		public System.Activities.InArgument<ITAP.glassCAD.Dictionary.Transport.TransportDataSet> Source { get; set; } 
+        protected override void Execute(System.Activities.NativeActivityContext context) {
+            throw new System.NotImplementedException();
+        }
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Dictionaries.TermsExternalRequest {
+    [System.ComponentModel.Designer(typeof(glassPeople.Designers.ButtonsActivityDesigner))]
+    public partial class EditActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.ListActivity {
+		public System.Activities.InArgument<ITAP.glassCAD.Dictionary.TermsExternalRequest.TermsExternalRequestDataSet> Source { get; set; } 
+        protected override void Execute(System.Activities.NativeActivityContext context) {
+            throw new System.NotImplementedException();
+        }
+    }
+}
 namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Dictionaries.Storehouse {
     [System.ComponentModel.Designer(typeof(glassPeople.Designers.ButtonsActivityDesigner))]
     public partial class EditActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.ListActivity {
@@ -1013,6 +1473,24 @@ namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Dictionaries.People {
 		public System.Activities.InArgument<System.String> Phone { get; set; } 
     }
 }
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Dictionaries.PeopleRole {
+    [System.ComponentModel.Designer(typeof(glassPeople.Designers.ButtonsActivityDesigner))]
+    public partial class EditActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.ListActivity {
+		public System.Activities.InArgument<ITAP.glassCAD.Dictionary.PeopleRole.PeopleRoleDataSet> Source { get; set; } 
+        protected override void Execute(System.Activities.NativeActivityContext context) {
+            throw new System.NotImplementedException();
+        }
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Dictionaries.Payment {
+    [System.ComponentModel.Designer(typeof(glassPeople.Designers.ButtonsActivityDesigner))]
+    public partial class EditActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.ListActivity {
+		public System.Activities.InArgument<ITAP.glassCAD.Dictionary.Payment.PaymentDataSet> Source { get; set; } 
+        protected override void Execute(System.Activities.NativeActivityContext context) {
+            throw new System.NotImplementedException();
+        }
+    }
+}
 namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Dictionaries.PaymentType {
     [System.ComponentModel.Designer(typeof(glassPeople.Designers.ButtonsActivityDesigner))]
     public partial class EditActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.ListActivity {
@@ -1026,6 +1504,15 @@ namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Dictionaries.Operation {
     [System.ComponentModel.Designer(typeof(glassPeople.Designers.ButtonsActivityDesigner))]
     public partial class EditActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.ListActivity {
 		public System.Activities.InArgument<ITAP.glassCAD.Dictionary.Operation.OperationDataSet> Source { get; set; } 
+        protected override void Execute(System.Activities.NativeActivityContext context) {
+            throw new System.NotImplementedException();
+        }
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Dictionaries.ObjectAttributes {
+    [System.ComponentModel.Designer(typeof(glassPeople.Designers.ButtonsActivityDesigner))]
+    public partial class EditActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.ListActivity {
+		public System.Activities.InArgument<ITAP.glassCAD.Dictionary.ObjectAttributes.ObjectAttributesDataSet> Source { get; set; } 
         protected override void Execute(System.Activities.NativeActivityContext context) {
             throw new System.NotImplementedException();
         }
@@ -1197,6 +1684,15 @@ namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Dictionaries.Company {
         }
     }
 }
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Dictionaries.CauseDefective {
+    [System.ComponentModel.Designer(typeof(glassPeople.Designers.ButtonsActivityDesigner))]
+    public partial class EditActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.ListActivity {
+		public System.Activities.InArgument<ITAP.glassCAD.Dictionary.CauseDefective.CauseDefectiveDataSet> Source { get; set; } 
+        protected override void Execute(System.Activities.NativeActivityContext context) {
+            throw new System.NotImplementedException();
+        }
+    }
+}
 namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Dictionaries.Calendar {
     [System.ComponentModel.Designer(typeof(glassPeople.Designers.ButtonsActivityDesigner))]
     public partial class EditActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.ListActivity {
@@ -1219,6 +1715,15 @@ namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Dictionaries.CalculationV
     [System.ComponentModel.Designer(typeof(glassPeople.Designers.ButtonsActivityDesigner))]
     public partial class EditActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.ListActivity {
 		public System.Activities.InArgument<ITAP.glassCAD.Dictionary.CalculationVariables.CalculationVariablesDataSet> Source { get; set; } 
+        protected override void Execute(System.Activities.NativeActivityContext context) {
+            throw new System.NotImplementedException();
+        }
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Dictionaries.Attributes {
+    [System.ComponentModel.Designer(typeof(glassPeople.Designers.ButtonsActivityDesigner))]
+    public partial class EditActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.ListActivity {
+		public System.Activities.InArgument<ITAP.glassCAD.Dictionary.Attributes.AttributesDataSet> Source { get; set; } 
         protected override void Execute(System.Activities.NativeActivityContext context) {
             throw new System.NotImplementedException();
         }
@@ -1472,8 +1977,6 @@ namespace glassPeople.ActivityLibrary.glassCAD.Utilites {
     public partial class Processing_AppointmentItemWorkStatus : System.Activities.NativeActivity {
 		[System.Activities.RequiredArgumentAttribute()]
 		public System.Activities.InArgument<System.String> ConnectionString { get; set; } 
-		public System.Activities.OutArgument<System.Exception> Exception { get; set; } 
-		public System.Activities.OutArgument<System.Boolean> HasError { get; set; } 
         protected override void Execute(System.Activities.NativeActivityContext context) {
             throw new System.NotImplementedException();
         }
