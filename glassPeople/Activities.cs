@@ -6,9 +6,12 @@ namespace ITAP.glassCAD.Production {
 namespace ITAP.glassCAD.Exchange {
     
     public partial class WriteMessagesActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.DataLayerNativeActivity {
-		[System.ComponentModel.DefaultValue(null)]
+		[System.ComponentModel.DefaultValueAttribute(null)]
+		public System.Activities.ActivityFunc<System.Exception, System.Boolean> ExceptionActivity { get; set; } 
+		[System.ComponentModel.DefaultValueAttribute(null)]
 		public System.Activities.ActivityFunc<ITAP.glassCAD.Exchange.WriteMessage, System.Boolean> NextActivity { get; set; } 
         protected override void CacheMetadata(System.Activities.NativeActivityMetadata metadata) {
+			metadata.AddDelegate(this.ExceptionActivity);
 			metadata.AddDelegate(this.NextActivity);
             base.CacheMetadata(metadata);
         }
@@ -26,9 +29,9 @@ namespace ITAP.glassCAD.Exchange.Activity {
     public abstract partial class BaseExportActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.DataLayerNativeActivity {
 		public ITAP.glassCAD.Exchange.Activity.ExportTypeMode ExportTypeMode { get; set; } 
 		public System.Activities.InArgument<System.String> Parameter { get; set; } 
-		[System.ComponentModel.Browsable(false)]
+		[System.ComponentModel.BrowsableAttribute(false)]
 		public ITAP.glassCAD.Exchange.Activity.RowState OvverideRowState { get; set; } 
-		[System.ComponentModel.Browsable(false)]
+		[System.ComponentModel.BrowsableAttribute(false)]
 		public ITAP.glassCAD.Dictionary.WorkFlow.Activities.DGML Dgml { get; set; } 
     }
 }
@@ -42,7 +45,7 @@ namespace ITAP.glassCAD.Exchange.Activity {
 namespace ITAP.glassCAD.Exchange.Activity {
     
     public partial class ReadMessagesActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.DataLayerNativeActivity {
-		[System.ComponentModel.DefaultValue(null)]
+		[System.ComponentModel.DefaultValueAttribute(null)]
 		public System.Activities.ActivityFunc<ITAP.glassCAD.Exchange.MessageDataSet, System.Boolean> NextActivity { get; set; } 
         protected override void CacheMetadata(System.Activities.NativeActivityMetadata metadata) {
 			metadata.AddDelegate(this.NextActivity);
@@ -334,14 +337,14 @@ namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities {
 		public System.Boolean Show { get; set; } 
 		[System.ComponentModel.DisplayNameAttribute("Заголовок формы выбора")]
 		public System.String Caption { get; set; } 
-		[System.ComponentModel.Browsable(false)]
+		[System.ComponentModel.BrowsableAttribute(false)]
 		public System.Int32 TypePeriod { get; set; } 
 		[System.ComponentModel.DisplayNameAttribute("Дата С")]
 		public System.Activities.OutArgument<System.DateTime> DateFrom { get; set; } 
 		[System.ComponentModel.DisplayNameAttribute("Дата По")]
 		public System.Activities.OutArgument<System.DateTime> DateTo { get; set; } 
+		[System.ComponentModel.BrowsableAttribute(false)]
 		[System.ComponentModel.DisplayNameAttribute("Период выбран")]
-		[System.ComponentModel.Browsable(false)]
 		public System.Activities.OutArgument<System.Boolean> PeriodSelected { get; set; } 
 		public System.Activities.OutArgument<System.Boolean> IsCanceled { get; set; } 
 		[System.ComponentModel.CategoryAttribute("Scheme")]
@@ -357,20 +360,20 @@ namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities {
 		public System.Activities.InArgument<System.String> Message { get; set; } 
 		public System.Boolean ShowInLog { get; set; } 
 		public System.Activities.OutArgument<System.Boolean> Result { get; set; } 
-		[System.ComponentModel.Browsable(false)]
+		[System.ComponentModel.BrowsableAttribute(false)]
 		public ITAP.glassCAD.Dictionary.WorkFlow.Activities.DGML Dgml { get; set; } 
     }
 }
 namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities {
     
     public abstract partial class CustomActionsActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.EditFormNativeActivity {
-		[System.ComponentModel.Browsable(false)]
+		[System.ComponentModel.BrowsableAttribute(false)]
 		public System.Collections.ObjectModel.Collection<ITAP.glassCAD.Dictionary.WorkFlow.Activities.Input.Button> Buttons { get; set; } = new System.Collections.ObjectModel.Collection<ITAP.glassCAD.Dictionary.WorkFlow.Activities.Input.Button>();
-		[System.ComponentModel.Browsable(false)]
+		[System.ComponentModel.BrowsableAttribute(false)]
 		public System.Collections.ObjectModel.Collection<ITAP.glassCAD.Dictionary.WorkFlow.Activities.Input.Button> ToolBar { get; set; } = new System.Collections.ObjectModel.Collection<ITAP.glassCAD.Dictionary.WorkFlow.Activities.Input.Button>();
-		[System.ComponentModel.Browsable(false)]
+		[System.ComponentModel.BrowsableAttribute(false)]
 		public System.Collections.ObjectModel.Collection<ITAP.glassCAD.Dictionary.WorkFlow.Activities.Input.Button> BottomBar { get; set; } = new System.Collections.ObjectModel.Collection<ITAP.glassCAD.Dictionary.WorkFlow.Activities.Input.Button>();
-		[System.ComponentModel.Browsable(false)]
+		[System.ComponentModel.BrowsableAttribute(false)]
 		public System.Collections.ObjectModel.Collection<ITAP.glassCAD.Dictionary.WorkFlow.Activities.Input.Button> Custom { get; set; } = new System.Collections.ObjectModel.Collection<ITAP.glassCAD.Dictionary.WorkFlow.Activities.Input.Button>();
 		[System.ComponentModel.CategoryAttribute("Buttons")]
 		public System.Activities.InArgument<System.Collections.Generic.List<ITAP.glassCAD.Dictionary.WorkFlow.Activities.Input.Button>> DynamicButtons { get; set; } 
@@ -418,9 +421,9 @@ namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities {
 		public System.Collections.ObjectModel.Collection<ITAP.glassCAD.Dictionary.WorkFlow.Activities.TemplateInArg> InArguments { get; set; } = new System.Collections.ObjectModel.Collection<ITAP.glassCAD.Dictionary.WorkFlow.Activities.TemplateInArg>();
 		[System.ComponentModel.DisplayNameAttribute("Выходные параметры")]
 		public System.Collections.ObjectModel.Collection<ITAP.glassCAD.Dictionary.WorkFlow.Activities.TemplateOutArg> OutArguments { get; set; } = new System.Collections.ObjectModel.Collection<ITAP.glassCAD.Dictionary.WorkFlow.Activities.TemplateOutArg>();
-		[System.ComponentModel.DefaultValue(true)]
-		public System.Boolean WaitForExecute { get; set; } = true;
-		[System.ComponentModel.Browsable(false)]
+		[System.ComponentModel.DefaultValueAttribute(true)]
+		public System.Boolean WaitForExecute { get; set; } 
+		[System.ComponentModel.BrowsableAttribute(false)]
 		public ITAP.glassCAD.Dictionary.WorkFlow.Activities.DGML Dgml { get; set; } 
     }
 }
@@ -496,8 +499,8 @@ namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities {
 namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Documents {
     
     public partial class ReEntryDocumentActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.DataLayerNativeActivity {
+		[System.ComponentModel.BrowsableAttribute(false)]
 		[System.ComponentModel.DisplayNameAttribute("Проводить без проверки")]
-		[System.ComponentModel.Browsable(false)]
 		public System.Activities.InArgument<System.Boolean> NoCheckBeforeEntry { get; set; } 
 		[System.Activities.RequiredArgumentAttribute()]
 		[System.ComponentModel.DisplayNameAttribute("ИД документа")]
@@ -514,6 +517,294 @@ namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Documents {
 		public ITAP.glassCAD.Dictionary.WorkFlow.Activities.DGML Dgml { get; set; } 
     }
 }
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Documents.UserTasks {
+    [ITAP.glassCAD.Dictionary.WorkFlow.Components.WorkflowTemplateActivityAttribute("Документы. Задачи пользователя", "Отменить задачи", true, true)]
+[System.ComponentModel.DesignerAttribute(typeof(ITAP.glassCAD.Dictionary.WorkFlow.Designers.EmptyActivityDesigner))]
+    public partial class CancelUserTaskActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.DataLayerNativeActivity {
+		[System.Activities.RequiredArgumentAttribute()]
+		public System.Activities.InArgument<System.Collections.Generic.List<System.Int32>> IDUserTasks { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Documents.UserTasks {
+    [ITAP.glassCAD.Dictionary.WorkFlow.Components.WorkflowTemplateActivityAttribute("Документы. Задачи пользователя", "Закрыть задачи", true, true)]
+[System.ComponentModel.DesignerAttribute(typeof(ITAP.glassCAD.Dictionary.WorkFlow.Designers.EmptyActivityDesigner))]
+    public partial class CloseUserTaskActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.DataLayerNativeActivity {
+		[System.Activities.RequiredArgumentAttribute()]
+		public System.Activities.InArgument<System.Collections.Generic.List<System.Int32>> IDUserTasks { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Documents.UserTasks {
+    [ITAP.glassCAD.Dictionary.WorkFlow.Components.WorkflowTemplateActivityAttribute("Документы. Задачи пользователя", "Создать задачу", true, true)]
+[System.ComponentModel.DesignerAttribute(typeof(ITAP.glassCAD.Dictionary.WorkFlow.Designers.EmptyActivityDesigner))]
+    public partial class CreateUserTaskActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.DataLayerNativeActivity {
+		[System.ComponentModel.CategoryAttribute("Input")]
+		[System.ComponentModel.DisplayNameAttribute("ИД шаблона")]
+		public System.Nullable<System.Int32> IDWorkFlowTemplate { get; set; } 
+		[System.ComponentModel.DisplayNameAttribute("Guid шаблона")]
+		public System.Nullable<System.Guid> GuidWorkFlowTemplate { get; set; } 
+		[System.ComponentModel.DisplayNameAttribute("ИД пользователя (исполнителя)")]
+		public System.Activities.InArgument<System.Int32> IDUserTo { get; set; } 
+		[System.ComponentModel.DisplayNameAttribute("GUID пользователя (исполнителя)")]
+		public System.Activities.InArgument<System.Guid> UserToGUID { get; set; } 
+		[System.ComponentModel.DisplayNameAttribute("ИД пользователя (создавшего процесс)")]
+		public System.Activities.InArgument<System.Int32> IDUserFrom { get; set; } 
+		[System.ComponentModel.DisplayNameAttribute("GUID пользователя (создавшего процесс)")]
+		public System.Activities.InArgument<System.Guid> UserFromGUID { get; set; } 
+		[System.ComponentModel.DisplayNameAttribute("Входные параметры")]
+		public System.Collections.ObjectModel.Collection<ITAP.glassCAD.Dictionary.WorkFlow.Activities.TemplateInArg> InArguments { get; set; } = new System.Collections.ObjectModel.Collection<ITAP.glassCAD.Dictionary.WorkFlow.Activities.TemplateInArg>();
+		[System.ComponentModel.DisplayNameAttribute("Тема задачи")]
+		public System.Activities.InArgument<System.String> Subject { get; set; } 
+		[System.ComponentModel.DisplayNameAttribute("Номер документа")]
+		public System.Activities.InArgument<System.String> DocNumber { get; set; } 
+		[System.ComponentModel.DisplayNameAttribute("Контрагент документа")]
+		public System.Activities.InArgument<System.String> DocCustomer { get; set; } 
+		[System.ComponentModel.DisplayNameAttribute("Сумма документа")]
+		public System.Activities.InArgument<System.Decimal> DocSm { get; set; } 
+		public System.Activities.InArgument<System.String> DocSmString { get; set; } 
+		[System.ComponentModel.DisplayNameAttribute("Идентификатор документа")]
+		public System.Activities.InArgument<System.Int32> IDDoc { get; set; } 
+		public System.Activities.InArgument<System.String> IDDocString { get; set; } 
+		[System.ComponentModel.DisplayNameAttribute("Идентификатор типа документа")]
+		public System.Activities.InArgument<System.Int32> IDDocOper { get; set; } 
+		[System.ComponentModel.DisplayNameAttribute("Тип документа (наименование)")]
+		public System.Activities.InArgument<System.String> DocOperName { get; set; } 
+		[System.ComponentModel.DisplayNameAttribute("Место задачи (тип задачи)")]
+		public System.Activities.InArgument<System.String> Place { get; set; } 
+		[System.ComponentModel.DisplayNameAttribute("Контрольная дата выполнения задачи")]
+		public System.Activities.InArgument<System.DateTime> CheckDate { get; set; } 
+		[System.ComponentModel.DisplayNameAttribute("Цвет")]
+		public System.Activities.InArgument<System.Int32> Color { get; set; } 
+		[System.ComponentModel.DisplayNameAttribute("Тип задачи")]
+		public System.Activities.InArgument<ITAP.glassCAD.Documents.UserTasks.TaskType> TaskType { get; set; } 
+		public System.Activities.OutArgument<System.Int32> IDUserTask { get; set; } 
+		public System.Activities.OutArgument<System.Guid> GUID { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Documents.UserTasks {
+    [System.ComponentModel.Designer(typeof(glassPeople.Designers.ButtonsActivityDesigner))]
+    public partial class EditActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.ListActivity {
+		public System.Activities.InArgument<ITAP.glassCAD.Documents.UserTasks.UserTasksDataSet> Source { get; set; } 
+        protected override void Execute(System.Activities.NativeActivityContext context) {
+            throw new System.NotImplementedException();
+        }
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Documents.UserTasks {
+    [ITAP.glassCAD.Dictionary.WorkFlow.Components.WorkflowTemplateActivityAttribute("Документы. Задачи пользователя", "Фильтр по текущему пользователю (Кому назначена)", true, true)]
+[System.ComponentModel.DesignerAttribute(typeof(ITAP.glassCAD.Dictionary.WorkFlow.Designers.EmptyActivityDesigner))]
+    public partial class FilterByCurrentIDUserToActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.FilterActivity<System.Int32> {
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Documents.UserTasks {
+    [ITAP.glassCAD.Dictionary.WorkFlow.Components.WorkflowTemplateActivityAttribute("Документы. Задачи пользователя", "Фильтр по периоду", true, true)]
+[System.ComponentModel.DesignerAttribute(typeof(ITAP.glassCAD.Dictionary.WorkFlow.Designers.EmptyActivityDesigner))]
+    public partial class FilterByDateActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.FilterActivity<System.Int32> {
+		[System.Activities.RequiredArgumentAttribute()]
+		public System.Activities.InArgument<System.DateTime> StartDate { get; set; } 
+		[System.Activities.RequiredArgumentAttribute()]
+		public System.Activities.InArgument<System.DateTime> EndDate { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Documents.UserTasks {
+    [ITAP.glassCAD.Dictionary.WorkFlow.Components.WorkflowTemplateActivityAttribute("Документы. Задачи пользователя", "Фильтр по Контрагенту", true, true)]
+[System.ComponentModel.DesignerAttribute(typeof(ITAP.glassCAD.Dictionary.WorkFlow.Designers.EmptyActivityDesigner))]
+    public partial class FilterByDocCustomerActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.FilterActivity<System.Int32> {
+		[System.Activities.RequiredArgumentAttribute()]
+		public System.Activities.InArgument<System.String> DocCustomer { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Documents.UserTasks {
+    [ITAP.glassCAD.Dictionary.WorkFlow.Components.WorkflowTemplateActivityAttribute("Документы. Задачи пользователя", "Фильтр по Номеру документа", true, true)]
+[System.ComponentModel.DesignerAttribute(typeof(ITAP.glassCAD.Dictionary.WorkFlow.Designers.EmptyActivityDesigner))]
+    public partial class FilterByDocNumberActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.FilterActivity<System.Int32> {
+		[System.Activities.RequiredArgumentAttribute()]
+		public System.Activities.InArgument<System.String> DocNumber { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Documents.UserTasks {
+    [ITAP.glassCAD.Dictionary.WorkFlow.Components.WorkflowTemplateActivityAttribute("Документы. Задачи пользователя", "Фильтр по типу документа", true, true)]
+[System.ComponentModel.DesignerAttribute(typeof(ITAP.glassCAD.Dictionary.WorkFlow.Designers.EmptyActivityDesigner))]
+    public partial class FilterByDocOperNameActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.FilterActivity<System.Int32> {
+		[System.Activities.RequiredArgumentAttribute()]
+		public System.Activities.InArgument<System.String> DocOperName { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Documents.UserTasks {
+    [ITAP.glassCAD.Dictionary.WorkFlow.Components.WorkflowTemplateActivityAttribute("Документы. Задачи пользователя", "Фильтр по идентификатору документа", true, true)]
+[System.ComponentModel.DesignerAttribute(typeof(ITAP.glassCAD.Dictionary.WorkFlow.Designers.EmptyActivityDesigner))]
+    public partial class FilterByIDDocActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.FilterActivity<System.Int32> {
+		[System.Activities.RequiredArgumentAttribute()]
+		public System.Activities.InArgument<System.Int32> IDDoc { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Documents.UserTasks {
+    [ITAP.glassCAD.Dictionary.WorkFlow.Components.WorkflowTemplateActivityAttribute("Документы. Задачи пользователя", "Фильтр по пользователю (Кем назначена)", true, true)]
+[System.ComponentModel.DesignerAttribute(typeof(ITAP.glassCAD.Dictionary.WorkFlow.Designers.EmptyActivityDesigner))]
+    public partial class FilterByIDUserFromActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.FilterActivity<System.Int32> {
+		[System.Activities.RequiredArgumentAttribute()]
+		public System.Activities.InArgument<System.Int32> IDUserFrom { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Documents.UserTasks {
+    [ITAP.glassCAD.Dictionary.WorkFlow.Components.WorkflowTemplateActivityAttribute("Документы. Задачи пользователя", "Фильтр по пользователю (Кому назначена)", true, true)]
+[System.ComponentModel.DesignerAttribute(typeof(ITAP.glassCAD.Dictionary.WorkFlow.Designers.EmptyActivityDesigner))]
+    public partial class FilterByIDUserToActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.FilterActivity<System.Int32> {
+		[System.Activities.RequiredArgumentAttribute()]
+		public System.Activities.InArgument<System.Int32> IDUserTo { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Documents.UserTasks {
+    [ITAP.glassCAD.Dictionary.WorkFlow.Components.WorkflowTemplateActivityAttribute("Документы. Задачи пользователя", "Фильтр по месту постановки задачи", true, true)]
+[System.ComponentModel.DesignerAttribute(typeof(ITAP.glassCAD.Dictionary.WorkFlow.Designers.EmptyActivityDesigner))]
+    public partial class FilterByPlaceActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.FilterActivity<System.Int32> {
+		[System.Activities.RequiredArgumentAttribute()]
+		public System.Activities.InArgument<System.String> Place { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Documents.UserTasks {
+    [ITAP.glassCAD.Dictionary.WorkFlow.Components.WorkflowTemplateActivityAttribute("Документы. Задачи пользователя", "Фильтр по Статусу", true, true)]
+[System.ComponentModel.DesignerAttribute(typeof(ITAP.glassCAD.Dictionary.WorkFlow.Designers.EmptyActivityDesigner))]
+    public partial class FilterByStatusActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.FilterActivity<System.Int32> {
+		[System.Activities.RequiredArgumentAttribute()]
+		public System.Activities.InArgument<ITAP.glassCAD.Documents.UserTasks.StatusFilter> FilterByStatus { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Documents.UserTasks {
+    [ITAP.glassCAD.Dictionary.WorkFlow.Components.WorkflowTemplateActivityAttribute("Документы. Задачи пользователя", "Фильтр по теме задачи", true, true)]
+[System.ComponentModel.DesignerAttribute(typeof(ITAP.glassCAD.Dictionary.WorkFlow.Designers.EmptyActivityDesigner))]
+    public partial class FilterBySubjectActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.FilterActivity<System.Int32> {
+		[System.Activities.RequiredArgumentAttribute()]
+		public System.Activities.InArgument<System.String> Subject { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Documents.UserTasks {
+    [ITAP.glassCAD.Dictionary.WorkFlow.Components.WorkflowTemplateActivityAttribute("Документы. Задачи пользователя", "Фильтр по типу задачи", true, true)]
+[System.ComponentModel.DesignerAttribute(typeof(ITAP.glassCAD.Dictionary.WorkFlow.Designers.EmptyActivityDesigner))]
+    public partial class FilterByTaskTypeActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.FilterActivity<System.Int32> {
+		[System.Activities.RequiredArgumentAttribute()]
+		public System.Activities.InArgument<ITAP.glassCAD.Documents.UserTasks.TaskType> TaskType { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Documents.UserTasks {
+    [ITAP.glassCAD.Dictionary.WorkFlow.Components.WorkflowTemplateActivityAttribute("Документы. Задачи пользователя", "Фильтр по идентификатору задачи", true, true)]
+[System.ComponentModel.DesignerAttribute(typeof(ITAP.glassCAD.Dictionary.WorkFlow.Designers.EmptyActivityDesigner))]
+    public partial class FilterByWorkflowTemplateGUIDActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.FilterActivity<System.Int32> {
+		[System.Activities.RequiredArgumentAttribute()]
+		public System.Activities.InArgument<System.Guid> WorkflowTemplateGUID { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Documents.UserTasks {
+    [ITAP.glassCAD.Dictionary.WorkFlow.Components.WorkflowTemplateActivityAttribute("Документы. Задачи пользователя", "Получить атрибуты задачи", true, true)]
+[System.ComponentModel.DesignerAttribute(typeof(ITAP.glassCAD.Dictionary.WorkFlow.Designers.EmptyActivityDesigner))]
+    public partial class GetUserTaskAttributesActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.DataLayerNativeActivity {
+		[System.ComponentModel.DataAnnotations.RequiredAttribute()]
+		public System.Activities.InArgument<System.Int32> IDUserTask { get; set; } 
+		[System.ComponentModel.DisplayNameAttribute("Guid шаблона")]
+		public System.Activities.OutArgument<System.Guid> WorkFlowTemplateGuid { get; set; } 
+		[System.ComponentModel.DisplayNameAttribute("ИД пользователя (исполнителя)")]
+		public System.Activities.OutArgument<System.Nullable<System.Int32>> IDUserTo { get; set; } 
+		[System.ComponentModel.DisplayNameAttribute("GUID пользователя (исполнителя)")]
+		public System.Activities.OutArgument<System.Nullable<System.Guid>> UserToGUID { get; set; } 
+		[System.ComponentModel.DisplayNameAttribute("ИД пользователя (создавшего процесс)")]
+		public System.Activities.OutArgument<System.Nullable<System.Int32>> IDUserFrom { get; set; } 
+		[System.ComponentModel.DisplayNameAttribute("GUID пользователя (создавшего процесс)")]
+		public System.Activities.OutArgument<System.Nullable<System.Guid>> UserFromGUID { get; set; } 
+		[System.ComponentModel.DisplayNameAttribute("Тема задачи")]
+		public System.Activities.OutArgument<System.String> Subject { get; set; } 
+		[System.ComponentModel.DisplayNameAttribute("Номер документа")]
+		public System.Activities.OutArgument<System.String> DocNumber { get; set; } 
+		[System.ComponentModel.DisplayNameAttribute("Контрагент документа")]
+		public System.Activities.OutArgument<System.String> DocCustomer { get; set; } 
+		[System.ComponentModel.DisplayNameAttribute("Сумма документа")]
+		public System.Activities.OutArgument<System.Nullable<System.Decimal>> DocSm { get; set; } 
+		public System.Activities.OutArgument<System.String> DocSmString { get; set; } 
+		[System.ComponentModel.DisplayNameAttribute("Идентификатор документа")]
+		public System.Activities.OutArgument<System.Nullable<System.Int32>> IDDoc { get; set; } 
+		public System.Activities.OutArgument<System.String> IDDocString { get; set; } 
+		[System.ComponentModel.DisplayNameAttribute("Идентификатор типа документа")]
+		public System.Activities.OutArgument<System.Nullable<System.Int32>> IDDocOper { get; set; } 
+		[System.ComponentModel.DisplayNameAttribute("Тип документа (наименование)")]
+		public System.Activities.OutArgument<System.String> DocOperName { get; set; } 
+		[System.ComponentModel.DisplayNameAttribute("Место задачи (тип задачи)")]
+		public System.Activities.OutArgument<System.String> Place { get; set; } 
+		[System.ComponentModel.DisplayNameAttribute("Контрольная дата выполнения задачи")]
+		public System.Activities.OutArgument<System.Nullable<System.DateTime>> CheckDate { get; set; } 
+		[System.ComponentModel.DisplayNameAttribute("Цвет")]
+		public System.Activities.OutArgument<System.Nullable<System.Int32>> Color { get; set; } 
+		[System.ComponentModel.DisplayNameAttribute("Дата начала")]
+		public System.Activities.OutArgument<System.Nullable<System.DateTime>> StartDate { get; set; } 
+		[System.ComponentModel.DisplayNameAttribute("Дата окончания")]
+		public System.Activities.OutArgument<System.Nullable<System.DateTime>> EndDate { get; set; } 
+		[System.ComponentModel.DisplayNameAttribute("Статус")]
+		public System.Activities.OutArgument<System.Int32> Status { get; set; } 
+		[System.ComponentModel.DisplayNameAttribute("Ident")]
+		public System.Activities.OutArgument<System.Guid> GUID { get; set; } 
+		public System.Activities.OutArgument<System.String> Data { get; set; } 
+		[System.ComponentModel.DisplayNameAttribute("Тип задачи")]
+		public System.Activities.OutArgument<ITAP.glassCAD.Documents.UserTasks.TaskType> TaskType { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Documents.UserTasks {
+    [ITAP.glassCAD.Dictionary.WorkFlow.Components.WorkflowTemplateActivityAttribute("Документы. Задачи пользователя", "Загрузить задачи", true, true)]
+[System.ComponentModel.DesignerAttribute(typeof(ITAP.glassCAD.Dictionary.WorkFlow.Designers.EmptyActivityDesigner))]
+    public partial class LoadUserTasksActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.DataLayerNativeActivity {
+		[System.Activities.OverloadGroupAttribute("Source")]
+		public System.Activities.InArgument<System.Int32> IDUserTask { get; set; } 
+		[System.Activities.OverloadGroupAttribute("Source")]
+		public System.Activities.InArgument<System.Collections.Generic.List<System.Int32>> IDUserTasks { get; set; } 
+		public System.Activities.InArgument<ITAP.glassCAD.Documents.UserTasks.UserTasksDataSet> UserTasksDataSet { get; set; } 
+		public System.Activities.OutArgument<ITAP.glassCAD.Documents.UserTasks.UserTasksDataSet> Result { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Documents.UserTasks {
+    [ITAP.glassCAD.Dictionary.WorkFlow.Components.WorkflowTemplateActivityAttribute("Документы. Задачи пользователя", "Установить атрибуты задачи", true, true)]
+[System.ComponentModel.DesignerAttribute(typeof(ITAP.glassCAD.Dictionary.WorkFlow.Designers.EmptyActivityDesigner))]
+    public partial class SetUserTaskAttributesActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.DataLayerNativeActivity {
+		[System.ComponentModel.DataAnnotations.RequiredAttribute()]
+		public System.Activities.InArgument<System.Int32> IDUserTask { get; set; } 
+		[System.ComponentModel.DisplayNameAttribute("ИД пользователя (исполнителя)")]
+		public System.Activities.InArgument<System.Int32> IDUserTo { get; set; } 
+		[System.ComponentModel.DisplayNameAttribute("GUID пользователя (исполнителя)")]
+		public System.Activities.InArgument<System.Guid> UserToGUID { get; set; } 
+		[System.ComponentModel.DisplayNameAttribute("ИД пользователя (создавшего процесс)")]
+		public System.Activities.InArgument<System.Int32> IDUserFrom { get; set; } 
+		[System.ComponentModel.DisplayNameAttribute("GUID пользователя (создавшего процесс)")]
+		public System.Activities.InArgument<System.Guid> UserFromGUID { get; set; } 
+		[System.ComponentModel.DisplayNameAttribute("Тема задачи")]
+		public System.Activities.InArgument<System.String> Subject { get; set; } 
+		[System.ComponentModel.DisplayNameAttribute("Номер документа")]
+		public System.Activities.InArgument<System.String> DocNumber { get; set; } 
+		[System.ComponentModel.DisplayNameAttribute("Контрагент документа")]
+		public System.Activities.InArgument<System.String> DocCustomer { get; set; } 
+		[System.ComponentModel.DisplayNameAttribute("Сумма документа")]
+		public System.Activities.InArgument<System.Decimal> DocSm { get; set; } 
+		public System.Activities.InArgument<System.String> DocSmString { get; set; } 
+		[System.ComponentModel.DisplayNameAttribute("Идентификатор документа")]
+		public System.Activities.InArgument<System.Int32> IDDoc { get; set; } 
+		public System.Activities.InArgument<System.String> IDDocString { get; set; } 
+		[System.ComponentModel.DisplayNameAttribute("Идентификатор типа документа")]
+		public System.Activities.InArgument<System.Int32> IDDocOper { get; set; } 
+		[System.ComponentModel.DisplayNameAttribute("Тип документа (наименование)")]
+		public System.Activities.InArgument<System.String> DocOperName { get; set; } 
+		[System.ComponentModel.DisplayNameAttribute("Место задачи (тип задачи)")]
+		public System.Activities.InArgument<System.String> Place { get; set; } 
+		[System.ComponentModel.DisplayNameAttribute("Контрольная дата выполнения задачи")]
+		public System.Activities.InArgument<System.DateTime> CheckDate { get; set; } 
+		[System.ComponentModel.DisplayNameAttribute("Цвет")]
+		public System.Activities.InArgument<System.Int32> Color { get; set; } 
+		[System.ComponentModel.DisplayNameAttribute("Дата начала")]
+		public System.Activities.InArgument<System.DateTime> StartDate { get; set; } 
+		[System.ComponentModel.DisplayNameAttribute("Дата окончания")]
+		public System.Activities.InArgument<System.DateTime> EndDate { get; set; } 
+		[System.ComponentModel.DisplayNameAttribute("Статус")]
+		public System.Activities.InArgument<System.Int32> Status { get; set; } 
+		public System.Activities.InArgument<System.String> Data { get; set; } 
+		[System.ComponentModel.DisplayNameAttribute("Guid шаблона")]
+		public System.Activities.InArgument<System.Guid> WorkFlowTemplateGuid { get; set; } 
+		[System.ComponentModel.DisplayNameAttribute("Тип задачи")]
+		public System.Activities.InArgument<ITAP.glassCAD.Documents.UserTasks.TaskType> TaskType { get; set; } 
+    }
+}
 namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Documents.ServiceDocuments {
     [System.ComponentModel.Designer(typeof(glassPeople.Designers.ButtonsActivityDesigner))]
     public partial class EditActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.ListActivity {
@@ -527,6 +818,15 @@ namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Documents.Selling {
     [System.ComponentModel.Designer(typeof(glassPeople.Designers.ButtonsActivityDesigner))]
     public partial class EditActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.ListActivity {
 		public System.Activities.InArgument<ITAP.glassCAD.Documents.Selling.SellingDataSet> Source { get; set; } 
+        protected override void Execute(System.Activities.NativeActivityContext context) {
+            throw new System.NotImplementedException();
+        }
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Documents.Payment {
+    [System.ComponentModel.Designer(typeof(glassPeople.Designers.ButtonsActivityDesigner))]
+    public partial class EditActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.ListActivity {
+		public System.Activities.InArgument<ITAP.glassCAD.Documents.Payment.PaymentDataSet> Source { get; set; } 
         protected override void Execute(System.Activities.NativeActivityContext context) {
             throw new System.NotImplementedException();
         }
@@ -582,7 +882,7 @@ namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Documents.Orders {
 namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Documents.Orders {
     
     public partial class SaveOrdersDataSet : ITAP.glassCAD.Dictionary.WorkFlow.Activities.DataLayerNativeActivity {
-		[System.ComponentModel.Browsable(false)]
+		[System.ComponentModel.BrowsableAttribute(false)]
 		public System.Boolean EnabledEntry { get; set; } 
 		public System.Activities.InArgument<ITAP.glassCAD.Documents.Orders.OrdersDataSet> OrdersDataSet { get; set; } 
 		public System.Boolean ForcedSave { get; set; } 
@@ -616,6 +916,33 @@ namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Documents.GoodsHouse {
 		public System.Activities.InArgument<System.Int32> IDGoodsHouse { get; set; } 
 		public System.Activities.InArgument<ITAP.glassCAD.Documents.GoodsHouse.GoodsHouseDataSet> GoodsHouseDataSet { get; set; } 
 		public System.Activities.OutArgument<ITAP.glassCAD.Documents.GoodsHouse.GoodsHouseDataSet> Result { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Documents.GlassResize {
+    [System.ComponentModel.Designer(typeof(glassPeople.Designers.ButtonsActivityDesigner))]
+    public partial class EditActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.ListActivity {
+		public System.Activities.InArgument<ITAP.glassCAD.Documents.GlassResize.GlassResizeDataSet> Source { get; set; } 
+        protected override void Execute(System.Activities.NativeActivityContext context) {
+            throw new System.NotImplementedException();
+        }
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Documents.GlassPrihod {
+    [System.ComponentModel.Designer(typeof(glassPeople.Designers.ButtonsActivityDesigner))]
+    public partial class EditActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.ListActivity {
+		public System.Activities.InArgument<ITAP.glassCAD.Documents.GlassPrihod.GlassPrihodDataSet> Source { get; set; } 
+        protected override void Execute(System.Activities.NativeActivityContext context) {
+            throw new System.NotImplementedException();
+        }
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Documents.GlassMovement {
+    [System.ComponentModel.Designer(typeof(glassPeople.Designers.ButtonsActivityDesigner))]
+    public partial class EditActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.ListActivity {
+		public System.Activities.InArgument<ITAP.glassCAD.Documents.GlassMovement.GlassMovementDataSet> Source { get; set; } 
+        protected override void Execute(System.Activities.NativeActivityContext context) {
+            throw new System.NotImplementedException();
+        }
     }
 }
 namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Documents.GlassHouse {
@@ -701,7 +1028,7 @@ namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Documents.Defective {
 namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Documents.Defective {
     
     public partial class SaveDefectiveDataSet : ITAP.glassCAD.Dictionary.WorkFlow.Activities.DataLayerNativeActivity {
-		[System.ComponentModel.Browsable(false)]
+		[System.ComponentModel.BrowsableAttribute(false)]
 		public System.Boolean EnabledEntry { get; set; } 
 		public System.Activities.InArgument<ITAP.glassCAD.Documents.Defective.DefectiveDataSet> DefectiveDataSet { get; set; } 
 		public System.Boolean ForcedSave { get; set; } 
@@ -775,7 +1102,7 @@ namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Documents.BoxProduction {
 		public System.Boolean SetCurrentDtDoc { get; set; } 
 		public System.Boolean SetCurrentUser { get; set; } 
 		public System.Activities.OutArgument<ITAP.glassCAD.Documents.BoxProduction.BoxProductionDataSet> BoxProductionDataSetOut { get; set; } 
-		[System.ComponentModel.Browsable(false)]
+		[System.ComponentModel.BrowsableAttribute(false)]
 		public ITAP.glassCAD.Dictionary.WorkFlow.Activities.DGML Dgml { get; set; } 
     }
 }
@@ -821,7 +1148,7 @@ namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Documents.BoxProduction {
     public partial class SaveBoxProductionDataSet : ITAP.glassCAD.Dictionary.WorkFlow.Activities.DataLayerNativeActivity {
 		public System.Activities.InArgument<ITAP.glassCAD.Documents.BoxProduction.BoxProductionDataSet> BoxProductionDataSet { get; set; } 
 		public System.Boolean ForcedSave { get; set; } 
-		[System.ComponentModel.Browsable(false)]
+		[System.ComponentModel.BrowsableAttribute(false)]
 		public System.Boolean EnabledEntry { get; set; } 
 		public System.Activities.OutArgument<System.Boolean> Result { get; set; } 
     }
@@ -833,6 +1160,249 @@ namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Documents.BoxProduction {
 		public System.Activities.InArgument<ITAP.glassCAD.Documents.BoxProduction.BoxProductionDataSet> BoxProductionDataSet { get; set; } 
 		[System.Activities.RequiredArgumentAttribute()]
 		public System.Activities.InArgument<System.String> Status { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Workflow {
+    
+    public partial class CancelWorkflowInstanceActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.DataLayerNativeActivity {
+		[System.Activities.RequiredArgumentAttribute()]
+		public System.Activities.InArgument<System.Int32> IDWorkflowInstance { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Workflow {
+    
+    public partial class CloseWorkflowInstanceActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.DataLayerNativeActivity {
+		[System.Activities.RequiredArgumentAttribute()]
+		public System.Activities.InArgument<System.Int32> IDWorkflowInstance { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Workflow {
+    
+    public partial class GetInstanceAttributesActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.DataLayerNativeActivity {
+		[System.Activities.RequiredArgumentAttribute()]
+		[System.ComponentModel.CategoryAttribute("Источник")]
+		public System.Activities.InArgument<System.Int32> IDWorkflowInstance { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Comments")]
+		[System.ComponentModel.DisplayNameAttribute("Комментарий")]
+		public System.Activities.OutArgument<System.String> Comment { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Comments")]
+		[System.ComponentModel.DisplayNameAttribute("Комментарий Executing")]
+		public System.Activities.OutArgument<System.String> ExecutingComment { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Comments")]
+		[System.ComponentModel.DisplayNameAttribute("Комментарий 1")]
+		public System.Activities.OutArgument<System.String> Comment1 { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Comments")]
+		[System.ComponentModel.DisplayNameAttribute("Комментарий 2")]
+		public System.Activities.OutArgument<System.String> Comment2 { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Comments")]
+		[System.ComponentModel.DisplayNameAttribute("Комментарий 3")]
+		public System.Activities.OutArgument<System.String> Comment3 { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Comments")]
+		[System.ComponentModel.DisplayNameAttribute("Комментарий 4")]
+		public System.Activities.OutArgument<System.String> Comment4 { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Comments")]
+		[System.ComponentModel.DisplayNameAttribute("Комментарий 5")]
+		public System.Activities.OutArgument<System.String> Comment5 { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Comments")]
+		[System.ComponentModel.DisplayNameAttribute("Комментарий 6")]
+		public System.Activities.OutArgument<System.String> Comment6 { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Comments")]
+		[System.ComponentModel.DisplayNameAttribute("Комментарий 7")]
+		public System.Activities.OutArgument<System.String> Comment7 { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Comments")]
+		[System.ComponentModel.DisplayNameAttribute("Комментарий 8")]
+		public System.Activities.OutArgument<System.String> Comment8 { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Comments")]
+		[System.ComponentModel.DisplayNameAttribute("Комментарий 9")]
+		public System.Activities.OutArgument<System.String> Comment9 { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Comments")]
+		public System.Activities.OutArgument<System.Nullable<System.DateTime>> DtComment1 { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Comments")]
+		public System.Activities.OutArgument<System.Nullable<System.DateTime>> DtComment2 { get; set; } 
+		[System.ComponentModel.DisplayNameAttribute("Цвет")]
+		public System.Activities.OutArgument<System.Drawing.Color> Color { get; set; } 
+		[System.ComponentModel.DisplayNameAttribute("Идентификатор")]
+		public System.Activities.OutArgument<System.Nullable<System.Guid>> GUID { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Параметры")]
+		public System.Activities.OutArgument<System.Int32> IDWorkflowTemplate { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Параметры")]
+		public System.Activities.OutArgument<System.String> Data { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Параметры")]
+		public System.Activities.OutArgument<System.Nullable<System.DateTime>> StartDate { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Параметры")]
+		public System.Activities.OutArgument<System.Nullable<System.DateTime>> CreateDate { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Параметры")]
+		public System.Activities.OutArgument<System.Nullable<System.DateTime>> EndDate { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Параметры")]
+		public System.Activities.OutArgument<System.Int32> Status { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Параметры")]
+		public System.Activities.OutArgument<System.Nullable<System.Int32>> IDDepartFrom { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Параметры")]
+		public System.Activities.OutArgument<System.Nullable<System.Int32>> IDDepartTo { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Параметры")]
+		public System.Activities.OutArgument<System.Nullable<System.Int32>> IDUserFrom { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Параметры")]
+		public System.Activities.OutArgument<System.Nullable<System.Int32>> IDUserTo { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Параметры")]
+		public System.Activities.OutArgument<System.Nullable<System.Int32>> IDParentWorkflowInstance { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Workflow {
+    
+    public partial class InvokeTemplateActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.DataLayerNativeActivity {
+		[System.ComponentModel.CategoryAttribute("Input")]
+		[System.ComponentModel.DisplayNameAttribute("ИД шаблона")]
+		public System.Nullable<System.Int32> IDWorkFlowTemplate { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Input")]
+		[System.ComponentModel.DisplayNameAttribute("Guid шаблона")]
+		public System.Guid GuidWorkFlowTemplate { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Input")]
+		[System.ComponentModel.DisplayNameAttribute("ИД подразделения (исполнителя)")]
+		public System.Activities.InArgument<System.Int32> IDDepartExecute { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Input")]
+		[System.ComponentModel.DisplayNameAttribute("ИД пользователя (исполнителя)")]
+		public System.Activities.InArgument<System.Int32> IDUserExecute { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Input")]
+		[System.ComponentModel.DisplayNameAttribute("ИД подразделения (создавшего процесс)")]
+		public System.Activities.InArgument<System.Int32> IDDepartFrom { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Input")]
+		[System.ComponentModel.DisplayNameAttribute("ИД пользователя (создавшего процесс)")]
+		public System.Activities.InArgument<System.Int32> IDUserFrom { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Input")]
+		[System.ComponentModel.DisplayNameAttribute("Входные параметры")]
+		public System.Collections.ObjectModel.Collection<ITAP.glassCAD.Dictionary.WorkFlow.Activities.TemplateInArg> InArguments { get; set; } = new System.Collections.ObjectModel.Collection<ITAP.glassCAD.Dictionary.WorkFlow.Activities.TemplateInArg>();
+		[System.ComponentModel.CategoryAttribute("Input")]
+		[System.ComponentModel.DisplayNameAttribute("Комментарий для выполнения")]
+		public System.Activities.InArgument<System.String> ExecutingComment { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Input")]
+		[System.ComponentModel.DisplayNameAttribute("Комментарий")]
+		public System.Activities.InArgument<System.String> Comment { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Input")]
+		[System.ComponentModel.DisplayNameAttribute("Комментарий 1")]
+		public System.Activities.InArgument<System.String> Comment1 { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Input")]
+		[System.ComponentModel.DisplayNameAttribute("Комментарий 2")]
+		public System.Activities.InArgument<System.String> Comment2 { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Input")]
+		[System.ComponentModel.DisplayNameAttribute("Комментарий 3")]
+		public System.Activities.InArgument<System.String> Comment3 { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Input")]
+		[System.ComponentModel.DisplayNameAttribute("Комментарий 4")]
+		public System.Activities.InArgument<System.String> Comment4 { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Input")]
+		[System.ComponentModel.DisplayNameAttribute("Комментарий 5")]
+		public System.Activities.InArgument<System.String> Comment5 { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Input")]
+		[System.ComponentModel.DisplayNameAttribute("Комментарий 6")]
+		public System.Activities.InArgument<System.String> Comment6 { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Input")]
+		[System.ComponentModel.DisplayNameAttribute("Комментарий 7")]
+		public System.Activities.InArgument<System.String> Comment7 { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Input")]
+		[System.ComponentModel.DisplayNameAttribute("Комментарий 8")]
+		public System.Activities.InArgument<System.String> Comment8 { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Input")]
+		[System.ComponentModel.DisplayNameAttribute("Комментарий 9")]
+		public System.Activities.InArgument<System.String> Comment9 { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Input")]
+		[System.ComponentModel.DisplayNameAttribute("Дата Комментарий 1")]
+		public System.Activities.InArgument<System.DateTime> DtComment1 { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Input")]
+		[System.ComponentModel.DisplayNameAttribute("Дата Комментарий 2")]
+		public System.Activities.InArgument<System.DateTime> DtComment2 { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Input")]
+		[System.ComponentModel.DisplayNameAttribute("Цвет")]
+		public System.Activities.InArgument<System.Drawing.Color> Color { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Output")]
+		[System.ComponentModel.DisplayNameAttribute("ID процесса")]
+		public System.Activities.OutArgument<System.Int32> Id { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Output")]
+		[System.ComponentModel.DisplayNameAttribute("Guid процесса")]
+		public System.Activities.OutArgument<System.Guid> GUID { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Scheme")]
+		[System.ComponentModel.TypeConverterAttribute(typeof(System.ComponentModel.ExpandableObjectConverter))]
+		[System.ComponentModel.RefreshPropertiesAttribute((System.ComponentModel.RefreshProperties)1)]
+		public ITAP.glassCAD.Dictionary.WorkFlow.Activities.DGML Dgml { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Workflow {
+    
+    public partial class SetInstanceAttributesActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.DataLayerNativeActivity {
+		[System.ComponentModel.CategoryAttribute("Источник")]
+		public System.Activities.InOutArgument<System.Int32> IDWorkflowInstance { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Comments")]
+		[System.ComponentModel.DisplayNameAttribute("Комментарий")]
+		public System.Activities.InArgument<System.String> Comment { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Comments")]
+		[System.ComponentModel.DisplayNameAttribute("Комментарий Executing")]
+		public System.Activities.InArgument<System.String> ExecutingComment { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Comments")]
+		[System.ComponentModel.DisplayNameAttribute("Комментарий 1")]
+		public System.Activities.InArgument<System.String> Comment1 { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Comments")]
+		[System.ComponentModel.DisplayNameAttribute("Комментарий 2")]
+		public System.Activities.InArgument<System.String> Comment2 { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Comments")]
+		[System.ComponentModel.DisplayNameAttribute("Комментарий 3")]
+		public System.Activities.InArgument<System.String> Comment3 { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Comments")]
+		[System.ComponentModel.DisplayNameAttribute("Комментарий 4")]
+		public System.Activities.InArgument<System.String> Comment4 { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Comments")]
+		[System.ComponentModel.DisplayNameAttribute("Комментарий 5")]
+		public System.Activities.InArgument<System.String> Comment5 { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Comments")]
+		[System.ComponentModel.DisplayNameAttribute("Комментарий 6")]
+		public System.Activities.InArgument<System.String> Comment6 { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Comments")]
+		[System.ComponentModel.DisplayNameAttribute("Комментарий 7")]
+		public System.Activities.InArgument<System.String> Comment7 { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Comments")]
+		[System.ComponentModel.DisplayNameAttribute("Комментарий 8")]
+		public System.Activities.InArgument<System.String> Comment8 { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Comments")]
+		[System.ComponentModel.DisplayNameAttribute("Комментарий 9")]
+		public System.Activities.InArgument<System.String> Comment9 { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Comments")]
+		public System.Activities.InArgument<System.DateTime> DtComment1 { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Comments")]
+		public System.Activities.InArgument<System.DateTime> DtComment2 { get; set; } 
+		[System.ComponentModel.DisplayNameAttribute("Цвет")]
+		public System.Activities.InArgument<System.Drawing.Color> Color { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Параметры")]
+		public System.Activities.InArgument<System.Int32> IDWorkflowTemplate { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Параметры")]
+		public System.Activities.InArgument<System.String> Data { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Параметры")]
+		public System.Activities.InArgument<System.DateTime> StartDate { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Параметры")]
+		public System.Activities.InArgument<System.DateTime> EndDate { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Параметры")]
+		public System.Activities.InArgument<System.Int32> Status { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Параметры")]
+		public System.Activities.InArgument<System.Int32> IDDepartFrom { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Параметры")]
+		public System.Activities.InArgument<System.Int32> IDDepartTo { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Параметры")]
+		public System.Activities.InArgument<System.Int32> IDUserFrom { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Параметры")]
+		public System.Activities.InArgument<System.Int32> IDUserTo { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Параметры")]
+		public System.Activities.InArgument<System.Int32> IDParentWorkflowInstance { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Scheme")]
+		[System.ComponentModel.TypeConverterAttribute(typeof(System.ComponentModel.ExpandableObjectConverter))]
+		[System.ComponentModel.RefreshPropertiesAttribute((System.ComponentModel.RefreshProperties)1)]
+		public ITAP.glassCAD.Dictionary.WorkFlow.Activities.DGML Dgml { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.User {
+    
+    public partial class SetUserBusinessLogicRightAccessActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.DataLayerNativeActivity {
+		[System.Activities.RequiredArgumentAttribute()]
+		public System.Activities.InArgument<System.String> RoleName { get; set; } 
+		[System.Activities.RequiredArgumentAttribute()]
+		public System.Activities.InArgument<System.Int32> UserID { get; set; } 
+		public ITAP.glassCAD.Dictionary.WorkFlow.Activities.User.SetUserBusinessLogicRightAccessMode Mode { get; set; } 
     }
 }
 namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.User {
@@ -870,6 +1440,7 @@ namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.User {
 		public System.Activities.OutArgument<System.Boolean> IsUser_BuhZakupki { get; set; } 
 		public System.Activities.OutArgument<System.Boolean> IsUser_Sales_Dir { get; set; } 
 		public System.Activities.OutArgument<System.Boolean> IsUser_CEO { get; set; } 
+		public System.Activities.OutArgument<System.Boolean> IsUser_SkladFinishedStoreOperator { get; set; } 
 		public System.Activities.OutArgument<System.Boolean> IsUser_TehAdmin { get; set; } 
 		public System.Activities.OutArgument<System.Boolean> IsUsers_Transport { get; set; } 
 		public System.Activities.OutArgument<System.Boolean> IsUser_NachPro { get; set; } 
@@ -877,12 +1448,58 @@ namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.User {
 		public System.Activities.OutArgument<System.Boolean> IsUsers_GoodsCatalog { get; set; } 
 		public System.Activities.OutArgument<System.Boolean> IsUsers_BuhControlSklad { get; set; } 
 		public System.Activities.OutArgument<System.Boolean> IsUsers_Customers { get; set; } 
+		public System.Activities.OutArgument<System.Collections.Generic.Dictionary<System.String, System.String>> ExtendedKeys { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.User {
+    
+    public partial class GetBusinessLogicRightAccessUsersActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.DataLayerNativeActivity {
+		public System.Activities.OutArgument<System.Collections.Generic.List<System.Int32>> Users_SuperAdmin { get; set; } 
+		public System.Activities.OutArgument<System.Collections.Generic.List<System.Int32>> Users_OTK_DublMessage { get; set; } 
+		public System.Activities.OutArgument<System.Collections.Generic.List<System.Int32>> Users_OTK_REKL { get; set; } 
+		public System.Activities.OutArgument<System.Collections.Generic.List<System.Int32>> Users_OTK_REKL_ALTERATION { get; set; } 
+		public System.Activities.OutArgument<System.Collections.Generic.List<System.Int32>> Users_Constructor { get; set; } 
+		public System.Activities.OutArgument<System.Collections.Generic.List<System.Int32>> Users_Tehnolog { get; set; } 
+		public System.Activities.OutArgument<System.Collections.Generic.List<System.Int32>> Users_OPP { get; set; } 
+		public System.Activities.OutArgument<System.Collections.Generic.List<System.Int32>> Users_OTK_PRO_CEO { get; set; } 
+		public System.Activities.OutArgument<System.Collections.Generic.List<System.Int32>> Users_OTK_REKL_CEO2 { get; set; } 
+		public System.Activities.OutArgument<System.Collections.Generic.List<System.Int32>> Users_OTK_SGP_ALTERATION_ACCESS { get; set; } 
+		public System.Activities.OutArgument<System.Collections.Generic.List<System.Int32>> Users_OTK_SGP_CEO { get; set; } 
+		public System.Activities.OutArgument<System.Collections.Generic.List<System.Int32>> Users_PlanTransport { get; set; } 
+		public System.Activities.OutArgument<System.Collections.Generic.List<System.Int32>> Users_Logist { get; set; } 
+		public System.Activities.OutArgument<System.Collections.Generic.List<System.Int32>> Users_ZakupkiGlass { get; set; } 
+		public System.Activities.OutArgument<System.Collections.Generic.List<System.Int32>> Users_ZakupkiRows { get; set; } 
+		public System.Activities.OutArgument<System.Collections.Generic.List<System.Int32>> Users_SkladRowOperator { get; set; } 
+		public System.Activities.OutArgument<System.Collections.Generic.List<System.Int32>> Users_SkladGlass { get; set; } 
+		public System.Activities.OutArgument<System.Collections.Generic.List<System.Int32>> Users_SkladRow { get; set; } 
+		public System.Activities.OutArgument<System.Collections.Generic.List<System.Int32>> Users_SkladGlassOperator { get; set; } 
+		public System.Activities.OutArgument<System.Collections.Generic.List<System.Int32>> Users_OptDefective { get; set; } 
+		public System.Activities.OutArgument<System.Collections.Generic.List<System.Int32>> Users_Opt { get; set; } 
+		public System.Activities.OutArgument<System.Collections.Generic.List<System.Int32>> Users_OTK_PRO { get; set; } 
+		public System.Activities.OutArgument<System.Collections.Generic.List<System.Int32>> Users_OTK_REKL_ALTERATION_ACCESS { get; set; } 
+		public System.Activities.OutArgument<System.Collections.Generic.List<System.Int32>> Users_OTK_REKL_CEO { get; set; } 
+		public System.Activities.OutArgument<System.Collections.Generic.List<System.Int32>> Users_OTK_SGP { get; set; } 
+		public System.Activities.OutArgument<System.Collections.Generic.List<System.Int32>> Users_OTK_SGP_ALTERATION { get; set; } 
+		public System.Activities.OutArgument<System.Collections.Generic.List<System.Int32>> Users_BuhSelling { get; set; } 
+		public System.Activities.OutArgument<System.Collections.Generic.List<System.Int32>> Users_Analist { get; set; } 
+		public System.Activities.OutArgument<System.Collections.Generic.List<System.Int32>> Users_BuhZakupki { get; set; } 
+		public System.Activities.OutArgument<System.Collections.Generic.List<System.Int32>> Users_Sales_Dir { get; set; } 
+		public System.Activities.OutArgument<System.Collections.Generic.List<System.Int32>> Users_CEO { get; set; } 
+		public System.Activities.OutArgument<System.Collections.Generic.List<System.Int32>> Users_SkladFinishedStoreOperator { get; set; } 
+		public System.Activities.OutArgument<System.Collections.Generic.List<System.Int32>> Users_TehAdmin { get; set; } 
+		public System.Activities.OutArgument<System.Collections.Generic.List<System.Int32>> Users_Transport { get; set; } 
+		public System.Activities.OutArgument<System.Collections.Generic.List<System.Int32>> Users_NachPro { get; set; } 
+		public System.Activities.OutArgument<System.Collections.Generic.List<System.Int32>> Users_Orders { get; set; } 
+		public System.Activities.OutArgument<System.Collections.Generic.List<System.Int32>> Users_GoodsCatalog { get; set; } 
+		public System.Activities.OutArgument<System.Collections.Generic.List<System.Int32>> Users_BuhControlSklad { get; set; } 
+		public System.Activities.OutArgument<System.Collections.Generic.List<System.Int32>> Users_Customers { get; set; } 
     }
 }
 namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.User {
     
     public partial class GetUserInfoActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.DataLayerNativeActivity {
 		public System.Activities.InArgument<System.Int32> IDPeople { get; set; } 
+		public System.Activities.InArgument<ITAP.glassCAD.Roles> Role { get; set; } 
 		public System.Activities.OutArgument<System.Int32> IDUser { get; set; } 
 		public System.Activities.OutArgument<System.String> FullName { get; set; } 
 		public System.Activities.OutArgument<System.String> EMail { get; set; } 
@@ -897,11 +1514,8 @@ namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.User {
 }
 namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Utilites {
     
-    public partial class ReLoadDictionaryActivity : System.Activities.NativeActivity {
+    public partial class ReLoadDictionaryActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.DataLayerNativeActivity {
 		public System.Activities.InArgument<System.String> TypeName { get; set; } 
-        protected override void Execute(System.Activities.NativeActivityContext context) {
-            throw new System.NotImplementedException();
-        }
     }
 }
 namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Utilites {
@@ -920,6 +1534,11 @@ namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Utilites {
 		public System.Activities.InArgument<System.String> SelectText { get; set; } 
 		public System.Int32 CommandTimeout { get; set; } 
 		public System.Activities.OutArgument<System.Boolean> HasResult { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Utilites {
+    
+    public partial class ExchangeMessageDataViewerActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.EditFormNativeActivity {
     }
 }
 namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Utilites {
@@ -1191,9 +1810,9 @@ namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Messages {
 		public System.Activities.InArgument<System.String> Password { get; set; } 
 		[System.ComponentModel.DisplayNameAttribute("Шифрование SSL")]
 		public System.Activities.InArgument<System.Boolean> EnableSSL { get; set; } 
+		[System.ComponentModel.DefaultValueAttribute(true)]
 		[System.ComponentModel.DisplayNameAttribute("Подпись glassCAD")]
-		[System.ComponentModel.DefaultValue(true)]
-		public System.Activities.InArgument<System.Boolean> EnableSubscription { get; set; } = true;
+		public System.Activities.InArgument<System.Boolean> EnableSubscription { get; set; } 
 		[System.ComponentModel.DisplayNameAttribute("Адрес Кому")]
 		public System.Activities.InArgument<System.String> To { get; set; } 
 		[System.ComponentModel.DisplayNameAttribute("Тема сообщения")]
@@ -1308,6 +1927,15 @@ namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Dictionaries.WorkflowUser
     [System.ComponentModel.Designer(typeof(glassPeople.Designers.ButtonsActivityDesigner))]
     public partial class EditActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.ListActivity {
 		public System.Activities.InArgument<ITAP.glassCAD.Dictionary.WorkflowUserSettings.WorkflowUserSettingsDataSet> Source { get; set; } 
+        protected override void Execute(System.Activities.NativeActivityContext context) {
+            throw new System.NotImplementedException();
+        }
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Dictionaries.WorkflowExcelForms {
+    [System.ComponentModel.Designer(typeof(glassPeople.Designers.ButtonsActivityDesigner))]
+    public partial class EditActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.ListActivity {
+		public System.Activities.InArgument<ITAP.glassCAD.Dictionary.WorkflowExcelForms.WorkflowExcelFormsDataSet> Source { get; set; } 
         protected override void Execute(System.Activities.NativeActivityContext context) {
             throw new System.NotImplementedException();
         }
@@ -1471,17 +2099,17 @@ namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Dictionaries.People {
 }
 namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Dictionaries.PeopleRole {
     [System.ComponentModel.Designer(typeof(glassPeople.Designers.ButtonsActivityDesigner))]
-    public partial class EditActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.ListActivity {
+    public partial class CardsEditActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.ListActivity {
 		public System.Activities.InArgument<ITAP.glassCAD.Dictionary.PeopleRole.PeopleRoleDataSet> Source { get; set; } 
         protected override void Execute(System.Activities.NativeActivityContext context) {
             throw new System.NotImplementedException();
         }
     }
 }
-namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Dictionaries.Payment {
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Dictionaries.PeopleRole {
     [System.ComponentModel.Designer(typeof(glassPeople.Designers.ButtonsActivityDesigner))]
     public partial class EditActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.ListActivity {
-		public System.Activities.InArgument<ITAP.glassCAD.Dictionary.Payment.PaymentDataSet> Source { get; set; } 
+		public System.Activities.InArgument<ITAP.glassCAD.Dictionary.PeopleRole.PeopleRoleDataSet> Source { get; set; } 
         protected override void Execute(System.Activities.NativeActivityContext context) {
             throw new System.NotImplementedException();
         }
@@ -1563,6 +2191,15 @@ namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Dictionaries.GoodParties 
     [System.ComponentModel.Designer(typeof(glassPeople.Designers.ButtonsActivityDesigner))]
     public partial class EditActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.ListActivity {
 		public System.Activities.InArgument<ITAP.glassCAD.Dictionary.GoodParties.GoodPartiesDataSet> Source { get; set; } 
+        protected override void Execute(System.Activities.NativeActivityContext context) {
+            throw new System.NotImplementedException();
+        }
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Dictionaries.GlassStorehouse {
+    [System.ComponentModel.Designer(typeof(glassPeople.Designers.ButtonsActivityDesigner))]
+    public partial class EditActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.ListActivity {
+		public System.Activities.InArgument<ITAP.glassCAD.Dictionary.GlassStorehouse.GlassStorehouseDataSet> Source { get; set; } 
         protected override void Execute(System.Activities.NativeActivityContext context) {
             throw new System.NotImplementedException();
         }
@@ -1751,6 +2388,40 @@ namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Input {
 		public System.Activities.OutArgument<System.Boolean> IsCanceled { get; set; } 
     }
 }
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Input {
+    
+    public partial class ShowDlgActivityButtons : System.Activities.NativeActivity {
+		public System.Activities.OutArgument<System.Collections.Generic.List<ITAP.glassCAD.Dictionary.WorkFlow.Activities.Input.Button>> DynamicButtons { get; set; } 
+        protected override void Execute(System.Activities.NativeActivityContext context) {
+            throw new System.NotImplementedException();
+        }
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Input {
+    
+    public partial class ShowDlgActivity : System.Activities.NativeActivity {
+		[System.ComponentModel.BrowsableAttribute(false)]
+		public System.Boolean AutoTerminate { get; set; } 
+		[System.ComponentModel.DisplayNameAttribute("Заголовок")]
+		public System.Activities.InArgument<System.String> Caption { get; set; } 
+		[System.ComponentModel.DisplayNameAttribute("Сообщение")]
+		public System.Activities.InArgument<System.String> Message { get; set; } 
+		public System.Collections.ObjectModel.Collection<ITAP.glassCAD.Dictionary.WorkFlow.Activities.Input.Button> Buttons { get; set; } = new System.Collections.ObjectModel.Collection<ITAP.glassCAD.Dictionary.WorkFlow.Activities.Input.Button>();
+		public System.Activities.InArgument<System.Collections.Generic.List<ITAP.glassCAD.Dictionary.WorkFlow.Activities.Input.Button>> DynamicButtons { get; set; } 
+		[System.ComponentModel.DisplayNameAttribute("Кнопка")]
+		public System.Activities.OutArgument<System.String> Button { get; set; } 
+		public System.Activities.OutArgument<System.String> PressedButtonName { get; set; } 
+		public System.Activities.OutArgument<System.String> PressedButtonText { get; set; } 
+		public System.Activities.OutArgument<System.Int32> PressedButtonIndex { get; set; } 
+		public System.Activities.OutArgument<System.Boolean> IsCanceled { get; set; } 
+		[System.ComponentModel.DisplayNameAttribute("Вертикальное расположение кнопок")]
+		public System.Boolean IsVertical { get; set; } 
+		public System.Boolean EnabledButtonLocalize { get; set; } 
+        protected override void Execute(System.Activities.NativeActivityContext context) {
+            throw new System.NotImplementedException();
+        }
+    }
+}
 namespace ITAP.glassCAD.Analytic {
     
     public partial class DefectiveActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.DataLayerNativeActivity {
@@ -1817,6 +2488,14 @@ namespace ITAP.glassCAD.Analytic {
 }
 namespace ITAP.glassCAD.Analytic {
     
+    public partial class PlanSnapshotActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.DataLayerNativeActivity {
+		[System.Activities.RequiredArgumentAttribute()]
+		public System.Activities.InArgument<System.String> ConnectionString { get; set; } 
+		public System.Activities.InArgument<System.Collections.Generic.List<ITAP.glassCAD.Analytic.AnalyticLog>> Logs { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Analytic {
+    
     public partial class SellingActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.DataLayerNativeActivity {
 		[System.Activities.RequiredArgumentAttribute()]
 		public System.Activities.InArgument<System.String> ConnectionString { get; set; } 
@@ -1844,6 +2523,14 @@ namespace ITAP.glassCAD.Analytic {
 }
 namespace ITAP.glassCAD.Analytic {
     
+    public partial class WorkOutActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.DataLayerNativeActivity {
+		[System.Activities.RequiredArgumentAttribute()]
+		public System.Activities.InArgument<System.String> ConnectionString { get; set; } 
+		public System.Activities.InArgument<System.Collections.Generic.List<ITAP.glassCAD.Analytic.AnalyticLog>> Logs { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Analytic {
+    
     public partial class WriteOffHpActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.DataLayerNativeActivity {
 		[System.Activities.RequiredArgumentAttribute()]
 		public System.Activities.InArgument<System.String> ConnectionString { get; set; } 
@@ -1853,9 +2540,9 @@ namespace ITAP.glassCAD.Analytic {
 namespace glassPeople.CRM {
     
     public partial class AddIssueAttributeActivity : System.Activities.NativeActivity {
-		[System.ComponentModel.Browsable(false)]
+		[System.ComponentModel.BrowsableAttribute(false)]
 		public System.Activities.OutArgument<glassPeople.ActivityLibrary.BookmarkActivityUserAction> UserAction { get; set; } 
-		[System.ComponentModel.Browsable(false)]
+		[System.ComponentModel.BrowsableAttribute(false)]
 		public System.Boolean AutoTerminate { get; set; } 
 		[System.ComponentModel.CategoryAttribute("Out")]
 		public System.Activities.OutArgument<System.Boolean> IsCanceled { get; set; } 
@@ -1869,9 +2556,9 @@ namespace glassPeople.CRM {
 namespace glassPeople.CRM {
     
     public partial class AddUsersToAccountActivity : System.Activities.NativeActivity {
-		[System.ComponentModel.Browsable(false)]
+		[System.ComponentModel.BrowsableAttribute(false)]
 		public System.Activities.OutArgument<glassPeople.ActivityLibrary.BookmarkActivityUserAction> UserAction { get; set; } 
-		[System.ComponentModel.Browsable(false)]
+		[System.ComponentModel.BrowsableAttribute(false)]
 		public System.Boolean AutoTerminate { get; set; } 
 		[System.ComponentModel.CategoryAttribute("Out")]
 		public System.Activities.OutArgument<System.Boolean> IsCanceled { get; set; } 
@@ -1885,9 +2572,9 @@ namespace glassPeople.CRM {
 namespace glassPeople.CRM {
     
     public partial class IssueActivity : System.Activities.NativeActivity {
-		[System.ComponentModel.Browsable(false)]
+		[System.ComponentModel.BrowsableAttribute(false)]
 		public System.Activities.OutArgument<glassPeople.ActivityLibrary.BookmarkActivityUserAction> UserAction { get; set; } 
-		[System.ComponentModel.Browsable(false)]
+		[System.ComponentModel.BrowsableAttribute(false)]
 		public System.Boolean AutoTerminate { get; set; } 
 		[System.ComponentModel.CategoryAttribute("Out")]
 		public System.Activities.OutArgument<System.Boolean> IsCanceled { get; set; } 
@@ -1903,9 +2590,9 @@ namespace glassPeople.CRM {
 namespace glassPeople.CRM {
     
     public partial class IssueAddActivity : System.Activities.NativeActivity {
-		[System.ComponentModel.Browsable(false)]
+		[System.ComponentModel.BrowsableAttribute(false)]
 		public System.Activities.OutArgument<glassPeople.ActivityLibrary.BookmarkActivityUserAction> UserAction { get; set; } 
-		[System.ComponentModel.Browsable(false)]
+		[System.ComponentModel.BrowsableAttribute(false)]
 		public System.Boolean AutoTerminate { get; set; } 
 		public System.Activities.InArgument<System.Int32> TaskId { get; set; } 
 		[System.ComponentModel.CategoryAttribute("Out")]
@@ -1918,9 +2605,9 @@ namespace glassPeople.CRM {
 namespace glassPeople.CRM {
     
     public partial class IssueAddAttributeActivity : System.Activities.NativeActivity {
-		[System.ComponentModel.Browsable(false)]
+		[System.ComponentModel.BrowsableAttribute(false)]
 		public System.Activities.OutArgument<glassPeople.ActivityLibrary.BookmarkActivityUserAction> UserAction { get; set; } 
-		[System.ComponentModel.Browsable(false)]
+		[System.ComponentModel.BrowsableAttribute(false)]
 		public System.Boolean AutoTerminate { get; set; } 
 		[System.ComponentModel.CategoryAttribute("Out")]
 		public System.Activities.OutArgument<System.Boolean> IsCanceled { get; set; } 
@@ -1934,9 +2621,9 @@ namespace glassPeople.CRM {
 namespace glassPeople.CRM {
     
     public partial class IssueListActivity : System.Activities.NativeActivity {
-		[System.ComponentModel.Browsable(false)]
+		[System.ComponentModel.BrowsableAttribute(false)]
 		public System.Activities.OutArgument<glassPeople.ActivityLibrary.BookmarkActivityUserAction> UserAction { get; set; } 
-		[System.ComponentModel.Browsable(false)]
+		[System.ComponentModel.BrowsableAttribute(false)]
 		public System.Boolean AutoTerminate { get; set; } 
 		[System.ComponentModel.CategoryAttribute("Out")]
 		public System.Activities.OutArgument<System.Boolean> IsCanceled { get; set; } 
@@ -2025,11 +2712,11 @@ namespace glassPeople.ActivityLibrary.glassCAD.Scanner {
 namespace glassPeople.ActivityLibrary.glassCAD.Scanner {
     
     public partial class BLEScannerActivity : System.Activities.NativeActivity {
-		[System.ComponentModel.Browsable(false)]
+		[System.ComponentModel.BrowsableAttribute(false)]
 		public System.Activities.OutArgument<glassPeople.ActivityLibrary.BookmarkActivityUserAction> UserAction { get; set; } 
-		[System.ComponentModel.Browsable(false)]
+		[System.ComponentModel.BrowsableAttribute(false)]
 		public System.Activities.InArgument<System.String> Title { get; set; } 
-		[System.ComponentModel.Browsable(false)]
+		[System.ComponentModel.BrowsableAttribute(false)]
 		public System.Boolean AutoTerminate { get; set; } 
 		[System.ComponentModel.CategoryAttribute("Property")]
 		public System.Activities.InArgument<System.String> DeviceName { get; set; } 
@@ -2049,11 +2736,11 @@ namespace glassPeople.ActivityLibrary.glassCAD.Scanner {
 namespace glassPeople.ActivityLibrary.glassCAD.Scanner {
     
     public partial class BLESimpleScanActivity : System.Activities.NativeActivity {
-		[System.ComponentModel.Browsable(false)]
+		[System.ComponentModel.BrowsableAttribute(false)]
 		public System.Activities.OutArgument<glassPeople.ActivityLibrary.BookmarkActivityUserAction> UserAction { get; set; } 
-		[System.ComponentModel.Browsable(false)]
+		[System.ComponentModel.BrowsableAttribute(false)]
 		public System.Activities.InArgument<System.String> Title { get; set; } 
-		[System.ComponentModel.Browsable(false)]
+		[System.ComponentModel.BrowsableAttribute(false)]
 		public System.Boolean AutoTerminate { get; set; } 
 		[System.ComponentModel.CategoryAttribute("Property")]
 		public System.Activities.InArgument<System.String> DeviceName { get; set; } 
@@ -2075,11 +2762,11 @@ namespace glassPeople.ActivityLibrary.glassCAD.Scanner {
 namespace glassPeople.ActivityLibrary.glassCAD.Scanner {
     
     public partial class CameraScannerActivity : System.Activities.NativeActivity {
-		[System.ComponentModel.Browsable(false)]
+		[System.ComponentModel.BrowsableAttribute(false)]
 		public System.Activities.OutArgument<glassPeople.ActivityLibrary.BookmarkActivityUserAction> UserAction { get; set; } 
-		[System.ComponentModel.Browsable(false)]
+		[System.ComponentModel.BrowsableAttribute(false)]
 		public System.Activities.InArgument<System.String> Title { get; set; } 
-		[System.ComponentModel.Browsable(false)]
+		[System.ComponentModel.BrowsableAttribute(false)]
 		public System.Boolean AutoTerminate { get; set; } 
 		public System.Activities.InArgument<System.String> Mode { get; set; } 
 		public System.Activities.InArgument<glassPeople.ActivityLibrary.glassCAD.Scanner.Parser.DefaultParser> Parser { get; set; } 
@@ -2093,11 +2780,11 @@ namespace glassPeople.ActivityLibrary.glassCAD.Scanner {
 namespace glassPeople.ActivityLibrary.glassCAD.Scanner {
     
     public partial class CheckCameraActivity : System.Activities.NativeActivity {
-		[System.ComponentModel.Browsable(false)]
+		[System.ComponentModel.BrowsableAttribute(false)]
 		public System.Activities.OutArgument<glassPeople.ActivityLibrary.BookmarkActivityUserAction> UserAction { get; set; } 
-		[System.ComponentModel.Browsable(false)]
+		[System.ComponentModel.BrowsableAttribute(false)]
 		public System.Activities.InArgument<System.String> Title { get; set; } 
-		[System.ComponentModel.Browsable(false)]
+		[System.ComponentModel.BrowsableAttribute(false)]
 		public System.Boolean AutoTerminate { get; set; } 
 		public System.Activities.OutArgument<System.Boolean> Result { get; set; } 
         protected override void Execute(System.Activities.NativeActivityContext context) {
@@ -2268,11 +2955,11 @@ namespace glassPeople.ActivityLibrary.glassCAD.Scanner {
 namespace glassPeople.ActivityLibrary.glassCAD.Scanner {
     
     public partial class TestScannerActivity : System.Activities.NativeActivity {
-		[System.ComponentModel.Browsable(false)]
+		[System.ComponentModel.BrowsableAttribute(false)]
 		public System.Activities.OutArgument<glassPeople.ActivityLibrary.BookmarkActivityUserAction> UserAction { get; set; } 
-		[System.ComponentModel.Browsable(false)]
+		[System.ComponentModel.BrowsableAttribute(false)]
 		public System.Activities.InArgument<System.String> Title { get; set; } 
-		[System.ComponentModel.Browsable(false)]
+		[System.ComponentModel.BrowsableAttribute(false)]
 		public System.Boolean AutoTerminate { get; set; } 
 		public System.Activities.InArgument<System.String> Mode { get; set; } 
 		public System.Activities.InArgument<glassPeople.ActivityLibrary.glassCAD.Scanner.Parser.DefaultParser> Parser { get; set; } 
@@ -2346,7 +3033,7 @@ namespace glassPeople.ActivityLibrary.glassCAD.Scanner.Workers {
 		public System.Activities.OutArgument<System.Exception> Exception { get; set; } 
 		public System.Activities.OutArgument<System.Boolean> HasError { get; set; } 
 		public System.String WorkerName { get; set; } 
-		[System.ComponentModel.DefaultValue(null)]
+		[System.ComponentModel.DefaultValueAttribute(null)]
 		public System.Activities.ActivityAction<System.String, glassPeople.ActivityLibrary.glassCAD.Scanner.Workers.ScanLog, glassPeople.ActivityLibrary.glassCAD.Scanner.Workers.ScanLogProcessing> NextActivity { get; set; } 
         protected override void CacheMetadata(System.Activities.NativeActivityMetadata metadata) {
 			metadata.AddDelegate(this.NextActivity);
@@ -2412,7 +3099,7 @@ namespace glassPeople.ActivityLibrary.glassCAD.Planing.Union {
 		[System.ComponentModel.CategoryAttribute("Source")]
 		[System.Activities.RequiredArgumentAttribute()]
 		public System.Activities.InArgument<System.Collections.Generic.List<glassPeople.ActivityLibrary.glassCAD.Planing.Union.Group>> Source { get; set; } 
-		[System.ComponentModel.DefaultValue(null)]
+		[System.ComponentModel.DefaultValueAttribute(null)]
 		public System.Activities.ActivityFunc<System.Collections.Generic.List<glassPeople.ActivityLibrary.glassCAD.Planing.Union.Group>, System.Collections.Generic.List<glassPeople.ActivityLibrary.glassCAD.Planing.Union.Group>> NextActivity { get; set; } 
         protected override void CacheMetadata(System.Activities.NativeActivityMetadata metadata) {
 			metadata.AddDelegate(this.NextActivity);
@@ -2429,7 +3116,7 @@ namespace glassPeople.ActivityLibrary.glassCAD.Planing.Union {
 		[System.ComponentModel.CategoryAttribute("Source")]
 		[System.Activities.RequiredArgumentAttribute()]
 		public System.Activities.InArgument<System.Collections.Generic.List<glassPeople.ActivityLibrary.glassCAD.Planing.Union.Group>> Source { get; set; } 
-		[System.ComponentModel.DefaultValue(null)]
+		[System.ComponentModel.DefaultValueAttribute(null)]
 		public System.Activities.ActivityFunc<System.Collections.Generic.List<glassPeople.ActivityLibrary.glassCAD.Planing.Union.Group>, System.Collections.Generic.List<glassPeople.ActivityLibrary.glassCAD.Planing.Union.Group>> NextActivity { get; set; } 
         protected override void CacheMetadata(System.Activities.NativeActivityMetadata metadata) {
 			metadata.AddDelegate(this.NextActivity);
@@ -2610,11 +3297,23 @@ namespace glassPeople.ActivityLibrary.glassCAD.Planing.Union.Strategy.SM {
 }
 namespace glassPeople.ActivityLibrary.glassCAD.Planing.Status {
     
+    public partial class AppoitmentsItemsPairSoftChangeActivity : System.Activities.NativeActivity {
+		[System.Activities.RequiredArgumentAttribute()]
+		public System.Activities.InArgument<glassPeople.ActivityLibrary.glassCAD.Planing.Model.PlanningContext> PlanningContext { get; set; } 
+		[System.Activities.RequiredArgumentAttribute()]
+		public System.Activities.InArgument<System.String> Calendars { get; set; } 
+        protected override void Execute(System.Activities.NativeActivityContext context) {
+            throw new System.NotImplementedException();
+        }
+    }
+}
+namespace glassPeople.ActivityLibrary.glassCAD.Planing.Status {
+    
     public partial class UpdateStatusActivity : System.Activities.NativeActivity {
 		[System.Activities.RequiredArgumentAttribute()]
 		public System.Activities.InArgument<glassPeople.ActivityLibrary.glassCAD.Planing.Model.PlanningContext> PlanningContext { get; set; } 
 		public System.Activities.OutArgument<System.Collections.Generic.List<glassPeople.ActivityLibrary.glassCAD.Planing.Model.GroupCode>> PaintingGroupCodes { get; set; } 
-		[System.ComponentModel.Browsable(false)]
+		[System.ComponentModel.BrowsableAttribute(false)]
 		public System.Activities.OutArgument<System.Boolean> Result { get; set; } 
         protected override void Execute(System.Activities.NativeActivityContext context) {
             throw new System.NotImplementedException();
@@ -2797,8 +3496,8 @@ namespace glassPeople.ActivityLibrary.glassCAD.Planing.Activity {
 		public System.Activities.OutArgument<System.String> ConnectionString { get; set; } 
 		[System.ComponentModel.CategoryAttribute("Out")]
 		public System.Activities.OutArgument<System.Boolean> ServiceNotEnabled { get; set; } 
+		[System.ComponentModel.BrowsableAttribute(false)]
 		[System.ComponentModel.CategoryAttribute("Out")]
-		[System.ComponentModel.Browsable(false)]
 		public System.Activities.OutArgument<System.Boolean> PlaningEnabled { get; set; } 
 		[System.ComponentModel.CategoryAttribute("Out")]
 		public System.Activities.OutArgument<System.Boolean> FailDifferentDateTime { get; set; } 
@@ -3012,39 +3711,13 @@ namespace glassPeople.ActivityLibrary.glassCAD.Planing.Activity.Orders {
 		public System.Activities.InArgument<System.Int32> OrderId { get; set; } 
 		[System.ComponentModel.CategoryAttribute("Out")]
 		public System.Activities.OutArgument<System.Boolean> Result { get; set; } 
+		[System.ComponentModel.BrowsableAttribute(false)]
 		[System.ComponentModel.CategoryAttribute("Out")]
-		[System.ComponentModel.Browsable(false)]
 		public System.Activities.OutArgument<System.Boolean> IsLocked { get; set; } 
 		[System.ComponentModel.CategoryAttribute("Out")]
 		public System.Activities.OutArgument<System.Boolean> IsNothing { get; set; } 
 		[System.ComponentModel.CategoryAttribute("Out")]
 		public System.Activities.OutArgument<System.Boolean> IsStatusFailed { get; set; } 
-        protected override void Execute(System.Activities.NativeActivityContext context) {
-            throw new System.NotImplementedException();
-        }
-    }
-}
-namespace glassPeople.ActivityLibrary.glassCAD.Planing.Activity.Orders {
-    
-    public partial class SetFabricaDiractionPlanDateActivity : System.Activities.NativeActivity {
-		[System.Activities.RequiredArgumentAttribute()]
-		public System.Activities.InArgument<glassPeople.ActivityLibrary.glassCAD.Planing.Model.PlanningContext> PlanningContext { get; set; } 
-		[System.Activities.RequiredArgumentAttribute()]
-		public System.Activities.InArgument<System.Int32> IDOrder { get; set; } 
-		[System.Activities.RequiredArgumentAttribute()]
-		public System.Activities.InArgument<System.DateTime> Dt { get; set; } 
-        protected override void Execute(System.Activities.NativeActivityContext context) {
-            throw new System.NotImplementedException();
-        }
-    }
-}
-namespace glassPeople.ActivityLibrary.glassCAD.Planing.Activity.Orders {
-    
-    public partial class RemoveFabricaDiractionPlanDateActivity : System.Activities.NativeActivity {
-		[System.Activities.RequiredArgumentAttribute()]
-		public System.Activities.InArgument<glassPeople.ActivityLibrary.glassCAD.Planing.Model.PlanningContext> PlanningContext { get; set; } 
-		[System.Activities.RequiredArgumentAttribute()]
-		public System.Activities.InArgument<System.Int32> IDOrder { get; set; } 
         protected override void Execute(System.Activities.NativeActivityContext context) {
             throw new System.NotImplementedException();
         }
@@ -3266,9 +3939,9 @@ namespace glassPeople.ActivityLibrary.glassCAD.Planing.Activity.Actualisation {
 		public System.Activities.InArgument<System.Nullable<System.Boolean>> IsAccepted { get; set; } 
 		[System.ComponentModel.CategoryAttribute("State")]
 		public System.Activities.InArgument<System.Nullable<System.Boolean>> IsProcessed { get; set; } 
-		[System.ComponentModel.Browsable(false)]
+		[System.ComponentModel.BrowsableAttribute(false)]
 		public System.Activities.InArgument<System.Nullable<System.DateTime>> StartStatusDateTimeChanged { get; set; } 
-		[System.ComponentModel.Browsable(false)]
+		[System.ComponentModel.BrowsableAttribute(false)]
 		public System.Activities.InArgument<System.Collections.Generic.List<glassPeople.ActivityLibrary.glassCAD.Planing.Model.Calendar>> Calendars { get; set; } 
 		[System.ComponentModel.CategoryAttribute("In")]
 		public System.Activities.InArgument<System.Collections.Generic.List<glassPeople.ActivityLibrary.glassCAD.Planing.Model.Calendar>> IncludeCalendars { get; set; } 
@@ -3364,16 +4037,13 @@ namespace glassPeople.ActivityLibrary.glassCAD.Planing.Activity.Actualisation {
 }
 namespace glassPeople.ActivityLibrary.glassCAD.Planing.Activity.Actualisation {
     
-    public partial class MoveGroupCodesToCalendarActivity : System.Activities.NativeActivity {
+    public partial class MoveGroupCodesToCalendarActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.DataLayerNativeActivity {
 		[System.Activities.RequiredArgumentAttribute()]
 		public System.Activities.InArgument<glassPeople.ActivityLibrary.glassCAD.Planing.Model.PlanningContext> PlanningContext { get; set; } 
 		[System.Activities.RequiredArgumentAttribute()]
 		public System.Activities.InArgument<System.Int32[]> Source { get; set; } 
 		[System.Activities.RequiredArgumentAttribute()]
 		public System.Activities.InArgument<System.Int32> Destination { get; set; } 
-        protected override void Execute(System.Activities.NativeActivityContext context) {
-            throw new System.NotImplementedException();
-        }
     }
 }
 namespace glassPeople.ActivityLibrary.glassCAD.Planing.Activity.Actualisation {
@@ -3534,19 +4204,37 @@ namespace glassPeople.ActivityLibrary.glassCAD.Planing.Activity.Actualisation {
 }
 namespace glassPeople.ActivityLibrary.glassCAD.Planing.Activity.Actualisation {
     
+    public partial class SetScanerDataActivity : System.Activities.NativeActivity {
+		[System.Activities.RequiredArgumentAttribute()]
+		public System.Activities.InArgument<glassPeople.ActivityLibrary.glassCAD.Planing.Model.PlanningContext> PlanningContext { get; set; } 
+		[System.Activities.OverloadGroupAttribute("G1")]
+		[System.Activities.RequiredArgumentAttribute()]
+		public System.Activities.InArgument<System.Collections.Generic.List<glassPeople.ActivityLibrary.glassCAD.Planing.Model.GroupCode>> SourceList { get; set; } 
+		[System.Activities.OverloadGroupAttribute("G2")]
+		[System.Activities.RequiredArgumentAttribute()]
+		public System.Activities.InArgument<glassPeople.ActivityLibrary.glassCAD.Planing.Model.GroupCode> Source { get; set; } 
+		[System.ComponentModel.CategoryAttribute("Mode")]
+		public glassPeople.ActivityLibrary.glassCAD.Planing.Activity.Actualisation.ScanerDataMode ScanerDataMode { get; set; } 
+        protected override void Execute(System.Activities.NativeActivityContext context) {
+            throw new System.NotImplementedException();
+        }
+    }
+}
+namespace glassPeople.ActivityLibrary.glassCAD.Planing.Activity.Actualisation {
+    
     public partial class SetPackingResultActivity : System.Activities.NativeActivity {
 		[System.Activities.RequiredArgumentAttribute()]
 		public System.Activities.InArgument<glassPeople.ActivityLibrary.glassCAD.Planing.Model.PlanningContext> PlanningContext { get; set; } 
 		[System.Activities.RequiredArgumentAttribute()]
 		public System.Activities.InArgument<glassPeople.ActivityLibrary.glassCAD.Planing.Model.GroupCode> GroupCode { get; set; } 
+		[System.ComponentModel.BrowsableAttribute(false)]
 		[System.ComponentModel.CategoryAttribute("Flag")]
-		[System.ComponentModel.Browsable(false)]
 		public System.Activities.InArgument<System.Boolean> SetScanerData { get; set; } 
+		[System.ComponentModel.BrowsableAttribute(false)]
 		[System.ComponentModel.CategoryAttribute("Flag")]
-		[System.ComponentModel.Browsable(false)]
 		public System.Activities.InArgument<System.Boolean> SetBufferSecondName { get; set; } 
+		[System.ComponentModel.BrowsableAttribute(false)]
 		[System.ComponentModel.CategoryAttribute("Mode")]
-		[System.ComponentModel.Browsable(false)]
 		public glassPeople.ActivityLibrary.glassCAD.Planing.Activity.Actualisation.BufferSecondNameMode BufferSecondNameMode { get; set; } 
 		[System.ComponentModel.CategoryAttribute("Mode")]
 		public glassPeople.ActivityLibrary.glassCAD.Planing.Activity.Actualisation.ScanerDataMode ScanerDataMode { get; set; } 
@@ -3704,9 +4392,9 @@ namespace glassPeople.ActivityLibrary.Dictionaries {
 namespace glassPeople.ActivityLibrary.Dictionaries {
     
     public partial class BusinessRolesActivity : System.Activities.NativeActivity {
-		[System.ComponentModel.Browsable(false)]
+		[System.ComponentModel.BrowsableAttribute(false)]
 		public System.Activities.OutArgument<glassPeople.ActivityLibrary.BookmarkActivityUserAction> UserAction { get; set; } 
-		[System.ComponentModel.Browsable(false)]
+		[System.ComponentModel.BrowsableAttribute(false)]
 		public System.Boolean AutoTerminate { get; set; } 
 		[System.Activities.RequiredArgumentAttribute()]
 		public System.Activities.InArgument<System.Int32> AccountUserId { get; set; } 
@@ -3742,14 +4430,14 @@ namespace glassPeople.ActivityLibrary.Dictionaries {
 namespace glassPeople.ActivityLibrary.Dialog {
     
     public partial class EditTextActivity : System.Activities.NativeActivity {
-		[System.ComponentModel.Browsable(false)]
+		[System.ComponentModel.BrowsableAttribute(false)]
 		public System.Activities.OutArgument<glassPeople.ActivityLibrary.BookmarkActivityUserAction> UserAction { get; set; } 
-		[System.ComponentModel.Browsable(false)]
+		[System.ComponentModel.BrowsableAttribute(false)]
 		public System.Boolean AutoTerminate { get; set; } 
+		[System.ComponentModel.BrowsableAttribute(false)]
 		[System.ComponentModel.CategoryAttribute("Property")]
-		[System.ComponentModel.Browsable(false)]
-		[System.ComponentModel.DefaultValue(false)]
-		public System.Activities.InArgument<System.Boolean> HtmlEditor { get; set; } = false;
+		[System.ComponentModel.DefaultValueAttribute(false)]
+		public System.Activities.InArgument<System.Boolean> HtmlEditor { get; set; } 
 		[System.ComponentModel.CategoryAttribute("Property")]
 		public System.Activities.InArgument<System.String> Title { get; set; } 
 		[System.ComponentModel.CategoryAttribute("Property")]
@@ -3757,8 +4445,8 @@ namespace glassPeople.ActivityLibrary.Dialog {
 		[System.ComponentModel.CategoryAttribute("Property")]
 		public System.Activities.InArgument<System.String> Description { get; set; } 
 		[System.ComponentModel.CategoryAttribute("Property")]
-		[System.ComponentModel.DefaultValue(false)]
-		public System.Activities.InArgument<System.Boolean> MultiLine { get; set; } = false;
+		[System.ComponentModel.DefaultValueAttribute(false)]
+		public System.Activities.InArgument<System.Boolean> MultiLine { get; set; } 
 		[System.ComponentModel.CategoryAttribute("Property")]
 		public System.Activities.InArgument<System.Boolean> ValueRequired { get; set; } 
 		[System.ComponentModel.CategoryAttribute("Property")]
@@ -3789,9 +4477,9 @@ namespace glassPeople.ActivityLibrary.Core {
 namespace glassPeople.ActivityLibrary.Core {
     
     public partial class EditStringValueActivity : System.Activities.NativeActivity {
-		[System.ComponentModel.Browsable(false)]
+		[System.ComponentModel.BrowsableAttribute(false)]
 		public System.Activities.OutArgument<glassPeople.ActivityLibrary.BookmarkActivityUserAction> UserAction { get; set; } 
-		[System.ComponentModel.Browsable(false)]
+		[System.ComponentModel.BrowsableAttribute(false)]
 		public System.Boolean AutoTerminate { get; set; } 
 		public System.Activities.InArgument<System.String> Title { get; set; } 
 		public System.Activities.InArgument<System.String> Text { get; set; } 
@@ -3812,9 +4500,9 @@ namespace glassPeople.ActivityLibrary.Core {
 		public System.String Template { get; set; } 
 		[System.Activities.OverloadGroupAttribute("Template")]
 		public System.String TemplateGuid { get; set; } 
-		[System.ComponentModel.Browsable(false)]
+		[System.ComponentModel.BrowsableAttribute(false)]
 		public System.Collections.ObjectModel.Collection<glassPeople.ActivityLibrary.Core.InvokeInArgument> Arguments { get; set; } = new System.Collections.ObjectModel.Collection<glassPeople.ActivityLibrary.Core.InvokeInArgument>();
-		[System.ComponentModel.Browsable(false)]
+		[System.ComponentModel.BrowsableAttribute(false)]
 		public System.Collections.ObjectModel.Collection<glassPeople.ActivityLibrary.Core.InvokeOutArgument> Output { get; set; } = new System.Collections.ObjectModel.Collection<glassPeople.ActivityLibrary.Core.InvokeOutArgument>();
 		public glassPeople.ActivityLibrary.Core.InvokeMode Mode { get; set; } 
 		[System.ComponentModel.CategoryAttribute("Assign")]
@@ -3879,11 +4567,11 @@ namespace glassPeople.ActivityLibrary.Core {
 namespace glassPeople.ActivityLibrary.Core {
     
     public partial class ShowMessageActivity : System.Activities.NativeActivity {
-		[System.ComponentModel.Browsable(false)]
+		[System.ComponentModel.BrowsableAttribute(false)]
 		public System.Boolean Localization { get; set; } 
-		[System.ComponentModel.Browsable(false)]
+		[System.ComponentModel.BrowsableAttribute(false)]
 		public System.Activities.OutArgument<glassPeople.ActivityLibrary.BookmarkActivityUserAction> UserAction { get; set; } 
-		[System.ComponentModel.Browsable(false)]
+		[System.ComponentModel.BrowsableAttribute(false)]
 		public System.Boolean AutoTerminate { get; set; } 
 		public System.Activities.InArgument<System.String> Title { get; set; } 
 		public System.Activities.InArgument<System.String> Description { get; set; } 
@@ -3899,15 +4587,15 @@ namespace glassPeople.ActivityLibrary.Core {
 namespace glassPeople.ActivityLibrary.Core {
     
     public partial class ShowReportActivity : System.Activities.NativeActivity {
+		[System.ComponentModel.BrowsableAttribute(false)]
 		[System.ComponentModel.CategoryAttribute("Out")]
-		[System.ComponentModel.Browsable(false)]
 		public System.Activities.OutArgument<glassPeople.ActivityLibrary.BookmarkActivityUserAction> UserAction { get; set; } 
+		[System.ComponentModel.BrowsableAttribute(false)]
 		[System.ComponentModel.CategoryAttribute("Property")]
-		[System.ComponentModel.Browsable(false)]
 		public System.Activities.InArgument<System.String> Title { get; set; } 
+		[System.ComponentModel.BrowsableAttribute(false)]
 		[System.ComponentModel.CategoryAttribute("Property")]
 		[System.ComponentModel.DescriptionAttribute("If UserAction result Stop, activity exec terminate")]
-		[System.ComponentModel.Browsable(false)]
 		public System.Boolean AutoTerminate { get; set; } 
 		[System.Activities.RequiredArgumentAttribute()]
 		public System.Activities.InArgument<Stimulsoft.Report.StiReport> Report { get; set; } 
@@ -3919,14 +4607,14 @@ namespace glassPeople.ActivityLibrary.Core {
 namespace glassPeople.ActivityLibrary.Core {
     
     public partial class SwitchActivity : System.Activities.NativeActivity {
+		[System.ComponentModel.BrowsableAttribute(false)]
 		[System.ComponentModel.CategoryAttribute("In")]
-		[System.ComponentModel.Browsable(false)]
 		public System.Boolean Localization { get; set; } 
-		[System.ComponentModel.Browsable(false)]
+		[System.ComponentModel.BrowsableAttribute(false)]
 		public System.Activities.OutArgument<glassPeople.ActivityLibrary.BookmarkActivityUserAction> UserAction { get; set; } 
-		[System.ComponentModel.Browsable(false)]
+		[System.ComponentModel.BrowsableAttribute(false)]
 		public System.Activities.InArgument<System.String> Title { get; set; } 
-		[System.ComponentModel.Browsable(false)]
+		[System.ComponentModel.BrowsableAttribute(false)]
 		public System.Boolean AutoTerminate { get; set; } 
 		[System.ComponentModel.CategoryAttribute("In")]
 		public System.Activities.InArgument<System.String> Text { get; set; } 
@@ -4032,35 +4720,35 @@ namespace glassPeople.ActivityLibrary.Account {
 namespace glassPeople.ActivityLibrary.Account {
     
     public partial class AccountUsersListActivity : glassPeople.ActivityLibrary.ListActivity<glassPeople.Model.Account.AccountUsers> {
-		[System.ComponentModel.Browsable(false)]
+		[System.ComponentModel.BrowsableAttribute(false)]
 		public System.Activities.OutArgument<glassPeople.ActivityLibrary.BookmarkActivityUserAction> UserAction { get; set; } 
-		[System.ComponentModel.Browsable(false)]
+		[System.ComponentModel.BrowsableAttribute(false)]
 		public System.Activities.InArgument<System.String> Title { get; set; } 
-		[System.ComponentModel.Browsable(false)]
+		[System.ComponentModel.BrowsableAttribute(false)]
 		public System.Boolean AutoTerminate { get; set; } 
-		[System.ComponentModel.Browsable(false)]
+		[System.ComponentModel.BrowsableAttribute(false)]
 		public System.Activities.OutArgument<glassPeople.ActivityLibrary.ListDocumentAction> Action { get; set; } 
-		[System.ComponentModel.Browsable(false)]
+		[System.ComponentModel.BrowsableAttribute(false)]
 		public System.Activities.OutArgument<System.String> CustomActionName { get; set; } 
-		[System.ComponentModel.Browsable(false)]
+		[System.ComponentModel.BrowsableAttribute(false)]
 		public System.Activities.InArgument<System.DateTime> StartDateTime { get; set; } 
-		[System.ComponentModel.Browsable(false)]
+		[System.ComponentModel.BrowsableAttribute(false)]
 		public System.Activities.InArgument<System.DateTime> EndDateTime { get; set; } 
-		[System.ComponentModel.Browsable(false)]
+		[System.ComponentModel.BrowsableAttribute(false)]
 		public glassPeople.ActivityLibrary.PeriodDateMode PeriodMode { get; set; } 
-		[System.ComponentModel.Browsable(false)]
+		[System.ComponentModel.BrowsableAttribute(false)]
 		public System.Activities.InArgument<System.Boolean> AllowChangePeriod { get; set; } 
-		[System.ComponentModel.Browsable(false)]
+		[System.ComponentModel.BrowsableAttribute(false)]
 		public System.Boolean FilterRow { get; set; } 
-		[System.ComponentModel.Browsable(false)]
+		[System.ComponentModel.BrowsableAttribute(false)]
 		public glassPeople.ActivityLibrary.SelectMode SelectionMode { get; set; } 
-		[System.ComponentModel.Browsable(false)]
+		[System.ComponentModel.BrowsableAttribute(false)]
 		public System.Boolean AllowSelectAll { get; set; } 
-		[System.ComponentModel.Browsable(false)]
+		[System.ComponentModel.BrowsableAttribute(false)]
 		public System.Activities.InOutArgument<System.Collections.Generic.List<System.Int32>> SelectedKeys { get; set; } 
-		[System.ComponentModel.Browsable(false)]
+		[System.ComponentModel.BrowsableAttribute(false)]
 		public System.Activities.InOutArgument<System.Int32> SelectedKey { get; set; } 
-		[System.ComponentModel.Browsable(false)]
+		[System.ComponentModel.BrowsableAttribute(false)]
 		public System.Activities.OutArgument<System.Int32> SelectedCount { get; set; } 
         protected override void Execute(System.Activities.NativeActivityContext context) {
             throw new System.NotImplementedException();

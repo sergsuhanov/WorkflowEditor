@@ -84,32 +84,21 @@ namespace glassPeople.gen {
 
         private void replace(List<string> data, string testSource, string textDest) {
             if (data.Contains(testSource)) {
-                data.Remove(testSource);
+                _ = data.Remove(testSource);
                 data.Add(textDest);
             }
         }
 
         private void getCustomAttributesReplace(List<string> result) {
-            replace(result,
-                "[System.ComponentModel.BrowsableAttribute((Boolean)False)]",
-                "[System.ComponentModel.Browsable(false)]"
-            );
-            replace(result,
-                "[System.ComponentModel.DefaultValueAttribute((String)null)]",
-                "[System.ComponentModel.DefaultValue(null)]"
-            );
-            replace(result,
-                "[System.ComponentModel.DefaultValueAttribute((Boolean)False)]",
-                "[System.ComponentModel.DefaultValue(false)]"
-            );
-            replace(result,
-                "[System.ComponentModel.DefaultValueAttribute((Boolean)True)]",
-                "[System.ComponentModel.DefaultValue(true)]"
-            );
-            replace(result,
-                "[System.ComponentModel.ToolboxItemAttribute((Boolean)True)]",
-                "[System.ComponentModel.ToolboxItemAttribute(true)]"
-            );
+            for (var i = 0; i < result.Count; i++) {
+                result[i] = result[i]
+                    .Replace("(Boolean)True", "true")
+                    .Replace("(Boolean)False", "false")
+                    .Replace("(String)null", "null")
+                    .Replace(" True", " true")
+                    .Replace(" False", " false");
+            }
+
             replace(result,
                 "[System.AttributeUsageAttribute((System.AttributeTargets)4, AllowMultiple = True)]",
                 "[System.AttributeUsageAttribute((System.AttributeTargets)4, AllowMultiple = true)]"
@@ -117,29 +106,27 @@ namespace glassPeople.gen {
         }
 
         protected string[] getDesignerAttribute(LocalType localType) {
-            if (localType?.BaseType?.FullName == "ITAP.glassCAD.Dictionary.WorkFlow.Activities.ListActivity") {
-                return new[] { "[System.ComponentModel.Designer(typeof(glassPeople.Designers.ButtonsActivityDesigner))]" };
-            }
-            return Array.Empty<string>();
+            return localType?.BaseType?.FullName == "ITAP.glassCAD.Dictionary.WorkFlow.Activities.ListActivity"
+                ? (new[] { "[System.ComponentModel.Designer(typeof(glassPeople.Designers.ButtonsActivityDesigner))]" })
+                : Array.Empty<string>();
         }
 
         protected string[] getCustomAttributes(LocalType source) {
             var result = (source.CustomAttributes ?? Array.Empty<string>()).ToList();
 
-            result.Remove("[System.Runtime.CompilerServices.ExtensionAttribute()]");
-            result.Remove("[System.SerializableAttribute()]");
-            result.RemoveAll(p => p.Contains("DebuggerDisplayAttribute"));
-            result.RemoveAll(p => p.Contains("NullableContextAttribute((Byte)") || p.Contains("NullableAttribute((Byte)"));
+            _ = result.Remove("[System.Runtime.CompilerServices.ExtensionAttribute()]");
+            _ = result.Remove("[System.SerializableAttribute()]");
+            _ = result.RemoveAll(p => p.Contains("DebuggerDisplayAttribute"));
+            _ = result.RemoveAll(p => p.Contains("NullableContextAttribute((Byte)") || p.Contains("NullableAttribute((Byte)"));
             getCustomAttributesReplace(result);
 
             result.AddRange(getDesignerAttribute(source));
-
             return result.ToArray();
         }
 
         protected string[] getCustomAttributes(LocalProperty source) {
             var result = (source.CustomAttributes ?? Array.Empty<string>()).ToList();
-            result.RemoveAll(p => p.Contains("TupleElementNamesAttribute"));
+            _ = result.RemoveAll(p => p.Contains("TupleElementNamesAttribute"));
             getCustomAttributesReplace(result);
             return result.ToArray();
         }

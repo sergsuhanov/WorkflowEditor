@@ -1,4 +1,4 @@
-﻿namespace ITAP.Components {
+namespace ITAP.Components {
     
     public abstract partial class Calculator {
     }
@@ -372,6 +372,376 @@ namespace ITAP.glassCAD.Helpers {
 		public System.Action<System.String, System.Nullable<System.Int32>, System.Collections.Generic.List<System.Int32>> ButtonClick { get; set; } 
     }
 }
+namespace ITAP.glassCAD.Glass.ViewModel {
+    
+    public partial class TreeViewModel {
+		public System.Nullable<System.DateTime> LoadedAt { get; set; } 
+		public System.Collections.Generic.IReadOnlyList<ITAP.glassCAD.Glass.ViewModel.TreeViewModel.GlassStorehouseNode> Storehouses { get; set; } 
+		public System.Collections.Generic.IReadOnlyList<ITAP.glassCAD.Glass.ViewModel.TreeViewModel.StorehouseFilterOption> StorehouseFilterOptions { get; set; } 
+		public System.Collections.Generic.IReadOnlyList<ITAP.glassCAD.Glass.ViewModel.TreeViewModel.GoodFilterOption> GoodFilterOptions { get; set; } 
+		public System.Collections.Generic.IReadOnlyList<ITAP.glassCAD.Glass.ViewModel.TreeViewModel.GoodPartiesFilterOption> GoodPartiesFilterOptions { get; set; } 
+		public System.Collections.Generic.IReadOnlyList<ITAP.glassCAD.Glass.ViewModel.TreeViewModel.GlassManufactureFilterOption> GlassManufactureFilterOptions { get; set; } 
+		public System.Func<ITAP.glassCAD.Glass.ViewModel.TreeViewModel.GlassPackageNode, System.String, System.Threading.Tasks.Task> EditPackageNameCommandAsync { get; set; } 
+		public System.Func<ITAP.glassCAD.Glass.ViewModel.TreeViewModel.RegistrGlassNode, System.Threading.Tasks.Task> ShowGlassDetailsCommandAsync { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Glass.Model {
+    
+    public partial class DataContext : Microsoft.EntityFrameworkCore.DbContext {
+    }
+}
+namespace ITAP.glassCAD.Glass.Model {
+    [System.ComponentModel.DataAnnotations.Schema.TableAttribute("GlassHouse")]
+    public partial class GlassHouse {
+		[System.ComponentModel.DataAnnotations.KeyAttribute()]
+		public System.Int32 IDGlassHouse { get; set; } 
+		public System.Nullable<System.Int32> IDDocOper { get; set; } 
+		public System.Nullable<System.Int32> IDDocOperItems { get; set; } 
+		public System.Nullable<System.Int32> IDPeople { get; set; } 
+		public System.Nullable<System.Int32> IDCompany { get; set; } 
+		[System.ComponentModel.DataAnnotations.Schema.ColumnAttribute("dtdoc")]
+		public System.Nullable<System.DateTime> Dtdoc { get; set; } 
+		[System.ComponentModel.DataAnnotations.Schema.ColumnAttribute("nmdoc")]
+		public System.String Nmdoc { get; set; } 
+		[System.ComponentModel.DataAnnotations.Schema.ColumnAttribute("deleted")]
+		public System.Nullable<System.DateTime> Deleted { get; set; } 
+		[System.ComponentModel.DataAnnotations.Schema.ColumnAttribute("comment")]
+		public System.String Comment { get; set; } 
+		public System.Nullable<System.Boolean> IsEntry { get; set; } 
+		public System.Nullable<System.Guid> GUID { get; set; } 
+		public System.Nullable<System.Int32> IDGoodsHouse { get; set; } 
+		public System.Nullable<System.Boolean> IsEntryVerify { get; set; } 
+		public System.Collections.Generic.ICollection<ITAP.glassCAD.Glass.Model.GlassMovement> GlassMovements { get; set; } 
+		public System.Collections.Generic.ICollection<ITAP.glassCAD.Glass.Model.GlassPrihod> GlassPrihods { get; set; } 
+		public System.Collections.Generic.ICollection<ITAP.glassCAD.Glass.Model.GlassResize> GlassResizes { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Glass.Model {
+    [System.ComponentModel.DataAnnotations.Schema.TableAttribute("GlassManufactures")]
+    public partial class GlassManufactures {
+		[System.ComponentModel.DataAnnotations.KeyAttribute()]
+		public System.Int32 IDGlassManufactures { get; set; } 
+		public System.String Name { get; set; } 
+		public System.String Address { get; set; } 
+		public System.Nullable<System.DateTime> Deleted { get; set; } 
+		public System.Collections.Generic.ICollection<ITAP.glassCAD.Glass.Model.GlassPackage> GlassPackages { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Glass.Model {
+    [System.ComponentModel.DataAnnotations.Schema.TableAttribute("GlassMovement")]
+    public partial class GlassMovement {
+		[System.ComponentModel.DataAnnotations.KeyAttribute()]
+		public System.Int32 IDGlassMovement { get; set; } 
+		public System.Nullable<System.Int32> IDGlassHouse { get; set; } 
+		[System.ComponentModel.DataAnnotations.Schema.ColumnAttribute("deleted")]
+		public System.Nullable<System.DateTime> Deleted { get; set; } 
+		public System.Nullable<System.Guid> GUID { get; set; } 
+		[System.ComponentModel.DataAnnotations.Schema.ForeignKeyAttribute("IDGlassHouse")]
+		public ITAP.glassCAD.Glass.Model.GlassHouse GlassHouse { get; set; } 
+		public System.Collections.Generic.ICollection<ITAP.glassCAD.Glass.Model.GlassMovementItems> Items { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Glass.Model {
+    [System.ComponentModel.DataAnnotations.Schema.TableAttribute("GlassMovementItems")]
+    public partial class GlassMovementItems {
+		[System.ComponentModel.DataAnnotations.KeyAttribute()]
+		public System.Int32 IDGlassMovementItems { get; set; } 
+		public System.Nullable<System.Int32> IDGlassMovement { get; set; } 
+		public System.Nullable<System.Int32> IDGlass { get; set; } 
+		public System.Nullable<System.Int32> IDGlassStorehouseOut { get; set; } 
+		public System.Nullable<System.Int32> CellOut { get; set; } 
+		public System.Nullable<System.Int32> IDGlassStorehouseIn { get; set; } 
+		public System.Nullable<System.Int32> CellIn { get; set; } 
+		public System.String Description { get; set; } 
+		[System.ComponentModel.DataAnnotations.Schema.ColumnAttribute("deleted")]
+		public System.Nullable<System.DateTime> Deleted { get; set; } 
+		public System.Nullable<System.Guid> GUID { get; set; } 
+		public System.Nullable<System.Int32> IDGlassPackageOut { get; set; } 
+		public System.Nullable<System.Int32> IDGlassPackageIn { get; set; } 
+		[System.ComponentModel.DataAnnotations.Schema.ColumnAttribute("IDRegistr_Glass")]
+		public System.Nullable<System.Int32> IDRegistr_Glass { get; set; } 
+		[System.ComponentModel.DataAnnotations.Schema.ForeignKeyAttribute("IDGlassMovement")]
+		public ITAP.glassCAD.Glass.Model.GlassMovement GlassMovement { get; set; } 
+		[System.ComponentModel.DataAnnotations.Schema.ForeignKeyAttribute("IDGlassStorehouseOut")]
+		[System.ComponentModel.DataAnnotations.Schema.InversePropertyAttribute("GlassMovementItemsOut")]
+		public ITAP.glassCAD.Glass.Model.GlassStorehouse GlassStorehouseOut { get; set; } 
+		[System.ComponentModel.DataAnnotations.Schema.ForeignKeyAttribute("IDGlassStorehouseIn")]
+		[System.ComponentModel.DataAnnotations.Schema.InversePropertyAttribute("GlassMovementItemsIn")]
+		public ITAP.glassCAD.Glass.Model.GlassStorehouse GlassStorehouseIn { get; set; } 
+		[System.ComponentModel.DataAnnotations.Schema.ForeignKeyAttribute("IDGlassPackageOut")]
+		[System.ComponentModel.DataAnnotations.Schema.InversePropertyAttribute("GlassMovementItemsOut")]
+		public ITAP.glassCAD.Glass.Model.GlassPackage GlassPackageOut { get; set; } 
+		[System.ComponentModel.DataAnnotations.Schema.ForeignKeyAttribute("IDGlassPackageIn")]
+		[System.ComponentModel.DataAnnotations.Schema.InversePropertyAttribute("GlassMovementItemsIn")]
+		public ITAP.glassCAD.Glass.Model.GlassPackage GlassPackageIn { get; set; } 
+		[System.ComponentModel.DataAnnotations.Schema.ForeignKeyAttribute("IDRegistr_Glass")]
+		public ITAP.glassCAD.Glass.Model.RegistrGlass RegistrGlass { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Glass.Model {
+    [System.ComponentModel.DataAnnotations.Schema.TableAttribute("GlassPackage")]
+    public partial class GlassPackage {
+		[System.ComponentModel.DataAnnotations.KeyAttribute()]
+		public System.Int32 IDGlassPackage { get; set; } 
+		public System.String Name { get; set; } 
+		public System.String ScanerData { get; set; } 
+		public System.Nullable<System.Guid> GUID { get; set; } 
+		public System.Nullable<System.Int32> IndexInCell { get; set; } 
+		[System.ComponentModel.DataAnnotations.Schema.ColumnAttribute("deleted")]
+		public System.Nullable<System.DateTime> Deleted { get; set; } 
+		public System.Nullable<System.Int32> IDGlassManufactures { get; set; } 
+		[System.ComponentModel.DataAnnotations.Schema.ForeignKeyAttribute("IDGlassManufactures")]
+		public ITAP.glassCAD.Glass.Model.GlassManufactures GlassManufactures { get; set; } 
+		[System.ComponentModel.DataAnnotations.Schema.InversePropertyAttribute("GlassPackageOut")]
+		public System.Collections.Generic.ICollection<ITAP.glassCAD.Glass.Model.GlassMovementItems> GlassMovementItemsOut { get; set; } 
+		[System.ComponentModel.DataAnnotations.Schema.InversePropertyAttribute("GlassPackageIn")]
+		public System.Collections.Generic.ICollection<ITAP.glassCAD.Glass.Model.GlassMovementItems> GlassMovementItemsIn { get; set; } 
+		public System.Collections.Generic.ICollection<ITAP.glassCAD.Glass.Model.GlassPrihodItems> GlassPrihodItems { get; set; } 
+		public System.Collections.Generic.ICollection<ITAP.glassCAD.Glass.Model.GlassResizeDesitation> GlassResizeDestinationsIn { get; set; } 
+		public System.Collections.Generic.ICollection<ITAP.glassCAD.Glass.Model.GlassResizeSource> GlassResizeSourcesOut { get; set; } 
+		public System.Collections.Generic.ICollection<ITAP.glassCAD.Glass.Model.RegistrGlass> RegistrGlassItems { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Glass.Model {
+    [System.ComponentModel.DataAnnotations.Schema.TableAttribute("GlassPrihod")]
+    public partial class GlassPrihod {
+		[System.ComponentModel.DataAnnotations.KeyAttribute()]
+		public System.Int32 IDGlassPrihod { get; set; } 
+		public System.Nullable<System.Int32> IDGlassHouse { get; set; } 
+		public System.Nullable<System.Int32> IDCustomer { get; set; } 
+		public System.Nullable<System.Int32> IDTransport { get; set; } 
+		[System.ComponentModel.DataAnnotations.Schema.ColumnAttribute("deleted")]
+		public System.Nullable<System.DateTime> Deleted { get; set; } 
+		public System.Nullable<System.Guid> GUID { get; set; } 
+		public System.Nullable<System.DateTime> FactDateTime { get; set; } 
+		public System.Nullable<System.Int32> IDGoodParties { get; set; } 
+		public System.Nullable<System.Int32> IDExternalRequest { get; set; } 
+		[System.ComponentModel.DataAnnotations.Schema.ForeignKeyAttribute("IDGlassHouse")]
+		public ITAP.glassCAD.Glass.Model.GlassHouse GlassHouse { get; set; } 
+		[System.ComponentModel.DataAnnotations.Schema.ForeignKeyAttribute("IDGoodParties")]
+		public ITAP.glassCAD.Glass.Model.GoodParties GoodParties { get; set; } 
+		public System.Collections.Generic.ICollection<ITAP.glassCAD.Glass.Model.GlassPrihodItems> Items { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Glass.Model {
+    [System.ComponentModel.DataAnnotations.Schema.TableAttribute("GlassPrihodItems")]
+    public partial class GlassPrihodItems {
+		[System.ComponentModel.DataAnnotations.KeyAttribute()]
+		public System.Int32 IDGlassPrihodItems { get; set; } 
+		public System.Nullable<System.Int32> IDGlassPrihod { get; set; } 
+		public System.Nullable<System.Int32> IDGood { get; set; } 
+		public System.Nullable<System.Int32> IDGlassStrorehouse { get; set; } 
+		public System.Nullable<System.Int32> Cell { get; set; } 
+		[System.ComponentModel.DataAnnotations.Schema.ColumnAttribute("height")]
+		public System.Nullable<System.Int32> Height { get; set; } 
+		[System.ComponentModel.DataAnnotations.Schema.ColumnAttribute("width")]
+		public System.Nullable<System.Int32> Width { get; set; } 
+		[System.ComponentModel.DataAnnotations.Schema.ColumnAttribute("qu")]
+		public System.Nullable<System.Int32> Qu { get; set; } 
+		[System.ComponentModel.DataAnnotations.Schema.ColumnAttribute("production_date")]
+		public System.Nullable<System.DateTime> ProductionDate { get; set; } 
+		[System.ComponentModel.DataAnnotations.Schema.ColumnAttribute("deleted")]
+		public System.Nullable<System.DateTime> Deleted { get; set; } 
+		[System.ComponentModel.DataAnnotations.Schema.ColumnAttribute("numpos")]
+		public System.Nullable<System.Int32> Numpos { get; set; } 
+		[System.ComponentModel.DataAnnotations.Schema.ColumnAttribute("comment")]
+		public System.String Comment { get; set; } 
+		public System.Nullable<System.Guid> GUID { get; set; } 
+		public System.Nullable<System.Int32> IDGlassPackage { get; set; } 
+		[System.ComponentModel.DataAnnotations.Schema.ForeignKeyAttribute("IDGlassPrihod")]
+		public ITAP.glassCAD.Glass.Model.GlassPrihod GlassPrihod { get; set; } 
+		[System.ComponentModel.DataAnnotations.Schema.ForeignKeyAttribute("IDGood")]
+		public ITAP.glassCAD.Glass.Model.Good Good { get; set; } 
+		[System.ComponentModel.DataAnnotations.Schema.ForeignKeyAttribute("IDGlassStrorehouse")]
+		public ITAP.glassCAD.Glass.Model.GlassStorehouse GlassStorehouse { get; set; } 
+		[System.ComponentModel.DataAnnotations.Schema.ForeignKeyAttribute("IDGlassPackage")]
+		public ITAP.glassCAD.Glass.Model.GlassPackage GlassPackage { get; set; } 
+		public System.Collections.Generic.ICollection<ITAP.glassCAD.Glass.Model.RegistrGlass> RegistrGlassItems { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Glass.Model {
+    [System.ComponentModel.DataAnnotations.Schema.TableAttribute("GlassResize")]
+    public partial class GlassResize {
+		[System.ComponentModel.DataAnnotations.KeyAttribute()]
+		public System.Int32 IDGlassResize { get; set; } 
+		public System.Nullable<System.Int32> IDGlassHouse { get; set; } 
+		[System.ComponentModel.DataAnnotations.Schema.ColumnAttribute("deleted")]
+		public System.Nullable<System.DateTime> Deleted { get; set; } 
+		public System.Nullable<System.Guid> GUID { get; set; } 
+		[System.ComponentModel.DataAnnotations.Schema.ForeignKeyAttribute("IDGlassHouse")]
+		public ITAP.glassCAD.Glass.Model.GlassHouse GlassHouse { get; set; } 
+		public System.Collections.Generic.ICollection<ITAP.glassCAD.Glass.Model.GlassResizeDesitation> Destinations { get; set; } 
+		public System.Collections.Generic.ICollection<ITAP.glassCAD.Glass.Model.GlassResizeSource> Sources { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Glass.Model {
+    [System.ComponentModel.DataAnnotations.Schema.TableAttribute("GlassResizeDesitation")]
+    public partial class GlassResizeDesitation {
+		[System.ComponentModel.DataAnnotations.KeyAttribute()]
+		public System.Int32 IDGlassResizeDesitation { get; set; } 
+		public System.Nullable<System.Int32> IDGlassResize { get; set; } 
+		public System.Nullable<System.Int32> IDGlassResizeSource { get; set; } 
+		public System.Nullable<System.Int32> IDGlassStorehouseIn { get; set; } 
+		public System.Nullable<System.Int32> CellIn { get; set; } 
+		public System.Nullable<System.Int32> Width { get; set; } 
+		public System.Nullable<System.Int32> Height { get; set; } 
+		[System.ComponentModel.DataAnnotations.Schema.ColumnAttribute("deleted")]
+		public System.Nullable<System.DateTime> Deleted { get; set; } 
+		public System.Nullable<System.Guid> GUID { get; set; } 
+		public System.Nullable<System.Int32> IDGlassPackageIn { get; set; } 
+		[System.ComponentModel.DataAnnotations.Schema.ForeignKeyAttribute("IDGlassResize")]
+		public ITAP.glassCAD.Glass.Model.GlassResize GlassResize { get; set; } 
+		[System.ComponentModel.DataAnnotations.Schema.ForeignKeyAttribute("IDGlassResizeSource")]
+		public ITAP.glassCAD.Glass.Model.GlassResizeSource GlassResizeSource { get; set; } 
+		[System.ComponentModel.DataAnnotations.Schema.ForeignKeyAttribute("IDGlassStorehouseIn")]
+		public ITAP.glassCAD.Glass.Model.GlassStorehouse GlassStorehouseIn { get; set; } 
+		[System.ComponentModel.DataAnnotations.Schema.ForeignKeyAttribute("IDGlassPackageIn")]
+		public ITAP.glassCAD.Glass.Model.GlassPackage GlassPackageIn { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Glass.Model {
+    [System.ComponentModel.DataAnnotations.Schema.TableAttribute("GlassResizeSource")]
+    public partial class GlassResizeSource {
+		[System.ComponentModel.DataAnnotations.KeyAttribute()]
+		public System.Int32 IDGlassResizeSource { get; set; } 
+		public System.Nullable<System.Int32> IDGlassResize { get; set; } 
+		public System.Nullable<System.Int32> IDGlass { get; set; } 
+		public System.String Description { get; set; } 
+		[System.ComponentModel.DataAnnotations.Schema.ColumnAttribute("deleted")]
+		public System.Nullable<System.DateTime> Deleted { get; set; } 
+		public System.Nullable<System.Guid> GUID { get; set; } 
+		public System.Nullable<System.Int32> IDGood { get; set; } 
+		[System.ComponentModel.DataAnnotations.Schema.ColumnAttribute("IDRegistr_Glass")]
+		public System.Nullable<System.Int32> IDRegistr_Glass { get; set; } 
+		public System.Nullable<System.Int32> IDGlassPackageOut { get; set; } 
+		[System.ComponentModel.DataAnnotations.Schema.ForeignKeyAttribute("IDGlassResize")]
+		public ITAP.glassCAD.Glass.Model.GlassResize GlassResize { get; set; } 
+		[System.ComponentModel.DataAnnotations.Schema.ForeignKeyAttribute("IDGood")]
+		public ITAP.glassCAD.Glass.Model.Good Good { get; set; } 
+		[System.ComponentModel.DataAnnotations.Schema.ForeignKeyAttribute("IDRegistr_Glass")]
+		public ITAP.glassCAD.Glass.Model.RegistrGlass RegistrGlass { get; set; } 
+		[System.ComponentModel.DataAnnotations.Schema.ForeignKeyAttribute("IDGlassPackageOut")]
+		public ITAP.glassCAD.Glass.Model.GlassPackage GlassPackageOut { get; set; } 
+		public System.Collections.Generic.ICollection<ITAP.glassCAD.Glass.Model.GlassResizeDesitation> Destinations { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Glass.Model {
+    [System.ComponentModel.DataAnnotations.Schema.TableAttribute("GlassStorehouse")]
+    public partial class GlassStorehouse {
+		[System.ComponentModel.DataAnnotations.KeyAttribute()]
+		public System.Int32 IDGlassStorehouse { get; set; } 
+		[System.ComponentModel.DataAnnotations.Schema.ColumnAttribute("name")]
+		public System.String Name { get; set; } 
+		[System.ComponentModel.DataAnnotations.Schema.ColumnAttribute("qu_cells")]
+		public System.Nullable<System.Int32> QuCells { get; set; } 
+		[System.ComponentModel.DataAnnotations.Schema.ColumnAttribute("cell_capacity")]
+		public System.Nullable<System.Int32> CellCapacity { get; set; } 
+		[System.ComponentModel.DataAnnotations.Schema.ColumnAttribute("rule")]
+		public System.Nullable<System.Int32> Rule { get; set; } 
+		[System.ComponentModel.DataAnnotations.Schema.ColumnAttribute("comment")]
+		public System.String Comment { get; set; } 
+		public System.Nullable<System.Guid> GUID { get; set; } 
+		public System.Nullable<System.Int32> ThicknessCapacity { get; set; } 
+		public System.Nullable<System.Int32> IDStorehouse { get; set; } 
+		public System.Nullable<System.Int32> ThicknessGlassPackage { get; set; } 
+		[System.ComponentModel.DataAnnotations.Schema.ColumnAttribute("deleted")]
+		public System.Nullable<System.DateTime> Deleted { get; set; } 
+		[System.ComponentModel.DataAnnotations.Schema.InversePropertyAttribute("GlassStorehouseOut")]
+		public System.Collections.Generic.ICollection<ITAP.glassCAD.Glass.Model.GlassMovementItems> GlassMovementItemsOut { get; set; } 
+		[System.ComponentModel.DataAnnotations.Schema.InversePropertyAttribute("GlassStorehouseIn")]
+		public System.Collections.Generic.ICollection<ITAP.glassCAD.Glass.Model.GlassMovementItems> GlassMovementItemsIn { get; set; } 
+		public System.Collections.Generic.ICollection<ITAP.glassCAD.Glass.Model.GlassPrihodItems> GlassPrihodItems { get; set; } 
+		public System.Collections.Generic.ICollection<ITAP.glassCAD.Glass.Model.GlassResizeDesitation> GlassResizeDestinationsIn { get; set; } 
+		public System.Collections.Generic.ICollection<ITAP.glassCAD.Glass.Model.RegistrGlass> RegistrGlasses { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Glass.Model {
+    [System.ComponentModel.DataAnnotations.Schema.TableAttribute("Registr_Glass")]
+    public partial class RegistrGlass {
+		[System.ComponentModel.DataAnnotations.KeyAttribute()]
+		[System.ComponentModel.DataAnnotations.Schema.ColumnAttribute("IDRegistr_Glass")]
+		public System.Int32 IDRegistr_Glass { get; set; } 
+		public System.Int32 IDDoc { get; set; } 
+		public System.Int32 IDDocOper { get; set; } 
+		public System.Int32 IDGlassPrihodItem { get; set; } 
+		public System.Nullable<System.Int32> IDParentGlass { get; set; } 
+		public System.Int32 IDGlassStrorehouse { get; set; } 
+		public System.Int32 Cell { get; set; } 
+		public System.Int32 IDGlass { get; set; } 
+		public System.Int32 IDGood { get; set; } 
+		public System.Int32 Width { get; set; } 
+		public System.Int32 Height { get; set; } 
+		[System.ComponentModel.DataAnnotations.Schema.ColumnAttribute("typ")]
+		public System.Int16 Type { get; set; } 
+		public System.DateTime DtReg { get; set; } 
+		[System.ComponentModel.DataAnnotations.Schema.ColumnAttribute("part")]
+		public System.Int32 IDGoodParties { get; set; } 
+		public System.Int32 IDGlassPackage { get; set; } 
+		public System.Nullable<System.Boolean> IsReserved { get; set; } 
+		public System.Nullable<System.Int32> IDDocReserve { get; set; } 
+		public System.Nullable<System.Int32> IDDocOperReserve { get; set; } 
+		public System.Nullable<System.DateTime> ProductionDate { get; set; } 
+		[System.ComponentModel.DataAnnotations.Schema.ColumnAttribute("dtOut")]
+		public System.Nullable<System.DateTime> DtOut { get; set; } 
+		[System.ComponentModel.DataAnnotations.Schema.ColumnAttribute("IDRegistr_GlassOut")]
+		public System.Nullable<System.Int32> IDRegistr_GlassOut { get; set; } 
+		[System.ComponentModel.DataAnnotations.Schema.ForeignKeyAttribute("IDGlassPrihodItem")]
+		public ITAP.glassCAD.Glass.Model.GlassPrihodItems GlassPrihodItem { get; set; } 
+		[System.ComponentModel.DataAnnotations.Schema.ForeignKeyAttribute("IDGood")]
+		public ITAP.glassCAD.Glass.Model.Good Good { get; set; } 
+		[System.ComponentModel.DataAnnotations.Schema.ForeignKeyAttribute("IDGoodParties")]
+		public ITAP.glassCAD.Glass.Model.GoodParties GoodParties { get; set; } 
+		[System.ComponentModel.DataAnnotations.Schema.ForeignKeyAttribute("IDGlassStrorehouse")]
+		public ITAP.glassCAD.Glass.Model.GlassStorehouse GlassStorehouse { get; set; } 
+		[System.ComponentModel.DataAnnotations.Schema.ForeignKeyAttribute("IDGlassPackage")]
+		public ITAP.glassCAD.Glass.Model.GlassPackage GlassPackage { get; set; } 
+		[System.ComponentModel.DataAnnotations.Schema.ForeignKeyAttribute("IDParentGlass")]
+		[System.ComponentModel.DataAnnotations.Schema.InversePropertyAttribute("ChildGlasses")]
+		public ITAP.glassCAD.Glass.Model.RegistrGlass ParentGlass { get; set; } 
+		[System.ComponentModel.DataAnnotations.Schema.InversePropertyAttribute("ParentGlass")]
+		public System.Collections.Generic.ICollection<ITAP.glassCAD.Glass.Model.RegistrGlass> ChildGlasses { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Glass.Model {
+    [System.ComponentModel.DataAnnotations.Schema.TableAttribute("GoodParties")]
+    public partial class GoodParties {
+		[System.ComponentModel.DataAnnotations.KeyAttribute()]
+		public System.Int32 IDGoodParties { get; set; } 
+		public System.String Name { get; set; } 
+		public System.String GroupName { get; set; } 
+		public System.Nullable<System.DateTime> Date { get; set; } 
+		[System.ComponentModel.DataAnnotations.Schema.ColumnAttribute("deleted")]
+		public System.Nullable<System.DateTime> Deleted { get; set; } 
+		public System.Collections.Generic.ICollection<ITAP.glassCAD.Glass.Model.GlassPrihod> GlassPrihods { get; set; } 
+		public System.Collections.Generic.ICollection<ITAP.glassCAD.Glass.Model.RegistrGlass> RegistrGlasses { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Glass.Model {
+    [System.ComponentModel.DataAnnotations.Schema.TableAttribute("Goods")]
+    public partial class Good {
+		[System.ComponentModel.DataAnnotations.KeyAttribute()]
+		[System.ComponentModel.DataAnnotations.Schema.ColumnAttribute("idgood")]
+		public System.Int32 IDGood { get; set; } 
+		[System.ComponentModel.DataAnnotations.Schema.ColumnAttribute("idmeasure")]
+		public System.Nullable<System.Int32> IDMeasure { get; set; } 
+		[System.ComponentModel.DataAnnotations.Schema.ColumnAttribute("idgroup")]
+		public System.Nullable<System.Int32> IDGroup { get; set; } 
+		[System.ComponentModel.DataAnnotations.Schema.ColumnAttribute("name")]
+		public System.String Name { get; set; } 
+		[System.ComponentModel.DataAnnotations.Schema.ColumnAttribute("marking")]
+		public System.String Marking { get; set; } 
+		[System.ComponentModel.DataAnnotations.Schema.ColumnAttribute("typ")]
+		public ITAP.glassCAD.GoodsType Type { get; set; } 
+		[System.ComponentModel.DataAnnotations.Schema.ColumnAttribute("thickness")]
+		public System.Nullable<System.Decimal> Thickness { get; set; } 
+		[System.ComponentModel.DataAnnotations.Schema.ColumnAttribute("weight")]
+		public System.Nullable<System.Decimal> Weight { get; set; } 
+		public System.Nullable<System.Int32> IDGrOpt { get; set; } 
+		public System.Nullable<ITAP.glassCAD.GlassType> TypGlass { get; set; } 
+		[System.ComponentModel.DataAnnotations.Schema.ColumnAttribute("deleted")]
+		public System.Nullable<System.DateTime> Deleted { get; set; } 
+    }
+}
 namespace ITAP.glassCAD.Extensions {
     
     public abstract partial class DataRowExtensions {
@@ -425,29 +795,30 @@ namespace ITAP.glassCAD.Exchange {
 		public System.DateTime Dt { get; set; } 
 		public System.String Command { get; set; } 
 		public System.String Parameter { get; set; } 
+		public System.Exception Exception { get; set; } 
     }
 }
 namespace ITAP.glassCAD.Exchange {
     [System.ComponentModel.DesignerCategoryAttribute("code")]
+[System.ComponentModel.ToolboxItemAttribute(true)]
 [System.Xml.Serialization.XmlSchemaProviderAttribute("GetTypedDataSetSchema")]
 [System.Xml.Serialization.XmlRootAttribute("MessageDataSet")]
 [System.ComponentModel.Design.HelpKeywordAttribute("vs.data.DataSet")]
-[System.ComponentModel.ToolboxItemAttribute(true)]
     public partial class MessageDataSet : System.Data.DataSet {
 		[System.Diagnostics.DebuggerNonUserCodeAttribute()]
 		[System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "18.0.0.0")]
+		[System.ComponentModel.BrowsableAttribute(false)]
 		[System.ComponentModel.DesignerSerializationVisibilityAttribute((System.ComponentModel.DesignerSerializationVisibility)2)]
-		[System.ComponentModel.Browsable(false)]
 		public ITAP.glassCAD.Exchange.MessageDataSet.VersionDataTable Version { get; } 
 		[System.Diagnostics.DebuggerNonUserCodeAttribute()]
 		[System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "18.0.0.0")]
+		[System.ComponentModel.BrowsableAttribute(false)]
 		[System.ComponentModel.DesignerSerializationVisibilityAttribute((System.ComponentModel.DesignerSerializationVisibility)2)]
-		[System.ComponentModel.Browsable(false)]
 		public ITAP.glassCAD.Exchange.MessageDataSet.MessageDataDataTable MessageData { get; } 
 		[System.Diagnostics.DebuggerNonUserCodeAttribute()]
 		[System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "18.0.0.0")]
+		[System.ComponentModel.BrowsableAttribute(false)]
 		[System.ComponentModel.DesignerSerializationVisibilityAttribute((System.ComponentModel.DesignerSerializationVisibility)2)]
-		[System.ComponentModel.Browsable(false)]
 		public ITAP.glassCAD.Exchange.MessageDataSet.ValueDataTable Value { get; } 
 		[System.Diagnostics.DebuggerNonUserCodeAttribute()]
 		[System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "18.0.0.0")]
@@ -478,6 +849,20 @@ namespace ITAP.glassCAD.Exchange.Activity {
     public abstract partial class DataExtensions {
     }
 }
+namespace ITAP.glassCAD.Exchange.Activity.Exceptions {
+    
+    public partial class DataNotFoundException : System.Exception {
+    }
+}
+namespace ITAP.glassCAD.Documents.UserTasks {
+    
+    public partial class UserTasksDataSet : System.Data.DataSet {
+		public ITAP.glassCAD.Data.Metadata Metadata { get; } 
+		public System.Boolean IsModify { get; } 
+		public ITAP.glassCAD.Documents.UserTasks.UserTasksDataSet.UserTasksRow HeaderRow { get; } 
+		public ITAP.glassCAD.Documents.UserTasks.UserTasksDataSet.UserTasksDataTable UserTasks { get; set; } 
+    }
+}
 namespace ITAP.glassCAD.Documents.ServiceDocuments {
     
     public partial class ServiceDocumentsDataSet : System.Data.DataSet {
@@ -503,6 +888,15 @@ namespace ITAP.glassCAD.Documents.Selling {
 		public ITAP.glassCAD.Documents.Selling.SellingDataSet.SellingOrdersInfoDataTable SellingOrdersInfo { get; set; } 
 		public ITAP.glassCAD.Documents.Selling.SellingDataSet.SellingServicesDataTable SellingServices { get; set; } 
 		public ITAP.glassCAD.Documents.Selling.SellingDataSet.SellingServicesIdentDataTable SellingServicesIdent { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Documents.Payment {
+    
+    public partial class PaymentDataSet : System.Data.DataSet {
+		public ITAP.glassCAD.Data.Metadata Metadata { get; } 
+		public System.Boolean IsModify { get; } 
+		public ITAP.glassCAD.Documents.Payment.PaymentDataSet.PaymentRow HeaderRow { get; } 
+		public ITAP.glassCAD.Documents.Payment.PaymentDataSet.PaymentDataTable Payment { get; set; } 
     }
 }
 namespace ITAP.glassCAD.Documents.Orders {
@@ -795,6 +1189,37 @@ namespace ITAP.glassCAD.Documents.GoodsHouse {
 		public ITAP.glassCAD.Documents.GoodsHouse.GoodsHouseDataSet.GoodsHouseItemsDataTable GoodsHouseItems { get; set; } 
     }
 }
+namespace ITAP.glassCAD.Documents.GlassResize {
+    
+    public partial class GlassResizeDataSet : System.Data.DataSet {
+		public ITAP.glassCAD.Data.Metadata Metadata { get; } 
+		public System.Boolean IsModify { get; } 
+		public ITAP.glassCAD.Documents.GlassResize.GlassResizeDataSet.GlassResizeRow HeaderRow { get; } 
+		public ITAP.glassCAD.Documents.GlassResize.GlassResizeDataSet.GlassResizeDataTable GlassResize { get; set; } 
+		public ITAP.glassCAD.Documents.GlassResize.GlassResizeDataSet.GlassResizeDesitationDataTable GlassResizeDesitation { get; set; } 
+		public ITAP.glassCAD.Documents.GlassResize.GlassResizeDataSet.GlassResizeSourceDataTable GlassResizeSource { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Documents.GlassPrihod {
+    
+    public partial class GlassPrihodDataSet : System.Data.DataSet {
+		public ITAP.glassCAD.Data.Metadata Metadata { get; } 
+		public System.Boolean IsModify { get; } 
+		public ITAP.glassCAD.Documents.GlassPrihod.GlassPrihodDataSet.GlassPrihodRow HeaderRow { get; } 
+		public ITAP.glassCAD.Documents.GlassPrihod.GlassPrihodDataSet.GlassPrihodDataTable GlassPrihod { get; set; } 
+		public ITAP.glassCAD.Documents.GlassPrihod.GlassPrihodDataSet.GlassPrihodItemsDataTable GlassPrihodItems { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Documents.GlassMovement {
+    
+    public partial class GlassMovementDataSet : System.Data.DataSet {
+		public ITAP.glassCAD.Data.Metadata Metadata { get; } 
+		public System.Boolean IsModify { get; } 
+		public ITAP.glassCAD.Documents.GlassMovement.GlassMovementDataSet.GlassMovementRow HeaderRow { get; } 
+		public ITAP.glassCAD.Documents.GlassMovement.GlassMovementDataSet.GlassMovementDataTable GlassMovement { get; set; } 
+		public ITAP.glassCAD.Documents.GlassMovement.GlassMovementDataSet.GlassMovementItemsDataTable GlassMovementItems { get; set; } 
+    }
+}
 namespace ITAP.glassCAD.Documents.GlassHouse {
     
     public partial class GlassHouseDataSet : System.Data.DataSet {
@@ -802,8 +1227,6 @@ namespace ITAP.glassCAD.Documents.GlassHouse {
 		public System.Boolean IsModify { get; } 
 		public ITAP.glassCAD.Documents.GlassHouse.GlassHouseDataSet.GlassHouseRow HeaderRow { get; } 
 		public ITAP.glassCAD.Documents.GlassHouse.GlassHouseDataSet.GlassHouseDataTable GlassHouse { get; set; } 
-		public ITAP.glassCAD.Documents.GlassHouse.GlassHouseDataSet.GlassPrihodDataTable GlassPrihod { get; set; } 
-		public ITAP.glassCAD.Documents.GlassHouse.GlassHouseDataSet.GlassPrihodItemsDataTable GlassPrihodItems { get; set; } 
     }
 }
 namespace ITAP.glassCAD.Documents.FinishedStore {
@@ -890,6 +1313,14 @@ namespace ITAP.glassCAD.Dictionary.WorkflowUserSettings {
 		public ITAP.glassCAD.Data.Metadata Metadata { get; } 
 		public System.Boolean IsModify { get; } 
 		public ITAP.glassCAD.Dictionary.WorkflowUserSettings.WorkflowUserSettingsDataSet.WorkflowUserSettingsDataTable WorkflowUserSettings { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkflowExcelForms {
+    
+    public partial class WorkflowExcelFormsDataSet : System.Data.DataSet {
+		public ITAP.glassCAD.Data.Metadata Metadata { get; } 
+		public System.Boolean IsModify { get; } 
+		public ITAP.glassCAD.Dictionary.WorkflowExcelForms.WorkflowExcelFormsDataSet.WorkflowExcelFormsDataTable WorkflowExcelForms { get; set; } 
     }
 }
 namespace ITAP.glassCAD.Dictionary.WorkFlowDocumentTemplate {
@@ -997,14 +1428,7 @@ namespace ITAP.glassCAD.Dictionary.PeopleRole {
 		public ITAP.glassCAD.Data.Metadata Metadata { get; } 
 		public System.Boolean IsModify { get; } 
 		public ITAP.glassCAD.Dictionary.PeopleRole.PeopleRoleDataSet.PeopleRoleDataTable PeopleRole { get; set; } 
-    }
-}
-namespace ITAP.glassCAD.Dictionary.Payment {
-    
-    public partial class PaymentDataSet : System.Data.DataSet {
-		public ITAP.glassCAD.Data.Metadata Metadata { get; } 
-		public System.Boolean IsModify { get; } 
-		public ITAP.glassCAD.Dictionary.Payment.PaymentDataSet.PaymentDataTable Payment { get; set; } 
+		public System.Boolean SyncWithUserSettingsIsEnabled { get; } 
     }
 }
 namespace ITAP.glassCAD.Dictionary.PaymentType {
@@ -1086,6 +1510,14 @@ namespace ITAP.glassCAD.Dictionary.GoodParties {
 		public ITAP.glassCAD.Data.Metadata Metadata { get; } 
 		public System.Boolean IsModify { get; } 
 		public ITAP.glassCAD.Dictionary.GoodParties.GoodPartiesDataSet.GoodPartiesDataTable GoodParties { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Dictionary.GlassStorehouse {
+    
+    public partial class GlassStorehouseDataSet : System.Data.DataSet {
+		public ITAP.glassCAD.Data.Metadata Metadata { get; } 
+		public System.Boolean IsModify { get; } 
+		public ITAP.glassCAD.Dictionary.GlassStorehouse.GlassStorehouseDataSet.GlassStorehouseDataTable GlassStorehouse { get; set; } 
     }
 }
 namespace ITAP.glassCAD.Dictionary.Equipment {
@@ -1195,6 +1627,20 @@ namespace ITAP.glassCAD.Dictionary.Attributes {
 		public ITAP.glassCAD.Dictionary.Attributes.AttributesDataSet.AttributesDataTable Attributes { get; set; } 
     }
 }
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Components {
+    [System.AttributeUsageAttribute((System.AttributeTargets)4, AllowMultiple = false)]
+    public partial class WorkflowTemplateActivityAttribute : System.Attribute {
+		public System.String Category { get; set; } 
+		public System.String ToolBoxName { get; set; } 
+		public System.Boolean IsVerify { get; set; } 
+		public System.Boolean IsWebAccess { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Designers {
+    
+    public partial class EmptyActivityDesigner {
+    }
+}
 namespace ITAP.glassCAD.Dictionary.WorkFlow.Execution {
     
     public partial class Context {
@@ -1209,6 +1655,19 @@ namespace ITAP.glassCAD.Dictionary.WorkFlow.Execution {
     
     public partial class TerminateException : System.Exception {
 		public System.Exception Reason { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Execution {
+    
+    public partial class InArg {
+		public System.String Name { get; set; } 
+		public System.String Type { get; set; } 
+		public System.Object Value { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Execution {
+    
+    public abstract partial class Prepare {
     }
 }
 namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities {
@@ -1244,6 +1703,11 @@ namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities {
 namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities {
     
     public partial class InterfacePreset : System.Collections.Generic.List<ITAP.glassCAD.Dictionary.WorkFlow.Activities.InterfacePresetItem> {
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.User {
+    
+    public partial class Helper {
     }
 }
 namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Input {
@@ -1324,6 +1788,10 @@ namespace ITAP.glassCAD.Data {
 		[Newtonsoft.Json.JsonIgnoreAttribute()]
 		public ITAP.glassCAD.Dictionary.Equipment.EquipmentDataSet.EquipmentDataTable EquipmentDataTable { get; } 
 		[Newtonsoft.Json.JsonIgnoreAttribute()]
+		public ITAP.glassCAD.Dictionary.GlassStorehouse.GlassStorehouseDataSet GlassStorehouseDataSet { get; } 
+		[Newtonsoft.Json.JsonIgnoreAttribute()]
+		public ITAP.glassCAD.Dictionary.GlassStorehouse.GlassStorehouseDataSet.GlassStorehouseDataTable GlassStorehouseDataTable { get; } 
+		[Newtonsoft.Json.JsonIgnoreAttribute()]
 		public ITAP.glassCAD.Dictionary.GoodParties.GoodPartiesDataSet GoodPartiesDataSet { get; } 
 		[Newtonsoft.Json.JsonIgnoreAttribute()]
 		public ITAP.glassCAD.Dictionary.GoodParties.GoodPartiesDataSet.GoodPartiesDataTable GoodPartiesDataTable { get; } 
@@ -1373,10 +1841,6 @@ namespace ITAP.glassCAD.Data {
 		public ITAP.glassCAD.Dictionary.PaymentType.PaymentTypeDataSet PaymentTypeDataSet { get; } 
 		[Newtonsoft.Json.JsonIgnoreAttribute()]
 		public ITAP.glassCAD.Dictionary.PaymentType.PaymentTypeDataSet.PaymentTypeDataTable PaymentTypeDataTable { get; } 
-		[Newtonsoft.Json.JsonIgnoreAttribute()]
-		public ITAP.glassCAD.Dictionary.Payment.PaymentDataSet PaymentDataSet { get; } 
-		[Newtonsoft.Json.JsonIgnoreAttribute()]
-		public ITAP.glassCAD.Dictionary.Payment.PaymentDataSet.PaymentDataTable PaymentDataTable { get; } 
 		[Newtonsoft.Json.JsonIgnoreAttribute()]
 		public ITAP.glassCAD.Dictionary.PeopleRole.PeopleRoleDataSet PeopleRoleDataSet { get; } 
 		[Newtonsoft.Json.JsonIgnoreAttribute()]
@@ -1441,6 +1905,10 @@ namespace ITAP.glassCAD.Data {
 		public ITAP.glassCAD.Dictionary.WorkFlowDocumentTemplate.WorkFlowDocumentTemplateDataSet WorkFlowDocumentTemplateDataSet { get; } 
 		[Newtonsoft.Json.JsonIgnoreAttribute()]
 		public ITAP.glassCAD.Dictionary.WorkFlowDocumentTemplate.WorkFlowDocumentTemplateDataSet.WorkFlowDocumentTemplateDataTable WorkFlowDocumentTemplateDataTable { get; } 
+		[Newtonsoft.Json.JsonIgnoreAttribute()]
+		public ITAP.glassCAD.Dictionary.WorkflowExcelForms.WorkflowExcelFormsDataSet WorkflowExcelFormsDataSet { get; } 
+		[Newtonsoft.Json.JsonIgnoreAttribute()]
+		public ITAP.glassCAD.Dictionary.WorkflowExcelForms.WorkflowExcelFormsDataSet.WorkflowExcelFormsDataTable WorkflowExcelFormsDataTable { get; } 
 		[Newtonsoft.Json.JsonIgnoreAttribute()]
 		public ITAP.glassCAD.Dictionary.WorkflowUserSettings.WorkflowUserSettingsDataSet WorkflowUserSettingsDataSet { get; } 
 		[Newtonsoft.Json.JsonIgnoreAttribute()]
@@ -1655,13 +2123,14 @@ namespace ITAP.glassCAD.Analytic {
 }
 namespace ITAP.glassCAD.Analytic {
     
-    public partial class RegistrHalfProductionCreated : ITAP.glassCAD.Analytic.AnalitycLog<System.Int32[]> {
-		public System.Int32 ActionId { get; } 
+    public partial class WorkOutProcessingDates {
+		public System.DateTime StartDate { get; set; } 
+		public System.DateTime EndDate { get; set; } 
     }
 }
 namespace ITAP.glassCAD.Analytic {
     
-    public partial class RegistrHalfProductionRemoved : ITAP.glassCAD.Analytic.AnalitycLog<System.Int32[]> {
+    public partial class WorkOutProccessing : ITAP.glassCAD.Analytic.AnalitycLog<ITAP.glassCAD.Analytic.WorkOutProcessingDates> {
 		public System.Int32 ActionId { get; } 
     }
 }
@@ -1692,6 +2161,12 @@ namespace ITAP.glassCAD.Analytic {
 namespace ITAP.glassCAD.Analytic {
     
     public partial class Selling : ITAP.glassCAD.Analytic.AnalitycLog<System.Int32[]> {
+		public System.Int32 ActionId { get; } 
+    }
+}
+namespace ITAP.glassCAD.Analytic {
+    
+    public partial class PlanSnapshot : ITAP.glassCAD.Analytic.AnalitycLog<System.DateTime> {
 		public System.Int32 ActionId { get; } 
     }
 }
@@ -3000,8 +3475,6 @@ namespace glassPeople.ActivityLibrary.glassCAD.Planing.Packing {
 		[System.ComponentModel.DataAnnotations.Schema.NotMappedAttribute()]
 		public glassPeople.ActivityLibrary.glassCAD.Planing.Model.Capacity.CapacitySettings CapacitySettings { get; set; } 
 		[System.ComponentModel.DataAnnotations.Schema.NotMappedAttribute()]
-		public glassPeople.ActivityLibrary.glassCAD.Planing.Model.Capacity.CapacityType CapacityType { get; set; } 
-		[System.ComponentModel.DataAnnotations.Schema.NotMappedAttribute()]
 		public System.Collections.Generic.IEnumerable<glassPeople.ActivityLibrary.glassCAD.Planing.Packing.Item> PackingItems { get; } 
 		[System.ComponentModel.DataAnnotations.Schema.NotMappedAttribute()]
 		public System.Collections.Generic.IEnumerable<glassPeople.ActivityLibrary.glassCAD.Planing.Packing.Pack> Packs { get; } 
@@ -3587,6 +4060,7 @@ namespace glassPeople.ActivityLibrary.glassCAD.Planing.Deliver {
 		public System.Boolean HasValue { get; } 
 		public System.Boolean IsParentValid { get; } 
 		public System.Boolean IsChildValid { get; } 
+		public System.Boolean StrongRelationMode { get; set; } 
     }
 }
 namespace glassPeople.ActivityLibrary.glassCAD.Planing.Deliver {
@@ -3671,6 +4145,7 @@ namespace glassPeople.ActivityLibrary.glassCAD.Planing.Activity.Actualisation {
 		public System.Collections.Generic.IEnumerable<System.ValueTuple<glassPeople.ActivityLibrary.glassCAD.Planing.Model.GroupCode, glassPeople.ActivityLibrary.glassCAD.Planing.Model.GroupCode>> ItemRelations { get; set; } 
 		public System.Collections.Generic.IEnumerable<glassPeople.ActivityLibrary.glassCAD.Planing.Deliver.CalendarMovementDuration> CalendarMovementDurations { get; set; } 
 		public System.Nullable<System.DateTime> ManualDateDeliver { get; set; } 
+		public System.Boolean StrongRelationMode { get; set; } 
     }
 }
 namespace glassPeople.ActivityLibrary.Core {
@@ -3772,6 +4247,97 @@ namespace ITAP.glassCAD.Production {
     }
     }
 }
+namespace ITAP.glassCAD.Glass.ViewModel {
+    public partial class TreeViewModel {
+    
+    public partial class GlassStorehouseNode {
+		public System.Int32 IDGlassStorehouse { get; set; } 
+		public System.String Name { get; set; } 
+		public System.Int32 CellCount { get; set; } 
+		public System.Boolean IsExpanded { get; set; } 
+		public System.Collections.Generic.IReadOnlyList<ITAP.glassCAD.Glass.ViewModel.TreeViewModel.CellNode> Cells { get; set; } 
+    }
+    }
+}
+namespace ITAP.glassCAD.Glass.ViewModel {
+    public partial class TreeViewModel {
+    
+    public partial class CellNode {
+		public System.Int32 Cell { get; set; } 
+		public System.Int32 PackageCount { get; set; } 
+		public System.Boolean IsExpanded { get; set; } 
+		public System.Collections.Generic.IReadOnlyList<ITAP.glassCAD.Glass.ViewModel.TreeViewModel.GlassPackageNode> Packages { get; set; } 
+    }
+    }
+}
+namespace ITAP.glassCAD.Glass.ViewModel {
+    public partial class TreeViewModel {
+    
+    public partial class GlassPackageNode {
+		public System.Int32 IDGlassPackage { get; set; } 
+		public System.String Name { get; set; } 
+		public System.String GlassManufactureName { get; set; } 
+		public System.Int32 GlassCount { get; set; } 
+		public System.Boolean IsExpanded { get; set; } 
+		public System.Collections.Generic.IReadOnlyList<ITAP.glassCAD.Glass.ViewModel.TreeViewModel.RegistrGlassNode> GlassItems { get; set; } 
+    }
+    }
+}
+namespace ITAP.glassCAD.Glass.ViewModel {
+    public partial class TreeViewModel {
+    
+    public partial class RegistrGlassNode {
+		public System.Int32 IDRegistr_Glass { get; set; } 
+		public System.Int32 IDGood { get; set; } 
+		public System.String GoodName { get; set; } 
+		public System.Int32 IDGlass { get; set; } 
+		public System.DateTime DtReg { get; set; } 
+		public System.Nullable<System.DateTime> ProductionDate { get; set; } 
+		public System.String GoodPartiesName { get; set; } 
+		public System.Nullable<System.Int32> ParentGlassIDGlass { get; set; } 
+		public System.Int32 Width { get; set; } 
+		public System.Int32 Height { get; set; } 
+		public System.Boolean IsReserved { get; set; } 
+		public System.Boolean IsVirtual { get; set; } 
+		public System.Decimal Square { get; set; } 
+		public System.Decimal Weight { get; set; } 
+    }
+    }
+}
+namespace ITAP.glassCAD.Glass.ViewModel {
+    public partial class TreeViewModel {
+    
+    public partial class StorehouseFilterOption {
+		public System.Int32 IDGlassStorehouse { get; set; } 
+		public System.String Name { get; set; } 
+    }
+    }
+}
+namespace ITAP.glassCAD.Glass.ViewModel {
+    public partial class TreeViewModel {
+    
+    public partial class GoodFilterOption {
+		public System.Int32 IDGood { get; set; } 
+		public System.String Name { get; set; } 
+    }
+    }
+}
+namespace ITAP.glassCAD.Glass.ViewModel {
+    public partial class TreeViewModel {
+    
+    public partial class GoodPartiesFilterOption {
+		public System.String Name { get; set; } 
+    }
+    }
+}
+namespace ITAP.glassCAD.Glass.ViewModel {
+    public partial class TreeViewModel {
+    
+    public partial class GlassManufactureFilterOption {
+		public System.String Name { get; set; } 
+    }
+    }
+}
 namespace ITAP.glassCAD.Extensions {
     public partial class IEnumerableExtensions {
     
@@ -3817,7 +4383,7 @@ namespace ITAP.glassCAD.Exchange {
 		public System.Data.DataColumn QueueColumn { get; } 
 		[System.Diagnostics.DebuggerNonUserCodeAttribute()]
 		[System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "18.0.0.0")]
-		[System.ComponentModel.Browsable(false)]
+		[System.ComponentModel.BrowsableAttribute(false)]
 		public System.Int32 Count { get; } 
 		[System.Diagnostics.DebuggerNonUserCodeAttribute()]
 		[System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "18.0.0.0")]
@@ -3844,7 +4410,7 @@ namespace ITAP.glassCAD.Exchange {
 		public System.Data.DataColumn GUIDColumn { get; } 
 		[System.Diagnostics.DebuggerNonUserCodeAttribute()]
 		[System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "18.0.0.0")]
-		[System.ComponentModel.Browsable(false)]
+		[System.ComponentModel.BrowsableAttribute(false)]
 		public System.Int32 Count { get; } 
 		[System.Diagnostics.DebuggerNonUserCodeAttribute()]
 		[System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "18.0.0.0")]
@@ -3868,7 +4434,7 @@ namespace ITAP.glassCAD.Exchange {
 		public System.Data.DataColumn GUIDColumn { get; } 
 		[System.Diagnostics.DebuggerNonUserCodeAttribute()]
 		[System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "18.0.0.0")]
-		[System.ComponentModel.Browsable(false)]
+		[System.ComponentModel.BrowsableAttribute(false)]
 		public System.Int32 Count { get; } 
 		[System.Diagnostics.DebuggerNonUserCodeAttribute()]
 		[System.CodeDom.Compiler.GeneratedCodeAttribute("System.Data.Design.TypedDataSetGenerator", "18.0.0.0")]
@@ -4038,6 +4604,7 @@ namespace ITAP.glassCAD.Exchange.Activity.Export {
 		public System.Int32 Id { get; set; } 
 		public ITAP.glassCAD.Exchange.Activity.Export.ExportFinishedStoreMode Mode { get; set; } 
 		public ITAP.glassCAD.Exchange.Activity.RowState OvverideRowState { get; set; } 
+		public System.Boolean SkipVerify { get; set; } 
     }
     }
 }
@@ -4110,6 +4677,7 @@ namespace ITAP.glassCAD.Exchange.Activity.Export {
 		public System.Int32 Id { get; set; } 
 		public System.Boolean IncludeOperationCost { get; set; } 
 		public ITAP.glassCAD.Exchange.Activity.RowState OvverideRowState { get; set; } 
+		public System.Boolean SkipVerify { get; set; } 
     }
     }
 }
@@ -4139,6 +4707,55 @@ namespace ITAP.glassCAD.Exchange.Activity.Export {
     }
     }
 }
+namespace ITAP.glassCAD.Documents.UserTasks {
+    public partial class UserTasksDataSet {
+    
+    public partial class UserTasksDataTable : System.Data.DataTable {
+		public ITAP.glassCAD.Data.DictionaryMetadata DictionaryMetadata { get; } 
+		public System.Collections.Generic.IEnumerable<ITAP.glassCAD.Documents.UserTasks.UserTasksDataSet.UserTasksRow> DataRows { get; } 
+		public System.Boolean IsModify { get; } 
+    }
+    }
+}
+namespace ITAP.glassCAD.Documents.UserTasks {
+    public partial class UserTasksDataSet {
+    
+    public partial class UserTasksRow : System.Data.DataRow {
+		public ITAP.glassCAD.Documents.UserTasks.UserTasksDataSet.UserTasksDataTable UserTasksDataTable { get; } 
+		public ITAP.glassCAD.Documents.UserTasks.UserTasksDataSet UserTasksDataSet { get; } 
+		public ITAP.glassCAD.Data.DataLayer dataLayer { get; } 
+		public System.Int32 IDUserTask { get; set; } 
+		public System.Nullable<System.Guid> WorkflowTemplateGUID { get; set; } 
+		public System.Int32 Status { get; set; } 
+		public System.Nullable<System.DateTime> CreateDate { get; set; } 
+		public System.Nullable<System.DateTime> EndDate { get; set; } 
+		public ITAP.glassCAD.Dictionary.People.PeopleDataSet.PeopleRow UserFrom { get; } 
+		public System.Nullable<System.Int32> IDUserFrom { get; set; } 
+		public System.Nullable<System.Guid> UserFromGUID { get; set; } 
+		public ITAP.glassCAD.Dictionary.People.PeopleDataSet.PeopleRow UserTo { get; } 
+		public System.Nullable<System.Int32> IDUserTo { get; set; } 
+		public System.Nullable<System.Guid> UserToGUID { get; set; } 
+		public System.String Subject { get; set; } 
+		public System.String DocNumber { get; set; } 
+		public System.String DocCustomer { get; set; } 
+		public System.Nullable<System.Decimal> DocSm { get; set; } 
+		public System.Nullable<System.Int32> IDDoc { get; set; } 
+		public System.Nullable<System.Int32> IDDocOper { get; set; } 
+		public System.String DocOperName { get; set; } 
+		public System.String TextResult { get; set; } 
+		public System.Nullable<System.Int32> CodeResult { get; set; } 
+		public System.Nullable<System.DateTime> CheckDate { get; set; } 
+		public System.Nullable<System.Guid> GUID { get; set; } 
+		public System.String Place { get; set; } 
+		public System.String Data { get; set; } 
+		public System.Nullable<System.Int32> Color { get; set; } 
+		public System.Int32 Type { get; set; } 
+        protected internal UserTasksRow(System.Data.DataRowBuilder builder) : base(builder) {
+            throw new System.NotImplementedException();
+        }
+    }
+    }
+}
 namespace ITAP.glassCAD.Documents.ServiceDocuments {
     public partial class ServiceDocumentsDataSet {
     
@@ -4155,9 +4772,11 @@ namespace ITAP.glassCAD.Documents.ServiceDocuments {
     public partial class ServiceDocumentItemsRow : System.Data.DataRow {
 		public ITAP.glassCAD.Documents.ServiceDocuments.ServiceDocumentsDataSet.ServiceDocumentItemsDataTable ServiceDocumentItemsDataTable { get; } 
 		public ITAP.glassCAD.Documents.ServiceDocuments.ServiceDocumentsDataSet ServiceDocumentsDataSet { get; } 
+		public ITAP.glassCAD.Data.DataLayer dataLayer { get; } 
 		public System.Int32 IDServiceDocumentItems { get; set; } 
 		public System.Nullable<System.Int32> IDServiceDocuments { get; set; } 
 		public System.Nullable<System.Guid> GUID { get; set; } 
+		public ITAP.glassCAD.Dictionary.Services.ServicesDataSet.ServicesRow Services { get; } 
 		public System.Nullable<System.Int32> IDServices { get; set; } 
 		public System.Nullable<System.Decimal> Price { get; set; } 
 		public System.Nullable<System.Decimal> Qu { get; set; } 
@@ -4194,10 +4813,12 @@ namespace ITAP.glassCAD.Documents.ServiceDocuments {
     public partial class ServiceDocumentsRow : System.Data.DataRow {
 		public ITAP.glassCAD.Documents.ServiceDocuments.ServiceDocumentsDataSet.ServiceDocumentsDataTable ServiceDocumentsDataTable { get; } 
 		public ITAP.glassCAD.Documents.ServiceDocuments.ServiceDocumentsDataSet ServiceDocumentsDataSet { get; } 
+		public ITAP.glassCAD.Data.DataLayer dataLayer { get; } 
 		public System.Int32 IDServiceDocuments { get; set; } 
 		public System.Nullable<System.Guid> GUID { get; set; } 
 		public System.Int32 IDDocOper { get; set; } 
 		public System.String NmDoc { get; set; } 
+		public ITAP.glassCAD.Dictionary.DocOper.DocOperDataSet.DocOperItemsRow DocOperItems { get; } 
 		public System.Nullable<System.Int32> IDDocOperItems { get; set; } 
 		public System.Nullable<System.DateTime> DtDoc { get; set; } 
 		public System.Nullable<System.Decimal> SmDoc { get; set; } 
@@ -4206,11 +4827,16 @@ namespace ITAP.glassCAD.Documents.ServiceDocuments {
 		public System.Nullable<System.Boolean> IsEntry { get; set; } 
 		public System.Nullable<System.Boolean> IsEntryVerify { get; set; } 
 		public System.Nullable<System.Decimal> SmWithoutNDS { get; set; } 
+		public ITAP.glassCAD.Dictionary.Customer.CustomerDataSet.CustomerRow Customer { get; } 
 		public System.Nullable<System.Int32> IDCustomer { get; set; } 
+		public ITAP.glassCAD.Dictionary.Customer.CustomerDataSet.AgreementRow Agreement { get; } 
 		public System.Nullable<System.Int32> IDAgreement { get; set; } 
+		public ITAP.glassCAD.Dictionary.Currency.CurrencyDataSet.CurrencyRow Currency { get; } 
 		public System.Nullable<System.Int32> IDCurrency { get; set; } 
 		public System.Nullable<System.Int32> IDSelling { get; set; } 
+		public ITAP.glassCAD.Dictionary.People.PeopleDataSet.PeopleRow People { get; } 
 		public System.Nullable<System.Int32> IDPeople { get; set; } 
+		public ITAP.glassCAD.Dictionary.Company.CompanyDataSet.CompanyRow Company { get; } 
 		public System.Nullable<System.Int32> IDCompany { get; set; } 
         protected internal ServiceDocumentsRow(System.Data.DataRowBuilder builder) : base(builder) {
             throw new System.NotImplementedException();
@@ -4234,8 +4860,10 @@ namespace ITAP.glassCAD.Documents.Selling {
     public partial class SellingRow : System.Data.DataRow {
 		public ITAP.glassCAD.Documents.Selling.SellingDataSet.SellingDataTable SellingDataTable { get; } 
 		public ITAP.glassCAD.Documents.Selling.SellingDataSet SellingDataSet { get; } 
+		public ITAP.glassCAD.Data.DataLayer dataLayer { get; } 
 		public System.Int32 IDSelling { get; set; } 
 		public System.Nullable<System.Int32> IDDocOper { get; set; } 
+		public ITAP.glassCAD.Dictionary.DocOper.DocOperDataSet.DocOperItemsRow DocOperItems { get; } 
 		public System.Nullable<System.Int32> IDDocOperItems { get; set; } 
 		public System.Nullable<System.Int32> IDPeople { get; set; } 
 		public System.Nullable<System.Int32> IDCompany { get; set; } 
@@ -4290,6 +4918,7 @@ namespace ITAP.glassCAD.Documents.Selling {
     public partial class SellingGoodsRow : System.Data.DataRow {
 		public ITAP.glassCAD.Documents.Selling.SellingDataSet.SellingGoodsDataTable SellingGoodsDataTable { get; } 
 		public ITAP.glassCAD.Documents.Selling.SellingDataSet SellingDataSet { get; } 
+		public ITAP.glassCAD.Data.DataLayer dataLayer { get; } 
 		public System.Int32 IDSellingGoods { get; set; } 
 		public System.Nullable<System.Int32> IDSelling { get; set; } 
 		public System.Nullable<System.Int32> IDSellingItems { get; set; } 
@@ -4328,6 +4957,7 @@ namespace ITAP.glassCAD.Documents.Selling {
     public partial class SellingGoodsIdentRow : System.Data.DataRow {
 		public ITAP.glassCAD.Documents.Selling.SellingDataSet.SellingGoodsIdentDataTable SellingGoodsIdentDataTable { get; } 
 		public ITAP.glassCAD.Documents.Selling.SellingDataSet SellingDataSet { get; } 
+		public ITAP.glassCAD.Data.DataLayer dataLayer { get; } 
 		public System.Int32 IDSellingGoodsIdent { get; set; } 
 		public System.Nullable<System.Int32> IDSellingGoods { get; set; } 
 		public System.Nullable<System.Int32> IDOrder { get; set; } 
@@ -4355,6 +4985,7 @@ namespace ITAP.glassCAD.Documents.Selling {
     public partial class SellingItemsRow : System.Data.DataRow {
 		public ITAP.glassCAD.Documents.Selling.SellingDataSet.SellingItemsDataTable SellingItemsDataTable { get; } 
 		public ITAP.glassCAD.Documents.Selling.SellingDataSet SellingDataSet { get; } 
+		public ITAP.glassCAD.Data.DataLayer dataLayer { get; } 
 		public System.Int32 IDSellingItems { get; set; } 
 		public System.Nullable<System.Int32> IDSelling { get; set; } 
 		public System.Nullable<System.Int32> NumPos { get; set; } 
@@ -4391,6 +5022,7 @@ namespace ITAP.glassCAD.Documents.Selling {
     public partial class SellingItemsIdentRow : System.Data.DataRow {
 		public ITAP.glassCAD.Documents.Selling.SellingDataSet.SellingItemsIdentDataTable SellingItemsIdentDataTable { get; } 
 		public ITAP.glassCAD.Documents.Selling.SellingDataSet SellingDataSet { get; } 
+		public ITAP.glassCAD.Data.DataLayer dataLayer { get; } 
 		public System.Int32 IDSellingItemsIdent { get; set; } 
 		public System.Nullable<System.Int32> IDSellingItems { get; set; } 
 		public System.Nullable<System.Int32> IDOrderItems { get; set; } 
@@ -4422,6 +5054,7 @@ namespace ITAP.glassCAD.Documents.Selling {
     public partial class SellingOrderItemsIdentInfoRow : System.Data.DataRow {
 		public ITAP.glassCAD.Documents.Selling.SellingDataSet.SellingOrderItemsIdentInfoDataTable SellingOrderItemsIdentInfoDataTable { get; } 
 		public ITAP.glassCAD.Documents.Selling.SellingDataSet SellingDataSet { get; } 
+		public ITAP.glassCAD.Data.DataLayer dataLayer { get; } 
 		public System.Int32 IDSellingOrderItemsIdentInfo { get; set; } 
 		public System.Nullable<System.Int32> IDSelling { get; set; } 
 		public System.Nullable<System.Int32> IDOrderItemsIdent { get; set; } 
@@ -4449,6 +5082,7 @@ namespace ITAP.glassCAD.Documents.Selling {
     public partial class SellingOrdersInfoRow : System.Data.DataRow {
 		public ITAP.glassCAD.Documents.Selling.SellingDataSet.SellingOrdersInfoDataTable SellingOrdersInfoDataTable { get; } 
 		public ITAP.glassCAD.Documents.Selling.SellingDataSet SellingDataSet { get; } 
+		public ITAP.glassCAD.Data.DataLayer dataLayer { get; } 
 		public System.Int32 IDSellingOrdersInfo { get; set; } 
 		public System.Nullable<System.Int32> IDSelling { get; set; } 
 		public System.Nullable<System.Int32> IDOrder { get; set; } 
@@ -4476,6 +5110,7 @@ namespace ITAP.glassCAD.Documents.Selling {
     public partial class SellingServicesRow : System.Data.DataRow {
 		public ITAP.glassCAD.Documents.Selling.SellingDataSet.SellingServicesDataTable SellingServicesDataTable { get; } 
 		public ITAP.glassCAD.Documents.Selling.SellingDataSet SellingDataSet { get; } 
+		public ITAP.glassCAD.Data.DataLayer dataLayer { get; } 
 		public System.Int32 IDSellingServices { get; set; } 
 		public System.Nullable<System.Int32> IDSelling { get; set; } 
 		public System.Nullable<System.Int32> IDServices { get; set; } 
@@ -4512,12 +5147,61 @@ namespace ITAP.glassCAD.Documents.Selling {
     public partial class SellingServicesIdentRow : System.Data.DataRow {
 		public ITAP.glassCAD.Documents.Selling.SellingDataSet.SellingServicesIdentDataTable SellingServicesIdentDataTable { get; } 
 		public ITAP.glassCAD.Documents.Selling.SellingDataSet SellingDataSet { get; } 
+		public ITAP.glassCAD.Data.DataLayer dataLayer { get; } 
 		public System.Int32 IDSellingServicesIdent { get; set; } 
 		public System.Nullable<System.Int32> IDSellingServices { get; set; } 
 		public System.Nullable<System.Int32> IDOrder { get; set; } 
 		public System.Nullable<System.Decimal> Qu { get; set; } 
 		public ITAP.glassCAD.Documents.Selling.SellingDataSet.SellingRow Selling { get; } 
         protected internal SellingServicesIdentRow(System.Data.DataRowBuilder builder) : base(builder) {
+            throw new System.NotImplementedException();
+        }
+    }
+    }
+}
+namespace ITAP.glassCAD.Documents.Payment {
+    public partial class PaymentDataSet {
+    
+    public partial class PaymentDataTable : System.Data.DataTable {
+		public ITAP.glassCAD.Data.DictionaryMetadata DictionaryMetadata { get; } 
+		public System.Collections.Generic.IEnumerable<ITAP.glassCAD.Documents.Payment.PaymentDataSet.PaymentRow> DataRows { get; } 
+		public System.Boolean IsModify { get; } 
+    }
+    }
+}
+namespace ITAP.glassCAD.Documents.Payment {
+    public partial class PaymentDataSet {
+    
+    public partial class PaymentRow : System.Data.DataRow {
+		public ITAP.glassCAD.Documents.Payment.PaymentDataSet.PaymentDataTable PaymentDataTable { get; } 
+		public ITAP.glassCAD.Documents.Payment.PaymentDataSet PaymentDataSet { get; } 
+		public ITAP.glassCAD.Data.DataLayer dataLayer { get; } 
+		public System.Int32 IDPayment { get; set; } 
+		public System.Nullable<System.Int32> IDCustomer { get; set; } 
+		public System.Nullable<System.Int32> IDPaymentType { get; set; } 
+		public System.Int32 IDPeople { get; set; } 
+		public System.Int32 IDDocOper { get; set; } 
+		public System.Nullable<System.Int32> IDOrder { get; set; } 
+		public System.Nullable<System.DateTime> Dtdoc { get; set; } 
+		public System.String Nmdoc { get; set; } 
+		public System.Nullable<System.Decimal> Smdoc { get; set; } 
+		public System.String Comment { get; set; } 
+		public System.Nullable<System.Int32> IDCurrency { get; set; } 
+		public System.Nullable<System.Decimal> CurrencyRate { get; set; } 
+		public System.Nullable<System.Int32> IDPaymentOperationComment { get; set; } 
+		public System.Nullable<System.Guid> GUID { get; set; } 
+		public System.Nullable<System.Int32> IDDocOperItems { get; set; } 
+		public System.Nullable<System.Int32> IDCompany { get; set; } 
+		public System.Nullable<System.Boolean> IsEntry { get; set; } 
+		public System.Nullable<System.Int32> IDParentPayment { get; set; } 
+		public System.Nullable<System.Int32> IDAgreement { get; set; } 
+		public System.Nullable<System.Int32> CustomerType { get; set; } 
+		public System.Nullable<System.Int32> IDCustomerBank { get; set; } 
+		public System.Nullable<System.Int32> IDCompanyBank { get; set; } 
+		public System.Nullable<System.Int32> IDPaymentOperationComment1 { get; set; } 
+		public System.Nullable<System.Int32> IDPaymentOperationComment2 { get; set; } 
+		public System.Nullable<System.Boolean> IsEntryVerify { get; set; } 
+        protected internal PaymentRow(System.Data.DataRowBuilder builder) : base(builder) {
             throw new System.NotImplementedException();
         }
     }
@@ -4539,6 +5223,7 @@ namespace ITAP.glassCAD.Documents.Orders {
     public partial class OrderCalculationsRow : System.Data.DataRow {
 		public ITAP.glassCAD.Documents.Orders.OrdersDataSet.OrderCalculationsDataTable OrderCalculationsDataTable { get; } 
 		public ITAP.glassCAD.Documents.Orders.OrdersDataSet OrdersDataSet { get; } 
+		public ITAP.glassCAD.Data.DataLayer dataLayer { get; } 
 		public System.Int32 IDOrderCalculations { get; set; } 
 		public System.Nullable<System.Int32> IDOrder { get; set; } 
 		public System.Nullable<System.Int32> IDParent { get; set; } 
@@ -4573,8 +5258,10 @@ namespace ITAP.glassCAD.Documents.Orders {
     public partial class OrderCalculationVariablesRow : System.Data.DataRow {
 		public ITAP.glassCAD.Documents.Orders.OrdersDataSet.OrderCalculationVariablesDataTable OrderCalculationVariablesDataTable { get; } 
 		public ITAP.glassCAD.Documents.Orders.OrdersDataSet OrdersDataSet { get; } 
+		public ITAP.glassCAD.Data.DataLayer dataLayer { get; } 
 		public System.Int32 IDOrderCalculationVariables { get; set; } 
 		public System.Nullable<System.Int32> IDOrder { get; set; } 
+		public ITAP.glassCAD.Dictionary.CalculationVariables.CalculationVariablesDataSet.CalculationVariablesRow CalculationVariables { get; } 
 		public System.Int32 IDCalculationVariables { get; set; } 
 		public System.Decimal Value { get; set; } 
 		public ITAP.glassCAD.Documents.Orders.OrdersDataSet.OrdersRow Orders { get; } 
@@ -4600,8 +5287,10 @@ namespace ITAP.glassCAD.Documents.Orders {
     public partial class OrderCuttingRow : System.Data.DataRow {
 		public ITAP.glassCAD.Documents.Orders.OrdersDataSet.OrderCuttingDataTable OrderCuttingDataTable { get; } 
 		public ITAP.glassCAD.Documents.Orders.OrdersDataSet OrdersDataSet { get; } 
+		public ITAP.glassCAD.Data.DataLayer dataLayer { get; } 
 		public System.Int32 IDOrderCutting { get; set; } 
 		public System.Nullable<System.Int32> IDOrder { get; set; } 
+		public ITAP.glassCAD.Dictionary.Goods.GoodsDataSet.GoodsRow Good { get; } 
 		public System.Int32 IDGood { get; set; } 
 		public System.Decimal Waste { get; set; } 
 		public System.Decimal WorkWaste { get; set; } 
@@ -4634,11 +5323,15 @@ namespace ITAP.glassCAD.Documents.Orders {
     public partial class OrderGoodsRow : System.Data.DataRow {
 		public ITAP.glassCAD.Documents.Orders.OrdersDataSet.OrderGoodsDataTable OrderGoodsDataTable { get; } 
 		public ITAP.glassCAD.Documents.Orders.OrdersDataSet OrdersDataSet { get; } 
+		public ITAP.glassCAD.Data.DataLayer dataLayer { get; } 
 		public System.Int32 IDOrderGoods { get; set; } 
 		public System.Nullable<System.Int32> IDOrder { get; set; } 
 		public System.Nullable<System.Guid> Guid { get; set; } 
+		public ITAP.glassCAD.Dictionary.Goods.GoodsDataSet.GoodsRow Good { get; } 
 		public System.Int32 IDGood { get; set; } 
+		public ITAP.glassCAD.Dictionary.Measure.MeasureDataSet.MeasureRow Measure { get; } 
 		public System.Int32 IDMeasure { get; set; } 
+		public ITAP.glassCAD.Dictionary.Currency.CurrencyDataSet.CurrencyRow Currency { get; } 
 		public System.Int32 IDCurrency { get; set; } 
 		public System.Decimal Qu { get; set; } 
 		public System.Decimal QuMeasure { get; set; } 
@@ -4649,6 +5342,7 @@ namespace ITAP.glassCAD.Documents.Orders {
 		public System.Decimal Sm { get; set; } 
 		public System.Decimal SmWithoutNDS { get; set; } 
 		public System.Int32 NumPos { get; set; } 
+		public ITAP.glassCAD.Dictionary.Production.ProductionDataSet.ProductionRow Production { get; } 
 		public System.Int32 IDProduction { get; set; } 
 		public System.Decimal InternalPrice { get; set; } 
 		public System.Decimal InternalSm { get; set; } 
@@ -4675,10 +5369,12 @@ namespace ITAP.glassCAD.Documents.Orders {
     public partial class OrderItemsRow : System.Data.DataRow {
 		public ITAP.glassCAD.Documents.Orders.OrdersDataSet.OrderItemsDataTable OrderItemsDataTable { get; } 
 		public ITAP.glassCAD.Documents.Orders.OrdersDataSet OrdersDataSet { get; } 
+		public ITAP.glassCAD.Data.DataLayer dataLayer { get; } 
 		public System.Int32 IDOrderItems { get; set; } 
 		public System.Nullable<System.Int32> IDOrder { get; set; } 
 		public System.Nullable<System.Guid> Guid { get; set; } 
 		public System.Int32 NumPos { get; set; } 
+		public ITAP.glassCAD.Dictionary.Production.ProductionDataSet.ProductionRow Production { get; } 
 		public System.Nullable<System.Int32> IDProduction { get; set; } 
 		public System.Decimal Qu { get; set; } 
 		public System.Decimal Price { get; set; } 
@@ -4738,6 +5434,7 @@ namespace ITAP.glassCAD.Documents.Orders {
     public partial class OrderItemsDetailRow : System.Data.DataRow {
 		public ITAP.glassCAD.Documents.Orders.OrdersDataSet.OrderItemsDetailDataTable OrderItemsDetailDataTable { get; } 
 		public ITAP.glassCAD.Documents.Orders.OrdersDataSet OrdersDataSet { get; } 
+		public ITAP.glassCAD.Data.DataLayer dataLayer { get; } 
 		public System.Int32 IDOrderItemsDetail { get; set; } 
 		public System.Nullable<System.Int32> IDOrder { get; set; } 
 		public System.Nullable<System.Int32> IDGood { get; set; } 
@@ -4776,6 +5473,7 @@ namespace ITAP.glassCAD.Documents.Orders {
     public partial class OrderItemsIdentCanceledRow : System.Data.DataRow {
 		public ITAP.glassCAD.Documents.Orders.OrdersDataSet.OrderItemsIdentCanceledDataTable OrderItemsIdentCanceledDataTable { get; } 
 		public ITAP.glassCAD.Documents.Orders.OrdersDataSet OrdersDataSet { get; } 
+		public ITAP.glassCAD.Data.DataLayer dataLayer { get; } 
 		public System.Int32 IDOrderItemsIdentCanceled { get; set; } 
 		public System.Nullable<System.Int32> IDOrder { get; set; } 
 		public System.Int32 IDOrderItemsIdent { get; set; } 
@@ -4805,6 +5503,7 @@ namespace ITAP.glassCAD.Documents.Orders {
     public partial class OrderItemsIdentRow : System.Data.DataRow {
 		public ITAP.glassCAD.Documents.Orders.OrdersDataSet.OrderItemsIdentDataTable OrderItemsIdentDataTable { get; } 
 		public ITAP.glassCAD.Documents.Orders.OrdersDataSet OrdersDataSet { get; } 
+		public ITAP.glassCAD.Data.DataLayer dataLayer { get; } 
 		public System.Int32 IDOrderItemsIdent { get; set; } 
 		public System.Nullable<System.Int32> IDOrder { get; set; } 
 		public System.Nullable<System.Int32> IDOrderItems { get; set; } 
@@ -4837,6 +5536,7 @@ namespace ITAP.glassCAD.Documents.Orders {
     public partial class OrderItemsProductionModelRow : System.Data.DataRow {
 		public ITAP.glassCAD.Documents.Orders.OrdersDataSet.OrderItemsProductionModelDataTable OrderItemsProductionModelDataTable { get; } 
 		public ITAP.glassCAD.Documents.Orders.OrdersDataSet OrdersDataSet { get; } 
+		public ITAP.glassCAD.Data.DataLayer dataLayer { get; } 
 		public System.Int32 IDOrderItemsProductionModel { get; set; } 
 		public System.Nullable<System.Int32> IDOrder { get; set; } 
 		public System.Int32 IDOrderItems { get; set; } 
@@ -4880,6 +5580,7 @@ namespace ITAP.glassCAD.Documents.Orders {
     public partial class OrderItemsProductionModelGoodRow : System.Data.DataRow {
 		public ITAP.glassCAD.Documents.Orders.OrdersDataSet.OrderItemsProductionModelGoodDataTable OrderItemsProductionModelGoodDataTable { get; } 
 		public ITAP.glassCAD.Documents.Orders.OrdersDataSet OrdersDataSet { get; } 
+		public ITAP.glassCAD.Data.DataLayer dataLayer { get; } 
 		public System.Int32 IDOrderItemsProductionModelGood { get; set; } 
 		public System.Nullable<System.Int32> IDOrder { get; set; } 
 		public System.Int32 IDOrderItemsProductionModel { get; set; } 
@@ -4910,6 +5611,7 @@ namespace ITAP.glassCAD.Documents.Orders {
     public partial class OrderItemsProductionModelHalfProductionRow : System.Data.DataRow {
 		public ITAP.glassCAD.Documents.Orders.OrdersDataSet.OrderItemsProductionModelHalfProductionDataTable OrderItemsProductionModelHalfProductionDataTable { get; } 
 		public ITAP.glassCAD.Documents.Orders.OrdersDataSet OrdersDataSet { get; } 
+		public ITAP.glassCAD.Data.DataLayer dataLayer { get; } 
 		public System.Int32 IDOrderItemsProductionModelHalfProduction { get; set; } 
 		public System.Nullable<System.Int32> IDOrder { get; set; } 
 		public System.Int32 IDOrderItemsProductionModel { get; set; } 
@@ -4941,6 +5643,7 @@ namespace ITAP.glassCAD.Documents.Orders {
     public partial class OrderItemsProductionModelOperationRow : System.Data.DataRow {
 		public ITAP.glassCAD.Documents.Orders.OrdersDataSet.OrderItemsProductionModelOperationDataTable OrderItemsProductionModelOperationDataTable { get; } 
 		public ITAP.glassCAD.Documents.Orders.OrdersDataSet OrdersDataSet { get; } 
+		public ITAP.glassCAD.Data.DataLayer dataLayer { get; } 
 		public System.Int32 IDOrderItemsProductionModelOperation { get; set; } 
 		public System.Nullable<System.Int32> IDOrder { get; set; } 
 		public System.Int32 IDOrderItemsProductionModel { get; set; } 
@@ -4974,10 +5677,12 @@ namespace ITAP.glassCAD.Documents.Orders {
     public partial class OrderItemsProductionModelOperationIdentValueRow : System.Data.DataRow {
 		public ITAP.glassCAD.Documents.Orders.OrdersDataSet.OrderItemsProductionModelOperationIdentValueDataTable OrderItemsProductionModelOperationIdentValueDataTable { get; } 
 		public ITAP.glassCAD.Documents.Orders.OrdersDataSet OrdersDataSet { get; } 
+		public ITAP.glassCAD.Data.DataLayer dataLayer { get; } 
 		public System.Int32 IDOrderItemsProductionModelOperationIdentValue { get; set; } 
 		public System.Nullable<System.Int32> IDOrder { get; set; } 
 		public System.Int32 IDOrderItemsProductionModelOperation { get; set; } 
 		public System.Int32 IDOrderItems { get; set; } 
+		public ITAP.glassCAD.Dictionary.Operation.OperationDataSet.OperationIdentRow OperationIdent { get; } 
 		public System.Int32 IDOperationIdent { get; set; } 
 		public System.String Ident { get; set; } 
 		public System.String GroupName { get; set; } 
@@ -5006,10 +5711,14 @@ namespace ITAP.glassCAD.Documents.Orders {
     public partial class OrderPriceGoodsRow : System.Data.DataRow {
 		public ITAP.glassCAD.Documents.Orders.OrdersDataSet.OrderPriceGoodsDataTable OrderPriceGoodsDataTable { get; } 
 		public ITAP.glassCAD.Documents.Orders.OrdersDataSet OrdersDataSet { get; } 
+		public ITAP.glassCAD.Data.DataLayer dataLayer { get; } 
 		public System.Int32 IDOrderPriceGoods { get; set; } 
 		public System.Nullable<System.Int32> IDOrder { get; set; } 
+		public ITAP.glassCAD.Dictionary.Goods.GoodsDataSet.GoodsRow Good { get; } 
 		public System.Int32 IDGood { get; set; } 
+		public ITAP.glassCAD.Dictionary.GoodParties.GoodPartiesDataSet.GoodPartiesRow GoodParties { get; } 
 		public System.Nullable<System.Int32> IDGoodParties { get; set; } 
+		public ITAP.glassCAD.Dictionary.Currency.CurrencyDataSet.CurrencyRow Currency { get; } 
 		public System.Nullable<System.Int32> IDCurrency { get; set; } 
 		public System.Nullable<System.Decimal> Price { get; set; } 
 		public System.Nullable<System.Decimal> Waste { get; set; } 
@@ -5037,22 +5746,30 @@ namespace ITAP.glassCAD.Documents.Orders {
     public partial class OrdersRow : System.Data.DataRow {
 		public ITAP.glassCAD.Documents.Orders.OrdersDataSet.OrdersDataTable OrdersDataTable { get; } 
 		public ITAP.glassCAD.Documents.Orders.OrdersDataSet OrdersDataSet { get; } 
+		public ITAP.glassCAD.Data.DataLayer dataLayer { get; } 
 		public System.Int32 IDOrder { get; set; } 
 		public System.Nullable<System.Guid> Guid { get; set; } 
 		public System.Int32 IDDocOper { get; set; } 
+		public ITAP.glassCAD.Dictionary.DocOper.DocOperDataSet.DocOperItemsRow DocOperItems { get; } 
 		public System.Int32 IDDocOperItems { get; set; } 
 		public System.String NmDoc { get; set; } 
 		public System.DateTime DtDoc { get; set; } 
 		public System.Nullable<System.DateTime> DtCalculation { get; set; } 
 		public System.String NmDocExt { get; set; } 
+		public ITAP.glassCAD.Dictionary.Customer.CustomerDataSet.CustomerRow Customer { get; } 
 		public System.Nullable<System.Int32> IDCustomer { get; set; } 
+		public ITAP.glassCAD.Dictionary.Customer.CustomerDataSet.AgreementRow Agreement { get; } 
 		public System.Nullable<System.Int32> IDAgreement { get; set; } 
 		public System.Boolean IsDefective { get; set; } 
 		public System.String Comment { get; set; } 
 		public System.String OrderStatus { get; set; } 
+		public ITAP.glassCAD.Dictionary.People.PeopleDataSet.PeopleRow People { get; } 
 		public System.Nullable<System.Int32> IDPeople { get; set; } 
+		public ITAP.glassCAD.Dictionary.PaymentType.PaymentTypeDataSet.PaymentTypeRow PaymentType { get; } 
 		public System.Nullable<System.Int32> IDPaymentType { get; } 
+		public ITAP.glassCAD.Dictionary.Marshrut.MarshrutDataSet.MarshrutRow Marshrut { get; } 
 		public System.Nullable<System.Int32> IDMarshrut { get; set; } 
+		public ITAP.glassCAD.Dictionary.Customer.CustomerDataSet.CustomerContactsRow CustomerContacts { get; } 
 		public System.Nullable<System.Int32> IDCustomerContacts { get; set; } 
 		public System.String Address { get; set; } 
 		public System.Int32 Qu { get; set; } 
@@ -5060,7 +5777,9 @@ namespace ITAP.glassCAD.Documents.Orders {
 		public System.Nullable<System.Decimal> SmOrder { get; set; } 
 		public System.Nullable<System.Decimal> SmWithoutNDS { get; set; } 
 		public System.String OrderInfo { get; set; } 
+		public ITAP.glassCAD.Dictionary.People.PeopleDataSet.PeopleRow Manager { get; } 
 		public System.Nullable<System.Int32> IDManager { get; set; } 
+		public ITAP.glassCAD.Dictionary.Company.CompanyDataSet.CompanyRow Company { get; } 
 		public System.Nullable<System.Int32> IDCompany { get; set; } 
 		public System.Nullable<System.Int32> IDOrderDefective { get; set; } 
 		public System.Nullable<System.Int32> IDOrderLink { get; set; } 
@@ -5086,9 +5805,11 @@ namespace ITAP.glassCAD.Documents.Orders {
     public partial class OrderServicesRow : System.Data.DataRow {
 		public ITAP.glassCAD.Documents.Orders.OrdersDataSet.OrderServicesDataTable OrderServicesDataTable { get; } 
 		public ITAP.glassCAD.Documents.Orders.OrdersDataSet OrdersDataSet { get; } 
+		public ITAP.glassCAD.Data.DataLayer dataLayer { get; } 
 		public System.Int32 IDOrderServices { get; set; } 
 		public System.Nullable<System.Int32> IDOrder { get; set; } 
 		public System.Nullable<System.Guid> Guid { get; set; } 
+		public ITAP.glassCAD.Dictionary.Services.ServicesDataSet.ServicesRow Services { get; } 
 		public System.Int32 IDServices { get; set; } 
 		public System.Decimal Qu { get; set; } 
 		public System.Decimal Price { get; set; } 
@@ -5097,6 +5818,7 @@ namespace ITAP.glassCAD.Documents.Orders {
 		public System.Decimal SmWithoutNDS { get; set; } 
 		public System.Nullable<System.Decimal> PriceManualSet { get; set; } 
 		public System.Nullable<System.Decimal> CorrectPrice { get; set; } 
+		public ITAP.glassCAD.Dictionary.Currency.CurrencyDataSet.CurrencyRow Currency { get; } 
 		public System.Int32 IDCurrency { get; set; } 
 		public System.Decimal InternalPrice { get; set; } 
 		public System.Decimal InternalSm { get; set; } 
@@ -5124,9 +5846,12 @@ namespace ITAP.glassCAD.Documents.Orders {
     public partial class OrderSignRow : System.Data.DataRow {
 		public ITAP.glassCAD.Documents.Orders.OrdersDataSet.OrderSignDataTable OrderSignDataTable { get; } 
 		public ITAP.glassCAD.Documents.Orders.OrdersDataSet OrdersDataSet { get; } 
+		public ITAP.glassCAD.Data.DataLayer dataLayer { get; } 
 		public System.Int32 IDOrderSign { get; set; } 
 		public System.Nullable<System.Int32> IDOrder { get; set; } 
+		public ITAP.glassCAD.Dictionary.Sign.SignDataSet.SignRow Sign { get; } 
 		public System.Int32 IDSign { get; set; } 
+		public ITAP.glassCAD.Dictionary.Sign.SignDataSet.SignValueRow SignValue { get; } 
 		public System.Int32 IDSignValue { get; set; } 
 		public ITAP.glassCAD.Documents.Orders.OrdersDataSet.OrdersRow Orders { get; } 
         protected internal OrderSignRow(System.Data.DataRowBuilder builder) : base(builder) {
@@ -5151,10 +5876,12 @@ namespace ITAP.glassCAD.Documents.GoodsHouse {
     public partial class GoodsHouseRow : System.Data.DataRow {
 		public ITAP.glassCAD.Documents.GoodsHouse.GoodsHouseDataSet.GoodsHouseDataTable GoodsHouseDataTable { get; } 
 		public ITAP.glassCAD.Documents.GoodsHouse.GoodsHouseDataSet GoodsHouseDataSet { get; } 
+		public ITAP.glassCAD.Data.DataLayer dataLayer { get; } 
 		public System.Int32 IDGoodsHouse { get; set; } 
 		public System.Nullable<System.Guid> GUID { get; set; } 
 		public System.Int32 IDDocOper { get; set; } 
 		public System.String NmDoc { get; set; } 
+		public ITAP.glassCAD.Dictionary.DocOper.DocOperDataSet.DocOperItemsRow DocOperItems { get; } 
 		public System.Nullable<System.Int32> IDDocOperItems { get; set; } 
 		public System.Nullable<System.DateTime> DtDoc { get; set; } 
 		public System.String Comment { get; set; } 
@@ -5166,7 +5893,9 @@ namespace ITAP.glassCAD.Documents.GoodsHouse {
 		public System.Nullable<System.Int32> IDStorehouse { get; set; } 
 		public System.Nullable<System.Int32> IDStorehouseTo { get; set; } 
 		public System.Nullable<System.Int32> IDExternalRequest { get; set; } 
+		public ITAP.glassCAD.Dictionary.People.PeopleDataSet.PeopleRow People { get; } 
 		public System.Nullable<System.Int32> IDPeople { get; set; } 
+		public ITAP.glassCAD.Dictionary.Company.CompanyDataSet.CompanyRow Company { get; } 
 		public System.Nullable<System.Int32> IDCompany { get; set; } 
         protected internal GoodsHouseRow(System.Data.DataRowBuilder builder) : base(builder) {
             throw new System.NotImplementedException();
@@ -5190,9 +5919,11 @@ namespace ITAP.glassCAD.Documents.GoodsHouse {
     public partial class GoodsHouseDiractionRow : System.Data.DataRow {
 		public ITAP.glassCAD.Documents.GoodsHouse.GoodsHouseDataSet.GoodsHouseDiractionDataTable GoodsHouseDiractionDataTable { get; } 
 		public ITAP.glassCAD.Documents.GoodsHouse.GoodsHouseDataSet GoodsHouseDataSet { get; } 
+		public ITAP.glassCAD.Data.DataLayer dataLayer { get; } 
 		public System.Int32 IDGoodsHouseDiraction { get; set; } 
 		public System.Nullable<System.Int32> IDGoodsHouse { get; set; } 
 		public System.Nullable<System.Guid> GUID { get; set; } 
+		public ITAP.glassCAD.Dictionary.Diraction.DiractionDataSet.DiractionRow Diraction { get; } 
 		public System.Int32 IDDiraction { get; set; } 
 		public System.DateTime PlanDate { get; set; } 
 		public System.DateTime FactDate { get; set; } 
@@ -5219,10 +5950,12 @@ namespace ITAP.glassCAD.Documents.GoodsHouse {
     public partial class GoodsHouseItemsRow : System.Data.DataRow {
 		public ITAP.glassCAD.Documents.GoodsHouse.GoodsHouseDataSet.GoodsHouseItemsDataTable GoodsHouseItemsDataTable { get; } 
 		public ITAP.glassCAD.Documents.GoodsHouse.GoodsHouseDataSet GoodsHouseDataSet { get; } 
+		public ITAP.glassCAD.Data.DataLayer dataLayer { get; } 
 		public System.Int32 IDGoodsHouseItems { get; set; } 
 		public System.Nullable<System.Int32> IDGoodsHouse { get; set; } 
 		public System.Nullable<System.Guid> GUID { get; set; } 
 		public System.Nullable<System.Int32> NumPos { get; set; } 
+		public ITAP.glassCAD.Dictionary.Goods.GoodsDataSet.GoodsRow Good { get; } 
 		public System.Nullable<System.Int32> IDGood { get; set; } 
 		public System.Nullable<System.Decimal> Qu { get; set; } 
 		public System.Nullable<System.Decimal> Price { get; set; } 
@@ -5244,6 +5977,7 @@ namespace ITAP.glassCAD.Documents.GoodsHouse {
 		public System.String Comment15 { get; set; } 
 		public System.Nullable<System.Decimal> PriceWithoutNDS { get; set; } 
 		public System.Nullable<System.Decimal> SmWithoutNDS { get; set; } 
+		public ITAP.glassCAD.Dictionary.Measure.MeasureDataSet.MeasureRow Measure { get; } 
 		public System.Nullable<System.Int32> IDMeasure { get; set; } 
 		public System.Nullable<System.Decimal> QuMeasure { get; set; } 
 		public System.Nullable<System.Decimal> CorrectPrice { get; set; } 
@@ -5251,6 +5985,218 @@ namespace ITAP.glassCAD.Documents.GoodsHouse {
 		public System.Nullable<System.Decimal> CorrectPriceWithoutNDS { get; set; } 
 		public ITAP.glassCAD.Documents.GoodsHouse.GoodsHouseDataSet.GoodsHouseRow GoodsHouse { get; } 
         protected internal GoodsHouseItemsRow(System.Data.DataRowBuilder builder) : base(builder) {
+            throw new System.NotImplementedException();
+        }
+    }
+    }
+}
+namespace ITAP.glassCAD.Documents.GlassResize {
+    public partial class GlassResizeDataSet {
+    
+    public partial class GlassResizeDataTable : System.Data.DataTable {
+		public ITAP.glassCAD.Data.DictionaryMetadata DictionaryMetadata { get; } 
+		public System.Collections.Generic.IEnumerable<ITAP.glassCAD.Documents.GlassResize.GlassResizeDataSet.GlassResizeRow> DataRows { get; } 
+		public System.Boolean IsModify { get; } 
+    }
+    }
+}
+namespace ITAP.glassCAD.Documents.GlassResize {
+    public partial class GlassResizeDataSet {
+    
+    public partial class GlassResizeRow : System.Data.DataRow {
+		public ITAP.glassCAD.Documents.GlassResize.GlassResizeDataSet.GlassResizeDataTable GlassResizeDataTable { get; } 
+		public ITAP.glassCAD.Documents.GlassResize.GlassResizeDataSet GlassResizeDataSet { get; } 
+		public ITAP.glassCAD.Data.DataLayer dataLayer { get; } 
+		public System.Int32 IDGlassResize { get; set; } 
+        protected internal GlassResizeRow(System.Data.DataRowBuilder builder) : base(builder) {
+            throw new System.NotImplementedException();
+        }
+    }
+    }
+}
+namespace ITAP.glassCAD.Documents.GlassResize {
+    public partial class GlassResizeDataSet {
+    
+    public partial class GlassResizeDesitationDataTable : System.Data.DataTable {
+		public ITAP.glassCAD.Data.DictionaryMetadata DictionaryMetadata { get; } 
+		public System.Collections.Generic.IEnumerable<ITAP.glassCAD.Documents.GlassResize.GlassResizeDataSet.GlassResizeDesitationRow> DataRows { get; } 
+		public System.Boolean IsModify { get; } 
+    }
+    }
+}
+namespace ITAP.glassCAD.Documents.GlassResize {
+    public partial class GlassResizeDataSet {
+    
+    public partial class GlassResizeDesitationRow : System.Data.DataRow {
+		public ITAP.glassCAD.Documents.GlassResize.GlassResizeDataSet.GlassResizeDesitationDataTable GlassResizeDesitationDataTable { get; } 
+		public ITAP.glassCAD.Documents.GlassResize.GlassResizeDataSet GlassResizeDataSet { get; } 
+		public ITAP.glassCAD.Data.DataLayer dataLayer { get; } 
+		public System.Int32 IDGlassResizeDesitation { get; set; } 
+		public System.Nullable<System.Int32> IDGlassResize { get; set; } 
+		public System.Nullable<System.Int32> IDGlassResizeSource { get; set; } 
+		public System.Nullable<System.Int32> IDGlassStorehouseIn { get; set; } 
+		public System.Nullable<System.Int32> CellIn { get; set; } 
+		public System.Nullable<System.Int32> Width { get; set; } 
+		public System.Nullable<System.Int32> Height { get; set; } 
+		public System.Nullable<System.Int32> IDGlassPackageIn { get; set; } 
+		public ITAP.glassCAD.Documents.GlassResize.GlassResizeDataSet.GlassResizeRow GlassResize { get; } 
+        protected internal GlassResizeDesitationRow(System.Data.DataRowBuilder builder) : base(builder) {
+            throw new System.NotImplementedException();
+        }
+    }
+    }
+}
+namespace ITAP.glassCAD.Documents.GlassResize {
+    public partial class GlassResizeDataSet {
+    
+    public partial class GlassResizeSourceDataTable : System.Data.DataTable {
+		public ITAP.glassCAD.Data.DictionaryMetadata DictionaryMetadata { get; } 
+		public System.Collections.Generic.IEnumerable<ITAP.glassCAD.Documents.GlassResize.GlassResizeDataSet.GlassResizeSourceRow> DataRows { get; } 
+		public System.Boolean IsModify { get; } 
+    }
+    }
+}
+namespace ITAP.glassCAD.Documents.GlassResize {
+    public partial class GlassResizeDataSet {
+    
+    public partial class GlassResizeSourceRow : System.Data.DataRow {
+		public ITAP.glassCAD.Documents.GlassResize.GlassResizeDataSet.GlassResizeSourceDataTable GlassResizeSourceDataTable { get; } 
+		public ITAP.glassCAD.Documents.GlassResize.GlassResizeDataSet GlassResizeDataSet { get; } 
+		public ITAP.glassCAD.Data.DataLayer dataLayer { get; } 
+		public System.Int32 IDGlassResizeSource { get; set; } 
+		public System.Nullable<System.Int32> IDGlassResize { get; set; } 
+		public System.Nullable<System.Int32> IDGlass { get; set; } 
+		public System.String Description { get; set; } 
+		public System.Nullable<System.Int32> IDGood { get; set; } 
+		public System.Nullable<System.Int32> IDRegistr_Glass { get; set; } 
+		public System.Nullable<System.Int32> IDGlassPackageOut { get; set; } 
+		public ITAP.glassCAD.Documents.GlassResize.GlassResizeDataSet.GlassResizeRow GlassResize { get; } 
+        protected internal GlassResizeSourceRow(System.Data.DataRowBuilder builder) : base(builder) {
+            throw new System.NotImplementedException();
+        }
+    }
+    }
+}
+namespace ITAP.glassCAD.Documents.GlassPrihod {
+    public partial class GlassPrihodDataSet {
+    
+    public partial class GlassPrihodDataTable : System.Data.DataTable {
+		public ITAP.glassCAD.Data.DictionaryMetadata DictionaryMetadata { get; } 
+		public System.Collections.Generic.IEnumerable<ITAP.glassCAD.Documents.GlassPrihod.GlassPrihodDataSet.GlassPrihodRow> DataRows { get; } 
+		public System.Boolean IsModify { get; } 
+    }
+    }
+}
+namespace ITAP.glassCAD.Documents.GlassPrihod {
+    public partial class GlassPrihodDataSet {
+    
+    public partial class GlassPrihodRow : System.Data.DataRow {
+		public ITAP.glassCAD.Documents.GlassPrihod.GlassPrihodDataSet.GlassPrihodDataTable GlassPrihodDataTable { get; } 
+		public ITAP.glassCAD.Documents.GlassPrihod.GlassPrihodDataSet GlassPrihodDataSet { get; } 
+		public ITAP.glassCAD.Data.DataLayer dataLayer { get; } 
+		public System.Int32 IDGlassPrihod { get; set; } 
+		public System.Nullable<System.Int32> IDCustomer { get; set; } 
+		public System.Nullable<System.Int32> IDTransport { get; set; } 
+		public System.Nullable<System.DateTime> FactDateTime { get; set; } 
+		public System.Nullable<System.Int32> IDGoodParties { get; set; } 
+		public System.Nullable<System.Int32> IDExternalRequest { get; set; } 
+        protected internal GlassPrihodRow(System.Data.DataRowBuilder builder) : base(builder) {
+            throw new System.NotImplementedException();
+        }
+    }
+    }
+}
+namespace ITAP.glassCAD.Documents.GlassPrihod {
+    public partial class GlassPrihodDataSet {
+    
+    public partial class GlassPrihodItemsDataTable : System.Data.DataTable {
+		public ITAP.glassCAD.Data.DictionaryMetadata DictionaryMetadata { get; } 
+		public System.Collections.Generic.IEnumerable<ITAP.glassCAD.Documents.GlassPrihod.GlassPrihodDataSet.GlassPrihodItemsRow> DataRows { get; } 
+		public System.Boolean IsModify { get; } 
+    }
+    }
+}
+namespace ITAP.glassCAD.Documents.GlassPrihod {
+    public partial class GlassPrihodDataSet {
+    
+    public partial class GlassPrihodItemsRow : System.Data.DataRow {
+		public ITAP.glassCAD.Documents.GlassPrihod.GlassPrihodDataSet.GlassPrihodItemsDataTable GlassPrihodItemsDataTable { get; } 
+		public ITAP.glassCAD.Documents.GlassPrihod.GlassPrihodDataSet GlassPrihodDataSet { get; } 
+		public ITAP.glassCAD.Data.DataLayer dataLayer { get; } 
+		public System.Int32 IDGlassPrihodItems { get; set; } 
+		public System.Nullable<System.Int32> IDGlassPrihod { get; set; } 
+		public System.Nullable<System.Guid> GUID { get; set; } 
+		public System.Nullable<System.Int32> IDGood { get; set; } 
+		public System.Nullable<System.Int32> IDGlassStrorehouse { get; set; } 
+		public System.Nullable<System.Int32> Cell { get; set; } 
+		public System.Nullable<System.Int32> Height { get; set; } 
+		public System.Nullable<System.Int32> Width { get; set; } 
+		public System.Nullable<System.Int32> Qu { get; set; } 
+		public System.Nullable<System.DateTime> ProductionDate { get; set; } 
+		public System.Nullable<System.Int32> NumPos { get; set; } 
+		public System.String Comment { get; set; } 
+		public System.Nullable<System.Int32> IDGlassPackage { get; set; } 
+		public ITAP.glassCAD.Documents.GlassPrihod.GlassPrihodDataSet.GlassPrihodRow GlassPrihod { get; } 
+        protected internal GlassPrihodItemsRow(System.Data.DataRowBuilder builder) : base(builder) {
+            throw new System.NotImplementedException();
+        }
+    }
+    }
+}
+namespace ITAP.glassCAD.Documents.GlassMovement {
+    public partial class GlassMovementDataSet {
+    
+    public partial class GlassMovementDataTable : System.Data.DataTable {
+		public ITAP.glassCAD.Data.DictionaryMetadata DictionaryMetadata { get; } 
+		public System.Collections.Generic.IEnumerable<ITAP.glassCAD.Documents.GlassMovement.GlassMovementDataSet.GlassMovementRow> DataRows { get; } 
+		public System.Boolean IsModify { get; } 
+    }
+    }
+}
+namespace ITAP.glassCAD.Documents.GlassMovement {
+    public partial class GlassMovementDataSet {
+    
+    public partial class GlassMovementRow : System.Data.DataRow {
+		public ITAP.glassCAD.Documents.GlassMovement.GlassMovementDataSet.GlassMovementDataTable GlassMovementDataTable { get; } 
+		public ITAP.glassCAD.Documents.GlassMovement.GlassMovementDataSet GlassMovementDataSet { get; } 
+		public ITAP.glassCAD.Data.DataLayer dataLayer { get; } 
+		public System.Int32 IDGlassMovement { get; set; } 
+        protected internal GlassMovementRow(System.Data.DataRowBuilder builder) : base(builder) {
+            throw new System.NotImplementedException();
+        }
+    }
+    }
+}
+namespace ITAP.glassCAD.Documents.GlassMovement {
+    public partial class GlassMovementDataSet {
+    
+    public partial class GlassMovementItemsDataTable : System.Data.DataTable {
+		public ITAP.glassCAD.Data.DictionaryMetadata DictionaryMetadata { get; } 
+		public System.Collections.Generic.IEnumerable<ITAP.glassCAD.Documents.GlassMovement.GlassMovementDataSet.GlassMovementItemsRow> DataRows { get; } 
+		public System.Boolean IsModify { get; } 
+    }
+    }
+}
+namespace ITAP.glassCAD.Documents.GlassMovement {
+    public partial class GlassMovementDataSet {
+    
+    public partial class GlassMovementItemsRow : System.Data.DataRow {
+		public ITAP.glassCAD.Documents.GlassMovement.GlassMovementDataSet.GlassMovementItemsDataTable GlassMovementItemsDataTable { get; } 
+		public ITAP.glassCAD.Documents.GlassMovement.GlassMovementDataSet GlassMovementDataSet { get; } 
+		public ITAP.glassCAD.Data.DataLayer dataLayer { get; } 
+		public System.Int32 IDGlassMovementItems { get; set; } 
+		public System.Nullable<System.Int32> IDGlassMovement { get; set; } 
+		public System.Nullable<System.Int32> IDGlass { get; set; } 
+		public System.Nullable<System.Int32> IDGlassStorehouseOut { get; set; } 
+		public System.Nullable<System.Int32> CellOut { get; set; } 
+		public System.Nullable<System.Int32> IDGlassStorehouseIn { get; set; } 
+		public System.Nullable<System.Int32> CellIn { get; set; } 
+		public System.String Description { get; set; } 
+		public System.Nullable<System.Int32> IDGlassPackageOut { get; set; } 
+		public System.Nullable<System.Int32> IDGlassPackageIn { get; set; } 
+		public System.Nullable<System.Int32> IDRegistr_Glass { get; set; } 
+		public ITAP.glassCAD.Documents.GlassMovement.GlassMovementDataSet.GlassMovementRow GlassMovement { get; } 
+        protected internal GlassMovementItemsRow(System.Data.DataRowBuilder builder) : base(builder) {
             throw new System.NotImplementedException();
         }
     }
@@ -5272,86 +6218,23 @@ namespace ITAP.glassCAD.Documents.GlassHouse {
     public partial class GlassHouseRow : System.Data.DataRow {
 		public ITAP.glassCAD.Documents.GlassHouse.GlassHouseDataSet.GlassHouseDataTable GlassHouseDataTable { get; } 
 		public ITAP.glassCAD.Documents.GlassHouse.GlassHouseDataSet GlassHouseDataSet { get; } 
+		public ITAP.glassCAD.Data.DataLayer dataLayer { get; } 
 		public System.Int32 IDGlassHouse { get; set; } 
 		public System.Nullable<System.Guid> GUID { get; set; } 
 		public System.Int32 IDDocOper { get; set; } 
 		public System.String NmDoc { get; set; } 
+		public ITAP.glassCAD.Dictionary.DocOper.DocOperDataSet.DocOperItemsRow DocOperItems { get; } 
 		public System.Nullable<System.Int32> IDDocOperItems { get; set; } 
 		public System.Nullable<System.DateTime> DtDoc { get; set; } 
 		public System.String Comment { get; set; } 
 		public System.Nullable<System.Boolean> IsEntry { get; set; } 
 		public System.Nullable<System.Boolean> IsEntryVerify { get; set; } 
 		public System.Nullable<System.Int32> IDGoodsHouse { get; set; } 
+		public ITAP.glassCAD.Dictionary.People.PeopleDataSet.PeopleRow People { get; } 
 		public System.Nullable<System.Int32> IDPeople { get; set; } 
+		public ITAP.glassCAD.Dictionary.Company.CompanyDataSet.CompanyRow Company { get; } 
 		public System.Nullable<System.Int32> IDCompany { get; set; } 
         protected internal GlassHouseRow(System.Data.DataRowBuilder builder) : base(builder) {
-            throw new System.NotImplementedException();
-        }
-    }
-    }
-}
-namespace ITAP.glassCAD.Documents.GlassHouse {
-    public partial class GlassHouseDataSet {
-    
-    public partial class GlassPrihodDataTable : System.Data.DataTable {
-		public ITAP.glassCAD.Data.DictionaryMetadata DictionaryMetadata { get; } 
-		public System.Collections.Generic.IEnumerable<ITAP.glassCAD.Documents.GlassHouse.GlassHouseDataSet.GlassPrihodRow> DataRows { get; } 
-		public System.Boolean IsModify { get; } 
-    }
-    }
-}
-namespace ITAP.glassCAD.Documents.GlassHouse {
-    public partial class GlassHouseDataSet {
-    
-    public partial class GlassPrihodRow : System.Data.DataRow {
-		public ITAP.glassCAD.Documents.GlassHouse.GlassHouseDataSet.GlassPrihodDataTable GlassPrihodDataTable { get; } 
-		public ITAP.glassCAD.Documents.GlassHouse.GlassHouseDataSet GlassHouseDataSet { get; } 
-		public System.Int32 IDGlassPrihod { get; set; } 
-		public System.Nullable<System.Int32> IDGlassHouse { get; set; } 
-		public System.Nullable<System.Guid> GUID { get; set; } 
-		public System.Nullable<System.Int32> IDCustomer { get; set; } 
-		public System.Nullable<System.Int32> IDTransport { get; set; } 
-		public System.Nullable<System.DateTime> FactDateTime { get; set; } 
-		public System.Nullable<System.Int32> IDGoodParties { get; set; } 
-		public System.Nullable<System.Int32> IDExternalRequest { get; set; } 
-		public ITAP.glassCAD.Documents.GlassHouse.GlassHouseDataSet.GlassHouseRow GlassHouse { get; } 
-        protected internal GlassPrihodRow(System.Data.DataRowBuilder builder) : base(builder) {
-            throw new System.NotImplementedException();
-        }
-    }
-    }
-}
-namespace ITAP.glassCAD.Documents.GlassHouse {
-    public partial class GlassHouseDataSet {
-    
-    public partial class GlassPrihodItemsDataTable : System.Data.DataTable {
-		public ITAP.glassCAD.Data.DictionaryMetadata DictionaryMetadata { get; } 
-		public System.Collections.Generic.IEnumerable<ITAP.glassCAD.Documents.GlassHouse.GlassHouseDataSet.GlassPrihodItemsRow> DataRows { get; } 
-		public System.Boolean IsModify { get; } 
-    }
-    }
-}
-namespace ITAP.glassCAD.Documents.GlassHouse {
-    public partial class GlassHouseDataSet {
-    
-    public partial class GlassPrihodItemsRow : System.Data.DataRow {
-		public ITAP.glassCAD.Documents.GlassHouse.GlassHouseDataSet.GlassPrihodItemsDataTable GlassPrihodItemsDataTable { get; } 
-		public ITAP.glassCAD.Documents.GlassHouse.GlassHouseDataSet GlassHouseDataSet { get; } 
-		public System.Int32 IDGlassPrihodItems { get; set; } 
-		public System.Nullable<System.Int32> IDGlassPrihod { get; set; } 
-		public System.Nullable<System.Guid> GUID { get; set; } 
-		public System.Nullable<System.Int32> IDGood { get; set; } 
-		public System.Nullable<System.Int32> IDGlassStrorehouse { get; set; } 
-		public System.Nullable<System.Int32> Cell { get; set; } 
-		public System.Nullable<System.Int32> Height { get; set; } 
-		public System.Nullable<System.Int32> Width { get; set; } 
-		public System.Nullable<System.Int32> Qu { get; set; } 
-		public System.Nullable<System.DateTime> ProductionDate { get; set; } 
-		public System.Nullable<System.Int32> NumPos { get; set; } 
-		public System.String Comment { get; set; } 
-		public System.Nullable<System.Int32> IDGlassPackage { get; set; } 
-		public ITAP.glassCAD.Documents.GlassHouse.GlassHouseDataSet.GlassHouseRow GlassHouse { get; } 
-        protected internal GlassPrihodItemsRow(System.Data.DataRowBuilder builder) : base(builder) {
             throw new System.NotImplementedException();
         }
     }
@@ -5373,9 +6256,11 @@ namespace ITAP.glassCAD.Documents.FinishedStore {
     public partial class FinishedStoreRow : System.Data.DataRow {
 		public ITAP.glassCAD.Documents.FinishedStore.FinishedStoreDataSet.FinishedStoreDataTable FinishedStoreDataTable { get; } 
 		public ITAP.glassCAD.Documents.FinishedStore.FinishedStoreDataSet FinishedStoreDataSet { get; } 
+		public ITAP.glassCAD.Data.DataLayer dataLayer { get; } 
 		public System.Int32 IDFinishedStore { get; set; } 
 		public System.Nullable<System.Int32> IDPeople { get; set; } 
 		public System.Nullable<System.Int32> IDDocOper { get; set; } 
+		public ITAP.glassCAD.Dictionary.DocOper.DocOperDataSet.DocOperItemsRow DocOperItems { get; } 
 		public System.Nullable<System.Int32> IDDocOperItems { get; set; } 
 		public System.Nullable<System.Int32> IDStorehouse { get; set; } 
 		public System.String NmDoc { get; set; } 
@@ -5410,6 +6295,7 @@ namespace ITAP.glassCAD.Documents.FinishedStore {
     public partial class FinishedStoreItemsRow : System.Data.DataRow {
 		public ITAP.glassCAD.Documents.FinishedStore.FinishedStoreDataSet.FinishedStoreItemsDataTable FinishedStoreItemsDataTable { get; } 
 		public ITAP.glassCAD.Documents.FinishedStore.FinishedStoreDataSet FinishedStoreDataSet { get; } 
+		public ITAP.glassCAD.Data.DataLayer dataLayer { get; } 
 		public System.Int32 IDFinishedStoreItems { get; set; } 
 		public System.Nullable<System.Int32> IDFinishedStore { get; set; } 
 		public System.Nullable<System.Int32> IDOrder { get; set; } 
@@ -5445,11 +6331,16 @@ namespace ITAP.glassCAD.Documents.ExternalRequest {
     public partial class ExternalRequestRow : System.Data.DataRow {
 		public ITAP.glassCAD.Documents.ExternalRequest.ExternalRequestDataSet.ExternalRequestDataTable ExternalRequestDataTable { get; } 
 		public ITAP.glassCAD.Documents.ExternalRequest.ExternalRequestDataSet ExternalRequestDataSet { get; } 
+		public ITAP.glassCAD.Data.DataLayer dataLayer { get; } 
 		public System.Int32 IDExternalRequest { get; set; } 
+		public ITAP.glassCAD.Dictionary.DocOper.DocOperDataSet.DocOperRow DocOper { get; } 
 		public System.Nullable<System.Int32> IDDocOper { get; set; } 
 		public System.Nullable<System.Int32> IDDocOperItems { get; set; } 
+		public ITAP.glassCAD.Dictionary.Company.CompanyDataSet.CompanyRow Company { get; } 
 		public System.Nullable<System.Int32> IDCompany { get; set; } 
+		public ITAP.glassCAD.Dictionary.People.PeopleDataSet.PeopleRow People { get; } 
 		public System.Nullable<System.Int32> IDPeople { get; set; } 
+		public ITAP.glassCAD.Dictionary.Customer.CustomerDataSet.CustomerRow Customer { get; } 
 		public System.Nullable<System.Int32> IDCustomer { get; set; } 
 		public System.String NmDoc { get; set; } 
 		public System.Nullable<System.DateTime> DtDoc { get; set; } 
@@ -5458,6 +6349,7 @@ namespace ITAP.glassCAD.Documents.ExternalRequest {
 		public System.String Comment2 { get; set; } 
 		public System.Nullable<System.Guid> GUID { get; set; } 
 		public System.Nullable<System.Boolean> IsEntry { get; set; } 
+		public ITAP.glassCAD.Dictionary.Storehouse.StorehouseDataSet.StorehouseRow Storehouse { get; } 
 		public System.Nullable<System.Int32> IDStorehouse { get; set; } 
 		public System.Nullable<System.Int32> IDTermsExternalRequest { get; set; } 
 		public System.Nullable<System.Int32> IDPaymentType { get; set; } 
@@ -5490,9 +6382,11 @@ namespace ITAP.glassCAD.Documents.ExternalRequest {
     public partial class ExternalRequestGoodsItemsRow : System.Data.DataRow {
 		public ITAP.glassCAD.Documents.ExternalRequest.ExternalRequestDataSet.ExternalRequestGoodsItemsDataTable ExternalRequestGoodsItemsDataTable { get; } 
 		public ITAP.glassCAD.Documents.ExternalRequest.ExternalRequestDataSet ExternalRequestDataSet { get; } 
+		public ITAP.glassCAD.Data.DataLayer dataLayer { get; } 
 		public System.Int32 IDExternalRequestGoodsItems { get; set; } 
 		public System.Nullable<System.Int32> IDExternalRequest { get; set; } 
 		public System.Nullable<System.Int32> NumPos { get; set; } 
+		public ITAP.glassCAD.Dictionary.Goods.GoodsDataSet.GoodsRow Good { get; } 
 		public System.Nullable<System.Int32> IDGood { get; set; } 
 		public System.Nullable<System.Decimal> Qu { get; set; } 
 		public System.Nullable<System.Decimal> Price { get; set; } 
@@ -5500,6 +6394,7 @@ namespace ITAP.glassCAD.Documents.ExternalRequest {
 		public System.String Comment { get; set; } 
 		public System.String Comment2 { get; set; } 
 		public System.Nullable<System.Guid> GUID { get; set; } 
+		public ITAP.glassCAD.Dictionary.Measure.MeasureDataSet.MeasureRow Measure { get; } 
 		public System.Nullable<System.Int32> IDMeasure { get; set; } 
 		public System.Nullable<System.Int32> IDExternalRequestGoodsPack { get; set; } 
 		public System.Nullable<System.Decimal> PriceWithoutNDS { get; set; } 
@@ -5529,11 +6424,13 @@ namespace ITAP.glassCAD.Documents.ExternalRequest {
     public partial class ExternalRequestGoodsPackRow : System.Data.DataRow {
 		public ITAP.glassCAD.Documents.ExternalRequest.ExternalRequestDataSet.ExternalRequestGoodsPackDataTable ExternalRequestGoodsPackDataTable { get; } 
 		public ITAP.glassCAD.Documents.ExternalRequest.ExternalRequestDataSet ExternalRequestDataSet { get; } 
+		public ITAP.glassCAD.Data.DataLayer dataLayer { get; } 
 		public System.Int32 IDExternalRequestGoodsPack { get; set; } 
 		public System.Nullable<System.Int32> IDExternalRequest { get; set; } 
 		public System.Nullable<System.Int32> NumPos { get; set; } 
 		public System.String Name { get; set; } 
 		public System.Nullable<System.Decimal> Qu { get; set; } 
+		public ITAP.glassCAD.Dictionary.Measure.MeasureDataSet.MeasureRow Measure { get; } 
 		public System.Nullable<System.Int32> IDMeasure { get; set; } 
 		public System.String Comment { get; set; } 
 		public System.Nullable<System.Guid> GUID { get; set; } 
@@ -5560,9 +6457,11 @@ namespace ITAP.glassCAD.Documents.Defective {
     public partial class DefectiveRow : System.Data.DataRow {
 		public ITAP.glassCAD.Documents.Defective.DefectiveDataSet.DefectiveDataTable DefectiveDataTable { get; } 
 		public ITAP.glassCAD.Documents.Defective.DefectiveDataSet DefectiveDataSet { get; } 
+		public ITAP.glassCAD.Data.DataLayer dataLayer { get; } 
 		public System.Int32 IDDefective { get; set; } 
 		public System.Int32 IDDocOper { get; set; } 
 		public System.String NmDoc { get; set; } 
+		public ITAP.glassCAD.Dictionary.DocOper.DocOperDataSet.DocOperItemsRow DocOperItems { get; } 
 		public System.Int32 IDDocOperItems { get; set; } 
 		public System.DateTime DtDoc { get; set; } 
 		public System.String Comment { get; set; } 
@@ -5571,6 +6470,7 @@ namespace ITAP.glassCAD.Documents.Defective {
 		public System.Nullable<System.Int32> IDDocOperIn { get; set; } 
 		public System.Nullable<System.Int32> IDDocOperItemsIn { get; set; } 
 		public System.String NmDocIn { get; set; } 
+		public ITAP.glassCAD.Dictionary.Company.CompanyDataSet.CompanyRow Company { get; } 
 		public System.Nullable<System.Int32> IDCompany { get; set; } 
 		public System.Nullable<System.Int32> IDCauseDefective { get; set; } 
 		public System.String Reason { get; set; } 
@@ -5603,6 +6503,7 @@ namespace ITAP.glassCAD.Documents.Defective {
     public partial class DefectiveItemsRow : System.Data.DataRow {
 		public ITAP.glassCAD.Documents.Defective.DefectiveDataSet.DefectiveItemsDataTable DefectiveItemsDataTable { get; } 
 		public ITAP.glassCAD.Documents.Defective.DefectiveDataSet DefectiveDataSet { get; } 
+		public ITAP.glassCAD.Data.DataLayer dataLayer { get; } 
 		public System.Int32 IDDefectiveItems { get; set; } 
 		public System.Nullable<System.Int32> IDDefective { get; set; } 
 		public System.Nullable<System.Int32> IDGlassPack { get; set; } 
@@ -5633,8 +6534,10 @@ namespace ITAP.glassCAD.Documents.Defective {
     public partial class DefectivePeopleRow : System.Data.DataRow {
 		public ITAP.glassCAD.Documents.Defective.DefectiveDataSet.DefectivePeopleDataTable DefectivePeopleDataTable { get; } 
 		public ITAP.glassCAD.Documents.Defective.DefectiveDataSet DefectiveDataSet { get; } 
+		public ITAP.glassCAD.Data.DataLayer dataLayer { get; } 
 		public System.Int32 IDDefectivePeople { get; set; } 
 		public System.Nullable<System.Int32> IDDefective { get; set; } 
+		public ITAP.glassCAD.Dictionary.People.PeopleDataSet.PeopleRow People { get; } 
 		public System.Nullable<System.Int32> IDPeople { get; set; } 
 		public System.String Comment { get; set; } 
 		public System.Nullable<System.Decimal> K { get; set; } 
@@ -5662,14 +6565,18 @@ namespace ITAP.glassCAD.Documents.BoxProduction {
     public partial class BoxProductionRow : System.Data.DataRow {
 		public ITAP.glassCAD.Documents.BoxProduction.BoxProductionDataSet.BoxProductionDataTable BoxProductionDataTable { get; } 
 		public ITAP.glassCAD.Documents.BoxProduction.BoxProductionDataSet BoxProductionDataSet { get; } 
+		public ITAP.glassCAD.Data.DataLayer dataLayer { get; } 
 		public System.Int32 IDBoxProduction { get; set; } 
 		public System.Int32 IDDocOper { get; set; } 
 		public System.String NmDoc { get; set; } 
+		public ITAP.glassCAD.Dictionary.DocOper.DocOperDataSet.DocOperItemsRow DocOperItems { get; } 
 		public System.Int32 IDDocOperItems { get; set; } 
 		public System.DateTime DtDoc { get; set; } 
 		public System.String Comment { get; set; } 
 		public System.String Status { get; set; } 
+		public ITAP.glassCAD.Dictionary.People.PeopleDataSet.PeopleRow People { get; } 
 		public System.Nullable<System.Int32> IDPeople { get; set; } 
+		public ITAP.glassCAD.Dictionary.Company.CompanyDataSet.CompanyRow Company { get; } 
 		public System.Nullable<System.Int32> IDCompany { get; set; } 
 		public System.String CalculationResult { get; set; } 
 		public System.Int32 IDArmPacking { get; set; } 
@@ -5695,9 +6602,11 @@ namespace ITAP.glassCAD.Documents.BoxProduction {
     public partial class BoxProductionDiractionRow : System.Data.DataRow {
 		public ITAP.glassCAD.Documents.BoxProduction.BoxProductionDataSet.BoxProductionDiractionDataTable BoxProductionDiractionDataTable { get; } 
 		public ITAP.glassCAD.Documents.BoxProduction.BoxProductionDataSet BoxProductionDataSet { get; } 
+		public ITAP.glassCAD.Data.DataLayer dataLayer { get; } 
 		public System.Int32 IDBoxProductionDiraction { get; set; } 
 		public System.Nullable<System.Int32> IDBoxProduction { get; set; } 
 		public System.Int32 NumPos { get; set; } 
+		public ITAP.glassCAD.Dictionary.Diraction.DiractionDataSet.DiractionRow Diraction { get; } 
 		public System.Int32 IDDiraction { get; set; } 
 		public System.DateTime PlanDate { get; set; } 
 		public System.DateTime FactDate { get; set; } 
@@ -5724,6 +6633,7 @@ namespace ITAP.glassCAD.Documents.BoxProduction {
     public partial class BoxProductionItemsRow : System.Data.DataRow {
 		public ITAP.glassCAD.Documents.BoxProduction.BoxProductionDataSet.BoxProductionItemsDataTable BoxProductionItemsDataTable { get; } 
 		public ITAP.glassCAD.Documents.BoxProduction.BoxProductionDataSet BoxProductionDataSet { get; } 
+		public ITAP.glassCAD.Data.DataLayer dataLayer { get; } 
 		public System.Int32 IDBoxProductionItems { get; set; } 
 		public System.Nullable<System.Int32> IDBoxProduction { get; set; } 
 		public System.Int32 NumPos { get; set; } 
@@ -5766,6 +6676,7 @@ namespace ITAP.glassCAD.Dictionary.WorkflowUserSettings {
     public partial class WorkflowUserSettingsRow : System.Data.DataRow {
 		public ITAP.glassCAD.Dictionary.WorkflowUserSettings.WorkflowUserSettingsDataSet.WorkflowUserSettingsDataTable WorkflowUserSettingsDataTable { get; } 
 		public ITAP.glassCAD.Dictionary.WorkflowUserSettings.WorkflowUserSettingsDataSet WorkflowUserSettingsDataSet { get; } 
+		public ITAP.glassCAD.Data.DataLayer dataLayer { get; } 
 		public System.Int32 IDWorkflowUserSettings { get; set; } 
 		public System.String Name { get; set; } 
 		public System.String GroupName { get; set; } 
@@ -5778,6 +6689,34 @@ namespace ITAP.glassCAD.Dictionary.WorkflowUserSettings {
 		public System.Boolean BitValue { get; set; } 
 		public System.Guid GUID { get; set; } 
         protected internal WorkflowUserSettingsRow(System.Data.DataRowBuilder builder) : base(builder) {
+            throw new System.NotImplementedException();
+        }
+    }
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkflowExcelForms {
+    public partial class WorkflowExcelFormsDataSet {
+    
+    public partial class WorkflowExcelFormsDataTable : System.Data.DataTable {
+		public ITAP.glassCAD.Data.DictionaryMetadata DictionaryMetadata { get; } 
+		public System.Collections.Generic.IEnumerable<ITAP.glassCAD.Dictionary.WorkflowExcelForms.WorkflowExcelFormsDataSet.WorkflowExcelFormsRow> DataRows { get; } 
+		public System.Boolean IsModify { get; } 
+    }
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkflowExcelForms {
+    public partial class WorkflowExcelFormsDataSet {
+    
+    public partial class WorkflowExcelFormsRow : System.Data.DataRow {
+		public ITAP.glassCAD.Dictionary.WorkflowExcelForms.WorkflowExcelFormsDataSet.WorkflowExcelFormsDataTable WorkflowExcelFormsDataTable { get; } 
+		public ITAP.glassCAD.Dictionary.WorkflowExcelForms.WorkflowExcelFormsDataSet WorkflowExcelFormsDataSet { get; } 
+		public ITAP.glassCAD.Data.DataLayer dataLayer { get; } 
+		public System.Int32 IDWorkflowExcelForms { get; set; } 
+		public System.String Name { get; set; } 
+		public System.Byte[] Data { get; set; } 
+		public System.Nullable<System.Guid> GUID { get; set; } 
+		public System.Nullable<System.Boolean> IsActive { get; set; } 
+        protected internal WorkflowExcelFormsRow(System.Data.DataRowBuilder builder) : base(builder) {
             throw new System.NotImplementedException();
         }
     }
@@ -5799,6 +6738,7 @@ namespace ITAP.glassCAD.Dictionary.WorkFlowDocumentTemplate {
     public partial class WorkFlowDocumentTemplateRow : System.Data.DataRow {
 		public ITAP.glassCAD.Dictionary.WorkFlowDocumentTemplate.WorkFlowDocumentTemplateDataSet.WorkFlowDocumentTemplateDataTable WorkFlowDocumentTemplateDataTable { get; } 
 		public ITAP.glassCAD.Dictionary.WorkFlowDocumentTemplate.WorkFlowDocumentTemplateDataSet WorkFlowDocumentTemplateDataSet { get; } 
+		public ITAP.glassCAD.Data.DataLayer dataLayer { get; } 
 		public System.Int32 IDWorkFlowDocumentTemplate { get; set; } 
 		public System.String Name { get; set; } 
 		public System.Int32 DocumentDocOper { get; set; } 
@@ -5828,11 +6768,14 @@ namespace ITAP.glassCAD.Dictionary.Transport {
     public partial class TransportRow : System.Data.DataRow {
 		public ITAP.glassCAD.Dictionary.Transport.TransportDataSet.TransportDataTable TransportDataTable { get; } 
 		public ITAP.glassCAD.Dictionary.Transport.TransportDataSet TransportDataSet { get; } 
+		public ITAP.glassCAD.Data.DataLayer dataLayer { get; } 
 		public System.Int32 IDTransport { get; set; } 
 		public System.String GosNumber { get; set; } 
 		public System.Nullable<System.Guid> GUID { get; set; } 
+		public ITAP.glassCAD.Dictionary.Marshrut.MarshrutDataSet.MarshrutRow Marshrut { get; } 
 		public System.Nullable<System.Int32> IDMarshrut { get; set; } 
 		public System.Nullable<System.Int32> Capacity { get; set; } 
+		public ITAP.glassCAD.Dictionary.Customer.CustomerDataSet.CustomerRow Customer { get; } 
 		public System.Nullable<System.Int32> IDCustomer { get; set; } 
 		public System.String Model { get; set; } 
 		public System.String NumberTrailer1 { get; set; } 
@@ -5846,6 +6789,7 @@ namespace ITAP.glassCAD.Dictionary.Transport {
 		public System.Nullable<System.Decimal> Cost { get; set; } 
 		public System.Nullable<System.Int32> FuelType { get; set; } 
 		public System.Nullable<System.Decimal> FuelConsumptionPer100 { get; set; } 
+		public ITAP.glassCAD.Dictionary.People.PeopleDataSet.PeopleRow PeopleDriver { get; } 
 		public System.Nullable<System.Int32> IDPeopleDriver { get; set; } 
         protected internal TransportRow(System.Data.DataRowBuilder builder) : base(builder) {
             throw new System.NotImplementedException();
@@ -5869,6 +6813,7 @@ namespace ITAP.glassCAD.Dictionary.TermsExternalRequest {
     public partial class TermsExternalRequestRow : System.Data.DataRow {
 		public ITAP.glassCAD.Dictionary.TermsExternalRequest.TermsExternalRequestDataSet.TermsExternalRequestDataTable TermsExternalRequestDataTable { get; } 
 		public ITAP.glassCAD.Dictionary.TermsExternalRequest.TermsExternalRequestDataSet TermsExternalRequestDataSet { get; } 
+		public ITAP.glassCAD.Data.DataLayer dataLayer { get; } 
 		public System.Int32 IDTermsExternalRequest { get; set; } 
 		public System.String Name { get; set; } 
 		public System.Nullable<System.Guid> GUID { get; set; } 
@@ -5894,10 +6839,12 @@ namespace ITAP.glassCAD.Dictionary.Storehouse {
     public partial class StorehouseRow : System.Data.DataRow {
 		public ITAP.glassCAD.Dictionary.Storehouse.StorehouseDataSet.StorehouseDataTable StorehouseDataTable { get; } 
 		public ITAP.glassCAD.Dictionary.Storehouse.StorehouseDataSet StorehouseDataSet { get; } 
+		public ITAP.glassCAD.Data.DataLayer dataLayer { get; } 
 		public System.Int32 IDStorehouse { get; set; } 
 		public System.Nullable<System.Guid> GUID { get; set; } 
 		public System.String Name { get; set; } 
 		public System.String Address { get; set; } 
+		public ITAP.glassCAD.Dictionary.Company.CompanyDataSet.CompanyRow Company { get; } 
 		public System.Int32 IDCompany { get; set; } 
 		public System.Int32 StorehouseType { get; set; } 
         protected internal StorehouseRow(System.Data.DataRowBuilder builder) : base(builder) {
@@ -5922,10 +6869,12 @@ namespace ITAP.glassCAD.Dictionary.Sign {
     public partial class SignRow : System.Data.DataRow {
 		public ITAP.glassCAD.Dictionary.Sign.SignDataSet.SignDataTable SignDataTable { get; } 
 		public ITAP.glassCAD.Dictionary.Sign.SignDataSet SignDataSet { get; } 
+		public ITAP.glassCAD.Data.DataLayer dataLayer { get; } 
 		public System.Int32 IDSign { get; set; } 
 		public System.String Name { get; set; } 
 		public System.String Comment { get; set; } 
 		public System.Int32 SignType { get; set; } 
+		public ITAP.glassCAD.Dictionary.DocOper.DocOperDataSet.DocOperRow DocOper { get; } 
 		public System.Nullable<System.Int32> IDDocOper { get; set; } 
         protected internal SignRow(System.Data.DataRowBuilder builder) : base(builder) {
             throw new System.NotImplementedException();
@@ -5949,6 +6898,7 @@ namespace ITAP.glassCAD.Dictionary.Sign {
     public partial class SignValueRow : System.Data.DataRow {
 		public ITAP.glassCAD.Dictionary.Sign.SignDataSet.SignValueDataTable SignValueDataTable { get; } 
 		public ITAP.glassCAD.Dictionary.Sign.SignDataSet SignDataSet { get; } 
+		public ITAP.glassCAD.Data.DataLayer dataLayer { get; } 
 		public System.Int32 IDSignValue { get; set; } 
 		public System.Nullable<System.Int32> IDSign { get; set; } 
 		public System.String Name { get; set; } 
@@ -5980,10 +6930,12 @@ namespace ITAP.glassCAD.Dictionary.Services {
     public partial class ServicesRow : System.Data.DataRow {
 		public ITAP.glassCAD.Dictionary.Services.ServicesDataSet.ServicesDataTable ServicesDataTable { get; } 
 		public ITAP.glassCAD.Dictionary.Services.ServicesDataSet ServicesDataSet { get; } 
+		public ITAP.glassCAD.Data.DataLayer dataLayer { get; } 
 		public System.Int32 IDServices { get; set; } 
 		public System.String Name { get; set; } 
 		public System.String Comment { get; set; } 
 		public System.Nullable<System.Decimal> Price { get; set; } 
+		public ITAP.glassCAD.Dictionary.Currency.CurrencyDataSet.CurrencyRow Currency { get; } 
 		public System.Nullable<System.Int32> IDCurrency { get; set; } 
 		public System.Nullable<System.Int32> ServicesVisibleType { get; set; } 
 		public System.Nullable<System.Guid> GUID { get; set; } 
@@ -6009,9 +6961,11 @@ namespace ITAP.glassCAD.Dictionary.ScanRole {
     public partial class ScanRoleActivityRow : System.Data.DataRow {
 		public ITAP.glassCAD.Dictionary.ScanRole.ScanRoleDataSet.ScanRoleActivityDataTable ScanRoleActivityDataTable { get; } 
 		public ITAP.glassCAD.Dictionary.ScanRole.ScanRoleDataSet ScanRoleDataSet { get; } 
+		public ITAP.glassCAD.Data.DataLayer dataLayer { get; } 
 		public System.Int32 IDScanRoleActivity { get; set; } 
 		public System.Nullable<System.Int32> IDScanRole { get; set; } 
 		public System.Int32 NumPos { get; set; } 
+		public ITAP.glassCAD.Dictionary.ScanActivity.ScanActivityDataSet.ScanActivityRow ScanActivity { get; } 
 		public System.Nullable<System.Int32> IDScanActivity { get; set; } 
 		public System.Nullable<System.DateTime> DtStart { get; set; } 
 		public System.Nullable<System.DateTime> DtEnd { get; set; } 
@@ -6038,6 +6992,7 @@ namespace ITAP.glassCAD.Dictionary.ScanRole {
     public partial class ScanRoleRow : System.Data.DataRow {
 		public ITAP.glassCAD.Dictionary.ScanRole.ScanRoleDataSet.ScanRoleDataTable ScanRoleDataTable { get; } 
 		public ITAP.glassCAD.Dictionary.ScanRole.ScanRoleDataSet ScanRoleDataSet { get; } 
+		public ITAP.glassCAD.Data.DataLayer dataLayer { get; } 
 		public System.Int32 IDScanRole { get; set; } 
 		public System.String Name { get; set; } 
         protected internal ScanRoleRow(System.Data.DataRowBuilder builder) : base(builder) {
@@ -6062,6 +7017,7 @@ namespace ITAP.glassCAD.Dictionary.ScanActivity {
     public partial class ScanActivityRow : System.Data.DataRow {
 		public ITAP.glassCAD.Dictionary.ScanActivity.ScanActivityDataSet.ScanActivityDataTable ScanActivityDataTable { get; } 
 		public ITAP.glassCAD.Dictionary.ScanActivity.ScanActivityDataSet ScanActivityDataSet { get; } 
+		public ITAP.glassCAD.Data.DataLayer dataLayer { get; } 
 		public System.Int32 IDScanActivity { get; set; } 
 		public System.String Name { get; set; } 
 		public System.String GroupName { get; set; } 
@@ -6087,10 +7043,12 @@ namespace ITAP.glassCAD.Dictionary.Production {
     public partial class ProductionRow : System.Data.DataRow {
 		public ITAP.glassCAD.Dictionary.Production.ProductionDataSet.ProductionDataTable ProductionDataTable { get; } 
 		public ITAP.glassCAD.Dictionary.Production.ProductionDataSet ProductionDataSet { get; } 
+		public ITAP.glassCAD.Data.DataLayer dataLayer { get; } 
 		public System.Int32 IDProduction { get; set; } 
 		public System.Nullable<System.Int32> IDProductionGroup { get; set; } 
 		public System.Int32 NumPos { get; set; } 
 		public System.String Name { get; set; } 
+		public ITAP.glassCAD.Dictionary.Measure.MeasureDataSet.MeasureRow Measure { get; } 
 		public System.Int32 IDMeasure { get; set; } 
 		public System.Int32 ViewSide { get; set; } 
 		public System.Boolean ProductionModelHasError { get; set; } 
@@ -6119,6 +7077,7 @@ namespace ITAP.glassCAD.Dictionary.Production {
     public partial class ProductionGroupRow : System.Data.DataRow {
 		public ITAP.glassCAD.Dictionary.Production.ProductionDataSet.ProductionGroupDataTable ProductionGroupDataTable { get; } 
 		public ITAP.glassCAD.Dictionary.Production.ProductionDataSet ProductionDataSet { get; } 
+		public ITAP.glassCAD.Data.DataLayer dataLayer { get; } 
 		public System.Int32 IDProductionGroup { get; set; } 
 		public System.Nullable<System.Int32> IDParent { get; set; } 
 		public System.String Name { get; set; } 
@@ -6144,6 +7103,7 @@ namespace ITAP.glassCAD.Dictionary.Production {
     public partial class ProductionModelRow : System.Data.DataRow {
 		public ITAP.glassCAD.Dictionary.Production.ProductionDataSet.ProductionModelDataTable ProductionModelDataTable { get; } 
 		public ITAP.glassCAD.Dictionary.Production.ProductionDataSet ProductionDataSet { get; } 
+		public ITAP.glassCAD.Data.DataLayer dataLayer { get; } 
 		public System.Int32 IDProductionModel { get; set; } 
 		public System.Nullable<System.Int32> IDProduction { get; set; } 
 		public System.Int32 NumPos { get; set; } 
@@ -6187,8 +7147,10 @@ namespace ITAP.glassCAD.Dictionary.Production {
     public partial class ProductionModelGoodRow : System.Data.DataRow {
 		public ITAP.glassCAD.Dictionary.Production.ProductionDataSet.ProductionModelGoodDataTable ProductionModelGoodDataTable { get; } 
 		public ITAP.glassCAD.Dictionary.Production.ProductionDataSet ProductionDataSet { get; } 
+		public ITAP.glassCAD.Data.DataLayer dataLayer { get; } 
 		public System.Int32 IDProductionModelGood { get; set; } 
 		public System.Nullable<System.Int32> IDProduction { get; set; } 
+		public ITAP.glassCAD.Dictionary.Goods.GoodsDataSet.GoodsRow Good { get; } 
 		public System.Int32 IDGood { get; set; } 
 		public System.String Formula { get; set; } 
 		public System.Boolean InvertInShape { get; set; } 
@@ -6218,6 +7180,7 @@ namespace ITAP.glassCAD.Dictionary.Production {
     public partial class ProductionModelHalfProductionRow : System.Data.DataRow {
 		public ITAP.glassCAD.Dictionary.Production.ProductionDataSet.ProductionModelHalfProductionDataTable ProductionModelHalfProductionDataTable { get; } 
 		public ITAP.glassCAD.Dictionary.Production.ProductionDataSet ProductionDataSet { get; } 
+		public ITAP.glassCAD.Data.DataLayer dataLayer { get; } 
 		public System.Int32 IDProductionModelHalfProduction { get; set; } 
 		public System.Nullable<System.Int32> IDProduction { get; set; } 
 		public System.Nullable<System.Guid> GUID { get; set; } 
@@ -6244,8 +7207,10 @@ namespace ITAP.glassCAD.Dictionary.Production {
     public partial class ProductionModelOperationRow : System.Data.DataRow {
 		public ITAP.glassCAD.Dictionary.Production.ProductionDataSet.ProductionModelOperationDataTable ProductionModelOperationDataTable { get; } 
 		public ITAP.glassCAD.Dictionary.Production.ProductionDataSet ProductionDataSet { get; } 
+		public ITAP.glassCAD.Data.DataLayer dataLayer { get; } 
 		public System.Int32 IDProductionModelOperation { get; set; } 
 		public System.Nullable<System.Int32> IDProduction { get; set; } 
+		public ITAP.glassCAD.Dictionary.Operation.OperationDataSet.OperationRow Operation { get; } 
 		public System.Int32 IDOperation { get; set; } 
 		public System.Nullable<System.Guid> GUID { get; set; } 
 		public ITAP.glassCAD.Dictionary.Production.ProductionDataSet.ProductionRow Production { get; } 
@@ -6272,6 +7237,7 @@ namespace ITAP.glassCAD.Dictionary.Production {
     public partial class ProductionModelOperationParamRow : System.Data.DataRow {
 		public ITAP.glassCAD.Dictionary.Production.ProductionDataSet.ProductionModelOperationParamDataTable ProductionModelOperationParamDataTable { get; } 
 		public ITAP.glassCAD.Dictionary.Production.ProductionDataSet ProductionDataSet { get; } 
+		public ITAP.glassCAD.Data.DataLayer dataLayer { get; } 
 		public System.Int32 IDProductionModelOperationParam { get; set; } 
 		public System.Nullable<System.Int32> IDProduction { get; set; } 
 		public System.Int32 IDProductionModelOperation { get; set; } 
@@ -6307,6 +7273,7 @@ namespace ITAP.glassCAD.Dictionary.PriceForms {
     public partial class PriceFormsRow : System.Data.DataRow {
 		public ITAP.glassCAD.Dictionary.PriceForms.PriceFormsDataSet.PriceFormsDataTable PriceFormsDataTable { get; } 
 		public ITAP.glassCAD.Dictionary.PriceForms.PriceFormsDataSet PriceFormsDataSet { get; } 
+		public ITAP.glassCAD.Data.DataLayer dataLayer { get; } 
 		public System.Int32 IDPriceForms { get; set; } 
 		public System.String Name { get; set; } 
 		public System.Byte[] Data { get; set; } 
@@ -6333,6 +7300,7 @@ namespace ITAP.glassCAD.Dictionary.People {
     public partial class PeopleRow : System.Data.DataRow {
 		public ITAP.glassCAD.Dictionary.People.PeopleDataSet.PeopleDataTable PeopleDataTable { get; } 
 		public ITAP.glassCAD.Dictionary.People.PeopleDataSet PeopleDataSet { get; } 
+		public ITAP.glassCAD.Data.DataLayer dataLayer { get; } 
 		public System.Int32 IDPeople { get; set; } 
 		public System.String Name { get; set; } 
 		public System.String MiddleName { get; set; } 
@@ -6343,6 +7311,7 @@ namespace ITAP.glassCAD.Dictionary.People {
 		public System.Nullable<System.Guid> Guid { get; set; } 
 		public System.String EMail { get; set; } 
 		public System.String Comment { get; set; } 
+		public ITAP.glassCAD.Dictionary.Depart.DepartDataSet.DepartRow Depart { get; } 
 		public System.Nullable<System.Int32> IDDepart { get; set; } 
 		public System.String PeopleFullName { get; } 
 		public System.String DepartName { get; } 
@@ -6369,7 +7338,9 @@ namespace ITAP.glassCAD.Dictionary.PeopleRole {
     public partial class PeopleRoleRow : System.Data.DataRow {
 		public ITAP.glassCAD.Dictionary.PeopleRole.PeopleRoleDataSet.PeopleRoleDataTable PeopleRoleDataTable { get; } 
 		public ITAP.glassCAD.Dictionary.PeopleRole.PeopleRoleDataSet PeopleRoleDataSet { get; } 
+		public ITAP.glassCAD.Data.DataLayer dataLayer { get; } 
 		public System.Int32 IDPeopleRole { get; set; } 
+		public ITAP.glassCAD.Dictionary.People.PeopleDataSet.PeopleRow People { get; } 
 		public System.Nullable<System.Int32> IDPeople { get; set; } 
 		public System.Nullable<System.Int32> IDRole { get; set; } 
 		public System.Nullable<System.DateTime> StartPeriod { get; set; } 
@@ -6381,50 +7352,27 @@ namespace ITAP.glassCAD.Dictionary.PeopleRole {
     }
     }
 }
-namespace ITAP.glassCAD.Dictionary.Payment {
-    public partial class PaymentDataSet {
+namespace ITAP.glassCAD.Dictionary.PeopleRole {
+    public partial class PeopleRoleDataSet {
     
-    public partial class PaymentDataTable : System.Data.DataTable {
-		public ITAP.glassCAD.Data.DictionaryMetadata DictionaryMetadata { get; } 
-		public System.Collections.Generic.IEnumerable<ITAP.glassCAD.Dictionary.Payment.PaymentDataSet.PaymentRow> DataRows { get; } 
-		public System.Boolean IsModify { get; } 
+    public partial class SkladFinishedStoreOperatorProperty {
+		public System.Boolean AllowManualSearch { get; set; } 
+		public System.Boolean BindingMaster { get; set; } 
+		public System.Boolean PyramidMaster { get; set; } 
+		public System.Boolean GlasspackMasterIncoming { get; set; } 
+		public System.Boolean GlasspackMasterOutcoming { get; set; } 
+		public System.Boolean GlasspackMasterSetDefective { get; set; } 
+		public System.Boolean GlasspackMasterMovignFromSgpToSgp { get; set; } 
+		public System.Boolean GlasspackMasterReturnToSgp { get; set; } 
+		public System.Boolean AccessReport { get; set; } 
     }
     }
 }
-namespace ITAP.glassCAD.Dictionary.Payment {
-    public partial class PaymentDataSet {
+namespace ITAP.glassCAD.Dictionary.PeopleRole {
+    public partial class PeopleRoleDataSet {
     
-    public partial class PaymentRow : System.Data.DataRow {
-		public ITAP.glassCAD.Dictionary.Payment.PaymentDataSet.PaymentDataTable PaymentDataTable { get; } 
-		public ITAP.glassCAD.Dictionary.Payment.PaymentDataSet PaymentDataSet { get; } 
-		public System.Int32 IDPayment { get; set; } 
-		public System.Nullable<System.Int32> IDCustomer { get; set; } 
-		public System.Nullable<System.Int32> IDPaymentType { get; set; } 
-		public System.Int32 IDPeople { get; set; } 
-		public System.Int32 IDDocOper { get; set; } 
-		public System.Nullable<System.Int32> IDOrder { get; set; } 
-		public System.Nullable<System.DateTime> Dtdoc { get; set; } 
-		public System.String Nmdoc { get; set; } 
-		public System.Nullable<System.Decimal> Smdoc { get; set; } 
-		public System.String Comment { get; set; } 
-		public System.Nullable<System.Int32> IDCurrency { get; set; } 
-		public System.Nullable<System.Decimal> CurrencyRate { get; set; } 
-		public System.Nullable<System.Int32> IDPaymentOperationComment { get; set; } 
-		public System.Nullable<System.Guid> GUID { get; set; } 
-		public System.Nullable<System.Int32> IDDocOperItems { get; set; } 
-		public System.Nullable<System.Int32> IDCompany { get; set; } 
-		public System.Nullable<System.Boolean> IsEntry { get; set; } 
-		public System.Nullable<System.Int32> IDParentPayment { get; set; } 
-		public System.Nullable<System.Int32> IDAgreement { get; set; } 
-		public System.Nullable<System.Int32> CustomerType { get; set; } 
-		public System.Nullable<System.Int32> IDCustomerBank { get; set; } 
-		public System.Nullable<System.Int32> IDCompanyBank { get; set; } 
-		public System.Nullable<System.Int32> IDPaymentOperationComment1 { get; set; } 
-		public System.Nullable<System.Int32> IDPaymentOperationComment2 { get; set; } 
-		public System.Nullable<System.Boolean> IsEntryVerify { get; set; } 
-        protected internal PaymentRow(System.Data.DataRowBuilder builder) : base(builder) {
-            throw new System.NotImplementedException();
-        }
+    public partial class GlassWarehouseOperatorProperty {
+		public System.Int32[] GlassStoreHouse { get; set; } 
     }
     }
 }
@@ -6444,6 +7392,7 @@ namespace ITAP.glassCAD.Dictionary.PaymentType {
     public partial class PaymentTypeRow : System.Data.DataRow {
 		public ITAP.glassCAD.Dictionary.PaymentType.PaymentTypeDataSet.PaymentTypeDataTable PaymentTypeDataTable { get; } 
 		public ITAP.glassCAD.Dictionary.PaymentType.PaymentTypeDataSet PaymentTypeDataSet { get; } 
+		public ITAP.glassCAD.Data.DataLayer dataLayer { get; } 
 		public System.Int32 IDPaymentType { get; set; } 
 		public System.String Name { get; set; } 
 		public System.String Comment { get; set; } 
@@ -6469,10 +7418,12 @@ namespace ITAP.glassCAD.Dictionary.Operation {
     public partial class OperationRow : System.Data.DataRow {
 		public ITAP.glassCAD.Dictionary.Operation.OperationDataSet.OperationDataTable OperationDataTable { get; } 
 		public ITAP.glassCAD.Dictionary.Operation.OperationDataSet OperationDataSet { get; } 
+		public ITAP.glassCAD.Data.DataLayer dataLayer { get; } 
 		public System.Int32 IDOperation { get; set; } 
 		public System.Int32 NumOperation { get; set; } 
 		public System.String Name { get; set; } 
 		public System.String CodeOperation { get; set; } 
+		public ITAP.glassCAD.Dictionary.Calendar.CalendarDataSet.CalendarRow Calendar { get; } 
 		public System.Nullable<System.Int32> IDCalendar { get; set; } 
 		public System.Int32 OperationType { get; set; } 
 		public System.String CostWorkFlow { get; set; } 
@@ -6502,6 +7453,7 @@ namespace ITAP.glassCAD.Dictionary.Operation {
     public partial class OperationIdentRow : System.Data.DataRow {
 		public ITAP.glassCAD.Dictionary.Operation.OperationDataSet.OperationIdentDataTable OperationIdentDataTable { get; } 
 		public ITAP.glassCAD.Dictionary.Operation.OperationDataSet OperationDataSet { get; } 
+		public ITAP.glassCAD.Data.DataLayer dataLayer { get; } 
 		public System.Int32 IDOperationIdent { get; set; } 
 		public System.Nullable<System.Int32> IDOperation { get; set; } 
 		public System.Int32 NumPos { get; set; } 
@@ -6533,6 +7485,7 @@ namespace ITAP.glassCAD.Dictionary.Operation {
     public partial class OperationInModelRulesRow : System.Data.DataRow {
 		public ITAP.glassCAD.Dictionary.Operation.OperationDataSet.OperationInModelRulesDataTable OperationInModelRulesDataTable { get; } 
 		public ITAP.glassCAD.Dictionary.Operation.OperationDataSet OperationDataSet { get; } 
+		public ITAP.glassCAD.Data.DataLayer dataLayer { get; } 
 		public System.Int32 IDOperationInModelRules { get; set; } 
 		public System.Nullable<System.Int32> IDOperation { get; set; } 
 		public System.Int32 OperationInModelRule { get; set; } 
@@ -6559,6 +7512,7 @@ namespace ITAP.glassCAD.Dictionary.Operation {
     public partial class OperationParamRow : System.Data.DataRow {
 		public ITAP.glassCAD.Dictionary.Operation.OperationDataSet.OperationParamDataTable OperationParamDataTable { get; } 
 		public ITAP.glassCAD.Dictionary.Operation.OperationDataSet OperationDataSet { get; } 
+		public ITAP.glassCAD.Data.DataLayer dataLayer { get; } 
 		public System.Int32 IDOperationParam { get; set; } 
 		public System.Nullable<System.Int32> IDOperation { get; set; } 
 		public System.String Name { get; set; } 
@@ -6592,6 +7546,7 @@ namespace ITAP.glassCAD.Dictionary.Operation {
     public partial class OperationParamValueRow : System.Data.DataRow {
 		public ITAP.glassCAD.Dictionary.Operation.OperationDataSet.OperationParamValueDataTable OperationParamValueDataTable { get; } 
 		public ITAP.glassCAD.Dictionary.Operation.OperationDataSet OperationDataSet { get; } 
+		public ITAP.glassCAD.Data.DataLayer dataLayer { get; } 
 		public System.Int32 IDOperationParamValue { get; set; } 
 		public System.Nullable<System.Int32> IDOperation { get; set; } 
 		public System.Int32 IDOperationParam { get; set; } 
@@ -6620,6 +7575,7 @@ namespace ITAP.glassCAD.Dictionary.Operation {
     public partial class OperationRelationsRow : System.Data.DataRow {
 		public ITAP.glassCAD.Dictionary.Operation.OperationDataSet.OperationRelationsDataTable OperationRelationsDataTable { get; } 
 		public ITAP.glassCAD.Dictionary.Operation.OperationDataSet OperationDataSet { get; } 
+		public ITAP.glassCAD.Data.DataLayer dataLayer { get; } 
 		public System.Int32 IDOperationRelations { get; set; } 
 		public System.Nullable<System.Int32> IDOperation { get; set; } 
 		public System.Int32 IDList { get; set; } 
@@ -6650,6 +7606,7 @@ namespace ITAP.glassCAD.Dictionary.ObjectAttributes {
     public partial class ObjectAttributesRow : System.Data.DataRow {
 		public ITAP.glassCAD.Dictionary.ObjectAttributes.ObjectAttributesDataSet.ObjectAttributesDataTable ObjectAttributesDataTable { get; } 
 		public ITAP.glassCAD.Dictionary.ObjectAttributes.ObjectAttributesDataSet ObjectAttributesDataSet { get; } 
+		public ITAP.glassCAD.Data.DataLayer dataLayer { get; } 
 		public System.Int32 IDObjectAttributes { get; set; } 
 		public System.Int32 IDDocOper { get; set; } 
 		public System.Int32 IDDoc { get; set; } 
@@ -6699,10 +7656,12 @@ namespace ITAP.glassCAD.Dictionary.Measure {
     public partial class MeasureRow : System.Data.DataRow {
 		public ITAP.glassCAD.Dictionary.Measure.MeasureDataSet.MeasureDataTable MeasureDataTable { get; } 
 		public ITAP.glassCAD.Dictionary.Measure.MeasureDataSet MeasureDataSet { get; } 
+		public ITAP.glassCAD.Data.DataLayer dataLayer { get; } 
 		public System.Int32 IDMeasure { get; set; } 
 		public System.String Name { get; set; } 
 		public System.String ShortName { get; set; } 
 		public System.Decimal Rate { get; set; } 
+		public ITAP.glassCAD.Dictionary.Measure.MeasureDataSet.MeasureRow Parent { get; } 
 		public System.Nullable<System.Int32> IDParent { get; set; } 
 		public System.Nullable<System.Guid> Guid { get; set; } 
 		public System.Nullable<System.Decimal> Width { get; set; } 
@@ -6729,8 +7688,10 @@ namespace ITAP.glassCAD.Dictionary.Marshrut {
     public partial class MarshrutRow : System.Data.DataRow {
 		public ITAP.glassCAD.Dictionary.Marshrut.MarshrutDataSet.MarshrutDataTable MarshrutDataTable { get; } 
 		public ITAP.glassCAD.Dictionary.Marshrut.MarshrutDataSet MarshrutDataSet { get; } 
+		public ITAP.glassCAD.Data.DataLayer dataLayer { get; } 
 		public System.Int32 IDMarshrut { get; set; } 
 		public System.String Name { get; set; } 
+		public ITAP.glassCAD.Dictionary.GrOptPacking.GrOptPackingDataSet.GrOptPackingRow GrOptPacking { get; } 
 		public System.Int32 IDGrOptPacking { get; set; } 
         protected internal MarshrutRow(System.Data.DataRowBuilder builder) : base(builder) {
             throw new System.NotImplementedException();
@@ -6754,6 +7715,7 @@ namespace ITAP.glassCAD.Dictionary.GrOpt {
     public partial class GrOptRow : System.Data.DataRow {
 		public ITAP.glassCAD.Dictionary.GrOpt.GrOptDataSet.GrOptDataTable GrOptDataTable { get; } 
 		public ITAP.glassCAD.Dictionary.GrOpt.GrOptDataSet GrOptDataSet { get; } 
+		public ITAP.glassCAD.Data.DataLayer dataLayer { get; } 
 		public System.Int32 IDGrOpt { get; set; } 
         protected internal GrOptRow(System.Data.DataRowBuilder builder) : base(builder) {
             throw new System.NotImplementedException();
@@ -6777,6 +7739,7 @@ namespace ITAP.glassCAD.Dictionary.GrOptPacking {
     public partial class GrOptPackingRow : System.Data.DataRow {
 		public ITAP.glassCAD.Dictionary.GrOptPacking.GrOptPackingDataSet.GrOptPackingDataTable GrOptPackingDataTable { get; } 
 		public ITAP.glassCAD.Dictionary.GrOptPacking.GrOptPackingDataSet GrOptPackingDataSet { get; } 
+		public ITAP.glassCAD.Data.DataLayer dataLayer { get; } 
 		public System.Int32 IDGrOptPacking { get; set; } 
 		public System.String Name { get; set; } 
         protected internal GrOptPackingRow(System.Data.DataRowBuilder builder) : base(builder) {
@@ -6801,10 +7764,12 @@ namespace ITAP.glassCAD.Dictionary.Goods {
     public partial class GoodsRow : System.Data.DataRow {
 		public ITAP.glassCAD.Dictionary.Goods.GoodsDataSet.GoodsDataTable GoodsDataTable { get; } 
 		public ITAP.glassCAD.Dictionary.Goods.GoodsDataSet GoodsDataSet { get; } 
+		public ITAP.glassCAD.Data.DataLayer dataLayer { get; } 
 		public System.Int32 IDGood { get; set; } 
 		public System.Nullable<System.Int32> IDGroup { get; set; } 
 		public System.String Name { get; set; } 
 		public System.String Marking { get; set; } 
+		public ITAP.glassCAD.Dictionary.Measure.MeasureDataSet.MeasureRow Measure { get; } 
 		public System.Nullable<System.Int32> IDMeasure { get; set; } 
 		public System.Nullable<System.Decimal> Waste { get; set; } 
 		public System.Nullable<System.Decimal> Thick { get; set; } 
@@ -6815,6 +7780,7 @@ namespace ITAP.glassCAD.Dictionary.Goods {
 		public System.Nullable<System.Int32> TypGlass { get; set; } 
 		public System.Nullable<System.Int32> TypRamka { get; set; } 
 		public System.Nullable<System.Decimal> Thickness { get; set; } 
+		public ITAP.glassCAD.Dictionary.GrOpt.GrOptDataSet.GrOptRow GrOpt { get; } 
 		public System.Nullable<System.Int32> IDGrOpt { get; set; } 
 		public System.Nullable<System.Decimal> MinOst { get; set; } 
 		public System.Nullable<System.Decimal> AlertOst { get; set; } 
@@ -6848,9 +7814,11 @@ namespace ITAP.glassCAD.Dictionary.Goods {
     public partial class GoodsDetailRow : System.Data.DataRow {
 		public ITAP.glassCAD.Dictionary.Goods.GoodsDataSet.GoodsDetailDataTable GoodsDetailDataTable { get; } 
 		public ITAP.glassCAD.Dictionary.Goods.GoodsDataSet GoodsDataSet { get; } 
+		public ITAP.glassCAD.Data.DataLayer dataLayer { get; } 
 		public System.Int32 IDGoodsDetail { get; set; } 
 		public System.Nullable<System.Int32> IDGoods { get; set; } 
 		public System.String FormulaDefault { get; set; } 
+		public ITAP.glassCAD.Dictionary.Goods.GoodsDataSet.GoodsRow GoodsReference { get; } 
 		public System.Int32 IDGoodsReference { get; set; } 
 		public ITAP.glassCAD.Dictionary.Goods.GoodsDataSet.GoodsRow Goods { get; } 
         protected internal GoodsDetailRow(System.Data.DataRowBuilder builder) : base(builder) {
@@ -6875,6 +7843,7 @@ namespace ITAP.glassCAD.Dictionary.Goods {
     public partial class GroupGoodsRow : System.Data.DataRow {
 		public ITAP.glassCAD.Dictionary.Goods.GoodsDataSet.GroupGoodsDataTable GroupGoodsDataTable { get; } 
 		public ITAP.glassCAD.Dictionary.Goods.GoodsDataSet GoodsDataSet { get; } 
+		public ITAP.glassCAD.Data.DataLayer dataLayer { get; } 
 		public System.Int32 IDGroup { get; set; } 
 		public System.Nullable<System.Int32> ParentID { get; set; } 
 		public System.String Name { get; set; } 
@@ -6901,11 +7870,46 @@ namespace ITAP.glassCAD.Dictionary.GoodParties {
     public partial class GoodPartiesRow : System.Data.DataRow {
 		public ITAP.glassCAD.Dictionary.GoodParties.GoodPartiesDataSet.GoodPartiesDataTable GoodPartiesDataTable { get; } 
 		public ITAP.glassCAD.Dictionary.GoodParties.GoodPartiesDataSet GoodPartiesDataSet { get; } 
+		public ITAP.glassCAD.Data.DataLayer dataLayer { get; } 
 		public System.Int32 IDGoodParties { get; set; } 
 		public System.String Name { get; set; } 
 		public System.String GroupName { get; set; } 
 		public System.Nullable<System.DateTime> Date { get; set; } 
         protected internal GoodPartiesRow(System.Data.DataRowBuilder builder) : base(builder) {
+            throw new System.NotImplementedException();
+        }
+    }
+    }
+}
+namespace ITAP.glassCAD.Dictionary.GlassStorehouse {
+    public partial class GlassStorehouseDataSet {
+    
+    public partial class GlassStorehouseDataTable : System.Data.DataTable {
+		public ITAP.glassCAD.Data.DictionaryMetadata DictionaryMetadata { get; } 
+		public System.Collections.Generic.IEnumerable<ITAP.glassCAD.Dictionary.GlassStorehouse.GlassStorehouseDataSet.GlassStorehouseRow> DataRows { get; } 
+		public System.Boolean IsModify { get; } 
+    }
+    }
+}
+namespace ITAP.glassCAD.Dictionary.GlassStorehouse {
+    public partial class GlassStorehouseDataSet {
+    
+    public partial class GlassStorehouseRow : System.Data.DataRow {
+		public ITAP.glassCAD.Dictionary.GlassStorehouse.GlassStorehouseDataSet.GlassStorehouseDataTable GlassStorehouseDataTable { get; } 
+		public ITAP.glassCAD.Dictionary.GlassStorehouse.GlassStorehouseDataSet GlassStorehouseDataSet { get; } 
+		public ITAP.glassCAD.Data.DataLayer dataLayer { get; } 
+		public System.Int32 IDGlassStorehouse { get; set; } 
+		public System.String Name { get; set; } 
+		public System.Int32 Qu_Cells { get; set; } 
+		public System.Int32 Cell_Capacity { get; set; } 
+		public System.Int32 ThicknessCapacity { get; set; } 
+		public System.Int32 ThicknessGlassPackage { get; set; } 
+		public System.String Rule { get; set; } 
+		public System.String Comment { get; set; } 
+		public ITAP.glassCAD.Dictionary.Storehouse.StorehouseDataSet.StorehouseRow Storehouse { get; } 
+		public System.Int32 IDStorehouse { get; set; } 
+		public System.Nullable<System.Guid> GUID { get; set; } 
+        protected internal GlassStorehouseRow(System.Data.DataRowBuilder builder) : base(builder) {
             throw new System.NotImplementedException();
         }
     }
@@ -6927,9 +7931,11 @@ namespace ITAP.glassCAD.Dictionary.Equipment {
     public partial class EquipmentRow : System.Data.DataRow {
 		public ITAP.glassCAD.Dictionary.Equipment.EquipmentDataSet.EquipmentDataTable EquipmentDataTable { get; } 
 		public ITAP.glassCAD.Dictionary.Equipment.EquipmentDataSet EquipmentDataSet { get; } 
+		public ITAP.glassCAD.Data.DataLayer dataLayer { get; } 
 		public System.Int32 IDEquipment { get; set; } 
 		public System.String Name { get; set; } 
 		public System.Int32 IDOperationType { get; set; } 
+		public ITAP.glassCAD.Dictionary.Calendar.CalendarDataSet.CalendarRow Calendar { get; } 
 		public System.Int32 IDCalendar { get; set; } 
 		public System.Nullable<System.Guid> GUID { get; set; } 
 		public System.Nullable<System.Guid> Ident { get; set; } 
@@ -6957,6 +7963,7 @@ namespace ITAP.glassCAD.Dictionary.DocOper {
     public partial class DocOperRow : System.Data.DataRow {
 		public ITAP.glassCAD.Dictionary.DocOper.DocOperDataSet.DocOperDataTable DocOperDataTable { get; } 
 		public ITAP.glassCAD.Dictionary.DocOper.DocOperDataSet DocOperDataSet { get; } 
+		public ITAP.glassCAD.Data.DataLayer dataLayer { get; } 
 		public System.Int32 IDDocOper { get; set; } 
 		public System.String Name { get; set; } 
         protected internal DocOperRow(System.Data.DataRowBuilder builder) : base(builder) {
@@ -6981,6 +7988,7 @@ namespace ITAP.glassCAD.Dictionary.DocOper {
     public partial class DocOperItemsRow : System.Data.DataRow {
 		public ITAP.glassCAD.Dictionary.DocOper.DocOperDataSet.DocOperItemsDataTable DocOperItemsDataTable { get; } 
 		public ITAP.glassCAD.Dictionary.DocOper.DocOperDataSet DocOperDataSet { get; } 
+		public ITAP.glassCAD.Data.DataLayer dataLayer { get; } 
 		public System.Int32 IDDocOperItems { get; set; } 
 		public System.Nullable<System.Int32> IDDocOper { get; set; } 
 		public System.Int32 NumPos { get; set; } 
@@ -7016,6 +8024,7 @@ namespace ITAP.glassCAD.Dictionary.Diraction {
     public partial class DiractionRow : System.Data.DataRow {
 		public ITAP.glassCAD.Dictionary.Diraction.DiractionDataSet.DiractionDataTable DiractionDataTable { get; } 
 		public ITAP.glassCAD.Dictionary.Diraction.DiractionDataSet DiractionDataSet { get; } 
+		public ITAP.glassCAD.Data.DataLayer dataLayer { get; } 
 		public System.Int32 IDDiraction { get; set; } 
 		public System.Int32 NumPos { get; set; } 
 		public System.String Name { get; set; } 
@@ -7043,6 +8052,7 @@ namespace ITAP.glassCAD.Dictionary.Depart {
     public partial class DepartRow : System.Data.DataRow {
 		public ITAP.glassCAD.Dictionary.Depart.DepartDataSet.DepartDataTable DepartDataTable { get; } 
 		public ITAP.glassCAD.Dictionary.Depart.DepartDataSet DepartDataSet { get; } 
+		public ITAP.glassCAD.Data.DataLayer dataLayer { get; } 
 		public System.Int32 IDDepart { get; set; } 
 		public System.String Name { get; set; } 
 		public System.String Comment { get; set; } 
@@ -7069,12 +8079,14 @@ namespace ITAP.glassCAD.Dictionary.Customer {
     public partial class AgreementRow : System.Data.DataRow {
 		public ITAP.glassCAD.Dictionary.Customer.CustomerDataSet.AgreementDataTable AgreementDataTable { get; } 
 		public ITAP.glassCAD.Dictionary.Customer.CustomerDataSet CustomerDataSet { get; } 
+		public ITAP.glassCAD.Data.DataLayer dataLayer { get; } 
 		public System.Int32 IDAgreement { get; set; } 
 		public System.Nullable<System.Int32> IDCustomer { get; set; } 
 		public System.Nullable<System.Guid> Guid { get; set; } 
 		public System.String Name { get; set; } 
 		public System.Nullable<System.DateTime> Date { get; set; } 
 		public System.Nullable<System.DateTime> DateClosed { get; set; } 
+		public ITAP.glassCAD.Dictionary.PaymentType.PaymentTypeDataSet.PaymentTypeRow PaymentType { get; } 
 		public System.Nullable<System.Int32> IDPaymentType { get; set; } 
 		public System.Nullable<System.Int32> State { get; set; } 
 		public System.Byte[] Data { get; set; } 
@@ -7088,7 +8100,9 @@ namespace ITAP.glassCAD.Dictionary.Customer {
 		public System.Nullable<System.Guid> SellingItemCalculationWorkflow { get; set; } 
 		public System.Nullable<System.Guid> SellingGoodCalculationWorkflow { get; set; } 
 		public System.Nullable<System.Guid> SellingServicesCalculationWorkflow { get; set; } 
+		public ITAP.glassCAD.Dictionary.PriceForms.PriceFormsDataSet.PriceFormsRow PriceForms { get; } 
 		public System.Nullable<System.Int32> IDPriceForms { get; set; } 
+		public ITAP.glassCAD.Dictionary.Currency.CurrencyDataSet.CurrencyRow Currency { get; } 
 		public System.Nullable<System.Int32> IDCurrency { get; set; } 
 		public System.Nullable<System.Int32> CustomerType { get; set; } 
 		public System.String Comment { get; set; } 
@@ -7115,9 +8129,11 @@ namespace ITAP.glassCAD.Dictionary.Customer {
     public partial class CustomerAddressRow : System.Data.DataRow {
 		public ITAP.glassCAD.Dictionary.Customer.CustomerDataSet.CustomerAddressDataTable CustomerAddressDataTable { get; } 
 		public ITAP.glassCAD.Dictionary.Customer.CustomerDataSet CustomerDataSet { get; } 
+		public ITAP.glassCAD.Data.DataLayer dataLayer { get; } 
 		public System.Int32 IDCustomerAddress { get; set; } 
 		public System.Nullable<System.Int32> IDCustomer { get; set; } 
 		public System.String LongAddress { get; set; } 
+		public ITAP.glassCAD.Dictionary.Marshrut.MarshrutDataSet.MarshrutRow Marshrut { get; } 
 		public System.Nullable<System.Int32> IDMarshrut { get; set; } 
 		public System.Int32 AddressType { get; set; } 
 		public System.Nullable<System.Guid> GUID { get; set; } 
@@ -7144,6 +8160,7 @@ namespace ITAP.glassCAD.Dictionary.Customer {
     public partial class CustomerBankRow : System.Data.DataRow {
 		public ITAP.glassCAD.Dictionary.Customer.CustomerDataSet.CustomerBankDataTable CustomerBankDataTable { get; } 
 		public ITAP.glassCAD.Dictionary.Customer.CustomerDataSet CustomerDataSet { get; } 
+		public ITAP.glassCAD.Data.DataLayer dataLayer { get; } 
 		public System.Int32 IDCustomerBank { get; set; } 
 		public System.Nullable<System.Int32> IDCustomer { get; set; } 
 		public System.String Name { get; set; } 
@@ -7177,6 +8194,7 @@ namespace ITAP.glassCAD.Dictionary.Customer {
     public partial class CustomerContactsRow : System.Data.DataRow {
 		public ITAP.glassCAD.Dictionary.Customer.CustomerDataSet.CustomerContactsDataTable CustomerContactsDataTable { get; } 
 		public ITAP.glassCAD.Dictionary.Customer.CustomerDataSet CustomerDataSet { get; } 
+		public ITAP.glassCAD.Data.DataLayer dataLayer { get; } 
 		public System.Int32 IDCustomerContacts { get; set; } 
 		public System.Nullable<System.Int32> IDCustomer { get; set; } 
 		public System.String Name { get; set; } 
@@ -7211,6 +8229,7 @@ namespace ITAP.glassCAD.Dictionary.Customer {
     public partial class CustomerRow : System.Data.DataRow {
 		public ITAP.glassCAD.Dictionary.Customer.CustomerDataSet.CustomerDataTable CustomerDataTable { get; } 
 		public ITAP.glassCAD.Dictionary.Customer.CustomerDataSet CustomerDataSet { get; } 
+		public ITAP.glassCAD.Data.DataLayer dataLayer { get; } 
 		public System.Int32 IDCustomer { get; set; } 
 		public System.Nullable<System.Int32> IDCustomerGroup { get; set; } 
 		public System.Nullable<System.Guid> Guid { get; set; } 
@@ -7220,8 +8239,11 @@ namespace ITAP.glassCAD.Dictionary.Customer {
 		public System.String Comment { get; set; } 
 		public System.String BarCodeType { get; set; } 
 		public System.Int32 State { get; set; } 
+		public System.Nullable<System.Int32> TimeDelivery { get; set; } 
+		public System.Nullable<System.Int32> TimeDeliveryDogovor { get; set; } 
 		public System.String Code { get; set; } 
 		public System.Int32 Face { get; set; } 
+		public ITAP.glassCAD.Dictionary.People.PeopleDataSet.PeopleRow Manager { get; } 
 		public System.Nullable<System.Int32> IDManager { get; set; } 
 		public System.Nullable<System.DateTime> DtCreated { get; set; } 
 		public System.String INN { get; set; } 
@@ -7257,6 +8279,7 @@ namespace ITAP.glassCAD.Dictionary.Customer {
     public partial class CustomerGroupRow : System.Data.DataRow {
 		public ITAP.glassCAD.Dictionary.Customer.CustomerDataSet.CustomerGroupDataTable CustomerGroupDataTable { get; } 
 		public ITAP.glassCAD.Dictionary.Customer.CustomerDataSet CustomerDataSet { get; } 
+		public ITAP.glassCAD.Data.DataLayer dataLayer { get; } 
 		public System.Int32 IDCustomerGroup { get; set; } 
 		public System.Nullable<System.Int32> IDParent { get; set; } 
 		public System.String Name { get; set; } 
@@ -7283,6 +8306,7 @@ namespace ITAP.glassCAD.Dictionary.Currency {
     public partial class CurrencyRow : System.Data.DataRow {
 		public ITAP.glassCAD.Dictionary.Currency.CurrencyDataSet.CurrencyDataTable CurrencyDataTable { get; } 
 		public ITAP.glassCAD.Dictionary.Currency.CurrencyDataSet CurrencyDataSet { get; } 
+		public ITAP.glassCAD.Data.DataLayer dataLayer { get; } 
 		public System.Int32 IDCurrency { get; set; } 
 		public System.String Name { get; set; } 
 		public System.Nullable<System.Guid> Guid { get; set; } 
@@ -7310,6 +8334,7 @@ namespace ITAP.glassCAD.Dictionary.Currency {
     public partial class CurrencyHistoryRow : System.Data.DataRow {
 		public ITAP.glassCAD.Dictionary.Currency.CurrencyDataSet.CurrencyHistoryDataTable CurrencyHistoryDataTable { get; } 
 		public ITAP.glassCAD.Dictionary.Currency.CurrencyDataSet CurrencyDataSet { get; } 
+		public ITAP.glassCAD.Data.DataLayer dataLayer { get; } 
 		public System.Int32 IDCurrencyHistory { get; set; } 
 		public System.Nullable<System.Int32> IDCurrency { get; set; } 
 		public System.Nullable<System.DateTime> Date { get; set; } 
@@ -7338,6 +8363,7 @@ namespace ITAP.glassCAD.Dictionary.Company {
     public partial class CompanyRow : System.Data.DataRow {
 		public ITAP.glassCAD.Dictionary.Company.CompanyDataSet.CompanyDataTable CompanyDataTable { get; } 
 		public ITAP.glassCAD.Dictionary.Company.CompanyDataSet CompanyDataSet { get; } 
+		public ITAP.glassCAD.Data.DataLayer dataLayer { get; } 
 		public System.Int32 IDCompany { get; set; } 
 		public System.String Name { get; set; } 
 		public System.Nullable<System.Guid> Guid { get; set; } 
@@ -7378,6 +8404,7 @@ namespace ITAP.glassCAD.Dictionary.CauseDefective {
     public partial class CauseDefectiveRow : System.Data.DataRow {
 		public ITAP.glassCAD.Dictionary.CauseDefective.CauseDefectiveDataSet.CauseDefectiveDataTable CauseDefectiveDataTable { get; } 
 		public ITAP.glassCAD.Dictionary.CauseDefective.CauseDefectiveDataSet CauseDefectiveDataSet { get; } 
+		public ITAP.glassCAD.Data.DataLayer dataLayer { get; } 
 		public System.Int32 IDCauseDefective { get; set; } 
 		public System.String Name { get; set; } 
 		public System.Int32 Mode { get; set; } 
@@ -7403,11 +8430,14 @@ namespace ITAP.glassCAD.Dictionary.Calendar {
     public partial class CalendarRow : System.Data.DataRow {
 		public ITAP.glassCAD.Dictionary.Calendar.CalendarDataSet.CalendarDataTable CalendarDataTable { get; } 
 		public ITAP.glassCAD.Dictionary.Calendar.CalendarDataSet CalendarDataSet { get; } 
+		public ITAP.glassCAD.Data.DataLayer dataLayer { get; } 
 		public System.Int32 IDCalendar { get; set; } 
 		public System.Int32 NumPos { get; set; } 
 		public System.String Name { get; set; } 
 		public System.Boolean IsInParallel { get; set; } 
+		public ITAP.glassCAD.Dictionary.Storehouse.StorehouseDataSet.StorehouseRow Storehouse { get; } 
 		public System.Int32 IDStorehouse { get; set; } 
+		public ITAP.glassCAD.Dictionary.Company.CompanyDataSet.CompanyRow Company { get; } 
 		public System.Int32 IDCompany { get; set; } 
 		public System.Int32 Efficiency { get; set; } 
 		public System.String InternalLabelName { get; set; } 
@@ -7437,6 +8467,7 @@ namespace ITAP.glassCAD.Dictionary.Calculation {
     public partial class CalculationRow : System.Data.DataRow {
 		public ITAP.glassCAD.Dictionary.Calculation.CalculationDataSet.CalculationDataTable CalculationDataTable { get; } 
 		public ITAP.glassCAD.Dictionary.Calculation.CalculationDataSet CalculationDataSet { get; } 
+		public ITAP.glassCAD.Data.DataLayer dataLayer { get; } 
 		public System.Int32 IDCalculation { get; set; } 
 		public System.String Name { get; set; } 
 		public System.Int32 NumPos { get; set; } 
@@ -7462,6 +8493,7 @@ namespace ITAP.glassCAD.Dictionary.CalculationVariables {
     public partial class CalculationVariablesRow : System.Data.DataRow {
 		public ITAP.glassCAD.Dictionary.CalculationVariables.CalculationVariablesDataSet.CalculationVariablesDataTable CalculationVariablesDataTable { get; } 
 		public ITAP.glassCAD.Dictionary.CalculationVariables.CalculationVariablesDataSet CalculationVariablesDataSet { get; } 
+		public ITAP.glassCAD.Data.DataLayer dataLayer { get; } 
 		public System.Int32 IDCalculationVariables { get; set; } 
 		public System.String Name { get; set; } 
 		public System.Int32 NumPos { get; set; } 
@@ -7488,6 +8520,7 @@ namespace ITAP.glassCAD.Dictionary.Attributes {
     public partial class AttributesRow : System.Data.DataRow {
 		public ITAP.glassCAD.Dictionary.Attributes.AttributesDataSet.AttributesDataTable AttributesDataTable { get; } 
 		public ITAP.glassCAD.Dictionary.Attributes.AttributesDataSet AttributesDataSet { get; } 
+		public ITAP.glassCAD.Data.DataLayer dataLayer { get; } 
 		public System.Int32 IDAttributes { get; set; } 
 		public System.String Name { get; set; } 
         protected internal AttributesRow(System.Data.DataRowBuilder builder) : base(builder) {
@@ -7546,6 +8579,19 @@ namespace glassPeople.ActivityLibrary.glassCAD.Scanner {
 		public System.Int32 IDPyramid { get; set; } 
 		public System.Int32 IDGlassPack { get; set; } 
 		public System.Int32 IDOrderItemsIdent { get; set; } 
+    }
+    }
+}
+namespace glassPeople.ActivityLibrary.glassCAD.Planing.Status {
+    public partial class AppoitmentsItemsPairSoftChangeActivity {
+    
+    public partial class FoundReplacementMapping {
+		public System.Int32 ToOii { get; set; } 
+		public System.Int32 ToModelId { get; set; } 
+		public System.Int32 ToAppoitmentsItemsId { get; set; } 
+		public System.Int32 FromOii { get; set; } 
+		public System.Int32 FromModelId { get; set; } 
+		public System.Int32 FromAppoitmentsItemsId { get; set; } 
     }
     }
 }

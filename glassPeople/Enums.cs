@@ -75,7 +75,7 @@ namespace ITAP.glassCAD {
 }
 namespace ITAP.glassCAD {
     public enum Roles {
-        Constructor, Technologist, AccountantProcurement, AccountantSelling, Analyst, ProductionPreparation, SalesDirector, RawMaterialsWarehouse, GlassPurchaser, Logistician, PurchaserBackup, DepartmentProductionPreparation, DepartmentQualityControl, DepartmentOrders, QualityControlDuplicateMessage, DepartmentWarehouse, GoodsPurchaser, CEO, QualityControlProductionCEO, DepartmentDrivers, ProductionManager, TechnicalAdmin, OrdersUsers, GlassWarehouse, CheckOrdersProductionPreparation, CustomersUsers, GoodsCatalogUsers, GlassWarehouseOperator, DefectiveOptimizer, Optimizer, AccountantsWarehouseControl, RawMaterialsPurchaser, RawMaterialsWarehouseOperator, QualityControlProduction, QualityControlComplaints, QualityControlComplaintsAlteration, QualityControlComplaintsAlterationAccess, QualityControlComplaintsCEO, QualityControlComplaintsCEO2, QualityControlFinishedGoods, QualityControlFinishedGoodsAlteration, QualityControlFinishedGoodsAlterationAccess, QualityControlFinishedGoodsCEO, QualityControlDefectResponsible, TransportPlanner, TransportUsers
+        Constructor, Technologist, AccountantProcurement, AccountantSelling, Analyst, ProductionPreparation, SalesDirector, RawMaterialsWarehouse, GlassPurchaser, Logistician, PurchaserBackup, QualityControlDuplicateMessage, GoodsPurchaser_NotUse, CEO, QualityControlProductionCEO, ProductionManager, TechnicalAdmin, OrdersUsers, GlassWarehouse, CheckOrdersProductionPreparation_NotUse, CustomersUsers, GoodsCatalogUsers, GlassWarehouseOperator, DefectiveOptimizer, Optimizer, AccountantsWarehouseControl, RawMaterialsPurchaser, RawMaterialsWarehouseOperator, QualityControlProduction, QualityControlComplaints, QualityControlComplaintsAlteration, QualityControlComplaintsAlterationAccess, QualityControlComplaintsCEO, QualityControlComplaintsCEO2, QualityControlFinishedGoods, QualityControlFinishedGoodsAlteration, QualityControlFinishedGoodsAlterationAccess, QualityControlFinishedGoodsCEO, QualityControlDefectResponsible, TransportPlanner, TransportUsers, SkladFinishedStoreOperator
     }
 }
 namespace ITAP.glassCAD.Workflow {
@@ -118,6 +118,16 @@ namespace ITAP.glassCAD.Exchange.Activity.Export {
         FinishedStore, Transport
     }
 }
+namespace ITAP.glassCAD.Documents.UserTasks {
+    public enum StatusFilter {
+        CreatedInstance, RunningInstance, ExecutedInstance, Canceled, None, All
+    }
+}
+namespace ITAP.glassCAD.Documents.UserTasks {
+    public enum TaskType {
+        Task, Message, WorkflowTask
+    }
+}
 namespace ITAP.glassCAD.Documents.Orders {
     public enum ProductionModelElementType {
         Good, Operation, Halfproduction, Production
@@ -146,6 +156,11 @@ namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities {
 namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Documents {
     public enum EntryMode {
         Entry, Cancel
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.User {
+    public enum SetUserBusinessLogicRightAccessMode {
+        Add, Update, Remove
     }
 }
 namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Utilites {

@@ -24,3 +24,14 @@ namespace glassPeople.ActivityLibrary.glassCAD.Planing.Activity.Actualisation {
         }
     }
 }
+
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Components {
+    public partial class WorkflowTemplateActivityAttribute {
+        public WorkflowTemplateActivityAttribute(string name, string groupName, bool a, bool b) {
+            this.ToolBoxName = name;
+            this.Category = groupName;
+            this.IsVerify = a;
+            this.IsWebAccess = b;
+        }
+    }
+}
