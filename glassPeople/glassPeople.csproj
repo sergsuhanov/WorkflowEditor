@@ -141,6 +141,9 @@
     <Compile Include="Designers\SwitchActivityDesigner.xaml.cs">
       <DependentUpon>SwitchActivityDesigner.xaml</DependentUpon>
     </Compile>
+    <Compile Include="EmptyActivityDesigner.xaml.cs">
+      <DependentUpon>EmptyActivityDesigner.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Enums.cs" />
     <Compile Include="Helper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -164,6 +167,10 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="Designers\SwitchActivityDesigner.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="EmptyActivityDesigner.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
