@@ -3,6 +3,20 @@ namespace ITAP.glassCAD.Production {
     public partial class TestActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.EditFormNativeActivity {
     }
 }
+namespace ITAP.glassCAD.Pivot.PlanSnapshot {
+    [ITAP.glassCAD.Dictionary.WorkFlow.Components.WorkflowTemplateActivityAttribute("Аналитика", "Производственный план - Фиксирование", true, true)]
+[System.ComponentModel.DesignerAttribute(typeof(ITAP.glassCAD.Dictionary.WorkFlow.Designers.EmptyActivityDesigner))]
+    public partial class SetPlanSnapshotActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.DataLayerNativeActivity {
+		[System.Activities.RequiredArgumentAttribute()]
+		public System.Activities.InArgument<System.DateTime> RegDate { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Pivot.PlanSnapshot {
+    [ITAP.glassCAD.Dictionary.WorkFlow.Components.WorkflowTemplateActivityAttribute("Аналитика", "Производственный план - Показать", true, true)]
+[System.ComponentModel.DesignerAttribute(typeof(ITAP.glassCAD.Dictionary.WorkFlow.Designers.EmptyActivityDesigner))]
+    public partial class ShowPlanSnapshotActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.PivotEditFormNatveActiity {
+    }
+}
 namespace ITAP.glassCAD.Exchange {
     
     public partial class WriteMessagesActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.DataLayerNativeActivity {
@@ -494,6 +508,11 @@ namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities {
     
     public partial class OrdersActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.Documents.Orders.EditActivity {
 		public System.Activities.InArgument<System.Collections.Generic.List<System.Int32>> Filter { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities {
+    
+    public abstract partial class PivotEditFormNatveActiity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.EditFormNativeActivity {
     }
 }
 namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Documents {
