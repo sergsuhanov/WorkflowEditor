@@ -72,6 +72,7 @@
     <AdapterDataViews>Данные из DataViews</AdapterDataViews>
     <AdapterDB2Connection>Данные из IBM DB2 соединения</AdapterDB2Connection>
     <AdapterDBaseFiles>Данные из dBase файлов</AdapterDBaseFiles>
+    <AdapterDbUserSource>Данные из пользовательского источника</AdapterDbUserSource>
     <AdapterFirebirdConnection>Данные из Firebird соединения</AdapterFirebirdConnection>
     <AdapterInformixConnection>Данные из Informix соединения</AdapterInformixConnection>
     <AdapterMySQLConnection>Данные из MySQL соединения</AdapterMySQLConnection>
@@ -96,8 +97,8 @@
   <Blockly>
     <AllComponents>Все компоненты</AllComponents>
     <AllComponentsFrom>Все компоненты из</AllComponentsFrom>
-    <ColumnName>Имя столбца</ColumnName>
     <ColorHex>Шестнадцатеричный цвет</ColorHex>
+    <ColumnName>Имя колонки</ColumnName>
     <DateTime>Дата и время</DateTime>
     <GetComponentByName>Получить компонент по имени</GetComponentByName>
     <GetCurrentValue>Получить текущее значение</GetCurrentValue>
@@ -126,7 +127,7 @@
     <ThisReport>Этот отчет</ThisReport>
     <To>В</To>
     <Visuals>Визуальные элементы</Visuals>
-</Blockly>
+  </Blockly>
   <Buttons>
     <Add>Добавить</Add>
     <AddAllColumns>Добавить все колонки</AddAllColumns>
@@ -140,6 +141,8 @@
     <Design>Дизайн</Design>
     <Down>Вниз</Down>
     <Duplicate>Копия</Duplicate>
+    <EditAsData>Редактировать как данные</EditAsData>
+    <EditAsText>Редактировать как текст</EditAsText>
     <Export>Экспорт</Export>
     <ForceDelete>Все равно удалить</ForceDelete>
     <Help>Помощь</Help>
@@ -224,7 +227,7 @@
     <GridInterlaced>Чередование</GridInterlaced>
     <GridLines>Линии сетки</GridLines>
     <Heatmap>Тепловая карта</Heatmap>
-    <Histogram>Гистограмм</Histogram>
+    <Histogram>Гистограмма</Histogram>
     <LabelAlignment>Выравнивание:</LabelAlignment>
     <LabelAlignmentHorizontal>Горизонтальное:</LabelAlignmentHorizontal>
     <LabelAlignmentVertical>Вертикальное:</LabelAlignmentVertical>
@@ -323,9 +326,11 @@
     <StripsEditorForm>Редактор полос</StripsEditorForm>
     <Style>Стиль</Style>
     <Sunburst>Солнечные лучи</Sunburst>
+    <Surface>Поверхность</Surface>
     <Treemap>Древовидная</Treemap>
     <TrendLinesEditorForm>Редактор линий тренда</TrendLinesEditorForm>
     <Waterfall>Водопад</Waterfall>
+    <WireframeSurface>Каркасная поверхность</WireframeSurface>
   </Chart>
   <CharterMapEditor>
     <Characters>Символы</Characters>
@@ -441,6 +446,7 @@
     <DashboardWindowTitleNew>Новая панель индикаторов</DashboardWindowTitleNew>
     <DeleteFile>Удалить файл</DeleteFile>
     <DoNotAskMe>Больше не спрашивать</DoNotAskMe>
+    <EnglishSearchRequired>Пожалуйста, используйте английский язык для поисковых запросов.</EnglishSearchRequired>
     <EnterUserNameToLogin>Для входа введите User Name (email).</EnterUserNameToLogin>
     <ExecutionError>Ошибка запуска</ExecutionError>
     <ExpiredDate>Дата истечения срока</ExpiredDate>
@@ -484,7 +490,7 @@
     <LabelPicture>Изображение:</LabelPicture>
     <LabelRenderedReport>Построенный отчет</LabelRenderedReport>
     <LabelResponseAsFile>Ответ в виде файла</LabelResponseAsFile>
-    <LabelResultType>Тип результа:</LabelResultType>
+    <LabelResultType>Тип результата:</LabelResultType>
     <LabelSeparateReport>Отдельный файл отчета(и скриптов)</LabelSeparateReport>
     <LabelShowReport>Отобразить отчет:</LabelShowReport>
     <LabelStartDate>Начальная дата:</LabelStartDate>
@@ -515,7 +521,7 @@
     <Proxy>Прокси</Proxy>
     <PublishMessage>Чтобы опубликовать этот отчет, необходимо передать его на publish.stimulsoft.com</PublishMessage>
     <questionOpenThisFile>Вы действительно хотите открыть '{0}' файл?</questionOpenThisFile>
-    <questionOverrideItem>Вы действительно хотите  перезаписать '{0}' файл?</questionOverrideItem>
+    <questionOverrideItem>Вы действительно хотите перезаписать '{0}' файл?</questionOverrideItem>
     <questionRemoveItem>Вы действительно хотите удалить '{0}' файл?</questionRemoveItem>
     <RefreshList>Обновить список</RefreshList>
     <ReportDocumentFormatNotRecognized>Формат файла '{0}' не распознан как формат построенного отчета!</ReportDocumentFormatNotRecognized>
@@ -673,6 +679,7 @@
     <StiHeaderBand>Заголовок данных</StiHeaderBand>
     <StiHierarchicalBand>Дерево</StiHierarchicalBand>
     <StiHorizontalLinePrimitive>Горизонтальная линия</StiHorizontalLinePrimitive>
+    <StiIcon>Значок</StiIcon>
     <StiImage>Изображение</StiImage>
     <StiIndicator>Индикатор</StiIndicator>
     <StiListBox>Список</StiListBox>
@@ -693,6 +700,7 @@
     <StiPivotSummary>Сводная сумма</StiPivotSummary>
     <StiPivotTable>Сводная таблица</StiPivotTable>
     <StiProgress>Прогресс</StiProgress>
+    <StiRangeSelector>Селектор диапазона</StiRangeSelector>
     <StiRectanglePrimitive>Прямоугольник</StiRectanglePrimitive>
     <StiRegionMap>Региональная карта</StiRegionMap>
     <StiReport>Отчет</StiReport>
@@ -704,6 +712,7 @@
     <StiShape>Геометрия</StiShape>
     <StiSignature>Подпись</StiSignature>
     <StiSingleSelection>Одиночный выбор</StiSingleSelection>
+    <StiSlider>Ползунок</StiSlider>
     <StiSparkline>Спарклайн</StiSparkline>
     <StiSubReport>Вложенный отчет</StiSubReport>
     <StiSystemText>Системный текст</StiSystemText>
@@ -744,6 +753,7 @@
     <ClearFilterFrom>Очистить фильтр от '{0}'</ClearFilterFrom>
     <ColorScale>Цветовая шкала</ColorScale>
     <ColumnInteractions>Взаимодействие колонок</ColumnInteractions>
+    <CreateDataBinding>Создать привязку данных</CreateDataBinding>
     <CustomFilter>Пользовательский фильтр ...</CustomFilter>
     <DashboardsNotSupportedIntheWPFDesigner>Панели индикаторов не поддерживаются в WPF Дизайнере.</DashboardsNotSupportedIntheWPFDesigner>
     <DataBars>Гистограмма</DataBars>
@@ -760,6 +770,7 @@
     <DrillDownSelected>Детализация выделенных</DrillDownSelected>
     <DrillUp>Детализация на предыдущем уровне</DrillUp>
     <DuplicateField>Создать копию поля</DuplicateField>
+    <EditDataBinding>Редактировать привязку данных</EditDataBinding>
     <EditExpression>Изменить выражение</EditExpression>
     <EditField>Изменить поле</EditField>
     <EmptyDashboardFooter>Перетащите компонент из Инструментария или данные из Словаря данных</EmptyDashboardFooter>
@@ -782,6 +793,8 @@
     <NewMeasure>Новый показатель</NewMeasure>
     <NoRanges>Нет диапазонов</NoRanges>
     <NoResult>Нет результатов</NoResult>
+    <NResult>{0} результат</NResult>
+    <NResults>{0} результатов</NResults>
     <NSelected>{0} выбрано</NSelected>
     <Nulls>(Nulls)</Nulls>
     <NumberFilters>Числовые фильтры</NumberFilters>
@@ -925,16 +938,20 @@
   <Dialogs>
     <StiButtonControl>Кнопка</StiButtonControl>
     <StiCheckBoxControl>Флажок</StiCheckBoxControl>
+    <StiCheckBoxGroupControl>Группа флажков</StiCheckBoxGroupControl>
     <StiCheckedListBoxControl>Список с флажками</StiCheckedListBoxControl>
     <StiComboBoxControl>Поле со списком</StiComboBoxControl>
+    <StiDatePickerControl>Выбор даты</StiDatePickerControl>
     <StiDateTimePickerControl>Выбор даты</StiDateTimePickerControl>
     <StiForm>Форма</StiForm>
     <StiGridControl>Таблица</StiGridControl>
     <StiGroupBoxControl>Группа</StiGroupBoxControl>
     <StiLabelControl>Надпись</StiLabelControl>
     <StiListBoxControl>Список</StiListBoxControl>
+    <StiListControl>Список</StiListControl>
     <StiListViewControl>Список значков</StiListViewControl>
     <StiLookUpBoxControl>Поле со списком с кодом</StiLookUpBoxControl>
+    <StiNumberInputControl>Ввод числа</StiNumberInputControl>
     <StiNumericUpDownControl>Число вверх вниз</StiNumericUpDownControl>
     <StiPanelControl>Панель</StiPanelControl>
     <StiPictureBoxControl>Рисунок</StiPictureBoxControl>
@@ -943,13 +960,16 @@
     <StiRadioGroupControl>Radio группа</StiRadioGroupControl>
     <StiReportControl>Элемент управления</StiReportControl>
     <StiRichTextBoxControl>Rich текст</StiRichTextBoxControl>
+    <StiSelectControl>Выбор</StiSelectControl>
     <StiSliderControl>Слайдер</StiSliderControl>
+    <StiSwitchControl>Тогл</StiSwitchControl>
     <StiTextBoxControl>Текстовое поле</StiTextBoxControl>
-    <StiToggleControl>Тогл</StiToggleControl>
+    <StiTextInputControl>Ввод текста</StiTextInputControl>
     <StiTreeViewControl>Дерево</StiTreeViewControl>
   </Dialogs>
   <Editor>
     <AllowSQLFormatting>Разрешить SQL форматирование</AllowSQLFormatting>
+    <AutomaticallyGeneratedExpression>Это автоматически сгенерированное выражение.</AutomaticallyGeneratedExpression>
     <BetweenMetrics>Можно выбрать от 1 до 10 метрик.</BetweenMetrics>
     <CantFind>Данные, удовлетворяющие условию поиска, не обнаружены.</CantFind>
     <CollapseToDefinitions>Свернуть в определения</CollapseToDefinitions>
@@ -1046,6 +1066,7 @@
     <ContinuousPages>Непрерывные страницы</ContinuousPages>
     <DataAndHeaders>Данные и Заголовки</DataAndHeaders>
     <DataAndHeadersFooters>Данные и Заголовки/Итоги</DataAndHeadersFooters>
+    <DataExport>Экспорт данных</DataExport>
     <DataOnly>Только данные</DataOnly>
     <DigitalSignature>Цифровая подпись</DigitalSignature>
     <DigitalSignatureCertificateNotSelected>Сертификат не выбран</DigitalSignatureCertificateNotSelected>
@@ -1123,7 +1144,9 @@
     <MultipleFiles>Несколько файлов</MultipleFiles>
     <NoMoreThan>Не больше чем</NoMoreThan>
     <OpenAfterExport>Открыть после экспорта</OpenAfterExport>
+    <Ordered>Упорядочено</Ordered>
     <PdfACompliance>PDF/A соглашение</PdfACompliance>
+    <PdfUA>PDF/UA (Универсальная доступность)</PdfUA>
     <PrintingReport>Печать отчета</PrintingReport>
     <RemoveEmptySpaceAtBottom>Убрать пустое место внизу страницы</RemoveEmptySpaceAtBottom>
     <RestrictEditing>Ограничение Редактирования:</RestrictEditing>
@@ -1294,7 +1317,7 @@
     <AddLevel>Добавить уровень</AddLevel>
     <AssignExpression>Присвоить выражение</AssignExpression>
     <BreakIfTrue>Прервать обработку</BreakIfTrue>
-    <BreakIfTrueToolTip>Прекращать обработку условий если текущее выполняется</BreakIfTrueToolTip>
+    <BreakIfTrueToolTip>Прекращать обработку условий если текущее выполняется.</BreakIfTrueToolTip>
     <ChangeBorder>Изменить границу...</ChangeBorder>
     <ChangeFont>Изменить шрифт</ChangeFont>
     <ComponentIsEnabled>Компонент включен</ComponentIsEnabled>
@@ -1316,6 +1339,7 @@
     <AccessToken>Токен доступа</AccessToken>
     <AccountKey>Ключ аккаунта</AccountKey>
     <AccountName>Наименование аккаунта</AccountName>
+    <AnyoneWithTheLink>Доступно всем по ссылке</AnyoneWithTheLink>
     <AuthorizationCode>Код авторизации</AuthorizationCode>
     <BlobContentType>Тип содержимого Blob</BlobContentType>
     <BlobName>Наименование Blob</BlobName>
@@ -1333,6 +1357,7 @@
     <FirebirdEdit>Изменение Firebird соединения</FirebirdEdit>
     <FirebirdNew>Новое Firebird соединение</FirebirdNew>
     <FirstRowIsHeader>Первая строка это заголовки</FirstRowIsHeader>
+    <GeneralAccess>Общий доступ</GeneralAccess>
     <GetAuthorizationCode>Получить код авторизации</GetAuthorizationCode>
     <GetTokens>Получить токен</GetTokens>
     <GisEdit>Изменение GIS данных</GisEdit>
@@ -1371,6 +1396,7 @@
     <RefreshToken>Обновить токен</RefreshToken>
     <RelationDirection>Направление связи:</RelationDirection>
     <ReportConnections>Соединения отчета</ReportConnections>
+    <Restricted>Ограничено</Restricted>
     <SelectData>Выберите данные</SelectData>
     <ServiceAccountKeyFile>Файл ключа сервисного аккаунта</ServiceAccountKeyFile>
     <SpreadsheetId>Идентификатор таблицы</SpreadsheetId>
@@ -1403,6 +1429,7 @@
     <CompilingReport>Компиляция отчета</CompilingReport>
     <CopyPropertyName>Копировать имя свойства</CopyPropertyName>
     <DockingPanels>Панели</DockingPanels>
+    <Four>Четыре</Four>
     <HtmlPreview>HTML просмотр</HtmlPreview>
     <JsPreview>JS просмотр</JsPreview>
     <labelPleaseSelectTypeOfInterface>Пожалуйста, выберите тип интерфейса</labelPleaseSelectTypeOfInterface>
@@ -1464,6 +1491,7 @@
     <DictionarySaveAs>Сохранить словарь как...</DictionarySaveAs>
     <DragNewDataSource>перетащите данные на эту панель</DragNewDataSource>
     <DragNewReport>перетащите отчет на эту панель</DragNewReport>
+    <EditData>Редактировать данные</EditData>
     <EditQuery>Изменить запрос</EditQuery>
     <EnableDataMonitor>Включить монитор данных</EnableDataMonitor>
     <ExecutedSQLStatementSuccessfully>Запрос SQL выполнен успешно</ExecutedSQLStatementSuccessfully>
@@ -1473,6 +1501,8 @@
     <GetColumnsFromAssembly>Взять колонки из сборки</GetColumnsFromAssembly>
     <HideUnsupportedDatabases>Скрыть неподдерживаемые источники данных</HideUnsupportedDatabases>
     <ImportRelations>Импортировать связи</ImportRelations>
+    <InsertColumnLeft>Вставить столбец слева</InsertColumnLeft>
+    <InsertColumnRight>Вставить столбец справа</InsertColumnRight>
     <LabelSeparator>Разделитель:</LabelSeparator>
     <MarkUsedItems>Пометить используемые элементы</MarkUsedItems>
     <NewBusinessObject>Новый бизнес-объект</NewBusinessObject>
@@ -1500,6 +1530,8 @@
     <SortItems>Сортировать элементы</SortItems>
     <Synchronize>Синхронизировать</Synchronize>
     <SynchronizeHint>Синхронизирует содержимое Хранилища Данных и содержимое Словаря</SynchronizeHint>
+    <TableEdit>Редактировать таблицу</TableEdit>
+    <TableNew>Новая таблица</TableNew>
     <TextDragDropFileHere>Перетяните сюда файл</TextDragDropFileHere>
     <TextDragDropImageHere>Перетяните сюда файл изображения</TextDragDropImageHere>
     <TextDropDataFileHere>Перетяните сюда файл данных</TextDropDataFileHere>
@@ -1545,6 +1577,7 @@
     <SampleText>текст</SampleText>
     <TextFormat>Формат текста</TextFormat>
     <Time>Время</Time>
+    <TimeFormat>Формат времени</TimeFormat>
     <title>Формат</title>
     <UseAbbreviation>Использовать аббревиатуру</UseAbbreviation>
     <UseGroupSeparator>Разделитель групп разрядов</UseGroupSeparator>
@@ -1733,6 +1766,7 @@
     <pageExpression>Выражение</pageExpression>
     <pageSummary>Итог</pageSummary>
     <pageSystemVariable>Системная переменная</pageSystemVariable>
+    <RunningAverage>Нарастающее среднее</RunningAverage>
     <RunningTotal>Нарастающий итог</RunningTotal>
     <SummaryRunning>Диапазон расчета</SummaryRunning>
     <SummaryRunningByColumn>Колонка</SummaryRunningByColumn>
@@ -2001,6 +2035,7 @@
     <StiPdfDigitalSignatureElement>Этот компонент используется для указания места цифровой подписи и полей из сертификата при экспорте отчета в файл Adobe PDF.</StiPdfDigitalSignatureElement>
     <StiPivotTableElement>Этот элемент используется для представления структурированных данных в виде таблицы.</StiPivotTableElement>
     <StiProgressElement>Этот элемент используется для отображения процентного соотношения между входными данными. Может быть представлен в различном режиме: кольцо, круг, гистограмма.</StiProgressElement>
+    <StiRangeSelectorElement>Этот компонент используется для выбора диапазона значений на шкале или временной шкале. Он позволяет пользователям визуально определить минимальный и максимальный пределы диапазона.</StiRangeSelectorElement>
     <StiRectanglePrimitive>Геометрический примитив - прямоугольник, используется для визуального оформления отчетов. Левый верхний угол прямоугольника может находится в области одного бэнда, а правый нижний угол - в области другого бэнда.</StiRectanglePrimitive>
     <StiRegionMapElement>Этот элемент используется для отображения данных, привязанных к географическим локациям.</StiRegionMapElement>
     <StiReportSummaryBand>Этот бэнд используется для вывода итога по всему отчету. Бэнд выводится один раз в конце отчета.</StiReportSummaryBand>
@@ -2068,6 +2103,7 @@
     <CompilationAccessForceInterpretation>Документы с компиляцией будут открываться без запроса, с автоматическим включением режима интерпретации, в котором не используется процесс компиляции.</CompilationAccessForceInterpretation>
     <CompilationModeEnabling>Вы переходите в режим компиляции. Этот режим позволяет запускать другой код, который иногда может быть вредоносным. Пожалуйста, используйте этот режим только в том случае, если вы понимаете все риски и согласны с ними. Нажмите кнопку {0}, чтобы продолжить.</CompilationModeEnabling>
     <ComponentSize>Изменить размер выделенных компонентов.</ComponentSize>
+    <ComponentsMenu>Открывает меню Components, содержащее неиспользуемые элементы панели индикаторов на мобильной поверхности.</ComponentsMenu>
     <CopyStyle>Копировать стиль</CopyStyle>
     <CopyToClipboard>Скопировать в буфер обмена</CopyToClipboard>
     <CurrencySymbol>Выбрать символ валюты.</CurrencySymbol>
@@ -2124,6 +2160,7 @@
     <menuEditCut>Вырезать выделенные компоненты из отчета, и положить их в буфер обмена.</menuEditCut>
     <menuEditDelete>Удалить выделенные компоненты из отчета.</menuEditDelete>
     <menuEditPaste>Вставить содержимое буфера обмена в отчет.</menuEditPaste>
+    <menuExportSettings>Открывает редактор Настройки экспорта для текущего отчета или панели индикаторов. Настройки применяются только при экспорте текущего отчета или панели индикаторов.</menuExportSettings>
     <menuFAQPage>Перейти на Web-страницу, на которой размещены Часто Задаваемые Вопросы.</menuFAQPage>
     <menuGlobalizationStrings>Вызвать редактор "Строк перевода" текущего отчета.</menuGlobalizationStrings>
     <menuHelpAboutProgramm>Получить информацию о версии генератора отчетов и версии .NET Framework.</menuHelpAboutProgramm>
@@ -2156,11 +2193,17 @@
     <PageSize>Выбрать размер страницы текущей страницы.</PageSize>
     <PagesManager>Запускает Менеджер Страниц.</PagesManager>
     <PressF1>Нажмите F1 для справки</PressF1>
+    <PropertiesButton>Активирует панель свойств с свойствами шаблона отчета.</PropertiesButton>
     <Redo>Повторить ранее отменные изменения в дизайнере отчетов.</Redo>
+    <RemoveMobileSurfaceButton>Удаляет мобильную поверхность из текущей панели индикаторов.</RemoveMobileSurfaceButton>
     <ReportNew>Создать новый отчет.</ReportNew>
     <ReportOpen>Открыть отчет в дизайнере.</ReportOpen>
     <ReportPreview>Просмотр редактируемого отчета.</ReportPreview>
     <ReportSave>Сохранить редактируемый отчет.</ReportSave>
+    <ScriptEvalAccess1>Этот документ использует Script Eval. Если документ получен из доверенного источника, вы можете нажать кнопку «Открыть» для доступа к нему.</ScriptEvalAccess1>
+    <ScriptEvalAccess2>Если вы не уверены в источнике документа, но всё равно хотите его просмотреть, вы можете нажать кнопку «Открыть в безопасном режиме». В этом случае Script Eval будет проигнорирован и не выполнится.</ScriptEvalAccess2>
+    <ScriptSecurityFullAccess>Полный доступ в скриптах (без ограничений, потенциально небезопасно).</ScriptSecurityFullAccess>
+    <ScriptSecuritySafeMode>Безопасный доступ в скриптах (ограниченные возможности для безопасности).</ScriptSecuritySafeMode>
     <SelectAll>Выбрать все компоненты на странице.</SelectAll>
     <SelectUILanguage>Выбрать язык интерфейса.</SelectUILanguage>
     <SendToBack>Переместить выбранные компоненты назад по отношению к другим компонентам.</SendToBack>
@@ -2179,6 +2222,8 @@
     <TextFormat>Выбрать формат отображения значений.</TextFormat>
     <ToolbarStyle>Применить выбранный стиль ко всем выделенным компонентам.</ToolbarStyle>
     <Undo>Отменить последнее изменение в отчете.</Undo>
+    <ViewModeDesktopButton>Активирует поверхность для компьютера.</ViewModeDesktopButton>
+    <ViewModeMobileButton>Активирует мобильную поверхность.</ViewModeMobileButton>
     <WordWrap>Переносить текст.</WordWrap>
     <Zoom>Указать масштаб отображения отчета в дизайнере.</Zoom>
   </HelpDesigner>
@@ -2266,6 +2311,7 @@
     <PageSize>Изменить параметры страницы в отчете.</PageSize>
     <Parameters>Отображение панели параметров отчета.</Parameters>
     <PdfACompliance>Поддержка стандарта долгосрочного архивного хранения электронных документов.</PdfACompliance>
+    <PdfUniversalAccessibility>Поддержка стандарта универсальной доступности электронных документов и информации.</PdfUniversalAccessibility>
     <Print>Напечатать отчет.</Print>
     <PutFeedPageCode>Разграничивать страницы в конечном документе при помощи специального символа.</PutFeedPageCode>
     <RangePages>Номера страниц, которые необходимо обработать. Указать можно одну страницу, список страниц (используя запятые как разделитель), а также задать диапазон, задав начальную страницу диапазона, разделитель "-", и конечную страницу диапазона. Для примера: 1,3,5-12.</RangePages>
@@ -2320,6 +2366,7 @@
     <menuContextClone>Клонировать...</menuContextClone>
     <menuContextDesign>Редактировать...</menuContextDesign>
     <menuContextTextFormat>Формат...</menuContextTextFormat>
+    <menuConvertTo>Преобразовать в {0}</menuConvertTo>
     <menuConvertToCheckBox>Конвертировать во Флажок</menuConvertToCheckBox>
     <menuConvertToImage>Конвертировать в Изображение</menuConvertToImage>
     <MenuConvertToRichText>Конвертировать в Rich-текст</MenuConvertToRichText>
@@ -2344,6 +2391,7 @@
     <menuEditDataTransformationNew>Новое преобразование данных...</menuEditDataTransformationNew>
     <menuEditDelete>&amp;Удалить</menuEditDelete>
     <menuEditEdit>Изменить</menuEditEdit>
+    <menuEditEditInDesigner>Редактировать в дизайнере</menuEditEditInDesigner>
     <menuEditFunctionNew>Новая функция...</menuEditFunctionNew>
     <menuEditImportRelations>Импортировать связи...</menuEditImportRelations>
     <menuEditPaste>Вст&amp;авить</menuEditPaste>
@@ -2468,7 +2516,7 @@
     <ShareYourReportYouShouldSave>Для того, чтобы предоставить общий доступ к отчету, его необходимо сохранить в Stimulsoft Cloud!</ShareYourReportYouShouldSave>
     <SwitchingBetweenModes>Переключение между режимами приведет к потере изменений. Вы хотите продолжить?</SwitchingBetweenModes>
     <SwitchParametersOrientation>Измените значение свойства отчета 'Расположение параметров' на '{0}', для того чтобы эта категория отображалась на панели параметров.</SwitchParametersOrientation>
-    <TextRegistrationSuccessfully>Регистрация прошла успешно!</TextRegistrationSuccessfully>
+    <TextRegistrationSuccessfully>Регистрация прошла успешно! Письмо было отправлено на адрес "{0}". Оно содержит ссылку для подтверждения вашей регистрации. Для завершения регистрации, пожалуйста, перейдите по ссылке из полученного вами письма.</TextRegistrationSuccessfully>
     <ThisFieldIsNotSpecified>Это поле не заполнено!</ThisFieldIsNotSpecified>
     <ThisFunctionEmbedsAllReportDataToTheReport>Эта функция встраивает все данные отчета в ресурсы отчета и делает отчет автономным. Будьте осторожны! Все настройки данных будут изменены и не могут быть восстановлены после данного действия. Сначала необходимо сделать резервную копию отчета. {0} Вы уверены?</ThisFunctionEmbedsAllReportDataToTheReport>
     <YouNeedToLoginFirstToStartUsingTheSoftware>Вы должны войти в систему, чтобы начать использовать приложение.</YouNeedToLoginFirstToStartUsingTheSoftware>
@@ -2538,6 +2586,7 @@
     <AuthUserNameOrPasswordIsNotCorrect>Имя пользователя или пароль указаны неверно!</AuthUserNameOrPasswordIsNotCorrect>
     <AuthUserNameShouldLookLikeAnEmailAddress>Необходимо указать Email адрес для имени пользователя!</AuthUserNameShouldLookLikeAnEmailAddress>
     <AuthWorkspaceNameAlreadyInUse>Наименование рабочего пространства уже используется!</AuthWorkspaceNameAlreadyInUse>
+    <CertificateNotFound>Сертификат не найден!</CertificateNotFound>
     <CommandTimeOut>Время ожидания выполнения команды истекло!</CommandTimeOut>
     <Congratulations>Поздравления!</Congratulations>
     <DeveloperInformation>Информация для разработчиков</DeveloperInformation>
@@ -2545,7 +2594,9 @@
     <EndDateShouldBeGreaterThanStartDate>Дата завершения должна быть больше даты начала!</EndDateShouldBeGreaterThanStartDate>
     <EnterCurrentPassword>Введите текущий пароль!</EnterCurrentPassword>
     <EnterNewPassword>Введите новый пароль!</EnterNewPassword>
+    <Error>Ошибка</Error>
     <ExecutionError>Ошибка запуска</ExecutionError>
+    <ExpressionValidationFailed>Не удалось проверить выражение.</ExpressionValidationFailed>
     <GracePeriod>Льготный период вашей подписки истекает через {0} дня(-ей).</GracePeriod>
     <IsIdentical>"{0}" и "{1}" идентичны."</IsIdentical>
     <IsNotAuthorized>Нет доступа к "{0}"!</IsNotAuthorized>
@@ -2562,8 +2613,13 @@
     <ItemCantBeMovedToSpecifiedPlace>Элемент не может быть перемещен в указанное место!</ItemCantBeMovedToSpecifiedPlace>
     <ItemDoesNotSupport>Элемент не поддерживает "{0}"!</ItemDoesNotSupport>
     <KeyAndToKeyAreEqual>Key и ToKey равны!</KeyAndToKeyAreEqual>
+    <LengthRange>Длина должна быть между {0} и {1}.</LengthRange>
     <MaximumComputers>Достигнут лимит подписки!</MaximumComputers>
+    <MaximumLength>Максимальная длина {0}.</MaximumLength>
+    <MaximumValue>Максимум {0}.</MaximumValue>
     <MessageMaximumFileSizeExceeded>Внимание! Вы хотите добавить файл, но его размер превышает максимально-допустимый размер. Все равно добавить этот файл (обработка отчета может замедлиться)?</MessageMaximumFileSizeExceeded>
+    <MinimumLength>Минимальная длина {0}.</MinimumLength>
+    <MinimumValue>Минимум {0}.</MinimumValue>
     <NewDesignerAvailable>Stimulsoft Designer {0} доступен.</NewDesignerAvailable>
     <NewProduct>К Вашей подписке добавлен новый продукт!</NewProduct>
     <NewVersionsAvailable>Новая версия</NewVersionsAvailable>
@@ -2574,7 +2630,7 @@
     <NotificationFileUploading>Загружается "{0}".</NotificationFileUploading>
     <NotificationItemDelete>Элементы удаляются.</NotificationItemDelete>
     <NotificationItemDeleteComplete>Удаление элементов завершено успешно.</NotificationItemDeleteComplete>
-    <NotificationItemExtraComponentRequired>Требуется  установить дополнительный компонент</NotificationItemExtraComponentRequired>
+    <NotificationItemExtraComponentRequired>Требуется установить дополнительный компонент</NotificationItemExtraComponentRequired>
     <NotificationItemInstallToRunWebView>Установите среду выполнения WebView2 для правильного запуска элемента web-контента.</NotificationItemInstallToRunWebView>
     <NotificationItemInstallWebView>Для корректной работы Blockly редактора, необходимо установить среду выполнения WebView2.</NotificationItemInstallWebView>
     <NotificationItemRestore>Элементы восстанавливаются.</NotificationItemRestore>
@@ -2588,7 +2644,7 @@
     <NotificationOperationAborted>Операция прервана!</NotificationOperationAborted>
     <NotificationPackageRequiredToDisplay>Для отображения данного контента необходимо скачать пакет "{0}" с NuGet</NotificationPackageRequiredToDisplay>
     <NotificationRecycleBinCleaning>Корзина очищается.</NotificationRecycleBinCleaning>
-    <NotificationRecycleBinCleaningComplete>Очистка корзхины завершена успешно.</NotificationRecycleBinCleaningComplete>
+    <NotificationRecycleBinCleaningComplete>Очистка корзины завершена успешно.</NotificationRecycleBinCleaningComplete>
     <NotificationRecycleBinWaitingProcessing>Ожидается очистка корзины.</NotificationRecycleBinWaitingProcessing>
     <NotificationReportExporting>Отчет "{0}" экспортируется</NotificationReportExporting>
     <NotificationReportExportingComplete>Отчет "{0}" экспортирован успешно.</NotificationReportExportingComplete>
@@ -2620,6 +2676,9 @@
     <NotificationTransferring>"{0}" перемещен в "{1}".</NotificationTransferring>
     <NotificationTransferringComplete>"{0}" успешно перемещен в "{1}".</NotificationTransferringComplete>
     <NotificationValueIsNotCorrect>Значение некорректно для этого типа {0}</NotificationValueIsNotCorrect>
+    <OnlyDigitsAllowed>Разрешены только цифры.</OnlyDigitsAllowed>
+    <OnlyLettersAllowed>Разрешены только буквы.</OnlyLettersAllowed>
+    <OnlyLettersAndDigitsAllowed>Разрешены только буквы и цифры.</OnlyLettersAndDigitsAllowed>
     <OutOfRange>Выход за пределы диапазона ("{0}")!</OutOfRange>
     <ParsingCommandException>Исключение обработки команды в указанном xml: {0}</ParsingCommandException>
     <PleaseLogin>Пожалуйста, войдите в систему, используя свои учетные данные Stimulsoft, или зарегистрируйте новую учетную запись перед публикацией отчета.</PleaseLogin>
@@ -2653,13 +2712,19 @@
     <SpecifiedItemIsNot>Указанный элемент не "{0}"!</SpecifiedItemIsNot>
     <SubscriptionExpired>Срок действия Вашей подписки истек!</SubscriptionExpired>
     <SubscriptionExpiredDate>Срок действия Вашей подписки истечет {0}</SubscriptionExpiredDate>
-    <SubscriptionExpiredDays>Срок подписки истекает</SubscriptionExpiredDays>
+    <SubscriptionExpiredDays>Срок действия истекает через {0} дней</SubscriptionExpiredDays>
     <SubscriptionExpiredExt>Срок вашей подписки истек. Обновите подписку, чтобы получить последнюю версию.</SubscriptionExpiredExt>
     <SubscriptionExpiredShort>Подписка истекла</SubscriptionExpiredShort>
     <SubscriptionsOut10>10 дней осталось, до завершения срока действия подписки!</SubscriptionsOut10>
     <SubscriptionsOut20>Срок действия подписки истекает через 20 дней!</SubscriptionsOut20>
     <SuccessfullyRenewed>Ваша подписка была успешно обновлена!</SuccessfullyRenewed>
     <TrialToLicense>Спасибо, что выбрали наш программный продукт!</TrialToLicense>
+    <UrlMustUseHttpOrHttps>URL должен использовать http:// или https://</UrlMustUseHttpOrHttps>
+    <ValueIsRequired>Значение обязательно!</ValueIsRequired>
+    <ValueMatchPattern>Значение не соответствует требуемому формату.</ValueMatchPattern>
+    <ValueMustBeGreaterOrEqual>Значение должно быть больше или равно {0}.</ValueMustBeGreaterOrEqual>
+    <ValueMustBeLessOrEqual>Значение должно быть меньше или равно {0}.</ValueMustBeLessOrEqual>
+    <ValueRange>Число должно быть между {0} и {1}.</ValueRange>
     <VersionCopyFromItem>Копия элемента "{0}".</VersionCopyFromItem>
     <VersionCreatedFromFile>Создано из файла "{0}".</VersionCreatedFromFile>
     <VersionCreatedFromItem>Создано из элемента "{0}".</VersionCreatedFromItem>
@@ -2817,6 +2882,7 @@
     <LinearScaleBarCategory>Линейная шкала</LinearScaleBarCategory>
     <LinearScaleCategory>Линейная шкала</LinearScaleCategory>
     <ListBoxCategory>Список</ListBoxCategory>
+    <MacroDataCategory>Макро данные</MacroDataCategory>
     <MainCategory>Основные</MainCategory>
     <MarkerCategory>Маркер</MarkerCategory>
     <MathFormulaCategory>Математическая формула</MathFormulaCategory>
@@ -3190,9 +3256,19 @@
     <StiDashboardContentAlignmentRight>Справа</StiDashboardContentAlignmentRight>
     <StiDashboardContentAlignmentStretchX>Растянуть по X</StiDashboardContentAlignmentStretchX>
     <StiDashboardContentAlignmentStretchXY>Растянуть по XY</StiDashboardContentAlignmentStretchXY>
+    <StiDataJoinTypeCross>Перекрестное</StiDataJoinTypeCross>
+    <StiDataJoinTypeFull>Полное</StiDataJoinTypeFull>
+    <StiDataJoinTypeInner>Внутреннее</StiDataJoinTypeInner>
+    <StiDataJoinTypeLeft>Слева</StiDataJoinTypeLeft>
+    <StiDataJoinTypeRight>Справа</StiDataJoinTypeRight>
     <StiDateSelectionModeAutoRange>Автодиапазон</StiDateSelectionModeAutoRange>
     <StiDateSelectionModeRange>Диапазон</StiDateSelectionModeRange>
     <StiDateSelectionModeSingle>Один</StiDateSelectionModeSingle>
+    <StiDateTimeStepAggregationAverage>Среднее</StiDateTimeStepAggregationAverage>
+    <StiDateTimeStepAggregationCount>Количество</StiDateTimeStepAggregationCount>
+    <StiDateTimeStepAggregationMax>Максимум</StiDateTimeStepAggregationMax>
+    <StiDateTimeStepAggregationMin>Минимум</StiDateTimeStepAggregationMin>
+    <StiDateTimeStepAggregationSum>Сумма</StiDateTimeStepAggregationSum>
     <StiDateTimeTypeDate>Дата</StiDateTimeTypeDate>
     <StiDateTimeTypeDateAndTime>Дата и время</StiDateTimeTypeDateAndTime>
     <StiDateTimeTypeTime>Время</StiDateTimeTypeTime>
@@ -3258,6 +3334,8 @@
     <StiFilterDataTypeString>Строка</StiFilterDataTypeString>
     <StiFilterEngineReportEngine>Ядро генератора</StiFilterEngineReportEngine>
     <StiFilterEngineSQLQuery>Запрос</StiFilterEngineSQLQuery>
+    <StiFilterInclusionModeAlways>Всегда</StiFilterInclusionModeAlways>
+    <StiFilterInclusionModeSelectionOnly>Только выбранное</StiFilterInclusionModeSelectionOnly>
     <StiFilterItemArgument>Аргумент</StiFilterItemArgument>
     <StiFilterItemExpression>Выражение</StiFilterItemExpression>
     <StiFilterItemValue>Значение</StiFilterItemValue>
@@ -3319,6 +3397,8 @@
     <StiImageRotationRotate180>Повернуть на 180°</StiImageRotationRotate180>
     <StiImageRotationRotate90CCW>Повернуть на 90° против часовой стрелки</StiImageRotationRotate90CCW>
     <StiImageRotationRotate90CW>Повернуть на  90° по часовой стрелке</StiImageRotationRotate90CW>
+    <StiIndicatorValueTypeValue>Значение</StiIndicatorValueTypeValue>
+    <StiIndicatorValueTypeValueTarget>Значение / Цель</StiIndicatorValueTypeValueTarget>
     <StiInteractionOnClick>Нет</StiInteractionOnClick>
     <StiInteractionOnClickApplyFilter>Применять фильтр</StiInteractionOnClickApplyFilter>
     <StiInteractionOnClickDrillDown>Детализация</StiInteractionOnClickDrillDown>
@@ -3382,6 +3462,16 @@
     <StiMarkerTypeStar7>Звезда с 7 лучами</StiMarkerTypeStar7>
     <StiMarkerTypeStar8>Звезда с 8 лучами</StiMarkerTypeStar8>
     <StiMarkerTypeTriangle>Треугольник</StiMarkerTypeTriangle>
+    <StiNavigatorButtonVisibilityCancel>Отмена</StiNavigatorButtonVisibilityCancel>
+    <StiNavigatorButtonVisibilityDelete>Удалить</StiNavigatorButtonVisibilityDelete>
+    <StiNavigatorButtonVisibilityEdit>Изменить</StiNavigatorButtonVisibilityEdit>
+    <StiNavigatorButtonVisibilityFirst>Первый</StiNavigatorButtonVisibilityFirst>
+    <StiNavigatorButtonVisibilityInsert>Вставить</StiNavigatorButtonVisibilityInsert>
+    <StiNavigatorButtonVisibilityLast>Последний</StiNavigatorButtonVisibilityLast>
+    <StiNavigatorButtonVisibilityNext>Далее</StiNavigatorButtonVisibilityNext>
+    <StiNavigatorButtonVisibilityPost>Применить</StiNavigatorButtonVisibilityPost>
+    <StiNavigatorButtonVisibilityPrior>Предыдущий</StiNavigatorButtonVisibilityPrior>
+    <StiNavigatorButtonVisibilityRefresh>Обновить</StiNavigatorButtonVisibilityRefresh>
     <StiNestedFactorHigh>Высокий</StiNestedFactorHigh>
     <StiNestedFactorLow>Низкий</StiNestedFactorLow>
     <StiNestedFactorNormal>Нормальный</StiNestedFactorNormal>
@@ -3412,6 +3502,8 @@
     <StiOrientationVertical>Вертикальный</StiOrientationVertical>
     <StiPageOrientationLandscape>Альбом</StiPageOrientationLandscape>
     <StiPageOrientationPortrait>Портрет</StiPageOrientationPortrait>
+    <StiParametersDisplayModeDialog>Диалог</StiParametersDisplayModeDialog>
+    <StiParametersDisplayModePanel>Панель</StiParametersDisplayModePanel>
     <StiPdfDigitalSignatureAppearanceTypeDraw>Рисовать</StiPdfDigitalSignatureAppearanceTypeDraw>
     <StiPdfDigitalSignatureAppearanceTypeImage>Изображение</StiPdfDigitalSignatureAppearanceTypeImage>
     <StiPdfDigitalSignatureAppearanceTypeNone>Нет</StiPdfDigitalSignatureAppearanceTypeNone>
@@ -3464,6 +3556,10 @@
     <StiProgressElementModeCircle>Кольцо</StiProgressElementModeCircle>
     <StiProgressElementModeDataBars>Гистограмма</StiProgressElementModeDataBars>
     <StiProgressElementModePie>Круг</StiProgressElementModePie>
+    <StiProgressValueTypeNone>Нет</StiProgressValueTypeNone>
+    <StiProgressValueTypePercentage>Процент</StiProgressValueTypePercentage>
+    <StiProgressValueTypeValue>Значение</StiProgressValueTypeValue>
+    <StiProgressValueTypeValueTarget>Значение / Цель</StiProgressValueTypeValueTarget>
     <StiQRCodeBodyShapeTypeCircle>Круг</StiQRCodeBodyShapeTypeCircle>
     <StiQRCodeBodyShapeTypeCircular>Закругленный</StiQRCodeBodyShapeTypeCircular>
     <StiQRCodeBodyShapeTypeDiamond>Ромб</StiQRCodeBodyShapeTypeDiamond>
@@ -3484,6 +3580,9 @@
     <StiQRCodeEyeBallShapeTypeZebraVertical>Вертикальная зебра</StiQRCodeEyeBallShapeTypeZebraVertical>
     <StiRadarStyleXFCircle>Окружность</StiRadarStyleXFCircle>
     <StiRadarStyleXFPolygon>Многоугольник</StiRadarStyleXFPolygon>
+    <StiRangeSelectorSnapModeNone>Нет</StiRangeSelectorSnapModeNone>
+    <StiRangeSelectorSnapModeStep>Шаг</StiRangeSelectorSnapModeStep>
+    <StiRangeSelectorSnapModeTick>Метка</StiRangeSelectorSnapModeTick>
     <StiReportCacheModeAuto>Авто</StiReportCacheModeAuto>
     <StiReportCacheModeOff>Выключен</StiReportCacheModeOff>
     <StiReportCacheModeOn>Включен</StiReportCacheModeOn>
@@ -3500,6 +3599,8 @@
     <StiRestrictionsAllowResize>Изменение размера допускается</StiRestrictionsAllowResize>
     <StiRestrictionsAllowSelect>Выбор допускается</StiRestrictionsAllowSelect>
     <StiRestrictionsNone>Нет</StiRestrictionsNone>
+    <StiScriptSecurityFullAccess>Полный доступ</StiScriptSecurityFullAccess>
+    <StiScriptSecuritySafeMode>Безопасный режим</StiScriptSecuritySafeMode>
     <StiSelectionModeFirst>Первый</StiSelectionModeFirst>
     <StiSelectionModeFromVariable>Из переменной</StiSelectionModeFromVariable>
     <StiSelectionModeNothing>Ничего</StiSelectionModeNothing>
@@ -3509,6 +3610,7 @@
     <StiSeriesLabelsValueTypeSeriesTitleArgument>Наименование ряда - Аргумент</StiSeriesLabelsValueTypeSeriesTitleArgument>
     <StiSeriesLabelsValueTypeSeriesTitleValue>Наименование ряда - Значение</StiSeriesLabelsValueTypeSeriesTitleValue>
     <StiSeriesLabelsValueTypeTag>Тег</StiSeriesLabelsValueTypeTag>
+    <StiSeriesLabelsValueTypeTotal>Итог</StiSeriesLabelsValueTypeTotal>
     <StiSeriesLabelsValueTypeValue>Значение</StiSeriesLabelsValueTypeValue>
     <StiSeriesLabelsValueTypeValueArgument>Значение - Аргумент</StiSeriesLabelsValueTypeValueArgument>
     <StiSeriesLabelsValueTypeWeight>Вес</StiSeriesLabelsValueTypeWeight>
@@ -3784,6 +3886,7 @@
     <Advanced>Расширенный</Advanced>
     <AggregateFunction>Агрегатная функция</AggregateFunction>
     <AggregateFunctions>Агрегатные функции</AggregateFunctions>
+    <Aggregation>Агрегация</Aggregation>
     <Alias>Псевдоним</Alias>
     <Alignment>Выравнивание</Alignment>
     <AllowApplyBorderColor>Разр. исп. цвет границы</AllowApplyBorderColor>
@@ -3796,6 +3899,8 @@
     <AllowExpressions>Разрешить выражения</AllowExpressions>
     <AllowHtmlTags>Разрешить HTML теги</AllowHtmlTags>
     <AllowNull>Разрешить null</AllowNull>
+    <AllowScriptsInExpressions>Разрешить скрипты в выражениях</AllowScriptsInExpressions>
+    <AllowScriptsToRun>Разрешить выполнение скриптов</AllowScriptsToRun>
     <AllowSeries>Разрешить ряды</AllowSeries>
     <AllowSeriesElements>Разрешить элементы рядов</AllowSeriesElements>
     <AllowSorting>Сортировка</AllowSorting>
@@ -3997,6 +4102,7 @@
     <DataBarsNegative>Негативный цвет гистограммы</DataBarsNegative>
     <DataBarsOverlapped>Цвет наложения гистограммы</DataBarsOverlapped>
     <DataBarsPositive>Позитивный цвет гистограммы</DataBarsPositive>
+    <DataBinding>Привязка данных</DataBinding>
     <DataBindings>Связывание данных</DataBindings>
     <DataCells>Ячейки данных</DataCells>
     <DataColor>Цвет данных</DataColor>
@@ -4087,6 +4193,7 @@
     <ExportAsImage>Экспортировать как изображение</ExportAsImage>
     <ExportSettings>Параметры экспорта</ExportSettings>
     <Expression>Выражение</Expression>
+    <Extended>Расширенный</Extended>
     <ExtensionDigit>Дополнительный Разряд</ExtensionDigit>
     <EyeBallBrush>Кисть для глаз</EyeBallBrush>
     <EyeBallShape>Геометрия для глаз</EyeBallShape>
@@ -4095,8 +4202,10 @@
     <FaqPage>FAQ страница</FaqPage>
     <Field>Поле</Field>
     <FieldIs>Поле</FieldIs>
+    <Fields>Поля</Fields>
     <Fifth>Пятая</Fifth>
     <File>Файл</File>
+    <FileId>Идентификатор файла</FileId>
     <Fill>Заполнение</Fill>
     <FillColor>Цвет заполнения</FillColor>
     <Filter>Фильтр</Filter>
@@ -4105,6 +4214,7 @@
     <FilterMode>Операция фильтров</FilterMode>
     <FilterOn>Фильтр включен</FilterOn>
     <Filters>Фильтры</Filters>
+    <FiltersTarget>Цель фильтров</FiltersTarget>
     <First>Первая</First>
     <FirstTabOffset>Позиция первого символа</FirstTabOffset>
     <FixedHeight>Фиксированная высота</FixedHeight>
@@ -4169,6 +4279,8 @@
     <GroupDataColumn>Колонка данных групп</GroupDataColumn>
     <GroupMeter>Группа-измерение</GroupMeter>
     <GrowToHeight>Расти в высоту</GrowToHeight>
+    <HandleBorderColor>Цвет границы ползунка</HandleBorderColor>
+    <HandleFillColor>Цвет заливки ползунка</HandleFillColor>
     <Header>Заголовок</Header>
     <HeaderAlignment>Выравнивание заголовка</HeaderAlignment>
     <HeaderBackColor>Цвет заголовка</HeaderBackColor>
@@ -4240,6 +4352,7 @@
     <ImageURL>URL изображения</ImageURL>
     <ImageVertAlignment>Вертикальное выравнивание изображения</ImageVertAlignment>
     <ImportRelations>Импорт связей</ImportRelations>
+    <InclusionMode>Режим объединения</InclusionMode>
     <Increment>Приращение</Increment>
     <Indent>Отступ</Indent>
     <Indicator>Индикатор</Indicator>
@@ -4269,6 +4382,7 @@
     <Item>Элемент</Item>
     <ItemHeight>Высота элемента</ItemHeight>
     <Items>Элементы</Items>
+    <JoinType>Тип соединения</JoinType>
     <KeepChildTogether>Держать подчиненные вместе</KeepChildTogether>
     <KeepCrossTabTogether>Держать Кросс-таблицу вместе</KeepCrossTabTogether>
     <KeepDetails>Держать детали</KeepDetails>
@@ -4384,6 +4498,7 @@
     <MaximumValue>Максимальное значение</MaximumValue>
     <MaxLength>Максимальная длина</MaxLength>
     <MaxNumberOfLines>Максимальное число строк</MaxNumberOfLines>
+    <MaxSelectedItems>Максимум выбранных элементов</MaxSelectedItems>
     <MaxSize>Максимальный размер</MaxSize>
     <MaxValue>Максимальное значение</MaxValue>
     <MaxWidth>Максимальная ширина</MaxWidth>
@@ -4412,6 +4527,7 @@
     <Multiline>Многострочный</Multiline>
     <MultipleFactor>Кратный множитель</MultipleFactor>
     <MultipleInitialization>Множественная инициализация</MultipleInitialization>
+    <MyFunction>Моя функция</MyFunction>
     <Name>Наименование</Name>
     <NameDataColumn>Колонка данных названий</NameDataColumn>
     <NameInSource>Наименование в источнике</NameInSource>
@@ -4435,6 +4551,7 @@
     <NextPage>Следующая страница</NextPage>
     <NoElements>Нет элементов</NoElements>
     <NoIcon>Нет значка</NoIcon>
+    <Notifications>Уведомления</Notifications>
     <NullText>Нулевой текст</NullText>
     <NumberOfColumns>Количество колонок</NumberOfColumns>
     <NumberOfCopies>Число копий</NumberOfCopies>
@@ -4447,6 +4564,7 @@
     <OnDataManipulation>При управлении данными</OnDataManipulation>
     <OnePointZoom>Одноточечный масштаб</OnePointZoom>
     <OnHover>При наведении</OnHover>
+    <OnlineMapAdminLevel>Уровень администрирования</OnlineMapAdminLevel>
     <OnlyText>Только текст</OnlyText>
     <OnSelect>При выборе</OnSelect>
     <Opacity>Непрозрачность</Opacity>
@@ -4470,6 +4588,7 @@
     <ParameterAlignment>Выравнивание параметров</ParameterAlignment>
     <Parameters>Параметры</Parameters>
     <ParametersDateFormat>Формат даты параметров</ParametersDateFormat>
+    <ParametersDisplayMode>Режим отображения параметров</ParametersDisplayMode>
     <ParametersOrientation>Расположение параметров</ParametersOrientation>
     <ParameterWidth>Ширина параметра</ParameterWidth>
     <ParentColumns>Колонки главного</ParentColumns>
@@ -4478,6 +4597,7 @@
     <ParetoSeriesColors>Цвета ряда Парето</ParetoSeriesColors>
     <PasswordChar>Символ пароля</PasswordChar>
     <Path>Путь</Path>
+    <PathColor>Цвет трека</PathColor>
     <PathData>Путь к XML данным</PathData>
     <PathSchema>Путь к XML схеме</PathSchema>
     <Pattern>Шаблон</Pattern>
@@ -4485,6 +4605,7 @@
     <Placeholder>Шаблон значения</Placeholder>
     <Placement>Размещение</Placement>
     <PlaceOnToolbox>Размещать в инструментарии</PlaceOnToolbox>
+    <Platform>Платформа</Platform>
     <PointAtCenter>Точка в Центре</PointAtCenter>
     <Position>Позиция</Position>
     <Positive>Позитивный</Positive>
@@ -4496,6 +4617,7 @@
     <PreviewSettings>Настройка просмотра</PreviewSettings>
     <Printable>Печатать</Printable>
     <PrintAtBottom>Печатать внизу</PrintAtBottom>
+    <PrintDialogType>Тип диалога печати</PrintDialogType>
     <PrinterName>Наименование принтера</PrinterName>
     <PrinterSettings>Настройка принтера</PrinterSettings>
     <PrintHeadersFootersFromPreviousPage>Использовать Заголовки и Итоги с предшествующей страницы</PrintHeadersFootersFromPreviousPage>
@@ -4523,7 +4645,7 @@
     <Radius>Радиус</Radius>
     <RadiusMode>Режим радиуса</RadiusMode>
     <Range>Диапазон</Range>
-    <RangeColorMode>Режим цвета диапозона</RangeColorMode>
+    <RangeColorMode>Режим цвета диапазона</RangeColorMode>
     <RangeFrom>С</RangeFrom>
     <RangeMode>Режим диапазона</RangeMode>
     <RangeScrollEnabled>Прокрутка диапазона</RangeScrollEnabled>
@@ -4539,6 +4661,7 @@
     <Refresh>Обновить</Refresh>
     <RefreshTime>Время обновления</RefreshTime>
     <Regular>Обычный</Regular>
+    <RegularExpression>Регулярное выражение</RegularExpression>
     <Relation>Связь</Relation>
     <RelationName>Наименование связи</RelationName>
     <Relations>Связи</Relations>
@@ -4587,8 +4710,11 @@
     <Scale>Масштаб</Scale>
     <ScaleHor>Масштабирование по горизонтали</ScaleHor>
     <ScriptLanguage>Скриптовый язык</ScriptLanguage>
+    <ScriptTimeout>Время ожидания скрипта</ScriptTimeout>
     <ScrollTime>Время прокрутки</ScrollTime>
     <Second>Вторая</Second>
+    <SegmentCount>Количество сегментов</SegmentCount>
+    <SegmentIndex>Индекс сегмента</SegmentIndex>
     <SegmentPerHeight>Сегментов по высоте</SegmentPerHeight>
     <SegmentPerWidth>Сегментов по ширине</SegmentPerWidth>
     <SelectedBackColor>Цвет выделенного фона</SelectedBackColor>
@@ -4690,6 +4816,8 @@
     <SkipValues>Пропустить значения</SkipValues>
     <SkipValuesObj>Пропустить значения объектов</SkipValuesObj>
     <Smoothing>Сглаживание</Smoothing>
+    <SnapMode>Режим привязки</SnapMode>
+    <SnapPageWidthToGrid>Привязать ширину страницы к сетке</SnapPageWidthToGrid>
     <Sort>Сортировка</Sort>
     <SortBy>Сортировать по</SortBy>
     <SortDirection>Направление сортировки</SortDirection>
@@ -4703,6 +4831,7 @@
     <Spacing>Расстояние</Spacing>
     <Sparkline>Спарклайны</Sparkline>
     <SqlCommand>SQL запрос</SqlCommand>
+    <Standard>Стандартный</Standard>
     <StartAngle>Начальный угол</StartAngle>
     <StartCap>Тип начала</StartCap>
     <StartColor>Начальный цвет</StartColor>
@@ -4713,7 +4842,7 @@
     <StartPosition>Начальная позиция</StartPosition>
     <StartValue>Начальное значение</StartValue>
     <StartWidth>Начальная ширина</StartWidth>
-    <State>Штат</State>
+    <State>Состояние</State>
     <Step>Шаг</Step>
     <Stop>Остановить</Stop>
     <StopBeforePage>Остановиться после страницы</StopBeforePage>
@@ -4802,6 +4931,7 @@
     <ToolTipBrush>Кисть подсказки</ToolTipBrush>
     <ToolTipCornerRadius>Радиус закругления подсказки</ToolTipCornerRadius>
     <ToolTipDataColumn>Колонка данных подсказок</ToolTipDataColumn>
+    <ToolTipText>Текст подсказки</ToolTipText>
     <ToolTipTextBrush>Кисть текста подсказки</ToolTipTextBrush>
     <Top>Сверху</Top>
     <TopLeft>Сверху-Слева</TopLeft>
@@ -4848,7 +4978,8 @@
     <UseStyleOfSummaryInColumnTotal>Использовать стиль значений в итоге колонки</UseStyleOfSummaryInColumnTotal>
     <UseStyleOfSummaryInRowTotal>Использовать стиль значений в итоге строки</UseStyleOfSummaryInRowTotal>
     <UseUserPicture>Использовать изображение пользователя</UseUserPicture>
-    <UseValuesFromTheSpecifiedRange>Использовать значения из указанного диапозона</UseValuesFromTheSpecifiedRange>
+    <UseValuesFromTheSpecifiedRange>Использовать значения из указанного диапазона</UseValuesFromTheSpecifiedRange>
+    <Validation>Проверка</Validation>
     <Value>Значение</Value>
     <ValueClose>Закрывающее значение</ValueClose>
     <ValueDataColumn>Колонка данных значений</ValueDataColumn>
@@ -5056,7 +5187,9 @@
   <Report>
     <ActiveRelation>Активная связь</ActiveRelation>
     <Address>Адрес</Address>
+    <Alpha>Альфа</Alpha>
     <Alphabetical>По алфавиту</Alphabetical>
+    <AlphaNumeric>Альфа Число</AlphaNumeric>
     <Bands>Секции</Bands>
     <Basic>Базовый</Basic>
     <BasicConfiguration>Минимальное количество свойств объектов, которые необходимы для построения основных типов отчетов.</BasicConfiguration>
@@ -5065,6 +5198,8 @@
     <Charts>Диаграммы</Charts>
     <Checking>Проверка...</Checking>
     <ClickForMoreDetails>Нажмите для просмотра</ClickForMoreDetails>
+    <ClickHereToCreateNewCondition>чтобы создать новое условие</ClickHereToCreateNewCondition>
+    <ClickHereToCreateNewField>чтобы создать новое поле</ClickHereToCreateNewField>
     <CollapseAll>Свернуть все</CollapseAll>
     <Collection>Коллекция</Collection>
     <CompilationAccess>Доступ к компиляции</CompilationAccess>
@@ -5076,9 +5211,13 @@
     <CreateNewReportPageForm>Создать новый отчет, добавить страницу или форму</CreateNewReportPageForm>
     <CreatingReport>Создание отчета</CreatingReport>
     <CrossBands>Кросс</CrossBands>
+    <CustomRange>Пользовательский диапазон</CustomRange>
     <Dashboard>Панель индикаторов</Dashboard>
+    <DashboardOnly>Только Дашборд и Преобразование данных</DashboardOnly>
     <Dialogs>Элементы управления</Dialogs>
     <EditStyles>[Редактировать стили]</EditStyles>
+    <Email>Электронная почта</Email>
+    <EnableCacheAllDataMode>Включить режим "Кэшировать все данные"</EnableCacheAllDataMode>
     <Enhancements>Улучшения</Enhancements>
     <EnterDataManually>Введите данные вручную</EnterDataManually>
     <Errors>Ошибки</Errors>
@@ -5100,6 +5239,7 @@
     <Infographics>Инфографика</Infographics>
     <InfoMessage>{0} - {1} найдены.</InfoMessage>
     <InformationMessages>Информация</InformationMessages>
+    <IpAddress>IP Адрес</IpAddress>
     <LabelAlias>Псевдоним:</LabelAlias>
     <LabelAuthor>Автор:</LabelAuthor>
     <LabelBackground>Фон:</LabelBackground>
@@ -5123,6 +5263,7 @@
     <LabelNestedLevel>Коэффициент вложенности:</LabelNestedLevel>
     <LabelPassword>Пароль:</LabelPassword>
     <LabelPixels>Пиксели:</LabelPixels>
+    <LabelPlatform>Если платформа .NET, будет использоваться скрипт C#. Если платформа JS, будет использоваться JavaScript.</LabelPlatform>
     <LabelQueryTimeout>Время ожидания запроса:</LabelQueryTimeout>
     <LabelSystemVariable>Системные переменные:</LabelSystemVariable>
     <LabelTableOfContentsHint>Пожалуйста, отметьте те компоненты, которые должны формировать содержание. Один компонент – один уровень заголовка.</LabelTableOfContentsHint>
@@ -5142,6 +5283,7 @@
     <Obsoleted>Устаревший</Obsoleted>
     <Office2010Back>Назад</Office2010Back>
     <PageNofM>Страница {0} из {1}</PageNofM>
+    <Phone>Телефон</Phone>
     <PreparingReport>Подготовка отчета</PreparingReport>
     <Professional>Расширенный</Professional>
     <ProfessionalConfiguration>Все свойства объектов без исключений.</ProfessionalConfiguration>
@@ -5156,6 +5298,8 @@
     <RestartDesigner>Вам необходимо перезапустить дизайнер отчетов.</RestartDesigner>
     <SaveReportPagesOrFormsFromReport>Сохранить отчет, страницу или форму отчета</SaveReportPagesOrFormsFromReport>
     <SavingReport>Сохранение отчета</SavingReport>
+    <ScriptEvalAccess>Доступ к Script Eval</ScriptEvalAccess>
+    <ScriptSecurity>Безопасность скриптов</ScriptSecurity>
     <SecondPass>Второй проход</SecondPass>
     <Shapes>Примитивы</Shapes>
     <ShowOnParametersPanel>Показывать на панели параметров</ShowOnParametersPanel>
@@ -5167,6 +5311,7 @@
     <StiGradientBrush>Градиент</StiGradientBrush>
     <StiHatchBrush>Текстура</StiHatchBrush>
     <StiSolidBrush>Сплошная</StiSolidBrush>
+    <StoresPrintingOutputToAFile>Сохраняет вывод печати в файл</StoresPrintingOutputToAFile>
     <StoreUserFirstLastNameInReportAuthor>Использовать имя и фамилию пользователя как 'Автор отчета'</StoreUserFirstLastNameInReportAuthor>
     <StoreUserNameInReportAuthor>Сохранять 'Имя пользователя' как 'Автор отчета'</StoreUserNameInReportAuthor>
     <StyleBad>Плохой</StyleBad>
@@ -5346,10 +5491,12 @@
     <UseBrush>Использовать кисть</UseBrush>
   </Signature>
   <StimulAI>
+    <AskStimulAI>Спросить Stimul AI</AskStimulAI>
     <ChangedWithAI>Изменить с Stimul AI</ChangedWithAI>
     <CheckExpressionSuccess>В указанном выражении проблем не обнаружено.</CheckExpressionSuccess>
     <CheckQuery>Проверить запрос</CheckQuery>
     <CheckWithStimulAI>Проверить с Stimul AI</CheckWithStimulAI>
+    <ClickToPreview>Нажмите для просмотра</ClickToPreview>
     <ConnectionStringExampleWithAI>Примеры строки соединения с Stimul AI</ConnectionStringExampleWithAI>
     <ConnectionStringTesting>Проверка строки соединения</ConnectionStringTesting>
     <ExplainQuery>Пояснить запрос</ExplainQuery>
@@ -5373,6 +5520,7 @@
     <LineRoman>Номер текущей линии представленной римскими цифрами.</LineRoman>
     <LineThrough>Номер текущей линии (Начинается с 1). При расчете игнорируются все группы в отчете и исчисление ведется с начала отчета.</LineThrough>
     <PageCopyNumber>Номер копии страницы (Начиная с 1).</PageCopyNumber>
+    <PageLine>Возвращает номер текущей строки на странице (начиная с 1).</PageLine>
     <PageNofM>Локализованная строка, которая отображает строку "Страница N из M", где N это номер текущей страницы, а M - это общее количество страниц в отчете.</PageNofM>
     <PageNofMThrough>Локализованная строка, которая отображает строку "Страница N из M", где N это номер текущей страницы, а M - это общее количество страниц в отчете. При расчете переменной все параметры сброса номера страницы игнорируются и расчет ведется с начала отчета.</PageNofMThrough>
     <PageNumber>Текущий номер страницы (Начинается с 1).</PageNumber>
@@ -5429,6 +5577,7 @@
     <FontSize>Размер шрифта</FontSize>
     <FontStyleBold>Жирный шрифт</FontStyleBold>
     <FontStyleItalic>Наклонный шрифт</FontStyleItalic>
+    <FontStyleStrikeout>Зачеркнутый стиль шрифта</FontStyleStrikeout>
     <FontStyleUnderline>Подчеркнутый шрифт</FontStyleUnderline>
     <Link>Связь</Link>
     <Lock>Замок</Lock>
@@ -5502,6 +5651,7 @@
     <Title>Добро пожаловать в Stimulsoft Демо</Title>
   </WelcomeScreen>
   <Wizards>
+    <AIGeneratedReport>Отчет, созданный с помощью ИИ</AIGeneratedReport>
     <BlankDashboard>Пустая панель индикаторов</BlankDashboard>
     <BlankForm>Пустая форма</BlankForm>
     <BlankReport>Пустой отчет</BlankReport>
@@ -5512,13 +5662,17 @@
     <ButtonNext>&amp;Далее &gt;</ButtonNext>
     <ColumnsOrder>Порядок колонок</ColumnsOrder>
     <Company>Компания</Company>
+    <CreateDataManually>Создать данные вручную</CreateDataManually>
     <Custom>По выбору</Custom>
     <DataRelation>Связь</DataRelation>
     <DataSource>Источник данных</DataSource>
     <DataSources>Источники Данных</DataSources>
     <DefaultThemes>Встроенные темы</DefaultThemes>
+    <EditUserSource>Редактировать источник данных пользователя</EditUserSource>
+    <Examples>Примеры</Examples>
     <Filters>Фильтры</Filters>
     <FromReportTemplate>Отчет из шаблона</FromReportTemplate>
+    <GenerateDataWithAI>Сгенерировать данные с помощью ИИ</GenerateDataWithAI>
     <GetData>Получить данные</GetData>
     <groupCreateNewDashboard>Создать новую панель индикаторов</groupCreateNewDashboard>
     <groupCreateNewPageOrForm>Создать страницу или форму</groupCreateNewPageOrForm>
@@ -5560,6 +5714,7 @@
     <Mapping>Соответствие данных</Mapping>
     <MarkAll>Отметить &amp;Все</MarkAll>
     <MasterDetailReport>Master-Detail отчет</MasterDetailReport>
+    <NewUserSource>Новый источник данных пользователя</NewUserSource>
     <NoFunction>[Нет]</NoFunction>
     <OpenExistingReport>Открыть файл</OpenExistingReport>
     <OpenFrom>Открыть из {0}</OpenFrom>
@@ -5569,8 +5724,10 @@
     <RunWizard>Запустить мастер</RunWizard>
     <SelectColumns>Выбор колонок</SelectColumns>
     <SelectTemplate>Шаблон</SelectTemplate>
+    <SelectTypeOfLayout>Пожалуйста, выберите тип макета</SelectTypeOfLayout>
     <Sort>Сортировка</Sort>
     <StandardReport>Стандартный отчет</StandardReport>
+    <SuggestWithAI>Рекомендация ИИ</SuggestWithAI>
     <Themes>Темы</Themes>
     <title>Новый отчет</title>
     <Totals>Итоги</Totals>
