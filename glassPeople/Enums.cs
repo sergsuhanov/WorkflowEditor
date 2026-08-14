@@ -374,6 +374,13 @@ namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Documents.Defective {
     }
 }
 namespace glassPeople.ActivityLibrary.glassCAD.Planing.Activity.Actualisation {
+    public partial class CreateArmLineCuttingActivity {
+        public enum MarkingMode {
+            Default, OnlyPyramidInfo, OnlyBufferSecondName
+        }
+    }
+}
+namespace glassPeople.ActivityLibrary.glassCAD.Planing.Activity.Actualisation {
     public partial class CreateArmSquareCuttingActivity {
         public enum MarkingMode {
             Default, OnlyPyramidInfo, OnlyBufferSecondName

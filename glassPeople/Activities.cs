@@ -1,3 +1,15 @@
+namespace ITAP.glassCAD.Planing.Cutting {
+    
+    public partial class OptimizeActivity : System.Activities.NativeActivity {
+		[System.Activities.RequiredArgumentAttribute()]
+		public System.Activities.InArgument<System.Collections.Generic.List<glassPeople.ActivityLibrary.glassCAD.Planing.Model.GroupCode>> Source { get; set; } 
+		[System.Activities.RequiredArgumentAttribute()]
+		public System.Activities.InArgument<glassPeople.ActivityLibrary.glassCAD.Planing.Model.PlanningContext> PlanningContext { get; set; } 
+        protected override void Execute(System.Activities.NativeActivityContext context) {
+            throw new System.NotImplementedException();
+        }
+    }
+}
 namespace ITAP.glassCAD.Pivot.PlanSnapshot {
     [ITAP.glassCAD.Dictionary.WorkFlow.Components.WorkflowTemplateActivityAttribute("Аналитика", "Производственный план - Фиксирование", true, true)]
 [System.ComponentModel.DesignerAttribute(typeof(ITAP.glassCAD.Dictionary.WorkFlow.Designers.EmptyActivityDesigner))]
@@ -10,6 +22,11 @@ namespace ITAP.glassCAD.Pivot.PlanSnapshot {
     [ITAP.glassCAD.Dictionary.WorkFlow.Components.WorkflowTemplateActivityAttribute("Аналитика", "Производственный план - Показать", true, true)]
 [System.ComponentModel.DesignerAttribute(typeof(ITAP.glassCAD.Dictionary.WorkFlow.Designers.EmptyActivityDesigner))]
     public partial class ShowPlanSnapshotActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.PivotEditFormNatveActiity {
+    }
+}
+namespace ITAP.glassCAD.Glass {
+    
+    public partial class TestActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.EditFormNativeActivity {
     }
 }
 namespace ITAP.glassCAD.Exchange {
@@ -832,6 +849,42 @@ namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Documents.Selling {
     [System.ComponentModel.Designer(typeof(glassPeople.Designers.ButtonsActivityDesigner))]
     public partial class EditActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.ListActivity {
 		public System.Activities.InArgument<ITAP.glassCAD.Documents.Selling.SellingDataSet> Source { get; set; } 
+        protected override void Execute(System.Activities.NativeActivityContext context) {
+            throw new System.NotImplementedException();
+        }
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Documents.ProfileResize {
+    [System.ComponentModel.Designer(typeof(glassPeople.Designers.ButtonsActivityDesigner))]
+    public partial class EditActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.ListActivity {
+		public System.Activities.InArgument<ITAP.glassCAD.Documents.ProfileResize.ProfileResizeDataSet> Source { get; set; } 
+        protected override void Execute(System.Activities.NativeActivityContext context) {
+            throw new System.NotImplementedException();
+        }
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Documents.ProfilePrihod {
+    [System.ComponentModel.Designer(typeof(glassPeople.Designers.ButtonsActivityDesigner))]
+    public partial class EditActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.ListActivity {
+		public System.Activities.InArgument<ITAP.glassCAD.Documents.ProfilePrihod.ProfilePrihodDataSet> Source { get; set; } 
+        protected override void Execute(System.Activities.NativeActivityContext context) {
+            throw new System.NotImplementedException();
+        }
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Documents.ProfileMovement {
+    [System.ComponentModel.Designer(typeof(glassPeople.Designers.ButtonsActivityDesigner))]
+    public partial class EditActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.ListActivity {
+		public System.Activities.InArgument<ITAP.glassCAD.Documents.ProfileMovement.ProfileMovementDataSet> Source { get; set; } 
+        protected override void Execute(System.Activities.NativeActivityContext context) {
+            throw new System.NotImplementedException();
+        }
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Documents.ProfileHouse {
+    [System.ComponentModel.Designer(typeof(glassPeople.Designers.ButtonsActivityDesigner))]
+    public partial class EditActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.ListActivity {
+		public System.Activities.InArgument<ITAP.glassCAD.Documents.ProfileHouse.ProfileHouseDataSet> Source { get; set; } 
         protected override void Execute(System.Activities.NativeActivityContext context) {
             throw new System.NotImplementedException();
         }
@@ -2143,6 +2196,15 @@ namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Dictionaries.ScanActivity
         }
     }
 }
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Dictionaries.ProfileStorehouse {
+    [System.ComponentModel.Designer(typeof(glassPeople.Designers.ButtonsActivityDesigner))]
+    public partial class EditActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.ListActivity {
+		public System.Activities.InArgument<ITAP.glassCAD.Dictionary.ProfileStorehouse.ProfileStorehouseDataSet> Source { get; set; } 
+        protected override void Execute(System.Activities.NativeActivityContext context) {
+            throw new System.NotImplementedException();
+        }
+    }
+}
 namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Dictionaries.Production {
     
     public partial class CheckErrorActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.DataLayerNativeActivity {
@@ -2254,6 +2316,15 @@ namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Dictionaries.PaymentType 
         }
     }
 }
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Dictionaries.OptStrategy {
+    [System.ComponentModel.Designer(typeof(glassPeople.Designers.ButtonsActivityDesigner))]
+    public partial class EditActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.ListActivity {
+		public System.Activities.InArgument<ITAP.glassCAD.Dictionary.OptStrategy.OptStrategyDataSet> Source { get; set; } 
+        protected override void Execute(System.Activities.NativeActivityContext context) {
+            throw new System.NotImplementedException();
+        }
+    }
+}
 namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Dictionaries.Operation {
     [System.ComponentModel.Designer(typeof(glassPeople.Designers.ButtonsActivityDesigner))]
     public partial class EditActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.ListActivity {
@@ -2299,10 +2370,28 @@ namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Dictionaries.GrOpt {
         }
     }
 }
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Dictionaries.GrOptSquare {
+    [System.ComponentModel.Designer(typeof(glassPeople.Designers.ButtonsActivityDesigner))]
+    public partial class EditActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.ListActivity {
+		public System.Activities.InArgument<ITAP.glassCAD.Dictionary.GrOptSquare.GrOptSquareDataSet> Source { get; set; } 
+        protected override void Execute(System.Activities.NativeActivityContext context) {
+            throw new System.NotImplementedException();
+        }
+    }
+}
 namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Dictionaries.GrOptPacking {
     [System.ComponentModel.Designer(typeof(glassPeople.Designers.ButtonsActivityDesigner))]
     public partial class EditActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.ListActivity {
 		public System.Activities.InArgument<ITAP.glassCAD.Dictionary.GrOptPacking.GrOptPackingDataSet> Source { get; set; } 
+        protected override void Execute(System.Activities.NativeActivityContext context) {
+            throw new System.NotImplementedException();
+        }
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Dictionaries.GrOptLine {
+    [System.ComponentModel.Designer(typeof(glassPeople.Designers.ButtonsActivityDesigner))]
+    public partial class EditActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.ListActivity {
+		public System.Activities.InArgument<ITAP.glassCAD.Dictionary.GrOptLine.GrOptLineDataSet> Source { get; set; } 
         protected override void Execute(System.Activities.NativeActivityContext context) {
             throw new System.NotImplementedException();
         }
@@ -2858,6 +2947,7 @@ namespace glassPeople.ActivityLibrary.glassCAD.Scanner {
 		public System.Activities.InArgument<glassPeople.ActivityLibrary.glassCAD.Scanner.Parser.DefaultParser> Parser { get; set; } 
 		public System.Activities.OutArgument<glassPeople.ActivityLibrary.glassCAD.Scanner.Scancode[]> Result { get; set; } 
 		public System.Activities.OutArgument<System.Boolean> HasData { get; set; } 
+		public System.Activities.OutArgument<System.Nullable<System.Int32>> SelectedDocId { get; set; } 
         protected override void Execute(System.Activities.NativeActivityContext context) {
             throw new System.NotImplementedException();
         }
@@ -2972,6 +3062,7 @@ namespace glassPeople.ActivityLibrary.glassCAD.Scanner {
     public partial class IncomingToSGPModeActivity : System.Activities.NativeActivity {
 		[System.Activities.RequiredArgumentAttribute()]
 		public System.Activities.InArgument<glassPeople.ActivityLibrary.glassCAD.Scanner.Scancode[]> Source { get; set; } 
+		public System.Activities.InArgument<System.Nullable<System.Int32>> DocId { get; set; } 
 		[System.Activities.RequiredArgumentAttribute()]
 		public System.Activities.InArgument<System.String> ConnectionString { get; set; } 
 		[System.Activities.RequiredArgumentAttribute()]
@@ -3095,6 +3186,7 @@ namespace glassPeople.ActivityLibrary.glassCAD.Scanner {
 		public System.Activities.InArgument<glassPeople.ActivityLibrary.glassCAD.Scanner.Parser.DefaultParser> Parser { get; set; } 
 		public System.Activities.OutArgument<glassPeople.ActivityLibrary.glassCAD.Scanner.Scancode[]> Result { get; set; } 
 		public System.Activities.OutArgument<System.Boolean> HasData { get; set; } 
+		public System.Activities.OutArgument<System.Nullable<System.Int32>> SelectedDocId { get; set; } 
         protected override void Execute(System.Activities.NativeActivityContext context) {
             throw new System.NotImplementedException();
         }
@@ -3981,6 +4073,21 @@ namespace glassPeople.ActivityLibrary.glassCAD.Planing.Activity.Actualisation {
 		public System.Activities.OutArgument<System.String> Info { get; set; } 
 		[System.Activities.RequiredArgumentAttribute()]
 		public System.Activities.InArgument<glassPeople.ActivityLibrary.glassCAD.Planing.Model.PlanningContext> SchedulerContext { get; set; } 
+        protected override void Execute(System.Activities.NativeActivityContext context) {
+            throw new System.NotImplementedException();
+        }
+    }
+}
+namespace glassPeople.ActivityLibrary.glassCAD.Planing.Activity.Actualisation {
+    
+    public partial class CreateArmLineCuttingActivity : System.Activities.NativeActivity {
+		[System.Activities.RequiredArgumentAttribute()]
+		public System.Activities.InArgument<System.Collections.Generic.List<glassPeople.ActivityLibrary.glassCAD.Planing.Model.GroupCode>> Source { get; set; } 
+		[System.Activities.RequiredArgumentAttribute()]
+		public System.Activities.InArgument<glassPeople.ActivityLibrary.glassCAD.Planing.Model.PlanningContext> SchedulerContext { get; set; } 
+		public glassPeople.ActivityLibrary.glassCAD.Planing.Activity.Actualisation.CreateArmLineCuttingActivity.MarkingMode SetMarkingMode { get; set; } 
+		public System.String StringTemplateForPyramid { get; set; } 
+		public System.String StringTemplateForSpace { get; set; } 
         protected override void Execute(System.Activities.NativeActivityContext context) {
             throw new System.NotImplementedException();
         }
