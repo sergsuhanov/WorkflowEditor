@@ -3274,6 +3274,11 @@ namespace glassPeople.ActivityLibrary.glassCAD.Scanner.Workers {
         }
     }
 }
+namespace glassPeople.ActivityLibrary.glassCAD.Scanner.SM {
+    
+    public partial class OutcomingFromSGPModeActivity : glassPeople.ActivityLibrary.glassCAD.Scanner.OutcomingFromSGPModeActivity {
+    }
+}
 namespace glassPeople.ActivityLibrary.glassCAD.Scanner.GGC {
     
     public partial class OutcomingFromSGPModeActivity : glassPeople.ActivityLibrary.glassCAD.Scanner.OutcomingFromSGPModeActivity {
