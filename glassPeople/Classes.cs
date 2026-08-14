@@ -209,6 +209,11 @@ namespace ITAP.glassCAD.Workflow.Components {
 }
 namespace ITAP.glassCAD.Production {
     
+    public partial class Dto {
+    }
+}
+namespace ITAP.glassCAD.Production {
+    
     public partial class ViewModel {
 		public System.String ViewBox { get; set; } 
 		public System.Decimal Scale { get; set; } 
@@ -217,6 +222,11 @@ namespace ITAP.glassCAD.Production {
 		public ITAP.glassCAD.Production.ViewModel.Vector2 SmilePosition { get; set; } 
 		public ITAP.glassCAD.Production.ViewModel.Vector2 AddGoodsPosition { get; set; } 
 		public ITAP.glassCAD.Production.ViewModel.ShowMode Mode { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Production.WebViewProxy {
+    
+    public partial class Dto {
     }
 }
 namespace ITAP.glassCAD.Production.Model {
@@ -1708,6 +1718,14 @@ namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities {
 namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.User {
     
     public partial class Helper {
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.CRM {
+    
+    public partial class CrmResponseMessage {
+		public System.Guid Ident { get; set; } 
+		public System.String Status { get; set; } 
+		public System.String Message { get; set; } 
     }
 }
 namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Input {
@@ -3763,6 +3781,7 @@ namespace glassPeople.ActivityLibrary.glassCAD.Planing.Model {
 		public System.Nullable<System.Int32> Duration { get; set; } 
 		public System.Nullable<System.DateTime> PlanDate { get; set; } 
 		public System.Nullable<System.DateTime> DeliveryGoodsDate { get; set; } 
+		public System.Nullable<System.DateTime> RestrictionDate { get; set; } 
 		public System.Nullable<System.Int32> Priority { get; set; } 
 		public System.Collections.Generic.IEnumerable<glassPeople.ActivityLibrary.glassCAD.Planing.Model.GroupCode> Parents { get; } 
 		public System.Collections.Generic.IEnumerable<glassPeople.ActivityLibrary.glassCAD.Planing.Model.GroupCode> Childs { get; } 
@@ -4244,6 +4263,99 @@ namespace ITAP.glassCAD.Production {
     public partial class LineObject {
 		public ITAP.glassCAD.Production.ViewModel.RectObject Start { get; set; } 
 		public ITAP.glassCAD.Production.ViewModel.RectObject End { get; set; } 
+    }
+    }
+}
+namespace ITAP.glassCAD.Production.WebViewProxy {
+    public partial class Dto {
+    
+    public partial class Model {
+		public ITAP.glassCAD.Production.Model.ViewSide ViewSide { get; set; } 
+		public System.Collections.Generic.List<ITAP.glassCAD.Production.WebViewProxy.Dto.Goods> Goods { get; set; } 
+		public System.Collections.Generic.List<ITAP.glassCAD.Production.WebViewProxy.Dto.Operation> Operations { get; set; } 
+		public System.Collections.Generic.List<ITAP.glassCAD.Production.WebViewProxy.Dto.HalfProduction> HalfProductions { get; set; } 
+		public System.Collections.Generic.List<ITAP.glassCAD.Production.WebViewProxy.Dto.Production> Productions { get; set; } 
+		public System.Nullable<System.Int32> IDProduction { get; set; } 
+		public System.String Name { get; set; } 
+		public System.Boolean ApplyIsEnabled { get; set; } 
+		public System.Boolean CheckError { get; set; } 
+		public System.Boolean HasError { get; set; } 
+    }
+    }
+}
+namespace ITAP.glassCAD.Production.WebViewProxy {
+    public partial class Dto {
+    
+    public partial class Production {
+		public System.Nullable<System.Int32> IDProductionModel { get; set; } 
+		public System.String Name { get; set; } 
+		public System.Int32 NumPos { get; set; } 
+		public System.Int32 IDProduction { get; set; } 
+		public System.Nullable<System.Int32> Level { get; set; } 
+		public System.String NameManual { get; set; } 
+    }
+    }
+}
+namespace ITAP.glassCAD.Production.WebViewProxy {
+    public partial class Dto {
+    
+    public partial class Goods {
+		public System.String Name { get; set; } 
+		public System.Int32 NumPos { get; set; } 
+		public System.Int32 IDGood { get; set; } 
+		public System.Int32 IDProductionModelGood { get; set; } 
+		public System.String Formula { get; set; } 
+		public System.Boolean InvertInShape { get; set; } 
+		public System.String Comment { get; set; } 
+		public System.Int32 SideSputtering { get; set; } 
+		public System.String NameManual { get; set; } 
+		public System.String NameForHalfProduction { get; set; } 
+		public System.Boolean IsShapeManualSetting { get; set; } 
+    }
+    }
+}
+namespace ITAP.glassCAD.Production.WebViewProxy {
+    public partial class Dto {
+    
+    public partial class Operation {
+		public System.Nullable<System.Int32> IDProductionModel { get; set; } 
+		public System.String Name { get; set; } 
+		public System.Int32 NumPos { get; set; } 
+		public System.Int32 IDProductionModelOperation { get; set; } 
+		public System.Int32 IDOperation { get; set; } 
+		public System.String NameManual { get; set; } 
+		public System.String NameForHalfProduction { get; set; } 
+		public System.Boolean IsShapeManualSetting { get; set; } 
+		public System.Nullable<System.Decimal> Duration { get; set; } 
+		public System.Nullable<System.Decimal> Cost { get; set; } 
+		public System.Collections.Generic.List<ITAP.glassCAD.Production.WebViewProxy.Dto.OperationParam> OperationParams { get; set; } 
+    }
+    }
+}
+namespace ITAP.glassCAD.Production.WebViewProxy {
+    public partial class Dto {
+    
+    public partial class OperationParam {
+		public System.Int32 IDProductionModelOperationParam { get; set; } 
+		public System.Nullable<System.Int32> IDOperationParamValue { get; set; } 
+		public System.Nullable<System.Int32> IDOperationParam { get; set; } 
+		public System.String StringValue { get; set; } 
+		public System.Nullable<System.Decimal> DecimalValue { get; set; } 
+		public System.Nullable<System.Boolean> BoolValue { get; set; } 
+    }
+    }
+}
+namespace ITAP.glassCAD.Production.WebViewProxy {
+    public partial class Dto {
+    
+    public partial class HalfProduction {
+		public System.String Name { get; set; } 
+		public System.Int32 NumPos { get; set; } 
+		public System.Int32 IDProductionModelHalfProduction { get; set; } 
+		public System.Nullable<System.Int32> IDGood { get; set; } 
+		public System.Int32 IDProduction { get; set; } 
+		public System.Nullable<System.Int32> IDOrderItemsIdentCanceled { get; set; } 
+		public System.Nullable<System.Int32> IDOrderItemsProductionModelCanceled { get; set; } 
     }
     }
 }
@@ -7051,7 +7163,7 @@ namespace ITAP.glassCAD.Dictionary.Production {
 		public ITAP.glassCAD.Dictionary.Measure.MeasureDataSet.MeasureRow Measure { get; } 
 		public System.Int32 IDMeasure { get; set; } 
 		public System.Int32 ViewSide { get; set; } 
-		public System.Boolean ProductionModelHasError { get; set; } 
+		public System.Nullable<System.Boolean> ProductionModelHasError { get; set; } 
 		public System.Nullable<System.Int32> IDShapeDefault { get; set; } 
 		public System.Nullable<System.Guid> GUID { get; set; } 
 		public ITAP.glassCAD.Dictionary.Production.ProductionDataSet.ProductionGroupRow ProductionGroup { get; } 

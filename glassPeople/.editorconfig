@@ -1,0 +1,7 @@
+﻿[*.cs]
+
+# CS0436: Type conflicts with imported type
+dotnet_diagnostic.CS0436.severity = none
+
+dotnet_diagnostic.CS0114.severity = none
+

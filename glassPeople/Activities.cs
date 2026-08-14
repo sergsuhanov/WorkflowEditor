@@ -1,8 +1,3 @@
-namespace ITAP.glassCAD.Production {
-    
-    public partial class TestActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.EditFormNativeActivity {
-    }
-}
 namespace ITAP.glassCAD.Pivot.PlanSnapshot {
     [ITAP.glassCAD.Dictionary.WorkFlow.Components.WorkflowTemplateActivityAttribute("Аналитика", "Производственный план - Фиксирование", true, true)]
 [System.ComponentModel.DesignerAttribute(typeof(ITAP.glassCAD.Dictionary.WorkFlow.Designers.EmptyActivityDesigner))]
@@ -1908,6 +1903,122 @@ namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Messages {
 		public ITAP.glassCAD.Dictionary.WorkFlow.Activities.DGML Dgml { get; set; } 
     }
 }
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Messages {
+    [ITAP.glassCAD.Dictionary.WorkFlow.Components.WorkflowTemplateActivityAttribute("Cообщения", "Отправить внутреннее сообщение", true, true)]
+[System.ComponentModel.DesignerAttribute(typeof(ITAP.glassCAD.Dictionary.WorkFlow.Designers.EmptyActivityDesigner))]
+    public partial class SendMessageActivity2 : ITAP.glassCAD.Dictionary.WorkFlow.Activities.DataLayerNativeActivity {
+		[System.ComponentModel.DisplayNameAttribute("Адрес Кому")]
+		public System.Activities.InArgument<System.String> To { get; set; } 
+		[System.ComponentModel.DisplayNameAttribute("Сообщение")]
+		public System.Activities.InArgument<System.String> Message { get; set; } 
+		public System.Activities.OutArgument<System.Collections.Generic.List<System.Int32>> IDMessages { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Messages {
+    [ITAP.glassCAD.Dictionary.WorkFlow.Components.WorkflowTemplateActivityAttribute("Cообщения", "Установить параметры внутреннего сообщения", true, true)]
+[System.ComponentModel.DesignerAttribute(typeof(ITAP.glassCAD.Dictionary.WorkFlow.Designers.EmptyActivityDesigner))]
+    public partial class SetMessageActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.DataLayerNativeActivity {
+		[System.Activities.OverloadGroupAttribute("IDMessage")]
+		[System.Activities.RequiredArgumentAttribute()]
+		public System.Activities.InArgument<System.Int32> IDMessage { get; set; } 
+		[System.Activities.OverloadGroupAttribute("Ident")]
+		[System.Activities.RequiredArgumentAttribute()]
+		public System.Activities.InArgument<System.Guid> Ident { get; set; } 
+		public System.Activities.InArgument<System.DateTime> DtRead { get; set; } 
+		public System.Activities.InArgument<System.Nullable<System.Int32>> Status { get; set; } 
+		public System.Activities.InArgument<System.String> Body { get; set; } 
+		public System.Activities.InArgument<System.Int32> IDCustomer { get; set; } 
+		public System.Activities.InArgument<System.Int32> IDWorkFlowInstance { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.CRM {
+    
+    public abstract partial class CrmActivity : System.Activities.NativeActivity {
+		[System.ComponentModel.DisplayNameAttribute("GUID")]
+		public System.Activities.InArgument<System.Guid> Ident { get; set; } 
+		[System.ComponentModel.DisplayNameAttribute("Путь до апи")]
+		public System.Activities.InArgument<System.String> Url { get; set; } 
+		[System.ComponentModel.DisplayNameAttribute("Имя пользователя")]
+		public System.Activities.InArgument<System.String> Username { get; set; } 
+		[System.ComponentModel.DisplayNameAttribute("Пароль")]
+		public System.Activities.InArgument<System.String> Password { get; set; } 
+		[System.ComponentModel.DisplayNameAttribute("Таймаут (сек.)")]
+		public System.Activities.InArgument<System.Int32> Timeout { get; set; } 
+		[System.ComponentModel.DisplayNameAttribute("Признак ошибки")]
+		public System.Activities.OutArgument<System.Boolean> IsFailed { get; set; } 
+		[System.ComponentModel.DisplayNameAttribute("Ответ от CRM")]
+		public System.Activities.OutArgument<System.String> Message { get; set; } 
+        protected override void Execute(System.Activities.NativeActivityContext context) {
+            throw new System.NotImplementedException();
+        }
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.CRM {
+    [ITAP.glassCAD.Dictionary.WorkFlow.Components.WorkflowTemplateActivityAttribute("CRM", "SendFile", true, true)]
+[System.ComponentModel.DesignerAttribute(typeof(ITAP.glassCAD.Dictionary.WorkFlow.Designers.EmptyActivityDesigner))]
+    public partial class CrmSendFileActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.CRM.CrmActivity {
+		[System.ComponentModel.DisplayNameAttribute("Массив байт")]
+		public System.Activities.InArgument<System.Byte[]> Source { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.CRM {
+    [ITAP.glassCAD.Dictionary.WorkFlow.Components.WorkflowTemplateActivityAttribute("CRM", "SetComment", true, true)]
+[System.ComponentModel.DesignerAttribute(typeof(ITAP.glassCAD.Dictionary.WorkFlow.Designers.EmptyActivityDesigner))]
+    public partial class CrmSetCommentActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.CRM.CrmActivity {
+		[System.ComponentModel.DisplayNameAttribute("Комментарий")]
+		public System.Activities.InArgument<System.String> Comment { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.CRM {
+    [ITAP.glassCAD.Dictionary.WorkFlow.Components.WorkflowTemplateActivityAttribute("CRM", "SetNmDoc", true, true)]
+[System.ComponentModel.DesignerAttribute(typeof(ITAP.glassCAD.Dictionary.WorkFlow.Designers.EmptyActivityDesigner))]
+    public partial class CrmSetNmDocActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.CRM.CrmActivity {
+		[System.ComponentModel.DisplayNameAttribute("Номер заказа")]
+		public System.Activities.InArgument<System.String> NmDoc { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.CRM {
+    [ITAP.glassCAD.Dictionary.WorkFlow.Components.WorkflowTemplateActivityAttribute("CRM", "SetPrice", true, true)]
+[System.ComponentModel.DesignerAttribute(typeof(ITAP.glassCAD.Dictionary.WorkFlow.Designers.EmptyActivityDesigner))]
+    public partial class CrmSetPriceActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.CRM.CrmActivity {
+		[System.ComponentModel.DisplayNameAttribute("Цена")]
+		public System.Activities.InArgument<System.Decimal> Price { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.CRM {
+    [ITAP.glassCAD.Dictionary.WorkFlow.Components.WorkflowTemplateActivityAttribute("CRM", "SetStatus", true, true)]
+[System.ComponentModel.DesignerAttribute(typeof(ITAP.glassCAD.Dictionary.WorkFlow.Designers.EmptyActivityDesigner))]
+    public partial class CrmSetStatusActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.CRM.CrmActivity {
+		[System.ComponentModel.DisplayNameAttribute("Статус заказа")]
+		public System.Activities.InArgument<System.Int32> Status { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.CRM {
+    [ITAP.glassCAD.Dictionary.WorkFlow.Components.WorkflowTemplateActivityAttribute("CRM", "TaskAdd", true, true)]
+[System.ComponentModel.DesignerAttribute(typeof(ITAP.glassCAD.Dictionary.WorkFlow.Designers.EmptyActivityDesigner))]
+    public partial class CrmTaskAddActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.CRM.CrmActivity {
+		[System.ComponentModel.DisplayNameAttribute("EmailFrom")]
+		public System.Activities.InArgument<System.String> EmailFrom { get; set; } 
+		[System.ComponentModel.DisplayNameAttribute("EmailTo")]
+		public System.Activities.InArgument<System.String> EmailTo { get; set; } 
+		[System.ComponentModel.DisplayNameAttribute("OrderIdent")]
+		public System.Activities.InArgument<System.Guid> OrderIdent { get; set; } 
+		[System.ComponentModel.DisplayNameAttribute("Текст")]
+		public System.Activities.InArgument<System.String> Text { get; set; } 
+		[System.ComponentModel.DisplayNameAttribute("CreatedDateTime")]
+		public System.Activities.InArgument<System.DateTime> CreatedDateTime { get; set; } 
+		[System.ComponentModel.DisplayNameAttribute("PlanedDateTime")]
+		public System.Activities.InArgument<System.DateTime> PlanedDateTime { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.CRM {
+    [ITAP.glassCAD.Dictionary.WorkFlow.Components.WorkflowTemplateActivityAttribute("CRM", "TaskClose", true, true)]
+[System.ComponentModel.DesignerAttribute(typeof(ITAP.glassCAD.Dictionary.WorkFlow.Designers.EmptyActivityDesigner))]
+    public partial class CrmTaskCloseActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.CRM.CrmActivity {
+		[System.ComponentModel.DisplayNameAttribute("Текст")]
+		public System.Activities.InArgument<System.String> Text { get; set; } 
+    }
+}
 namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Dictionaries.Workflow {
     
     public partial class GetWorkflowUserSettingsActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.DataLayerNativeActivity {
@@ -2054,7 +2165,7 @@ namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Dictionaries.Production {
     public partial class EditItemActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.EditFormNativeActivity {
 		public System.Activities.InArgument<ITAP.glassCAD.Dictionary.Production.ProductionDataSet> Source { get; set; } 
 		[System.Activities.RequiredArgumentAttribute()]
-		public System.Activities.InArgument<System.Int32> Id { get; set; } 
+		public System.Activities.InArgument<System.Int32> IDProduction { get; set; } 
 		[System.Activities.RequiredArgumentAttribute()]
 		public System.Activities.InArgument<System.Boolean> IsReadOnly { get; set; } 
     }
