@@ -98,6 +98,31 @@ namespace ITAP.glassCAD.Production.Model {
         External, Internal
     }
 }
+namespace ITAP.glassCAD.Planing.Cutting.Strategy.SquareOpt.Dto {
+    public enum InputPlatePlaceMode {
+        StrongDiraction, Randomize
+    }
+}
+namespace ITAP.glassCAD.Planing.Cutting.Strategy.SquareOpt.Dto {
+    public enum Orientation {
+        Vertical, Horizontal
+    }
+}
+namespace ITAP.glassCAD.Planing.Cutting.Strategy.SquareOpt.Dto {
+    public enum ColumnType {
+        Horizontal, Vertical, Mixed
+    }
+}
+namespace ITAP.glassCAD.Planing.Cutting.Strategy.SquareOpt.Dto {
+    public enum StartCorner {
+        LeftBottom, LeftTop, RightTop, RightBottom
+    }
+}
+namespace ITAP.glassCAD.Planing.Cutting.Strategy.SquareOpt.Dto {
+    public enum RectState {
+        Normal, Changed
+    }
+}
 namespace ITAP.glassCAD.Exchange.Activity {
     public enum ExportTypeMode {
         SeparateMessages, InOneMessage
@@ -184,13 +209,8 @@ namespace glassPeople.CRM {
     }
 }
 namespace glassPeople.CRM {
-    public enum IssueFilterList {
-        BY_STATUS, BY_PRIORITY, BY_PERFORME_MEMBER, BY_CREATED_AT, BY_LAST_COMMENT, BY_STATUS_CHNAGED
-    }
-}
-namespace glassPeople.CRM {
     public enum IssueHistoryType {
-        CreateIssue, CreateIssueComment, ChangeIssueStatus, ChangeIssuePriority, ChangeIssueMembers, ChangeIssuePerformeMembers, ViewIssue
+        CreateIssue, CreateIssueComment, ChangeIssueStatus, ChangeIssuePriority, ChangeIssueMembers, ChangeIssuePerformeMembers, ViewIssue, ChangeIssueText
     }
 }
 namespace glassPeople.Model.Workflow {

@@ -10,7 +10,6 @@ namespace Microsoft.Data.SqlClient {
 
 namespace System {
     public class ValueType {
-
     }
     public class MulticastDelegate {
     }
@@ -18,16 +17,17 @@ namespace System {
 
 namespace System.Drawing {
     public class Color {
-
     }
-    public class Image {
 
+    public class Image {
+    }
+
+    public class Size {
     }
 }
 
 namespace System.Transactions {
     public class TransactionScope {
-
     }
 }
 
@@ -140,6 +140,30 @@ namespace glassPeople.ActivityLibrary {
     public abstract class CustomActionActivity : NativeActivity {
         protected override bool CanInduceIdle => true;
         public List<ActionItem> Actions { get; set; } = new List<ActionItem>();
+    }
+}
+
+namespace Microsoft.EntityFrameworkCore {
+    [AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
+    public sealed class IndexAttribute : Attribute {
+        private readonly List<string> _propertyNames;
+        private bool? _isUnique;
+        public IndexAttribute(string propertyName, params string[] additionalPropertyNames) {
+        }
+
+        public IReadOnlyList<string> PropertyNames
+            => _propertyNames;
+
+        public string Name { get; set; }
+
+        public bool IsUnique {
+            get => _isUnique ?? false;
+            set => _isUnique = value;
+        }
+
+        public bool IsUniqueHasValue => _isUnique.HasValue;
+
+        public bool[] IsDescending { get; set; }
     }
 }
 

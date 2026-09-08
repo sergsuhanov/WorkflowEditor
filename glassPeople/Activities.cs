@@ -1,5 +1,17 @@
 namespace ITAP.glassCAD.Planing.Cutting {
     
+    public partial class CuttingOptimizeActivity : System.Activities.NativeActivity {
+		[System.Activities.RequiredArgumentAttribute()]
+		public System.Activities.InArgument<System.Collections.Generic.List<System.Int32>> Source { get; set; } 
+		[System.Activities.RequiredArgumentAttribute()]
+		public System.Activities.InArgument<glassPeople.ActivityLibrary.glassCAD.Planing.Model.PlanningContext> PlanningContext { get; set; } 
+        protected override void Execute(System.Activities.NativeActivityContext context) {
+            throw new System.NotImplementedException();
+        }
+    }
+}
+namespace ITAP.glassCAD.Planing.Cutting {
+    
     public partial class OptimizeActivity : System.Activities.NativeActivity {
 		[System.Activities.RequiredArgumentAttribute()]
 		public System.Activities.InArgument<System.Collections.Generic.List<glassPeople.ActivityLibrary.glassCAD.Planing.Model.GroupCode>> Source { get; set; } 
@@ -2948,6 +2960,7 @@ namespace glassPeople.ActivityLibrary.glassCAD.Scanner {
 		public System.Activities.OutArgument<glassPeople.ActivityLibrary.glassCAD.Scanner.Scancode[]> Result { get; set; } 
 		public System.Activities.OutArgument<System.Boolean> HasData { get; set; } 
 		public System.Activities.OutArgument<System.Nullable<System.Int32>> SelectedDocId { get; set; } 
+		public System.Activities.OutArgument<System.String> Action { get; set; } 
         protected override void Execute(System.Activities.NativeActivityContext context) {
             throw new System.NotImplementedException();
         }
@@ -3067,6 +3080,7 @@ namespace glassPeople.ActivityLibrary.glassCAD.Scanner {
 		public System.Activities.InArgument<System.String> ConnectionString { get; set; } 
 		[System.Activities.RequiredArgumentAttribute()]
 		public System.Activities.InArgument<System.String> Identificator { get; set; } 
+		public System.Activities.InArgument<System.String> Action { get; set; } 
 		public System.Activities.OutArgument<System.Boolean> HasError { get; set; } 
 		public System.Activities.OutArgument<System.String> Info { get; set; } 
         protected override void Execute(System.Activities.NativeActivityContext context) {
@@ -3187,6 +3201,7 @@ namespace glassPeople.ActivityLibrary.glassCAD.Scanner {
 		public System.Activities.OutArgument<glassPeople.ActivityLibrary.glassCAD.Scanner.Scancode[]> Result { get; set; } 
 		public System.Activities.OutArgument<System.Boolean> HasData { get; set; } 
 		public System.Activities.OutArgument<System.Nullable<System.Int32>> SelectedDocId { get; set; } 
+		public System.Activities.OutArgument<System.String> Action { get; set; } 
         protected override void Execute(System.Activities.NativeActivityContext context) {
             throw new System.NotImplementedException();
         }
@@ -3407,6 +3422,12 @@ namespace glassPeople.ActivityLibrary.glassCAD.Planing.Union.Strategy {
     public partial class ByChildCalendar : glassPeople.ActivityLibrary.glassCAD.Planing.Union.MultiGroupActivity {
 		public System.Activities.InArgument<glassPeople.ActivityLibrary.glassCAD.Planing.Model.PlanningContext> SchedulerContext { get; set; } 
 		public System.Boolean ByAllChild { get; set; } 
+    }
+}
+namespace glassPeople.ActivityLibrary.glassCAD.Planing.Union.Strategy {
+    
+    public partial class ByChildDate : glassPeople.ActivityLibrary.glassCAD.Planing.Union.MultiGroupActivity {
+		public System.Activities.InArgument<glassPeople.ActivityLibrary.glassCAD.Planing.Model.PlanningContext> SchedulerContext { get; set; } 
     }
 }
 namespace glassPeople.ActivityLibrary.glassCAD.Planing.Union.Strategy {
@@ -4067,6 +4088,13 @@ namespace glassPeople.ActivityLibrary.glassCAD.Planing.Activity.Helpers {
         protected override void Execute(System.Activities.NativeActivityContext context) {
             throw new System.NotImplementedException();
         }
+    }
+}
+namespace glassPeople.ActivityLibrary.glassCAD.Planing.Activity.Actualisation {
+    
+    public partial class AutoAttacheCuttingDocumentActivity : ITAP.glassCAD.Dictionary.WorkFlow.Activities.DataLayerNativeActivity {
+		[System.Activities.RequiredArgumentAttribute()]
+		public System.Activities.InArgument<glassPeople.ActivityLibrary.glassCAD.Planing.Model.PlanningContext> PlanningContext { get; set; } 
     }
 }
 namespace glassPeople.ActivityLibrary.glassCAD.Planing.Activity.Actualisation {
@@ -5037,6 +5065,12 @@ namespace glassPeople.ActivityLibrary.Account {
 namespace glassPeople.ActivityLibrary.glassCAD.Planing.Activity.Actualisation {
     
     public partial class ByChildOrCalendar : glassPeople.ActivityLibrary.glassCAD.Planing.Union.MultiGroupActivity {
+		public System.Activities.InArgument<glassPeople.ActivityLibrary.glassCAD.Planing.Model.PlanningContext> SchedulerContext { get; set; } 
+    }
+}
+namespace glassPeople.ActivityLibrary.glassCAD.Planing.Activity.Actualisation {
+    
+    public partial class ByBaseGroupcode : glassPeople.ActivityLibrary.glassCAD.Planing.Union.MultiGroupActivity {
 		public System.Activities.InArgument<glassPeople.ActivityLibrary.glassCAD.Planing.Model.PlanningContext> SchedulerContext { get; set; } 
     }
 }

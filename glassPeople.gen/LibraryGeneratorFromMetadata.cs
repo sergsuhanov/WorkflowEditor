@@ -31,7 +31,9 @@ namespace glassPeople.gen {
 
             //Classes
             {
-                var text = new List<string>();
+                var text = new List<string> {
+                    "using System;"
+                };
 
                 var classesVisiter = new ClassesVisiter();
                 metadata.Types.Where(p => p.IsClass && p.IsNestedClass == false).ToList().ForEach(p => {
