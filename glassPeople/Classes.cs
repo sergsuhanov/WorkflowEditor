@@ -208,6 +208,319 @@ namespace ITAP.glassCAD.Workflow.Components {
 		public System.String InProperty { get; set; } 
     }
 }
+namespace ITAP.glassCAD.Strategy {
+    
+    public abstract partial class Strategy {
+    }
+}
+namespace ITAP.glassCAD.Strategy.SquareOpt {
+    
+    public partial class DefaultStrategy : ITAP.glassCAD.Strategy.Strategy {
+		public System.String RemoteAddress { get; set; } 
+		public System.Int32 LevelRestriction { get; set; } 
+		public System.Int32 TrimMode { get; set; } 
+		public System.Int32 MaxLenCutting { get; set; } 
+		public System.Int32 MaxLenCuttingSubPlate { get; set; } 
+		public System.Boolean MaxLenCuttingVerifyFromFrame { get; set; } 
+		public System.Int32 MaxTimeExecution { get; set; } 
+		public System.String Version { get; set; } 
+		public System.Boolean UseOptData { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Strategy.SquareOpt {
+    
+    public partial class GlassCuttingSpecification {
+		public ITAP.glassCAD.Strategy.SquareOpt.StartCorner StartCorner { get; set; } 
+		public System.Boolean TrimCutsForAllSides { get; set; } 
+		public System.Boolean ShowRightBottomRect { get; set; } 
+		public System.Nullable<System.Int32> CutDirection { get; set; } 
+		public System.String InfoFontFamily { get; set; } 
+		public System.Nullable<System.Int32> InfoFontSize { get; set; } 
+		public System.String OstFontFamily { get; set; } 
+		public System.Nullable<System.Int32> OstFontSize { get; set; } 
+		public System.String RectFontFamily { get; set; } 
+		public System.Nullable<System.Int32> RectFontSize { get; set; } 
+		public System.Nullable<System.Int32> MaxLenCutting { get; set; } 
+		public System.Nullable<System.Int32> MaxLenCuttingSubPlate { get; set; } 
+		public System.Nullable<System.Decimal> IncrementInWidth { get; set; } 
+		public System.Nullable<System.Decimal> IncrementInHeight { get; set; } 
+		public System.Nullable<System.Int32> Freza { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Strategy.SquareOpt {
+    
+    public partial class InputFrame {
+		public System.Double MinAllowSize { get; set; } 
+		public System.Double MaxLenCutting { get; set; } 
+		public System.Int32 ObjID { get; set; } 
+		public System.Boolean IsRequired { get; set; } 
+		public System.Double Width { get; set; } 
+		public System.Double Height { get; set; } 
+		public System.Int32 Count { get; set; } 
+		public System.Double DLeft { get; set; } 
+		public System.Double DTop { get; set; } 
+		public System.Double DRight { get; set; } 
+		public System.Double DBottom { get; set; } 
+		public System.Double TrashSize1 { get; set; } 
+		public System.Double TrashSize2 { get; set; } 
+		public System.Double TrashSizeEnd { get; set; } 
+		[Newtonsoft.Json.JsonIgnoreAttribute()]
+		public System.String Name { get; set; } 
+		[Newtonsoft.Json.JsonIgnoreAttribute()]
+		public ITAP.glassCAD.Strategy.SquareOpt.ColumnType ColumnType { get; set; } 
+		[Newtonsoft.Json.JsonIgnoreAttribute()]
+		public System.String ObjType { get; set; } 
+		[Newtonsoft.Json.JsonIgnoreAttribute()]
+		public System.Int32 MaxLenCuttingSubPlate { get; set; } 
+		[Newtonsoft.Json.JsonIgnoreAttribute()]
+		public System.Int32 Freza { get; set; } 
+		[Newtonsoft.Json.JsonIgnoreAttribute()]
+		public System.Double WorkWidth { get; } 
+		[Newtonsoft.Json.JsonIgnoreAttribute()]
+		public System.Double WorkHeight { get; } 
+    }
+}
+namespace ITAP.glassCAD.Strategy.SquareOpt {
+    
+    public partial class InputPlate {
+		public System.Double Width { get; set; } 
+		public System.Double Height { get; set; } 
+		public System.Int32 ObjID { get; set; } 
+		public ITAP.glassCAD.Strategy.SquareOpt.InputPlatePlaceMode PlaceMode { get; set; } 
+		public System.Int32 NumPos { get; set; } 
+		public System.Nullable<System.Int32> StrongPlaceIndex { get; set; } 
+		public System.Nullable<System.Int32> StrongPlaceGroup { get; set; } 
+		public System.Nullable<System.Boolean> RotationLocked { get; set; } 
+		[Newtonsoft.Json.JsonIgnoreAttribute()]
+		public System.Double WorkSquare { get; set; } 
+		[Newtonsoft.Json.JsonIgnoreAttribute()]
+		public System.String Name { get; set; } 
+		[Newtonsoft.Json.JsonIgnoreAttribute()]
+		public System.String Comment { get; set; } 
+		[Newtonsoft.Json.JsonIgnoreAttribute()]
+		public System.Int32 GroupID { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Strategy.SquareOpt {
+    
+    public partial class InputData {
+		public System.Collections.Generic.List<ITAP.glassCAD.Strategy.SquareOpt.InputFrame> Frames { get; set; } 
+		public System.Collections.Generic.List<ITAP.glassCAD.Strategy.SquareOpt.InputPlate> Plates { get; set; } 
+		public System.Int32 LevelRestriction { get; set; } 
+		public System.Int32 MaxPercentOtherWaste { get; set; } 
+		public System.Int32 MaxLenCutting { get; set; } 
+		public System.Int32 MaxLenCuttingSubPlate { get; set; } 
+		public System.Int32 MaxTimeExecution { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Strategy.SquareOpt {
+    
+    public partial class Optimizator {
+		public System.Boolean State { get; set; } 
+		public System.String ResultMessage { get; set; } 
+		public ITAP.glassCAD.Strategy.SquareOpt.InputData InputData { get; set; } 
+		public ITAP.glassCAD.Strategy.SquareOpt.Rect Map { get; set; } 
+		public ITAP.glassCAD.Strategy.SquareOpt.CuttingInfo CuttingResult { get; set; } 
+		public System.Boolean UseOptData { get; set; } 
+		public System.String Version { get; set; } 
+		public System.Boolean IsDebug { get; set; } 
+		[Newtonsoft.Json.JsonIgnoreAttribute()]
+		public ITAP.glassCAD.Strategy.SquareOpt.OutputDetail OutputDetail { get; set; } 
+		[Newtonsoft.Json.JsonIgnoreAttribute()]
+		public ITAP.glassCAD.Strategy.SquareOpt.GlassCuttingSpecification Settings { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Strategy.SquareOpt {
+    
+    public partial class CuttingInfo {
+		public System.Collections.Generic.List<ITAP.glassCAD.Strategy.SquareOpt.Cut> Cuts { get; set; } 
+		public System.Collections.Generic.List<ITAP.glassCAD.Strategy.SquareOpt.Plate> Plates { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Strategy.SquareOpt {
+    
+    public partial class Cut {
+		public System.Int32 Number { get; set; } 
+		public System.Int32 Level { get; set; } 
+		public System.Double X0 { get; set; } 
+		public System.Double Y0 { get; set; } 
+		public System.Double X1 { get; set; } 
+		public System.Double Y1 { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Strategy.SquareOpt {
+    
+    public partial class Plate {
+		public System.Int32 Number { get; set; } 
+		public System.Double X { get; set; } 
+		public System.Double Y { get; set; } 
+		public System.Double Width { get; set; } 
+		public System.Double Height { get; set; } 
+		public System.Int32 Index { get; set; } 
+		public System.Int32 IndexFrame { get; set; } 
+		public System.Int32 CountFrame { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Strategy.SquareOpt {
+    
+    public partial class Rect {
+		public ITAP.glassCAD.Strategy.SquareOpt.InputFrame InputFrame { get; set; } 
+		public ITAP.glassCAD.Strategy.SquareOpt.InputPlate InputPlate { get; set; } 
+		public System.Collections.Generic.List<ITAP.glassCAD.Strategy.SquareOpt.Rect> Childs { get; set; } 
+		public ITAP.glassCAD.Strategy.SquareOpt.Rect Parent { get; set; } 
+		public System.Double StableInnerWidth { get; set; } 
+		public ITAP.glassCAD.Strategy.SquareOpt.Orientation Orientation { get; set; } 
+		public System.Boolean IsRotared { get; set; } 
+		public ITAP.glassCAD.Strategy.SquareOpt.InputFrame OptInputFrame { get; set; } 
+		public ITAP.glassCAD.Strategy.SquareOpt.Orientation InvertOrientation { get; } 
+		public ITAP.glassCAD.Strategy.SquareOpt.Orientation OstOrientation { get; set; } 
+		[Newtonsoft.Json.JsonIgnoreAttribute()]
+		public System.Drawing.Size DrawningOstSize { get; } 
+		[Newtonsoft.Json.JsonIgnoreAttribute()]
+		public System.Boolean IsPlate { get; } 
+		[Newtonsoft.Json.JsonIgnoreAttribute()]
+		public ITAP.glassCAD.Strategy.SquareOpt.RectState State { get; set; } 
+		[Newtonsoft.Json.JsonIgnoreAttribute()]
+		public System.Boolean IsFree { get; } 
+		[Newtonsoft.Json.JsonIgnoreAttribute()]
+		public System.Boolean IsFrame { get; } 
+		[Newtonsoft.Json.JsonIgnoreAttribute()]
+		public System.Boolean IsLastFrame { get; } 
+		[Newtonsoft.Json.JsonIgnoreAttribute()]
+		public System.Int32 Count { get; } 
+		[Newtonsoft.Json.JsonIgnoreAttribute()]
+		public System.Collections.Generic.IEnumerable<ITAP.glassCAD.Strategy.SquareOpt.Rect> ChildsAll { get; } 
+		[Newtonsoft.Json.JsonIgnoreAttribute()]
+		public System.Int32 Index { get; } 
+		[Newtonsoft.Json.JsonIgnoreAttribute()]
+		public System.Double fullWidth { get; } 
+		[Newtonsoft.Json.JsonIgnoreAttribute()]
+		public System.Double fullHeight { get; } 
+		[Newtonsoft.Json.JsonIgnoreAttribute()]
+		public System.Double innerWidth { get; } 
+		[Newtonsoft.Json.JsonIgnoreAttribute()]
+		public System.Double innerHeight { get; } 
+		[Newtonsoft.Json.JsonIgnoreAttribute()]
+		public System.Double ostWidth { get; } 
+		[Newtonsoft.Json.JsonIgnoreAttribute()]
+		public System.Double ostHeight { get; } 
+		[Newtonsoft.Json.JsonIgnoreAttribute()]
+		public System.Double Square { get; } 
+		[Newtonsoft.Json.JsonIgnoreAttribute()]
+		public System.Double InnerSquare { get; } 
+		[Newtonsoft.Json.JsonIgnoreAttribute()]
+		public System.Double OstSquare { get; } 
+		[Newtonsoft.Json.JsonIgnoreAttribute()]
+		public System.Boolean IsWorkingRemainder { get; } 
+		[Newtonsoft.Json.JsonIgnoreAttribute()]
+		public System.Boolean IsEnabledRemainder { get; } 
+		[Newtonsoft.Json.JsonIgnoreAttribute()]
+		public System.Double StatisticWaste { get; } 
+		[Newtonsoft.Json.JsonIgnoreAttribute()]
+		public System.Double StatisticWorkWaste { get; } 
+    }
+}
+namespace ITAP.glassCAD.Strategy.SquareOpt {
+    
+    public partial class OutputDetail {
+		public System.Boolean IsEmpty { get; } 
+    }
+}
+namespace ITAP.glassCAD.Strategy.SquareOpt {
+    
+    public partial class InputPlateComparerBySize {
+    }
+}
+namespace ITAP.glassCAD.Strategy.SquareOpt {
+    
+    public partial class Export {
+    }
+}
+namespace ITAP.glassCAD.Strategy.Packing {
+    
+    public partial class DefaultStrategy : ITAP.glassCAD.Strategy.Strategy {
+		public System.String ServicePath { get; set; } 
+		public System.Collections.Generic.Dictionary<System.String, System.String> Parameters { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Strategy.LineOpt {
+    
+    public partial class DefaultStrategy : ITAP.glassCAD.Strategy.Strategy {
+		public System.String RemoteAddress { get; set; } 
+		public System.Int32 MaxTimeExecution { get; set; } 
+		public System.Int32 MaxProfilesPerCut { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Strategy.LineOpt {
+    
+    public partial class ProfileCuttingSpecification {
+		public System.Decimal Freza { get; set; } 
+		public System.Int32 Trim { get; set; } 
+		public System.Int32 Step { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Strategy.LineOpt {
+    
+    public partial class Profile {
+		public System.Int32 Id { get; set; } 
+		public System.Int32 Length { get; set; } 
+		public System.Int32 Count { get; set; } 
+		public System.Boolean EnableOst { get; set; } 
+		public System.Int32 OstRound { get; set; } 
+		public System.Boolean SaveOst { get; set; } 
+		public System.Int32 WorkOst { get; set; } 
+		public System.Boolean AcceptOst { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Strategy.LineOpt {
+    
+    public partial class Item {
+		public System.Int32 Id { get; set; } 
+		public System.Decimal Length { get; set; } 
+		public System.Int32 NumPos { get; set; } 
+		public System.Nullable<System.Int32> AfterPos { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Strategy.LineOpt {
+    
+    public partial class CuttingResult {
+		public System.Int32 ProfileId { get; set; } 
+		public System.Int32 ItemId { get; set; } 
+		public System.Int32 NumPos { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Strategy.LineOpt {
+    
+    public partial class Map {
+		public ITAP.glassCAD.Strategy.LineOpt.Profile Profile { get; set; } 
+		public System.Collections.Generic.List<ITAP.glassCAD.Strategy.LineOpt.Item> Items { get; set; } 
+		public System.Int32 NumPos { get; set; } 
+		public System.Int32 Status { get; set; } 
+		public System.Int32 ItemCount { get; } 
+		public System.Decimal ItemLength { get; set; } 
+		public System.Nullable<System.Decimal> ItemWorkLength { get; set; } 
+		public System.Nullable<System.Int32> FullOstCount { get; set; } 
+		public System.Nullable<System.Int32> WorkOstCount { get; set; } 
+		public System.Nullable<System.Decimal> FullOstLength { get; set; } 
+		public System.Nullable<System.Decimal> WorkOstLength { get; set; } 
+		public System.Nullable<System.Decimal> WasteTrashProcent { get; set; } 
+		public System.Nullable<System.Decimal> WasteWorkPocent { get; set; } 
+		public System.Nullable<System.Decimal> WasteProcent { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Strategy.LineOpt {
+    
+    public partial class Optimizator {
+		public System.Boolean State { get; set; } 
+		public System.String ResultMessage { get; set; } 
+		public System.Collections.Generic.List<ITAP.glassCAD.Strategy.LineOpt.Item> Items { get; set; } 
+		public System.Collections.Generic.List<ITAP.glassCAD.Strategy.LineOpt.Profile> InputProfiles { get; set; } 
+		public System.Collections.Generic.List<ITAP.glassCAD.Strategy.LineOpt.CuttingResult> CuttingResult { get; set; } 
+		public ITAP.glassCAD.Strategy.LineOpt.ProfileCuttingSpecification Specification { get; set; } 
+		public System.Collections.Generic.List<ITAP.glassCAD.Strategy.LineOpt.Map> Maps { get; set; } 
+		public System.Int32 MaxProfilesPerCut { get; set; } 
+    }
+}
 namespace ITAP.glassCAD.Profile.ViewModel {
     
     public partial class TreeViewModel {
@@ -700,210 +1013,6 @@ namespace ITAP.glassCAD.Production.Model.ValidationRules {
 namespace ITAP.glassCAD.Production.Model.ValidationRules {
     
     public partial class OperationRelationsRule : ITAP.glassCAD.Production.Model.ValidationRules.OperationValidator {
-    }
-}
-namespace ITAP.glassCAD.Planing.Cutting.Strategy {
-    
-    public abstract partial class Strategy {
-    }
-}
-namespace ITAP.glassCAD.Planing.Cutting.Strategy.SquareOpt {
-    
-    public partial class Default : ITAP.glassCAD.Planing.Cutting.Strategy.Strategy {
-		public System.String RemoteAddress { get; set; } 
-		public System.Int32 LevelRestriction { get; set; } 
-		public System.Int32 TrimMode { get; set; } 
-		public System.Int32 MaxLenCutting { get; set; } 
-		public System.Int32 MaxLenCuttingSubPlate { get; set; } 
-		public System.Boolean MaxLenCuttingVerifyFromFrame { get; set; } 
-		public System.Int32 MaxTimeExecution { get; set; } 
-		public System.String Version { get; set; } 
-		public System.Boolean UseOptData { get; set; } 
-    }
-}
-namespace ITAP.glassCAD.Planing.Cutting.Strategy.SquareOpt {
-    
-    public partial class Export {
-    }
-}
-namespace ITAP.glassCAD.Planing.Cutting.Strategy.SquareOpt {
-    
-    public partial class ForTest : ITAP.glassCAD.Planing.Cutting.Strategy.Strategy {
-    }
-}
-namespace ITAP.glassCAD.Planing.Cutting.Strategy.SquareOpt {
-    
-    public partial class WCF : ITAP.glassCAD.Planing.Cutting.Strategy.Strategy {
-    }
-}
-namespace ITAP.glassCAD.Planing.Cutting.Strategy.SquareOpt {
-    
-    public partial class WCF57a : ITAP.glassCAD.Planing.Cutting.Strategy.Strategy {
-    }
-}
-namespace ITAP.glassCAD.Planing.Cutting.Strategy.SquareOpt.Dto {
-    
-    public partial class GlassCuttingSpecification {
-		public ITAP.glassCAD.Planing.Cutting.Strategy.SquareOpt.Dto.StartCorner StartCorner { get; set; } 
-		public System.Boolean TrimCutsForAllSides { get; set; } 
-		public System.Boolean ShowRightBottomRect { get; set; } 
-		public System.Nullable<System.Int32> CutDirection { get; set; } 
-		public System.String InfoFontFamily { get; set; } 
-		public System.Nullable<System.Int32> InfoFontSize { get; set; } 
-		public System.String OstFontFamily { get; set; } 
-		public System.Nullable<System.Int32> OstFontSize { get; set; } 
-		public System.String RectFontFamily { get; set; } 
-		public System.Nullable<System.Int32> RectFontSize { get; set; } 
-		public System.Nullable<System.Int32> MaxLenCutting { get; set; } 
-		public System.Nullable<System.Int32> MaxLenCuttingSubPlate { get; set; } 
-		public System.Nullable<System.Decimal> IncrementInWidth { get; set; } 
-		public System.Nullable<System.Decimal> IncrementInHeight { get; set; } 
-		public System.Nullable<System.Int32> Freza { get; set; } 
-    }
-}
-namespace ITAP.glassCAD.Planing.Cutting.Strategy.SquareOpt.Dto {
-    
-    public partial class InputFrame {
-		public System.Double MinAllowSize { get; set; } 
-		public System.Double MaxLenCutting { get; set; } 
-		public System.Int32 ObjID { get; set; } 
-		public System.Boolean IsRequired { get; set; } 
-		public System.Double Width { get; set; } 
-		public System.Double Height { get; set; } 
-		public System.Int32 Count { get; set; } 
-		public System.Double DLeft { get; set; } 
-		public System.Double DTop { get; set; } 
-		public System.Double DRight { get; set; } 
-		public System.Double DBottom { get; set; } 
-		public System.Double TrashSize1 { get; set; } 
-		public System.Double TrashSize2 { get; set; } 
-		public System.Double TrashSizeEnd { get; set; } 
-		public System.String Name { get; set; } 
-		public ITAP.glassCAD.Planing.Cutting.Strategy.SquareOpt.Dto.ColumnType ColumnType { get; set; } 
-		public System.String ObjType { get; set; } 
-		public System.Int32 MaxLenCuttingSubPlate { get; set; } 
-		public System.Int32 Freza { get; set; } 
-		public System.Double WorkWidth { get; } 
-		public System.Double WorkHeight { get; } 
-    }
-}
-namespace ITAP.glassCAD.Planing.Cutting.Strategy.SquareOpt.Dto {
-    
-    public partial class InputPlate {
-		public System.Double Width { get; set; } 
-		public System.Double Height { get; set; } 
-		public System.Int32 ObjID { get; set; } 
-		public ITAP.glassCAD.Planing.Cutting.Strategy.SquareOpt.Dto.InputPlatePlaceMode PlaceMode { get; set; } 
-		public System.Int32 NumPos { get; set; } 
-		public System.Nullable<System.Int32> StrongPlaceIndex { get; set; } 
-		public System.Nullable<System.Int32> StrongPlaceGroup { get; set; } 
-		public System.Nullable<System.Boolean> RotationLocked { get; set; } 
-		public System.Double WorkSquare { get; set; } 
-		public System.String Name { get; set; } 
-		public System.String Comment { get; set; } 
-    }
-}
-namespace ITAP.glassCAD.Planing.Cutting.Strategy.SquareOpt.Dto {
-    
-    public partial class InputData {
-		public System.Collections.Generic.List<ITAP.glassCAD.Planing.Cutting.Strategy.SquareOpt.Dto.InputFrame> Frames { get; set; } 
-		public System.Collections.Generic.List<ITAP.glassCAD.Planing.Cutting.Strategy.SquareOpt.Dto.InputPlate> Plates { get; set; } 
-		public System.Int32 LevelRestriction { get; set; } 
-		public System.Int32 MaxPercentOtherWaste { get; set; } 
-		public System.Int32 MaxLenCutting { get; set; } 
-		public System.Int32 MaxLenCuttingSubPlate { get; set; } 
-		public System.Int32 MaxTimeExecution { get; set; } 
-    }
-}
-namespace ITAP.glassCAD.Planing.Cutting.Strategy.SquareOpt.Dto {
-    
-    public partial class Optimizator {
-		public System.Boolean State { get; set; } 
-		public System.String ResultMessage { get; set; } 
-		public ITAP.glassCAD.Planing.Cutting.Strategy.SquareOpt.Dto.InputData InputData { get; set; } 
-		public ITAP.glassCAD.Planing.Cutting.Strategy.SquareOpt.Dto.Rect Map { get; set; } 
-		public ITAP.glassCAD.Planing.Cutting.Strategy.SquareOpt.Dto.CuttingInfo CuttingResult { get; set; } 
-		public System.Boolean UseOptData { get; set; } 
-		public System.String Version { get; set; } 
-		public System.Boolean IsDebug { get; set; } 
-		public ITAP.glassCAD.Planing.Cutting.Strategy.SquareOpt.Dto.OutputDetail OutputDetail { get; set; } 
-		public ITAP.glassCAD.Planing.Cutting.Strategy.SquareOpt.Dto.GlassCuttingSpecification Settings { get; set; } 
-    }
-}
-namespace ITAP.glassCAD.Planing.Cutting.Strategy.SquareOpt.Dto {
-    
-    public partial class CuttingInfo {
-		public System.Collections.Generic.List<ITAP.glassCAD.Planing.Cutting.Strategy.SquareOpt.Dto.Cut> Cuts { get; set; } 
-		public System.Collections.Generic.List<ITAP.glassCAD.Planing.Cutting.Strategy.SquareOpt.Dto.Plate> Plates { get; set; } 
-    }
-}
-namespace ITAP.glassCAD.Planing.Cutting.Strategy.SquareOpt.Dto {
-    
-    public partial class Cut {
-		public System.Int32 Number { get; set; } 
-		public System.Int32 Level { get; set; } 
-		public System.Double X0 { get; set; } 
-		public System.Double Y0 { get; set; } 
-		public System.Double X1 { get; set; } 
-		public System.Double Y1 { get; set; } 
-    }
-}
-namespace ITAP.glassCAD.Planing.Cutting.Strategy.SquareOpt.Dto {
-    
-    public partial class Plate {
-		public System.Int32 Number { get; set; } 
-		public System.Double X { get; set; } 
-		public System.Double Y { get; set; } 
-		public System.Double Width { get; set; } 
-		public System.Double Height { get; set; } 
-		public System.Int32 Index { get; set; } 
-		public System.Int32 IndexFrame { get; set; } 
-		public System.Int32 CountFrame { get; set; } 
-    }
-}
-namespace ITAP.glassCAD.Planing.Cutting.Strategy.SquareOpt.Dto {
-    
-    public partial class Rect {
-		public ITAP.glassCAD.Planing.Cutting.Strategy.SquareOpt.Dto.InputFrame InputFrame { get; set; } 
-		public ITAP.glassCAD.Planing.Cutting.Strategy.SquareOpt.Dto.InputPlate InputPlate { get; set; } 
-		public System.Collections.Generic.List<ITAP.glassCAD.Planing.Cutting.Strategy.SquareOpt.Dto.Rect> Childs { get; set; } 
-		public ITAP.glassCAD.Planing.Cutting.Strategy.SquareOpt.Dto.Rect Parent { get; set; } 
-		public System.Nullable<System.Double> StableInnerWidth { get; set; } 
-		public ITAP.glassCAD.Planing.Cutting.Strategy.SquareOpt.Dto.Orientation Orientation { get; set; } 
-		public System.Boolean IsRotared { get; set; } 
-		public System.Drawing.Size DrawningOstSize { get; } 
-		public System.Boolean IsPlate { get; } 
-		public ITAP.glassCAD.Planing.Cutting.Strategy.SquareOpt.Dto.RectState State { get; set; } 
-		public System.Boolean IsFree { get; } 
-		public System.Boolean IsFrame { get; } 
-		public System.Boolean IsLastFrame { get; } 
-		public System.Int32 Count { get; } 
-		public System.Collections.Generic.IEnumerable<ITAP.glassCAD.Planing.Cutting.Strategy.SquareOpt.Dto.Rect> ChildsAll { get; } 
-		public System.Int32 Index { get; } 
-		public System.Double fullWidth { get; } 
-		public System.Double fullHeight { get; } 
-		public System.Double innerWidth { get; } 
-		public System.Double innerHeight { get; } 
-		public System.Double ostWidth { get; } 
-		public System.Double ostHeight { get; } 
-		public System.Double Square { get; } 
-		public System.Double InnerSquare { get; } 
-		public System.Double OstSquare { get; } 
-		public System.Boolean IsWorkingRemainder { get; } 
-		public System.Boolean IsEnabledRemainder { get; } 
-		public System.Double StatisticWaste { get; } 
-		public System.Double StatisticWorkWaste { get; } 
-    }
-}
-namespace ITAP.glassCAD.Planing.Cutting.Strategy.SquareOpt.Dto {
-    
-    public partial class OutputDetail {
-		public System.Boolean IsEmpty { get; } 
-    }
-}
-namespace ITAP.glassCAD.Planing.Cutting.Strategy.LineOpt {
-    
-    public partial class LineCutting : ITAP.glassCAD.Planing.Cutting.Strategy.Strategy {
     }
 }
 namespace ITAP.glassCAD.Utilites {
@@ -2592,6 +2701,7 @@ namespace ITAP.glassCAD.Data {
 		public System.Boolean ShowInReferenceMetadata { get; set; } 
 		public System.Boolean AllowEdit { get; set; } 
 		public System.Boolean IsUnbound { get; set; } 
+		public System.Boolean CustomForm { get; set; } 
 		public System.String ListLookUpItem { get; set; } 
 		public System.String MetadataReference { get; set; } 
 		public System.Boolean CustomReference { get; set; } 
@@ -2645,6 +2755,24 @@ namespace ITAP.glassCAD.Data {
     [System.Reflection.DefaultMemberAttribute("Item")]
     public partial class MetadataList : System.Collections.Generic.List<ITAP.glassCAD.Data.Metadata> {
 		public ITAP.glassCAD.Data.Metadata Item { get; } 
+    }
+}
+namespace ITAP.glassCAD.Components {
+    
+    public partial class ContextMenuItem {
+		public ITAP.glassCAD.Components.GridContextMenuItemType ItemType { get; set; } 
+		public System.String Text { get; set; } 
+		public System.Boolean Enabled { get; set; } 
+		public System.Boolean Visible { get; set; } 
+		public System.Boolean BeginGroup { get; set; } 
+		public System.String CssClass { get; set; } 
+		public System.String IconCssClass { get; set; } 
+		public System.String UserAction { get; set; } 
+    }
+}
+namespace ITAP.glassCAD.Components {
+    
+    public partial class GridContextMenuHelper {
     }
 }
 namespace ITAP.glassCAD.Analytic {
@@ -3946,6 +4074,13 @@ namespace glassPeople.ActivityLibrary.glassCAD.Planing.Tasks {
 }
 namespace glassPeople.ActivityLibrary.glassCAD.Planing.Tasks {
     
+    public partial class OptimizationTask : glassPeople.ActivityLibrary.glassCAD.Planing.Tasks.Task {
+		public System.Collections.Generic.List<System.Int32> IDOptimizations { get; set; } 
+		public System.Int32 IDDocOper { get; set; } 
+    }
+}
+namespace glassPeople.ActivityLibrary.glassCAD.Planing.Tasks {
+    
     public partial class RefreshAppointmentItemsTask : glassPeople.ActivityLibrary.glassCAD.Planing.Tasks.Task {
 		public System.Collections.Generic.List<System.Int32> IDAppointmentsItems { get; set; } 
     }
@@ -4470,7 +4605,8 @@ namespace glassPeople.ActivityLibrary.glassCAD.Planing.Model {
 		public System.Nullable<System.Int32> Duration { get; set; } 
 		public System.Nullable<System.DateTime> PlanDate { get; set; } 
 		public System.Nullable<System.DateTime> DeliveryGoodsDate { get; set; } 
-		public System.Nullable<System.DateTime> RestrictionDate { get; set; } 
+		public System.Nullable<System.DateTime> NotEarlierThanRestrictionDate { get; set; } 
+		public System.Nullable<System.DateTime> NotLaterThanRestrictionDate { get; set; } 
 		public System.Nullable<System.Int32> Priority { get; set; } 
 		public System.Collections.Generic.IEnumerable<glassPeople.ActivityLibrary.glassCAD.Planing.Model.GroupCode> Parents { get; } 
 		public System.Collections.Generic.IEnumerable<glassPeople.ActivityLibrary.glassCAD.Planing.Model.GroupCode> Childs { get; } 
@@ -4761,6 +4897,7 @@ namespace glassPeople.ActivityLibrary.glassCAD.Planing.Deliver {
 namespace glassPeople.ActivityLibrary.glassCAD.Planing.Deliver {
     
     public partial class DeliverItem {
+		public System.Nullable<System.DateTime> NotLaterThanRestrictionDate { get; set; } 
 		public glassPeople.ActivityLibrary.glassCAD.Planing.Deliver.DeliverItem Relation { get; set; } 
 		public System.Collections.Generic.IEnumerable<glassPeople.ActivityLibrary.glassCAD.Planing.Deliver.DeliverItem> All { get; } 
 		public System.Boolean IsValid { get; } 
@@ -4799,30 +4936,29 @@ namespace glassPeople.ActivityLibrary.glassCAD.Planing.Deliver {
 namespace glassPeople.ActivityLibrary.glassCAD.Planing.Cutting {
     
     public partial class ArmLineCutting {
-		[System.ComponentModel.DataAnnotations.Schema.DatabaseGeneratedAttribute((System.ComponentModel.DataAnnotations.Schema.DatabaseGeneratedOption)0)]
-		[System.ComponentModel.DataAnnotations.KeyAttribute()]
 		public System.Int32 Id { get; set; } 
 		public System.String NmDoc { get; set; } 
 		public System.Int32 IdExternal { get; set; } 
 		public System.Int32 NumPos { get; set; } 
+		public System.Nullable<System.Boolean> IsCutting { get; set; } 
 		public System.String Comment { get; set; } 
 		public System.Nullable<System.Int32> IDOptStrategy { get; set; } 
+		public System.Nullable<System.Int32> IDEquipment { get; set; } 
 		public System.Collections.Generic.List<glassPeople.ActivityLibrary.glassCAD.Planing.Cutting.ArmLineCuttingItem> ArmLineCuttingItem { get; set; } 
 		public System.Collections.Generic.List<glassPeople.ActivityLibrary.glassCAD.Planing.Cutting.ArmLineCuttingOstIn> ArmLineCuttingOstIn { get; set; } 
-		public System.Collections.Generic.List<glassPeople.ActivityLibrary.glassCAD.Planing.Cutting.ArmLineCuttingOstOut> armLineCuttingOstOut { get; set; } 
+		public System.Collections.Generic.List<glassPeople.ActivityLibrary.glassCAD.Planing.Cutting.ArmLineCuttingOstOut> ArmLineCuttingOstOut { get; set; } 
 		public glassPeople.ActivityLibrary.glassCAD.Planing.Cutting.ArmLineCuttingInfo ArmLineCuttingInfo { get; set; } 
-		public glassPeople.ActivityLibrary.glassCAD.Planing.Cutting.ArmLineCuttingProfile ArmLineCuttingProfile { get; set; } 
+		public System.Collections.Generic.List<glassPeople.ActivityLibrary.glassCAD.Planing.Cutting.ArmLineCuttingProfile> ArmLineCuttingProfile { get; set; } 
 		public System.Nullable<System.Int32> IDProfileStorehouseOstOut { get; set; } 
 		public System.Nullable<System.Int32> IDProfilePackageOstOut { get; set; } 
 		public System.Nullable<System.Int32> CellOstOut { get; set; } 
 		public System.String PathInfo { get; set; } 
+		public System.String OptStrategyParams { get; set; } 
     }
 }
 namespace glassPeople.ActivityLibrary.glassCAD.Planing.Cutting {
     
     public partial class ArmLineCuttingInfo {
-		[System.ComponentModel.DataAnnotations.Schema.DatabaseGeneratedAttribute((System.ComponentModel.DataAnnotations.Schema.DatabaseGeneratedOption)0)]
-		[System.ComponentModel.DataAnnotations.KeyAttribute()]
 		public System.Int32 Id { get; set; } 
 		public System.Int32 ArmLineCuttingId { get; set; } 
 		public glassPeople.ActivityLibrary.glassCAD.Planing.Cutting.ArmLineCutting ArmLineCutting { get; set; } 
@@ -4840,12 +4976,13 @@ namespace glassPeople.ActivityLibrary.glassCAD.Planing.Cutting {
 namespace glassPeople.ActivityLibrary.glassCAD.Planing.Cutting {
     
     public partial class ArmLineCuttingItem {
-		[System.ComponentModel.DataAnnotations.Schema.DatabaseGeneratedAttribute((System.ComponentModel.DataAnnotations.Schema.DatabaseGeneratedOption)0)]
-		[System.ComponentModel.DataAnnotations.KeyAttribute()]
 		public System.Int32 Id { get; set; } 
 		public System.Int32 ArmLineCuttingId { get; set; } 
 		public glassPeople.ActivityLibrary.glassCAD.Planing.Cutting.ArmLineCutting ArmLineCutting { get; set; } 
+		public System.Nullable<System.Int32> ArmLineCuttingProfileId { get; set; } 
+		public glassPeople.ActivityLibrary.glassCAD.Planing.Cutting.ArmLineCuttingProfile ArmLineCuttingProfile { get; set; } 
 		public System.Int32 NumPos { get; set; } 
+		public System.Nullable<System.Int32> AfterIndex { get; set; } 
 		public System.String Name { get; set; } 
 		public System.Int32 IDGood { get; set; } 
 		public System.String Marking { get; set; } 
@@ -4860,8 +4997,6 @@ namespace glassPeople.ActivityLibrary.glassCAD.Planing.Cutting {
 namespace glassPeople.ActivityLibrary.glassCAD.Planing.Cutting {
     
     public partial class ArmLineCuttingOstIn {
-		[System.ComponentModel.DataAnnotations.Schema.DatabaseGeneratedAttribute((System.ComponentModel.DataAnnotations.Schema.DatabaseGeneratedOption)0)]
-		[System.ComponentModel.DataAnnotations.KeyAttribute()]
 		public System.Int32 Id { get; set; } 
 		public System.Int32 ArmLineCuttingId { get; set; } 
 		public glassPeople.ActivityLibrary.glassCAD.Planing.Cutting.ArmLineCutting ArmLineCutting { get; set; } 
@@ -4880,12 +5015,10 @@ namespace glassPeople.ActivityLibrary.glassCAD.Planing.Cutting {
 namespace glassPeople.ActivityLibrary.glassCAD.Planing.Cutting {
     
     public partial class ArmLineCuttingOstOut {
-		[System.ComponentModel.DataAnnotations.Schema.DatabaseGeneratedAttribute((System.ComponentModel.DataAnnotations.Schema.DatabaseGeneratedOption)0)]
-		[System.ComponentModel.DataAnnotations.KeyAttribute()]
 		public System.Int32 Id { get; set; } 
 		public System.Int32 ArmLineCuttingId { get; set; } 
 		public glassPeople.ActivityLibrary.glassCAD.Planing.Cutting.ArmLineCutting ArmLineCutting { get; set; } 
-		public System.Int32 IDArmLineCuttingProfile { get; set; } 
+		public System.Int32 ArmLineCuttingProfileId { get; set; } 
 		public glassPeople.ActivityLibrary.glassCAD.Planing.Cutting.ArmLineCuttingProfile ArmLineCuttingProfile { get; set; } 
 		public System.Int32 Length { get; set; } 
 		public System.Boolean IsLastInProfile { get; set; } 
@@ -4894,12 +5027,10 @@ namespace glassPeople.ActivityLibrary.glassCAD.Planing.Cutting {
 namespace glassPeople.ActivityLibrary.glassCAD.Planing.Cutting {
     
     public partial class ArmLineCuttingProfile {
-		[System.ComponentModel.DataAnnotations.Schema.DatabaseGeneratedAttribute((System.ComponentModel.DataAnnotations.Schema.DatabaseGeneratedOption)0)]
-		[System.ComponentModel.DataAnnotations.KeyAttribute()]
 		public System.Int32 Id { get; set; } 
 		public System.Int32 ArmLineCuttingId { get; set; } 
 		public glassPeople.ActivityLibrary.glassCAD.Planing.Cutting.ArmLineCutting ArmLineCutting { get; set; } 
-		public System.Int32 IDArmLineCuttingOstIn { get; set; } 
+		public System.Nullable<System.Int32> ArmLineCuttingOstInId { get; set; } 
 		public glassPeople.ActivityLibrary.glassCAD.Planing.Cutting.ArmLineCuttingOstIn ArmLineCuttingOstIn { get; set; } 
 		public System.Int32 NumPos { get; set; } 
 		public System.Int32 Status { get; set; } 
@@ -4931,15 +5062,10 @@ namespace glassPeople.ActivityLibrary.glassCAD.Planing.Cutting {
 		public System.String OptStrategyParams { get; set; } 
 		public System.Boolean IsCutting { get; set; } 
 		public System.Int32 IDExternalType { get; set; } 
-		[System.ComponentModel.DataAnnotations.Schema.NotMappedAttribute()]
 		public System.Collections.Generic.List<glassPeople.ActivityLibrary.glassCAD.Planing.Cutting.ArmSquareCuttingItem> ArmSquareCuttingItem { get; set; } 
-		[System.ComponentModel.DataAnnotations.Schema.NotMappedAttribute()]
 		public System.Collections.Generic.List<glassPeople.ActivityLibrary.glassCAD.Planing.Cutting.ArmSquareCuttingFrame> ArmSquareCuttingFrame { get; set; } 
-		[System.ComponentModel.DataAnnotations.Schema.NotMappedAttribute()]
 		public glassPeople.ActivityLibrary.glassCAD.Planing.Cutting.ArmSquareCuttingInfo ArmSquareCuttingInfo { get; set; } 
-		[System.ComponentModel.DataAnnotations.Schema.NotMappedAttribute()]
 		public System.Collections.Generic.List<glassPeople.ActivityLibrary.glassCAD.Planing.Cutting.ArmSquareCuttingOstIn> ArmSquareCuttingOstIn { get; set; } 
-		[System.ComponentModel.DataAnnotations.Schema.NotMappedAttribute()]
 		public System.Collections.Generic.List<glassPeople.ActivityLibrary.glassCAD.Planing.Cutting.ArmSquareCuttingOstOut> ArmSquareCuttingOstOut { get; set; } 
 		public System.Nullable<System.Int32> IDGlassStorehouseOstOut { get; set; } 
 		public System.Nullable<System.Int32> IDGlassPackageOstOut { get; set; } 
@@ -4952,10 +5078,8 @@ namespace glassPeople.ActivityLibrary.glassCAD.Planing.Cutting {
     public partial class ArmSquareCuttingFrame {
 		public System.Int32 Id { get; set; } 
 		public System.Int32 ArmSquareCuttingId { get; set; } 
-		[System.ComponentModel.DataAnnotations.Schema.NotMappedAttribute()]
 		public glassPeople.ActivityLibrary.glassCAD.Planing.Cutting.ArmSquareCutting ArmSquareCutting { get; set; } 
 		public System.Nullable<System.Int32> ArmSquareCuttingOstInId { get; set; } 
-		[System.ComponentModel.DataAnnotations.Schema.NotMappedAttribute()]
 		public glassPeople.ActivityLibrary.glassCAD.Planing.Cutting.ArmSquareCuttingOstIn ArmSquareCuttingOstIn { get; set; } 
 		public System.Int32 NumPos { get; set; } 
 		public System.Int32 Status { get; set; } 
@@ -4978,7 +5102,6 @@ namespace glassPeople.ActivityLibrary.glassCAD.Planing.Cutting {
     public partial class ArmSquareCuttingInfo {
 		public System.Int32 Id { get; set; } 
 		public System.Int32 ArmSquareCuttingId { get; set; } 
-		[System.ComponentModel.DataAnnotations.Schema.NotMappedAttribute()]
 		public glassPeople.ActivityLibrary.glassCAD.Planing.Cutting.ArmSquareCutting ArmSquareCutting { get; set; } 
 		public System.Nullable<System.Int32> FrameCount { get; set; } 
 		public System.Nullable<System.Int32> PlateCount { get; set; } 
@@ -5005,8 +5128,9 @@ namespace glassPeople.ActivityLibrary.glassCAD.Planing.Cutting {
     public partial class ArmSquareCuttingItem {
 		public System.Int32 Id { get; set; } 
 		public System.Int32 ArmSquareCuttingId { get; set; } 
-		[System.ComponentModel.DataAnnotations.Schema.NotMappedAttribute()]
 		public glassPeople.ActivityLibrary.glassCAD.Planing.Cutting.ArmSquareCutting ArmSquareCutting { get; set; } 
+		public System.Nullable<System.Int32> ArmSquareCuttingFrameId { get; set; } 
+		public glassPeople.ActivityLibrary.glassCAD.Planing.Cutting.ArmSquareCuttingFrame ArmSquareCuttingFrame { get; set; } 
 		public System.Int32 NumPos { get; set; } 
 		public System.String Name { get; set; } 
 		public System.Int32 IDGood { get; set; } 
@@ -5025,7 +5149,6 @@ namespace glassPeople.ActivityLibrary.glassCAD.Planing.Cutting {
     public partial class ArmSquareCuttingOstIn {
 		public System.Int32 Id { get; set; } 
 		public System.Int32 ArmSquareCuttingId { get; set; } 
-		[System.ComponentModel.DataAnnotations.Schema.NotMappedAttribute()]
 		public glassPeople.ActivityLibrary.glassCAD.Planing.Cutting.ArmSquareCutting ArmSquareCutting { get; set; } 
 		public System.Nullable<System.Int32> IDGlass { get; set; } 
 		public System.Nullable<System.Int32> Width { get; set; } 
@@ -5055,14 +5178,12 @@ namespace glassPeople.ActivityLibrary.glassCAD.Planing.Cutting {
     public partial class ArmSquareCuttingOstOut {
 		public System.Int32 Id { get; set; } 
 		public System.Int32 ArmSquareCuttingId { get; set; } 
-		[System.ComponentModel.DataAnnotations.Schema.NotMappedAttribute()]
 		public glassPeople.ActivityLibrary.glassCAD.Planing.Cutting.ArmSquareCutting ArmSquareCutting { get; set; } 
 		public System.Int32 ArmSquareCuttingFrameId { get; set; } 
-		[System.ComponentModel.DataAnnotations.Schema.NotMappedAttribute()]
 		public glassPeople.ActivityLibrary.glassCAD.Planing.Cutting.ArmSquareCuttingFrame ArmSquareCuttingFrame { get; set; } 
 		public System.Int32 Width { get; set; } 
 		public System.Int32 Height { get; set; } 
-		public System.Boolean IsLastInFrame { get; set; } 
+		public System.Nullable<System.Boolean> IsLastInFrame { get; set; } 
     }
 }
 namespace glassPeople.ActivityLibrary.glassCAD.Planing.Activity.Orders {
@@ -5129,6 +5250,52 @@ namespace ITAP.glassCAD {
     public partial class Program {
     
     public abstract partial class Enumerables {
+    }
+    }
+}
+namespace ITAP.glassCAD.Strategy.SquareOpt {
+    public partial class OutputDetail {
+    
+    public partial class Cut {
+		public System.Int32 Number { get; set; } 
+		public System.Int32 Level { get; set; } 
+		public System.Double Value { get; } 
+		public System.Double Lenght { get; } 
+		public System.Double X0 { get; set; } 
+		public System.Double Y0 { get; set; } 
+		public System.Double X1 { get; set; } 
+		public System.Double Y1 { get; set; } 
+		public System.Double Angle { get; } 
+    }
+    }
+}
+namespace ITAP.glassCAD.Strategy.SquareOpt {
+    public partial class OutputDetail {
+    
+    public partial class CutComparer {
+    }
+    }
+}
+namespace ITAP.glassCAD.Strategy.SquareOpt {
+    public partial class OutputDetail {
+    
+    public partial class Plate {
+		public System.Int32 Number { get; set; } 
+		public System.Double X { get; set; } 
+		public System.Double Y { get; set; } 
+		public System.Double Width { get; set; } 
+		public System.Double Height { get; set; } 
+		public System.Int32 Count { get; set; } 
+    }
+    }
+}
+namespace ITAP.glassCAD.Strategy.Packing {
+    public partial class DefaultForm {
+    
+    public partial class ParameterItem {
+		public System.String Key { get; set; } 
+		public System.String OriginalKey { get; set; } 
+		public System.String Value { get; set; } 
     }
     }
 }
@@ -5353,42 +5520,6 @@ namespace ITAP.glassCAD.Production.Model {
     public partial class Dto {
     
     public partial class Production : ITAP.glassCAD.Production.Model.Dto.HalfProduction {
-    }
-    }
-}
-namespace ITAP.glassCAD.Planing.Cutting.Strategy.SquareOpt.Dto {
-    public partial class OutputDetail {
-    
-    public partial class Cut {
-		public System.Int32 Number { get; set; } 
-		public System.Int32 Level { get; set; } 
-		public System.Double Value { get; } 
-		public System.Double Lenght { get; } 
-		public System.Double X0 { get; set; } 
-		public System.Double Y0 { get; set; } 
-		public System.Double X1 { get; set; } 
-		public System.Double Y1 { get; set; } 
-		public System.Double Angle { get; } 
-    }
-    }
-}
-namespace ITAP.glassCAD.Planing.Cutting.Strategy.SquareOpt.Dto {
-    public partial class OutputDetail {
-    
-    public partial class CutComparer {
-    }
-    }
-}
-namespace ITAP.glassCAD.Planing.Cutting.Strategy.SquareOpt.Dto {
-    public partial class OutputDetail {
-    
-    public partial class Plate {
-		public System.Int32 Number { get; set; } 
-		public System.Double X { get; set; } 
-		public System.Double Y { get; set; } 
-		public System.Double Width { get; set; } 
-		public System.Double Height { get; set; } 
-		public System.Int32 Count { get; set; } 
     }
     }
 }
@@ -8850,7 +8981,7 @@ namespace ITAP.glassCAD.Dictionary.OptStrategy {
 		public ITAP.glassCAD.Data.DataLayer dataLayer { get; } 
 		public System.Int32 IDOptStrategy { get; set; } 
 		public System.String Name { get; set; } 
-		public System.Guid Ident { get; set; } 
+		public System.Nullable<System.Guid> Ident { get; set; } 
 		public System.String Settings { get; set; } 
         protected internal OptStrategyRow(System.Data.DataRowBuilder builder) : base(builder) {
             throw new System.NotImplementedException();
@@ -9484,9 +9615,9 @@ namespace ITAP.glassCAD.Dictionary.Equipment {
 		public ITAP.glassCAD.Data.DataLayer dataLayer { get; } 
 		public System.Int32 IDEquipment { get; set; } 
 		public System.String Name { get; set; } 
-		public System.Int32 IDOperationType { get; set; } 
+		public System.Nullable<System.Int32> IDOperationType { get; set; } 
 		public ITAP.glassCAD.Dictionary.Calendar.CalendarDataSet.CalendarRow Calendar { get; } 
-		public System.Int32 IDCalendar { get; set; } 
+		public System.Nullable<System.Int32> IDCalendar { get; set; } 
 		public System.Nullable<System.Guid> GUID { get; set; } 
 		public System.Nullable<System.Guid> Ident { get; set; } 
 		public System.String Settings { get; set; } 

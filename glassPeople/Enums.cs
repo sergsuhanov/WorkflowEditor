@@ -93,34 +93,34 @@ namespace ITAP.glassCAD.Workflow.Components {
         Up, Down, Bankers
     }
 }
-namespace ITAP.glassCAD.Production.Model {
-    public enum ViewSide {
-        External, Internal
-    }
-}
-namespace ITAP.glassCAD.Planing.Cutting.Strategy.SquareOpt.Dto {
+namespace ITAP.glassCAD.Strategy.SquareOpt {
     public enum InputPlatePlaceMode {
         StrongDiraction, Randomize
     }
 }
-namespace ITAP.glassCAD.Planing.Cutting.Strategy.SquareOpt.Dto {
+namespace ITAP.glassCAD.Strategy.SquareOpt {
     public enum Orientation {
         Vertical, Horizontal
     }
 }
-namespace ITAP.glassCAD.Planing.Cutting.Strategy.SquareOpt.Dto {
+namespace ITAP.glassCAD.Strategy.SquareOpt {
     public enum ColumnType {
         Horizontal, Vertical, Mixed
     }
 }
-namespace ITAP.glassCAD.Planing.Cutting.Strategy.SquareOpt.Dto {
+namespace ITAP.glassCAD.Strategy.SquareOpt {
     public enum StartCorner {
         LeftBottom, LeftTop, RightTop, RightBottom
     }
 }
-namespace ITAP.glassCAD.Planing.Cutting.Strategy.SquareOpt.Dto {
+namespace ITAP.glassCAD.Strategy.SquareOpt {
     public enum RectState {
         Normal, Changed
+    }
+}
+namespace ITAP.glassCAD.Production.Model {
+    public enum ViewSide {
+        External, Internal
     }
 }
 namespace ITAP.glassCAD.Exchange.Activity {
@@ -191,6 +191,16 @@ namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.User {
 namespace ITAP.glassCAD.Dictionary.WorkFlow.Activities.Utilites {
     public enum SetObjectAttributesMode {
         Add, ReplaceIfExist, AddOrReplace, Delete
+    }
+}
+namespace ITAP.glassCAD.Components {
+    public enum FormItemButton {
+        SaveCancel, Ok
+    }
+}
+namespace ITAP.glassCAD.Components {
+    public enum GridContextMenuItemType {
+        FullExpand, FullCollapse, SortAscending, SortDescending, ClearSorting, GroupByColumn, UngroupColumn, ClearGrouping, ShowGroupPanel, HideColumn, ShowColumnChooser, ClearFilter, ShowFilterRow, ShowFooter, ExpandRow, CollapseRow, ExpandDetailRow, CollapseDetailRow, NewRow, EditRow, DeleteRow, FixColumnToRight, FixColumnToLeft, Unfix, SaveUpdates, CancelUpdates, UserAction
     }
 }
 namespace glassPeople.CRM {

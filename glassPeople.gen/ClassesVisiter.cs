@@ -103,6 +103,10 @@ namespace glassPeople.gen {
                 "[System.AttributeUsageAttribute((System.AttributeTargets)4, AllowMultiple = True)]",
                 "[System.AttributeUsageAttribute((System.AttributeTargets)4, AllowMultiple = true)]"
             );
+            replace(result,
+                "[System.Text.Json.Serialization.JsonIgnoreAttribute()]",
+                "[Newtonsoft.Json.JsonIgnoreAttribute()]"
+            );
         }
 
         protected string[] getDesignerAttribute(LocalType localType) {
