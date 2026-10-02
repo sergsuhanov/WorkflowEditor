@@ -7,9 +7,9 @@
         <div class="mb-3">
             <label for="destination" class="form-label">Destination</label>
         </div>
-        <VariableSelectControl Label="Collection" @bind-Value="Collection" VariableCollection="VariableCollection">
+        <VariableSelectControl Label="Collection" @bind-Value="Node.Collection" VariableCollection="VariableCollection">
         </VariableSelectControl>
-        <VariableSelectControl Label="Variable" @bind-Value="Variable" VariableCollection="Variables">
+        <VariableSelectControl Label="Item" @bind-Value="Node.Item" VariableCollection="Variables">
         </VariableSelectControl>
     </Edit>
 </ActivityControl>
@@ -17,9 +17,6 @@
 @code {
     [Parameter]
     public AddToCollectionNode<T> Node { get; set; } = default!;
-
-    private Variable? Collection { get; set; }
-    private Variable? Variable { get; set; }
 
     private List<Variable> VariableCollection
     {

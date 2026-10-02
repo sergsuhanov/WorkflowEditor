@@ -90,7 +90,7 @@ public class SequenceNode : DefaultNode {
 
     public override void RemoveChild(System.Activities.Activity child) {
         var index = sequenceActivity.Activities.IndexOf(child);
-        if (index >= 0 && index < sequenceActivity.Activities.Count - 1) {
+        if (index > 0 && index < sequenceActivity.Activities.Count - 1) {
             var prevActivity = sequenceActivity.Activities[index - 1];
             var nextActivity = sequenceActivity.Activities[index + 1];
             service.LinkFromTo(service.GetPair(prevActivity), service.GetPair(nextActivity));

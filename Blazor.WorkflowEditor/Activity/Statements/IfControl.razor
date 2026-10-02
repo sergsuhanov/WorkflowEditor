@@ -1,0 +1,24 @@
+@using Blazor.WorkflowEditor.Components
+
+<ActivityControl Node="@Node">
+    <Edit>
+        <div class="mb-3">
+            <label for="condition" class="form-label">Condition (Visual Basic expression)</label>
+            <input type="text" class="form-control" id="condition" @bind-value="Node.Condition"
+                   placeholder="True" @onmousedown:stopPropagation @onmouseup:stopPropagation @onmousemove:stopPropagation />
+        </div>
+        <div class="mb-3">
+            <label for="branch" class="form-label">Branch for new child</label>
+            <select class="form-select" id="branch" @bind="Node.SelectedBranch"
+                    @onmousedown:stopPropagation @onmouseup:stopPropagation @onmousemove:stopPropagation>
+                <option value="@IfBranch.Then">Then</option>
+                <option value="@IfBranch.Else">Else</option>
+            </select>
+        </div>
+    </Edit>
+</ActivityControl>
+
+@code {
+    [Parameter]
+    public IfNode Node { get; set; } = default!;
+}

@@ -107,6 +107,14 @@ namespace Blazor.WorkflowEditor {
         }
 
         public void SetActivityBuilder(ActivityBuilder activityBuilder) {
+            SelectedOnMove = null;
+            designer.Nodes.Clear();
+            designer.Links.Clear();
+            items.Clear();
+            selectedItems.Clear();
+            selectedLinks.Clear();
+            Path.Clear();
+            Variables.Clear();
             this.activityBuilder = activityBuilder;
 
             var da = new DynamicActivity {
@@ -244,6 +252,7 @@ namespace Blazor.WorkflowEditor {
             //System.Activities.ScopeUtils.GetLocals(this Activity activity) 
 
             this.designer.Nodes.Clear();
+            this.designer.Links.Clear();
 
             this.selectedItems.Clear();
             this.selectedLinks.Clear();

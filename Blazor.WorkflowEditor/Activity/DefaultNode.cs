@@ -88,10 +88,10 @@ public class DefaultNode : NodeModel {
         var centerY = State.Designer.GetCenterY(activity);
         if (centerX != null && centerY != null)
             this.CenterPosition = new Point((double)centerX, (double)centerY);
+        else if (this.service.DiagramContainer is { } container)
+            this.CenterPosition = new Diagrams.Core.Geometry.Point(container.Width / 2, container.Height / 2);
         else
-            this.CenterPosition = new Diagrams.Core.Geometry.Point(
-                this.service.DiagramContainer!.Width / 2,
-                this.service.DiagramContainer!.Height / 2);
+            this.CenterPosition = new Point(0, 0);
         /*
         this.viewState = Blazor.WorkflowEditor.Activity.State.Designer.Get(activity);
 
@@ -263,4 +263,3 @@ public class DefaultNode : NodeModel {
     }
 
 }
-
