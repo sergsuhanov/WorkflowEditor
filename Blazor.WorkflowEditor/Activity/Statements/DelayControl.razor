@@ -1,0 +1,16 @@
+@using Blazor.WorkflowEditor.Components
+
+<ActivityControl Node="@Node">
+    <Edit>
+        <div class="mb-3">
+            <label for="duration" class="form-label">Duration</label>
+            <input type="text" class="form-control" id="duration" @bind-value="Node.Duration"
+                   placeholder="00:00:01" @onmousedown:stopPropagation @onmouseup:stopPropagation @onmousemove:stopPropagation />
+        </div>
+    </Edit>
+</ActivityControl>
+
+@code {
+    [Parameter]
+    public DelayNode Node { get; set; } = default!;
+}

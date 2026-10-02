@@ -1,5 +1,4 @@
 ﻿@using System.Activities
-@using System.Reflection
 @using System.Text
 @inherits LayoutComponentBase
 @inject IJSRuntime JS
@@ -20,10 +19,14 @@
                     <a class="nav-link" href="#" @onclick="New">New</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="#" @onclick="Load">Load</a>
+                    <label class="nav-link mb-0" for="workflow-file">Open XAML</label>
+                    <InputFile id="workflow-file" class="visually-hidden" accept=".xaml,.xml,text/xml,application/xml" OnChange="LoadFile" />
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="#" @onclick="Save">Save</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#" @onclick="Validate">Validate</a>
                 </li>
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownTest" role="button"
@@ -53,11 +56,29 @@
 
 <Blazor.WorkflowEditor.Editor @ref="editor" ToolBoxGroups="groups" TypeCollection="TypeCollection" />
 
+@if (!string.IsNullOrWhiteSpace(statusMessage))
+{
+    <div class="alert @(isError ? "alert-danger" : "alert-info") m-2" role="status">@statusMessage</div>
+}
+@if (editor?.ValidationMessages.Count > 0)
+{
+    <div class="alert alert-warning m-2" role="alert">
+        <strong>Workflow validation</strong>
+        <ul class="mb-0">
+            @foreach (var message in editor.ValidationMessages)
+            {
+                <li>@message</li>
+            }
+        </ul>
+    </div>
+}
 
 @code {
     private Blazor.WorkflowEditor.Editor? editor = default!;
     private List<Blazor.WorkflowEditor.ToolBoxGroup> groups { get; set; } = new()!;
     private List<Type> TypeCollection { get; set; } = new()!;
+    private string? statusMessage;
+    private bool isError;
 
 
     private async void changeTheme(string theme)
@@ -72,28 +93,11 @@
         defaultGroup.Add<System.Activities.Statements.Sequence>();
         defaultGroup.Add<System.Activities.Statements.Assign>("oi oi-pencil");
         defaultGroup.Add<System.Activities.Statements.WriteLine>("oi oi-pencil");
+        defaultGroup.Add<System.Activities.Statements.Delay>();
+        defaultGroup.Add<System.Activities.Statements.If>();
+        defaultGroup.Add<System.Activities.Statements.While>();
+        defaultGroup.Add(typeof(System.Activities.Statements.AddToCollection<>));
         groups.Add(defaultGroup);
-
-        {
-            var types = AppDomain.CurrentDomain.GetAssemblies().SelectMany(p => p.DefinedTypes);
-            foreach (var item in types.OrderBy(p => p.FullName)) {
-                if (item.Namespace is null)
-                    continue;
-
-                if (item.IsAbstract == false && typeof(Activity).IsAssignableFrom(item)) {
-                    var name = item.Name;
-
-                    var categoryName = item.Namespace.Replace("glassPeople.ActivityLibrary.", "");
-                    var category = groups.FirstOrDefault(p => p.Name == categoryName);
-                    if (category == null) {
-                        category = new Blazor.WorkflowEditor.ToolBoxGroup() { Name = categoryName };
-                        groups.Add(category);
-                    }
-
-                    category.Add(item);
-                }
-            }
-        }
 
 
         TypeCollection.Add(typeof(System.Object));
@@ -115,23 +119,62 @@
             editor.New();
     }
 
-    private async void Save()
+    private async Task Save()
     {
-        if (editor != null)
+        if (editor == null)
+            return;
+
+        try
         {
             var source = editor.Save();
-            Console.WriteLine(source);
             using var streamRef = new DotNetStreamReference(stream: new MemoryStream(Encoding.UTF8.GetBytes(source)));
-            await JS.InvokeVoidAsync("downloadFileFromStream", "test.xaml", streamRef);
+            await JS.InvokeVoidAsync("downloadFileFromStream", "workflow.xaml", streamRef);
+            statusMessage = "Workflow saved.";
+            isError = false;
+        }
+        catch (Exception ex)
+        {
+            statusMessage = $"Could not save workflow: {ex.Message}";
+            isError = true;
         }
     }
 
-    private void Load()
+    private async Task LoadFile(InputFileChangeEventArgs e)
     {
-
+        try
+        {
+            await using var stream = e.File.OpenReadStream(10 * 1024 * 1024);
+            using var reader = new StreamReader(stream);
+            var source = await reader.ReadToEndAsync();
+            editor?.Load(source);
+            statusMessage = "Workflow opened.";
+            isError = false;
+        }
+        catch (Exception ex)
+        {
+            statusMessage = $"Could not open workflow: {ex.Message}";
+            isError = true;
+        }
     }
 
-    void loadTestActivity()
+    private void Validate()
+    {
+        try
+        {
+            var messages = editor?.Validate();
+            statusMessage = messages == null || messages.Count == 0
+                ? "Workflow is valid."
+                : $"Validation found {messages.Count} issue(s).";
+            isError = false;
+        }
+        catch (Exception ex)
+        {
+            statusMessage = $"Could not validate workflow: {ex.Message}";
+            isError = true;
+        }
+    }
+
+    private void loadTestActivity()
     {
         var text = @"<Sequence
             xmlns='http://schemas.microsoft.com/netfx/2009/xaml/activities'

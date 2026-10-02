@@ -1,8 +1,6 @@
 ﻿@using Blazor.Diagrams;
 @using Blazor.WorkflowEditor.Components
 @using System.Activities;
-@using System.Xaml;
-@using System.Text;
 @implements IDisposable
 
 <div class="we-editor">
@@ -57,6 +55,8 @@
     [Parameter, EditorRequired]
     public List<Type> TypeCollection { get; set; } = default!;
 
+    public List<string> ValidationMessages { get; private set; } = new();
+
 
     protected override void OnInitialized()
     {
@@ -81,37 +81,46 @@
     {
         var ab = new ActivityBuilder() { Implementation = source };
         service.SetActivityBuilder(ab);
+        refreshValidationMessages();
     }
 
     public void New()
     {
         var ab = new ActivityBuilder() { Implementation = new System.Activities.Statements.Sequence() };
         service.SetActivityBuilder(ab);
+        ValidationMessages.Clear();
     }
 
     public void Load(string source)
     {
-        var xr = new StringReader(source);
-        var br = System.Activities.XamlIntegration.ActivityXamlServices.CreateBuilderReader(new XamlXmlReader(xr));
-        var ab = XamlServices.Load(br) switch {
-            (ActivityBuilder _ab) => _ab,
-            (System.Activities.Activity _a) => new ActivityBuilder() { Implementation = _a },
-            _ => throw new NotSupportedException()
-        };
-
-
+        var ab = WorkflowXamlSerializer.LoadBuilder(source);
         //TODO add validation info
         //var validationResults = System.Activities.Validation.ActivityValidationServices.Validate(ab.Implementation);
 
         service.SetActivityBuilder(ab);
+        refreshValidationMessages();
     }
 
     public string Save()
     {
-        var sb = new StringBuilder();
-        var xw = System.Activities.XamlIntegration.ActivityXamlServices.CreateBuilderWriter(new XamlXmlWriter(new StringWriter(sb), new XamlSchemaContext()));
-        XamlServices.Save(xw, service.GetActivityBuilder());
-        return sb.ToString();
+        return WorkflowXamlSerializer.SaveBuilder(service.GetActivityBuilder());
+    }
+
+    public IReadOnlyList<string> Validate()
+    {
+        refreshValidationMessages();
+        return ValidationMessages;
+    }
+
+    private void refreshValidationMessages()
+    {
+        var implementation = service.GetActivityBuilder()?.Implementation;
+        ValidationMessages = new List<string>();
+        if (implementation == null)
+            return;
+
+        foreach (var result in System.Activities.Validation.ActivityValidationServices.Validate(implementation).Errors)
+            ValidationMessages.Add(result.Message);
     }
 
     public void OpenPath(PathItem pathItem)
