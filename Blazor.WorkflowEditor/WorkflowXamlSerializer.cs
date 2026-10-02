@@ -11,7 +11,8 @@ public static class WorkflowXamlSerializer {
             throw new ArgumentException("Workflow XAML cannot be empty.", nameof(source));
 
         using var reader = new StringReader(source);
-        using var builderReader = ActivityXamlServices.CreateBuilderReader(new XamlXmlReader(reader));
+        using var xamlReader = new XamlXmlReader(reader);
+        using var builderReader = ActivityXamlServices.CreateBuilderReader(xamlReader);
         return XamlServices.Load(builderReader) switch {
             ActivityBuilder builder => builder,
             System.Activities.Activity activity => new ActivityBuilder { Implementation = activity },
@@ -23,8 +24,10 @@ public static class WorkflowXamlSerializer {
         ArgumentNullException.ThrowIfNull(builder);
 
         var output = new StringBuilder();
+        using var textWriter = new StringWriter(output);
+        using var xamlWriter = new XamlXmlWriter(textWriter, new XamlSchemaContext());
         using var writer = ActivityXamlServices.CreateBuilderWriter(
-            new XamlXmlWriter(new StringWriter(output), new XamlSchemaContext()));
+            xamlWriter);
         XamlServices.Save(writer, builder);
         return output.ToString();
     }

@@ -23,6 +23,16 @@ internal static class ActivityArguments {
         assign(argument);
     }
 
+    public static void SetText<T>(InArgument<T> argument, Action<InArgument<T>> assign, string text, T literalValue) {
+        var expression = argument.Expression;
+        var expressionText = expression?.GetType().GetProperty("ExpressionText");
+        if (expressionText?.CanWrite == true) {
+            expressionText.SetValue(expression, text);
+            return;
+        }
+        SetLiteral(argument, assign, literalValue);
+    }
+
     public static string GetText(Argument? argument) {
         return GetText(argument?.Expression);
     }
@@ -34,7 +44,10 @@ internal static class ActivityArguments {
         if (expressionText != null)
             return expressionText;
         var value = expression.GetType().GetProperty("Value")?.GetValue(expression);
-        return Convert.ToString(value, System.Globalization.CultureInfo.InvariantCulture) ?? string.Empty;
+        if (value != null)
+            return Convert.ToString(value, System.Globalization.CultureInfo.InvariantCulture) ?? string.Empty;
+        var variable = expression.GetType().GetProperty("Variable")?.GetValue(expression);
+        return variable?.GetType().GetProperty("Name")?.GetValue(variable)?.ToString() ?? string.Empty;
     }
 
     public static void SetVisualBasicExpression(Argument? argument, Action<Argument> assign, string text, bool isReference = false, Type? argumentType = null) {

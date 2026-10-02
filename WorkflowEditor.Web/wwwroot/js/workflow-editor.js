@@ -6,5 +6,5 @@ window.downloadFileFromStream = async (fileName, streamReference) => {
     link.download = fileName;
     link.click();
     link.remove();
-    URL.revokeObjectURL(url);
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
 };

@@ -17,7 +17,8 @@ public class WriteLineNode : DefaultNode {
             return ActivityArguments.GetText(activity.Text);
         }
         set {
-            ActivityArguments.SetLiteral(activity.Text, argument => activity.Text = argument, value ?? string.Empty);
+            var text = value ?? string.Empty;
+            ActivityArguments.SetText(activity.Text, argument => activity.Text = argument, text, text);
         }
     }
 }

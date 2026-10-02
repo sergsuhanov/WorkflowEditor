@@ -107,6 +107,7 @@ namespace Blazor.WorkflowEditor {
         }
 
         public void SetActivityBuilder(ActivityBuilder activityBuilder) {
+            SelectedOnMove = null;
             designer.Nodes.Clear();
             designer.Links.Clear();
             items.Clear();

@@ -34,6 +34,17 @@ public class ActivityDesignerTests {
     }
 
     [Fact]
+    public void DelayDesignerUpdatesLiteralDuration() {
+        using var service = new Service(new BlazorDiagram(), () => { });
+        var activity = new Delay();
+        var node = new DelayNode(service, activity);
+
+        node.Duration = "00:00:12";
+
+        Assert.Equal(TimeSpan.FromSeconds(12), ((Literal<TimeSpan>)activity.Duration.Expression!).Value);
+    }
+
+    [Fact]
     public void IfDesignerEditsConditionAndBothBranches() {
         using var service = new Service(new BlazorDiagram(), () => { });
         var activity = new If();
@@ -121,6 +132,26 @@ public class ActivityDesignerTests {
         var writeLine = Assert.IsType<WriteLine>(Assert.Single(result.Activities));
 
         Assert.Equal("round trip", ((Literal<string>)writeLine.Text.Expression!).Value);
+    }
+
+    [Fact]
+    public void XamlRoundTripPreservesAssignExpressions() {
+        using var service = new Service(new BlazorDiagram(), () => { });
+        var assign = new Assign();
+        var node = new AssignNode(service, assign) {
+            Destination = "result",
+            Source = "40 + 2"
+        };
+        var source = new ActivityBuilder {
+            Implementation = new Sequence { Activities = { assign } }
+        };
+
+        var xaml = WorkflowXamlSerializer.SaveBuilder(source);
+        var sequence = Assert.IsType<Sequence>(WorkflowXamlSerializer.LoadBuilder(xaml).Implementation);
+        var result = Assert.IsType<Assign>(Assert.Single(sequence.Activities));
+
+        Assert.Equal("result", ((VisualBasicReference<object>)result.To.Expression!).ExpressionText);
+        Assert.Equal("40 + 2", ((VisualBasicValue<object>)result.Value.Expression!).ExpressionText);
     }
 
     [Fact]
