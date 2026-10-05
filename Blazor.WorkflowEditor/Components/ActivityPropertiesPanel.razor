@@ -1,4 +1,5 @@
 @using Blazor.WorkflowEditor.Activity
+@using Blazor.WorkflowEditor.Activity.Statements
 
 <aside class="we-properties-panel" aria-label="Activity properties">
     <h2 class="h6">Activity properties</h2>
@@ -14,11 +15,71 @@
     else
     {
         var node = selectedItems[0];
-        <p class="text-muted">@node.GetType().Name</p>
+        <p class="text-muted">@activityTypeName(node)</p>
         <div class="mb-3">
             <label for="we-activity-display-name" class="form-label">Display name</label>
             <input id="we-activity-display-name" class="form-control" @bind="node.DisplayName" />
         </div>
+
+        @if (node is AssignNode assign)
+        {
+            <div class="mb-3">
+                <label for="we-assign-destination" class="form-label">Destination</label>
+                <input id="we-assign-destination" class="form-control" @bind="assign.Destination" />
+            </div>
+            <div class="mb-3">
+                <label for="we-assign-source" class="form-label">Source</label>
+                <input id="we-assign-source" class="form-control" @bind="assign.Source" />
+            </div>
+        }
+        else if (node is WriteLineNode writeLine)
+        {
+            <div class="mb-3">
+                <label for="we-write-line-text" class="form-label">Text</label>
+                <input id="we-write-line-text" class="form-control" @bind="writeLine.Text" />
+            </div>
+        }
+        else if (node is DelayNode delay)
+        {
+            <div class="mb-3">
+                <label for="we-delay-duration" class="form-label">Duration</label>
+                <input id="we-delay-duration" class="form-control" @bind="delay.Duration" placeholder="00:00:01" />
+            </div>
+        }
+        else if (node is IfNode conditional)
+        {
+            <div class="mb-3">
+                <label for="we-if-condition" class="form-label">Condition (Visual Basic expression)</label>
+                <input id="we-if-condition" class="form-control" @bind="conditional.Condition" />
+            </div>
+            <div class="mb-3">
+                <label for="we-if-branch" class="form-label">Branch for new child</label>
+                <select id="we-if-branch" class="form-select" @bind="conditional.SelectedBranch">
+                    <option value="@IfBranch.Then">Then</option>
+                    <option value="@IfBranch.Else">Else</option>
+                </select>
+            </div>
+        }
+        else if (node is WhileNode loop)
+        {
+            <div class="mb-3">
+                <label for="we-while-condition" class="form-label">Condition (Visual Basic expression)</label>
+                <input id="we-while-condition" class="form-control" @bind="loop.Condition" />
+            </div>
+            <p class="form-text">Add the loop body while this activity is open.</p>
+        }
+        else if (node is SequenceNode sequence)
+        {
+            <p class="form-text">Activities in this sequence run in order. Open the activity to manage its children.</p>
+        }
+        else if (node is AddToCollectionNode<int>)
+        {
+            <p class="form-text">Open this activity on the diagram to edit its collection and item variables.</p>
+        }
+        else
+        {
+            <p class="text-muted">No additional property editor is available for this activity yet.</p>
+        }
     }
 </aside>
 
@@ -29,4 +90,7 @@
     private List<DefaultNode> selectedItems => Service.SelectedItems
         .Select(item => item.Node)
         .ToList();
+
+    private static string activityTypeName(DefaultNode node) =>
+        node.GetType().Name.Replace("Node", string.Empty, StringComparison.Ordinal);
 }
