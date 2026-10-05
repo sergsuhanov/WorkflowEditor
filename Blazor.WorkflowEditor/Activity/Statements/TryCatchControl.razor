@@ -1,0 +1,20 @@
+@using Blazor.WorkflowEditor.Components
+
+<ActivityControl Node="@Node">
+    <Edit>
+        <div class="mb-3">
+            <label for="section" class="form-label">Section for new child</label>
+            <select class="form-select" id="section" @bind="Node.SelectedSection"
+                    @onmousedown:stopPropagation @onmouseup:stopPropagation @onmousemove:stopPropagation>
+                <option value="@TryCatchSection.Try">Try</option>
+                <option value="@TryCatchSection.CatchException">Catch (System.Exception)</option>
+                <option value="@TryCatchSection.Finally">Finally</option>
+            </select>
+        </div>
+    </Edit>
+</ActivityControl>
+
+@code {
+    [Parameter]
+    public TryCatchNode Node { get; set; } = default!;
+}

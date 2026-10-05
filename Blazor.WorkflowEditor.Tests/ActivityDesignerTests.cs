@@ -5,6 +5,8 @@ using Blazor.Diagrams;
 using Blazor.WorkflowEditor;
 using Blazor.WorkflowEditor.Activity.Statements;
 using Microsoft.VisualBasic.Activities;
+using Parallel = System.Activities.Statements.Parallel;
+using DefaultNode = Blazor.WorkflowEditor.Activity.DefaultNode;
 
 namespace Blazor.WorkflowEditor.Tests;
 
@@ -150,6 +152,110 @@ public class ActivityDesignerTests {
 
         Assert.Equal(5, service.Items.Count());
         Assert.DoesNotContain(service.Items, p => p.Activity is Delay);
+    }
+
+    [Fact]
+    public void SequenceDesignerAddsRemovesAndLoadsChildrenInOrder() {
+        using var service = new Service(new BlazorDiagram(), () => { });
+        var sequence = new Sequence { Activities = { new WriteLine(), new Delay(), new WriteLine() } };
+        service.SetActivityBuilder(new ActivityBuilder { Implementation = sequence });
+        service.Open(service.Items.First(p => p.Activity == sequence).Node);
+
+        Assert.Equal(5, service.Items.Count());
+        var middle = service.Items.First(p => p.Activity == sequence.Activities[1]);
+        service.Delete(middle.Node);
+
+        Assert.Equal(2, sequence.Activities.Count);
+        Assert.Equal(4, service.Items.Count());
+    }
+
+    [Fact]
+    public void CollectionDesignersBindVariables() {
+        using var service = new Service(new BlazorDiagram(), () => { });
+        var owner = new Sequence();
+        var list = new Variable { Activity = owner, Name = "values", Type = typeof(List<int>) };
+        service.Variables.Add(list);
+        var remove = new RemoveFromCollection<int>();
+        var clear = new ClearCollection<int>();
+
+        new RemoveFromCollectionNode<int>(service, remove).Collection = list;
+        new ClearCollectionNode<int>(service, clear).Collection = list;
+
+        Assert.Equal("values", ((VisualBasicValue<ICollection<int>>)remove.Collection.Expression!).ExpressionText);
+        Assert.Equal("values", ((VisualBasicValue<ICollection<int>>)clear.Collection.Expression!).ExpressionText);
+    }
+
+    [Fact]
+    public void ParallelDesignerManagesBranches() {
+        using var service = new Service(new BlazorDiagram(), () => { });
+        var activity = new Parallel();
+        var node = new ParallelNode(service, activity);
+        var a = new WriteLine();
+        var b = new Delay();
+
+        node.AddChild(new ActivityDesignerPair { Activity = a, Node = new DefaultNode(service, a) });
+        node.AddChild(new ActivityDesignerPair { Activity = b, Node = new DefaultNode(service, b) });
+        node.RemoveChild(a);
+
+        Assert.Same(b, Assert.Single(activity.Branches));
+    }
+
+    [Fact]
+    public void TryCatchDesignerManagesAllSections() {
+        using var service = new Service(new BlazorDiagram(), () => { });
+        var activity = new TryCatch();
+        var node = new TryCatchNode(service, activity);
+        var t = new WriteLine();
+        var c = new WriteLine();
+        var f = new Delay();
+
+        foreach (var (section, child) in new (TryCatchSection, System.Activities.Activity)[] {
+            (TryCatchSection.Try, t), (TryCatchSection.CatchException, c), (TryCatchSection.Finally, f) }) {
+            node.SelectedSection = section;
+            node.AddChild(new ActivityDesignerPair { Activity = child, Node = new DefaultNode(service, child) });
+        }
+
+        Assert.Same(t, activity.Try);
+        Assert.Same(f, activity.Finally);
+        Assert.Same(c, Assert.Single(activity.Catches).GetType().GetProperty("Action")!.GetValue(activity.Catches[0]) is ActivityAction<Exception> a ? a.Handler : null);
+        node.RemoveChild(c);
+        Assert.Null(((ActivityAction<Exception>)activity.Catches[0].GetType().GetProperty("Action")!.GetValue(activity.Catches[0])!).Handler);
+    }
+
+    [Fact]
+    public void ForEachDesignerEditsValuesAndBody() {
+        using var service = new Service(new BlazorDiagram(), () => { });
+        var activity = new ForEach<int>();
+        var node = new ForEachNode<int>(service, activity);
+        var body = new WriteLine();
+
+        node.Values = "numbers";
+        node.ItemName = "n";
+        node.AddChild(new ActivityDesignerPair { Activity = body });
+
+        Assert.Equal("numbers", ((VisualBasicValue<IEnumerable<int>>)activity.Values.Expression!).ExpressionText);
+        Assert.Equal("n", activity.Body.Argument.Name);
+        Assert.Same(body, activity.Body.Handler);
+    }
+
+    [Fact]
+    public void NewContainersRoundTripThroughXaml() {
+        var source = new ActivityBuilder {
+            Implementation = new Sequence {
+                Activities = {
+                    new Parallel { Branches = { new WriteLine { Text = "a" }, new Delay() } },
+                    new TryCatch { Try = new WriteLine { Text = "t" }, Finally = new WriteLine { Text = "f" } },
+                    new DoWhile { Body = new WriteLine { Text = "d" } }
+                }
+            }
+        };
+
+        var xaml = WorkflowXamlSerializer.SaveBuilder(source);
+        var result = Assert.IsType<Sequence>(WorkflowXamlSerializer.LoadBuilder(xaml).Implementation);
+
+        Assert.Equal(2, Assert.IsType<Parallel>(result.Activities[0]).Branches.Count);
+        Assert.NotNull(Assert.IsType<TryCatch>(result.Activities[1]).Finally);
+        Assert.NotNull(Assert.IsType<DoWhile>(result.Activities[2]).Body);
     }
 
     [Fact]

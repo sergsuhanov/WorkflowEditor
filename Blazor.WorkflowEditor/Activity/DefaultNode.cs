@@ -255,6 +255,17 @@ public class DefaultNode : NodeModel {
     public virtual void LoadChilds(Func<System.Activities.Activity, ActivityDesignerPair> addActivity) {
 
     }
+    protected static void ArrangeRow(IReadOnlyList<ActivityDesignerPair> pairs, int startIndex = 0) {
+        for (var i = 0; i < pairs.Count; i++) {
+            var node = pairs[i].Node;
+            if (node.HasViewState && startIndex == 0)
+                continue;
+            var width = node.Size?.Width ?? 250;
+            node.CenterPosition = new Point(150 + (startIndex + i) * (width + 30), 150);
+            node.UpdateViewState();
+        }
+    }
+
     public virtual void AddChild(ActivityDesignerPair source) {
 
     }

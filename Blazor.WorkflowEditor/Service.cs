@@ -71,6 +71,10 @@ namespace Blazor.WorkflowEditor {
             if (item is null)
                 return;
 
+            foreach (var link in designer.Links.Where(l => l.SourceNode() == node || l.TargetNode() == node).ToList())
+                designer.Links.Remove(link);
+            selectedLinks.RemoveAll(l => l.Item1 == item || l.Item2 == item);
+
             designer.Nodes.Remove(node);
 
             //Remove activity in parent

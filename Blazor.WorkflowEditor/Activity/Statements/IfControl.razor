@@ -1,4 +1,4 @@
-@using Blazor.WorkflowEditor.Components
+﻿@using Blazor.WorkflowEditor.Components
 
 <ActivityControl Node="@Node">
     <Edit>
@@ -14,6 +14,7 @@
                 <option value="@IfBranch.Then">Then</option>
                 <option value="@IfBranch.Else">Else</option>
             </select>
+            <div class="form-text">Then: @(Node.ThenName ?? "(empty)"); Else: @(Node.ElseName ?? "(empty)")</div>
         </div>
     </Edit>
 </ActivityControl>

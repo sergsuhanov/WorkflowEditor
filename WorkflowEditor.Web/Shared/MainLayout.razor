@@ -97,7 +97,13 @@
         defaultGroup.Add<System.Activities.Statements.If>();
         defaultGroup.Add<System.Activities.Statements.While>();
         defaultGroup.Add<System.Activities.Statements.DoWhile>();
+        defaultGroup.Add<System.Activities.Statements.Parallel>();
+        defaultGroup.Add<System.Activities.Statements.TryCatch>();
+        defaultGroup.Add(typeof(System.Activities.Statements.ForEach<>));
         defaultGroup.Add(typeof(System.Activities.Statements.AddToCollection<>));
+        defaultGroup.Add(typeof(System.Activities.Statements.RemoveFromCollection<>));
+        defaultGroup.Add(typeof(System.Activities.Statements.ExistsInCollection<>));
+        defaultGroup.Add(typeof(System.Activities.Statements.ClearCollection<>));
         groups.Add(defaultGroup);
 
 
