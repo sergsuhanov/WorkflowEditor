@@ -112,9 +112,11 @@ public class ActivityDesignerTests {
 
         service.SetActivityBuilder(new ActivityBuilder { Implementation = new Sequence() });
         Assert.Equal(2, service.Items.Count());
+        Assert.True(service.CheckAddActivity(typeof(WriteLine)));
 
         service.SetActivityBuilder(new ActivityBuilder { Implementation = new Sequence() });
         Assert.Equal(2, service.Items.Count());
+        Assert.True(service.CheckAddActivity(typeof(WriteLine)));
     }
 
     [Fact]
