@@ -1,0 +1,28 @@
+@using Blazor.WorkflowEditor.Activity.Statements
+@typeparam T
+
+<VariableSelectControl Label="Collection"
+                       @bind-Value="Node.Collection"
+                       VariableCollection="CollectionVariables">
+</VariableSelectControl>
+<VariableSelectControl Label="Item"
+                       @bind-Value="Node.Item"
+                       VariableCollection="ItemVariables">
+</VariableSelectControl>
+
+@code {
+    [Parameter, EditorRequired]
+    public AddToCollectionNode<T> Node { get; set; } = default!;
+
+    private List<Variable> CollectionVariables
+    {
+        get
+        {
+            var collectionType = typeof(List<>).MakeGenericType(typeof(T));
+            return Node.service.Variables.Where(variable => variable.Type == collectionType).ToList();
+        }
+    }
+
+    private List<Variable> ItemVariables =>
+        Node.service.Variables.Where(variable => variable.Type == typeof(T)).ToList();
+}
