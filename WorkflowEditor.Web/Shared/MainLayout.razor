@@ -93,7 +93,11 @@
         defaultGroup.Add<System.Activities.Statements.Sequence>();
         defaultGroup.Add<System.Activities.Statements.Assign>("oi oi-pencil");
         defaultGroup.Add<System.Activities.Statements.WriteLine>("oi oi-pencil");
+        defaultGroup.Add(typeof(System.Activities.Statements.Assign<>));
         defaultGroup.Add<System.Activities.Statements.Delay>();
+        defaultGroup.Add<System.Activities.Statements.Throw>();
+        defaultGroup.Add<System.Activities.Statements.Rethrow>();
+        defaultGroup.Add<System.Activities.Statements.TerminateWorkflow>();
         defaultGroup.Add<System.Activities.Statements.If>();
         defaultGroup.Add<System.Activities.Statements.While>();
         defaultGroup.Add<System.Activities.Statements.DoWhile>();

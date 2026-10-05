@@ -259,6 +259,36 @@ public class ActivityDesignerTests {
     }
 
     [Fact]
+    public void ThrowTerminateAndTypedAssignDesignersWriteArguments() {
+        using var service = new Service(new BlazorDiagram(), () => { });
+        var thr = new Throw();
+        var term = new TerminateWorkflow();
+        var assign = new Assign<int>();
+
+        new ThrowNode(service, thr).Exception = "New Exception(\"x\")";
+        new TerminateWorkflowNode(service, term).Reason = "stop";
+        var node = new AssignGenericNode<int>(service, assign) { Destination = "n", Source = "1 + 1" };
+
+        Assert.Equal("New Exception(\"x\")", ((VisualBasicValue<Exception>)thr.Exception.Expression!).ExpressionText);
+        Assert.Equal("stop", ((Literal<string>)term.Reason.Expression!).Value);
+        Assert.Equal("n", ((VisualBasicReference<int>)assign.To.Expression!).ExpressionText);
+        Assert.Equal("1 + 1", node.Source);
+    }
+
+    [Fact]
+    public void ViewStateSurvivesXamlRoundTrip() {
+        using var service = new Service(new BlazorDiagram(), () => { });
+        var write = new WriteLine { Text = "a" };
+        Blazor.WorkflowEditor.Activity.State.Designer.SetCenterX(write, 120);
+        Blazor.WorkflowEditor.Activity.State.Designer.SetCenterY(write, 80);
+        var xaml = WorkflowXamlSerializer.SaveBuilder(new ActivityBuilder { Implementation = new Sequence { Activities = { write } } });
+        var seq = (Sequence)WorkflowXamlSerializer.LoadBuilder(xaml).Implementation;
+
+        Assert.Equal(120, Blazor.WorkflowEditor.Activity.State.Designer.GetCenterX(seq.Activities[0]));
+        Assert.Equal(80, Blazor.WorkflowEditor.Activity.State.Designer.GetCenterY(seq.Activities[0]));
+    }
+
+    [Fact]
     public void XamlRoundTripPreservesEditedWriteLineText() {
         var source = new ActivityBuilder {
             Implementation = new Sequence {
