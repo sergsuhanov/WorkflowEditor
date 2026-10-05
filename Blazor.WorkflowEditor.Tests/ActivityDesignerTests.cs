@@ -118,6 +118,41 @@ public class ActivityDesignerTests {
     }
 
     [Fact]
+    public void DoWhileDesignerEditsConditionBodyAndVariables() {
+        using var service = new Service(new BlazorDiagram(), () => { });
+        var activity = new DoWhile();
+        var node = new DoWhileNode(service, activity);
+        var body = new Sequence();
+
+        node.Condition = "again";
+        node.AddChild(new ActivityDesignerPair { Activity = body });
+        service.AddVariable(activity, "counter", typeof(int), "1");
+
+        Assert.Equal("again", ((VisualBasicValue<bool>)activity.Condition!).ExpressionText);
+        Assert.Same(body, activity.Body);
+        Assert.Equal("counter", Assert.Single(node.GetVariables()).Name);
+        node.RemoveChild(body);
+        Assert.Null(activity.Body);
+    }
+
+    [Fact]
+    public void NavigatingIntoContainerDropsStaleNodesAndLoadsWithoutViewport() {
+        using var service = new Service(new BlazorDiagram(), () => { });
+        var inner = new Sequence { Activities = { new WriteLine(), new WriteLine() } };
+        var outer = new Sequence { Activities = { inner, new Delay() } };
+
+        service.SetActivityBuilder(new ActivityBuilder { Implementation = outer });
+        service.Open(service.Items.First(p => p.Activity == outer).Node);
+        Assert.Equal(4, service.Items.Count());
+
+        var innerPair = service.Items.First(p => p.Activity == inner);
+        service.Open(innerPair.Node);
+
+        Assert.Equal(5, service.Items.Count());
+        Assert.DoesNotContain(service.Items, p => p.Activity is Delay);
+    }
+
+    [Fact]
     public void XamlRoundTripPreservesEditedWriteLineText() {
         var source = new ActivityBuilder {
             Implementation = new Sequence {
