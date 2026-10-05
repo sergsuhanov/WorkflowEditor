@@ -11,6 +11,16 @@
                 <option value="@TryCatchSection.Finally">Finally</option>
             </select>
         </div>
+        <div class="mb-3">
+            <label for="exceptionType" class="form-label">Catch exception type</label>
+            <select class="form-select" id="exceptionType" @bind="Node.SelectedExceptionTypeName"
+                    @onmousedown:stopPropagation @onmouseup:stopPropagation @onmousemove:stopPropagation>
+                @foreach (var type in TryCatchNode.CatchExceptionTypes)
+                {
+                    <option value="@type.FullName">@type.Name</option>
+                }
+            </select>
+        </div>
     </Edit>
 </ActivityControl>
 

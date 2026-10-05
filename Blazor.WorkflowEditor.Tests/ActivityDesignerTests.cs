@@ -223,6 +223,33 @@ public class ActivityDesignerTests {
     }
 
     [Fact]
+    public void TryCatchDesignerSupportsMultipleCatchTypes() {
+        using var service = new Service(new BlazorDiagram(), () => { });
+        var activity = new TryCatch();
+        var node = new TryCatchNode(service, activity);
+        var a = new WriteLine();
+        var b = new WriteLine();
+        var a2 = new Delay();
+
+        node.SelectedSection = TryCatchSection.CatchException;
+        node.SelectedExceptionType = typeof(ArgumentException);
+        node.AddChild(new ActivityDesignerPair { Activity = a, Node = new DefaultNode(service, a) });
+        node.SelectedExceptionType = typeof(TimeoutException);
+        node.AddChild(new ActivityDesignerPair { Activity = b, Node = new DefaultNode(service, b) });
+        node.SelectedExceptionType = typeof(ArgumentException);
+        node.AddChild(new ActivityDesignerPair { Activity = a2, Node = new DefaultNode(service, a2) });
+
+        Assert.Equal(2, activity.Catches.Count);
+        Assert.IsType<Catch<ArgumentException>>(activity.Catches[0]);
+        Assert.Same(a2, ((Catch<ArgumentException>)activity.Catches[0]).Action!.Handler);
+        Assert.Same(b, ((Catch<TimeoutException>)activity.Catches[1]).Action!.Handler);
+
+        var xaml = WorkflowXamlSerializer.SaveBuilder(new ActivityBuilder { Implementation = activity });
+        var loaded = Assert.IsType<TryCatch>(WorkflowXamlSerializer.LoadBuilder(xaml).Implementation);
+        Assert.Equal(2, loaded.Catches.Count);
+    }
+
+    [Fact]
     public void ForEachDesignerEditsValuesAndBody() {
         using var service = new Service(new BlazorDiagram(), () => { });
         var activity = new ForEach<int>();
