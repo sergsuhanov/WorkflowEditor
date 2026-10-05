@@ -289,6 +289,50 @@ public class ActivityDesignerTests {
     }
 
     [Fact]
+    public void FlowchartDesignerChainsStepsAndRoundTripsThroughXaml() {
+        using var service = new Service(new BlazorDiagram(), () => { });
+        var chart = new Flowchart();
+        var node = new FlowchartNode(service, chart);
+        var a = new WriteLine { Text = "a" };
+        var b = new WriteLine { Text = "b" };
+        var c = new WriteLine { Text = "c" };
+
+        foreach (var x in new[] { a, b, c })
+            node.AddChild(new ActivityDesignerPair { Activity = x, Node = new DefaultNode(service, x) });
+
+        var steps = chart.Nodes.Cast<FlowStep>().ToList();
+        Assert.Same(steps[0], chart.StartNode);
+        Assert.Same(steps[1], steps[0].Next);
+        Assert.Same(steps[2], steps[1].Next);
+
+        node.RemoveChild(b);
+        Assert.Same(steps[2], steps[0].Next);
+        Assert.Equal(2, chart.Nodes.Count);
+
+        var xaml = WorkflowXamlSerializer.SaveBuilder(new ActivityBuilder { Implementation = chart });
+        var loaded = Assert.IsType<Flowchart>(WorkflowXamlSerializer.LoadBuilder(xaml).Implementation);
+        Assert.Equal(2, loaded.Nodes.Count);
+        Assert.NotNull(loaded.StartNode);
+    }
+
+    [Fact]
+    public void FlowchartLoadsAsContainerWithLinkedSteps() {
+        using var service = new Service(new BlazorDiagram(), () => { });
+        var chart = new Flowchart();
+        var s2 = new FlowStep { Action = new Delay() };
+        var s1 = new FlowStep { Action = new WriteLine(), Next = s2 };
+        chart.Nodes.Add(s1);
+        chart.Nodes.Add(s2);
+        chart.StartNode = s1;
+
+        service.SetActivityBuilder(new ActivityBuilder { Implementation = chart });
+        service.Open(service.Items.First(p => p.Activity == chart).Node);
+
+        Assert.Contains(service.Items, p => p.Activity == s1.Action);
+        Assert.Contains(service.Items, p => p.Activity == s2.Action);
+    }
+
+    [Fact]
     public void XamlRoundTripPreservesEditedWriteLineText() {
         var source = new ActivityBuilder {
             Implementation = new Sequence {
