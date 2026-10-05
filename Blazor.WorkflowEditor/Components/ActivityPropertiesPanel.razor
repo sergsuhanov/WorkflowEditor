@@ -1,0 +1,32 @@
+@using Blazor.WorkflowEditor.Activity
+
+<aside class="we-properties-panel" aria-label="Activity properties">
+    <h2 class="h6">Activity properties</h2>
+
+    @if (selectedItems.Count == 0)
+    {
+        <p class="text-muted">Select an activity on the diagram to view its properties.</p>
+    }
+    else if (selectedItems.Count > 1)
+    {
+        <p class="text-muted">Select a single activity to edit its properties.</p>
+    }
+    else
+    {
+        var node = selectedItems[0];
+        <p class="text-muted">@node.GetType().Name</p>
+        <div class="mb-3">
+            <label for="we-activity-display-name" class="form-label">Display name</label>
+            <input id="we-activity-display-name" class="form-control" @bind="node.DisplayName" />
+        </div>
+    }
+</aside>
+
+@code {
+    [Parameter, EditorRequired]
+    public Service Service { get; set; } = default!;
+
+    private List<DefaultNode> selectedItems => Service.SelectedItems
+        .Select(item => item.Node)
+        .ToList();
+}

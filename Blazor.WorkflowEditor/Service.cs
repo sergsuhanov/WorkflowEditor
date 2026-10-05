@@ -196,6 +196,7 @@ namespace Blazor.WorkflowEditor {
                 else
                     selectedItems.Remove(item);
 
+                updateState();
             } else
             if (obj is LinkModel link) {
                 if (link.TargetNode() == null)
