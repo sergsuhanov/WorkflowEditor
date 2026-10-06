@@ -1,7 +1,13 @@
 ﻿@using Blazor.Diagrams;
+@using Blazor.Diagrams.Components.Widgets
+@using Blazor.Diagrams.Core.PathGenerators
+@using Blazor.Diagrams.Core.Routers
 @using Blazor.WorkflowEditor.Components
 @using System.Activities;
+@using Microsoft.JSInterop
+@inject IJSRuntime JS
 @implements IDisposable
+@implements IAsyncDisposable
 
 <div class="we-editor">
 
@@ -12,7 +18,9 @@
     <CascadingValue Value="modalService">
         
         @*ToolBox*@
-        <ToolboxComponent Service="service" ToolBoxGroups="ToolBoxGroups"></ToolboxComponent>
+        <ToolboxComponent Service="service" ToolBoxGroups="ToolBoxGroups" Width="toolboxWidth"
+                          Collapsed="toolboxCollapsed" CollapsedChanged="v => toolboxCollapsed = v"></ToolboxComponent>
+        <PanelSplitter Direction="PanelSplitter.SplitDirection.Vertical" OnResize="resizeToolbox"></PanelSplitter>
 
         @*Diagramm*@
         <div class="we-designer">
@@ -21,7 +29,7 @@
                     <ol class="breadcrumb">
                         @foreach (var pathItem in service.Path)
                         {
-                            <li class="breadcrumb-item"><a href="#" @onclick="()=>OpenPath(pathItem)">@pathItem.Name</a>
+                            <li class="breadcrumb-item"><a href="#" @onclick="() => OpenPath(pathItem)">@pathItem.Name</a>
                             </li>
                         }
                     </ol>
@@ -29,19 +37,47 @@
             </div>
 
             <div class="we-diagram">
-                <div style="height: 100%" ondragover="event.preventDefault();" @ondragover:preventDefault @ondrop="OnDrop">
+                <div style="height: 100%" @ondragover:preventDefault @ondragover="onDragOverDiagram" @ondrop="OnDrop">
                     <CascadingValue Value="diagram">
                         <CascadingValue Value="service">
-                            <DiagramCanvas />
+                            <DiagramCanvas>
+                                <Widgets>
+                                    @*Background grid, rubber band selection and a minimap for large schemas.*@
+                                    <GridWidget Size="20" BackgroundColor="transparent" />
+                                    <SelectionBoxWidget />
+                                    <NavigatorWidget Width="180" Height="120" Class="we-navigator" />
+                                </Widgets>
+                            </DiagramCanvas>
                         </CascadingValue>
                     </CascadingValue>
                 </div>
+
+                <div class="we-zoom-controls" role="group" aria-label="Diagram zoom">
+                    <button type="button" class="btn" title="Zoom out" aria-label="Zoom out" @onclick="zoomOut">
+                        <span class="oi oi-minus" aria-hidden="true"></span>
+                    </button>
+                    <button type="button" class="btn we-zoom-value" title="Reset zoom to 100 %"
+                            aria-label="Reset zoom to 100 %" @onclick="resetZoom">@zoomPercent</button>
+                    <button type="button" class="btn" title="Zoom in" aria-label="Zoom in" @onclick="zoomIn">
+                        <span class="oi oi-plus" aria-hidden="true"></span>
+                    </button>
+                    <button type="button" class="btn" title="Fit the whole schema" aria-label="Fit the whole schema"
+                            @onclick="fitDiagram">
+                        <span class="oi oi-fullscreen-enter" aria-hidden="true"></span>
+                    </button>
+                </div>
             </div>
 
-            <VariablesPanelComponent Service="service" TypeCollection="TypeCollection"></VariablesPanelComponent>
+            <PanelSplitter Direction="PanelSplitter.SplitDirection.Horizontal" OnResize="resizeVariables">
+            </PanelSplitter>
+            <VariablesPanelComponent Service="service" TypeCollection="TypeCollection" Height="variablesHeight">
+            </VariablesPanelComponent>
         </div>
 
-        <ActivityPropertiesPanel Service="service"></ActivityPropertiesPanel>
+        <PanelSplitter Direction="PanelSplitter.SplitDirection.Vertical" OnResize="resizeProperties"></PanelSplitter>
+        <ActivityPropertiesPanel Service="service" Width="propertiesWidth" Collapsed="propertiesCollapsed"
+                                 CollapsedChanged="v => propertiesCollapsed = v">
+        </ActivityPropertiesPanel>
     </CascadingValue>
 </div>
 
@@ -57,7 +93,38 @@
     [Parameter, EditorRequired]
     public List<Type> TypeCollection { get; set; } = default!;
 
+    /// <summary>Raised when the unsaved-changes flag changes, so the hosting page can show it.</summary>
+    [Parameter]
+    public EventCallback<bool> DirtyChanged { get; set; }
+
+    /// <summary>True when the schema contains changes that are not saved yet.</summary>
+    public bool HasUnsavedChanges => service?.IsDirty == true;
+
+    /// <summary>Clears the unsaved-changes flag after the schema was saved.</summary>
+    public void MarkSaved() => service?.MarkSaved();
+
     public List<string> ValidationMessages { get; private set; } = new();
+
+    private int toolboxWidth = 320;
+    private int propertiesWidth = 280;
+    private int variablesHeight = 220;
+
+    private bool toolboxCollapsed;
+    private bool propertiesCollapsed;
+    private bool isCompact;
+    private bool isNarrow;
+    private bool disposed;
+
+    private IJSObjectReference? viewportObserver;
+    private DotNetObjectReference<Editor>? selfReference;
+    private bool validationScheduled;
+
+    private void resizeToolbox(double delta) => toolboxWidth = (int)Math.Clamp(toolboxWidth + delta, 140, 800);
+    private void resizeProperties(double delta) => propertiesWidth = (int)Math.Clamp(propertiesWidth + delta, 180, 800);
+    private void resizeVariables(double delta) => variablesHeight = (int)Math.Clamp(variablesHeight - delta, 80, 900);
+
+    /// <summary>Over the empty canvas the next drop goes to the opened container, not to a node region.</summary>
+    private void onDragOverDiagram() => service.DropTarget = null;
 
 
     protected override void OnInitialized()
@@ -68,14 +135,152 @@
         diagram.Options.AllowMultiSelection = true;
         diagram.Options.Zoom.Minimum = 0.1;
         diagram.Options.Zoom.Inverse = true;
+        //Grid background and snapping of moved nodes to it.
+        diagram.Options.GridSize = 20;
+        diagram.Options.GridSnapToCenter = true;
+        //Makes links readable on both the light and the dark diagram background.
+        diagram.Options.Links.DefaultColor = "#1f6feb";
+        diagram.Options.Links.DefaultSelectedColor = "#f59f00";
+        //Snapping makes drawing connections forgiving: releasing near a port attaches to it.
+        diagram.Options.Links.EnableSnapping = true;
+        diagram.Options.Links.SnappingRadius = 60;
+        //Right-angled connectors with a small radius, like the classic Workflow Foundation designer.
+        diagram.Options.Links.DefaultRouter = new Activity.SafeOrthogonalRouter();
+        diagram.Options.Links.DefaultPathGenerator = new StraightPathGenerator(8);
         // DeleteKey = "Delete"
         
         this.service = new Service(this.diagram, this.StateHasChanged);
+        this.service.DirtyChanged += onDirtyChanged;
+        this.service.ModelChanged += onModelChanged;
+        diagram.ZoomChanged += onZoomChanged;
     }
+
+    private void onZoomChanged() => _ = InvokeAsync(StateHasChanged);
+
+    private void onDirtyChanged() => _ = InvokeAsync(() => DirtyChanged.InvokeAsync(service.IsDirty));
+
+    /// <summary>
+    /// Re-runs validation shortly after a model change (coalesces bursts of edits).
+    /// </summary>
+    private async void onModelChanged()
+    {
+        if (validationScheduled)
+            return;
+
+        validationScheduled = true;
+        try
+        {
+            await Task.Delay(250);
+        }
+        finally
+        {
+            validationScheduled = false;
+        }
+
+        await InvokeAsync(() =>
+        {
+            refreshValidationMessages();
+            StateHasChanged();
+        });
+    }
+
+    private string zoomPercent => $"{Math.Round(diagram.Zoom * 100)} %";
+
+    private void zoomIn() => diagram.SetZoom(Math.Clamp(diagram.Zoom * 1.2, diagram.Options.Zoom.Minimum, 4));
+
+    private void zoomOut() => diagram.SetZoom(Math.Clamp(diagram.Zoom / 1.2, diagram.Options.Zoom.Minimum, 4));
+
+    private void resetZoom() => diagram.SetZoom(1);
+
+    private void fitDiagram() => diagram.ZoomToFit(30);
 
     public void Dispose()
     {
+        if (disposed)
+            return;
+        disposed = true;
+
+        if (service != null)
+        {
+            service.DirtyChanged -= onDirtyChanged;
+            service.ModelChanged -= onModelChanged;
+        }
+        diagram.ZoomChanged -= onZoomChanged;
         service?.Dispose();
+        selfReference?.Dispose();
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (viewportObserver != null)
+        {
+            try
+            {
+                await viewportObserver.InvokeVoidAsync("disconnect");
+                await viewportObserver.DisposeAsync();
+            }
+            catch (JSDisconnectedException)
+            {
+                //The browser connection is already gone.
+            }
+        }
+
+        Dispose();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        //Ports are measured from the DOM, so the re-measurement has to happen once the browser painted the
+        //current layout: that is the only moment where a link anchor matches the port drawn on the card.
+        if (service.PortGeometryDirty)
+        {
+            await Task.Yield();
+            service.RefreshPortGeometry();
+        }
+
+        if (!firstRender)
+            return;
+
+        try
+        {
+            var module = await JS.InvokeAsync<IJSObjectReference>("import", "./_content/Blazor.WorkflowEditor/panelLayout.js");
+            selfReference = DotNetObjectReference.Create(this);
+            viewportObserver = await module.InvokeAsync<IJSObjectReference>("observeViewport", selfReference);
+        }
+        catch (JSException)
+        {
+            //The editor still works without compact mode.
+        }
+    }
+
+    /// <summary>Switches the panels into a compact layout on narrow windows.</summary>
+    [JSInvokable]
+    public void OnViewportWidthChanged(int width)
+    {
+        var compact = width < 1150;
+        var narrow = width < 820;
+        if (compact == isCompact && narrow == isNarrow)
+            return;
+
+        isCompact = compact;
+        isNarrow = narrow;
+
+        if (compact)
+        {
+            //Give the diagram room: collapse the toolbox and shrink the side panels.
+            toolboxCollapsed = true;
+            toolboxWidth = Math.Min(toolboxWidth, 240);
+            propertiesWidth = Math.Min(propertiesWidth, 240);
+            variablesHeight = Math.Min(variablesHeight, 150);
+            if (narrow)
+                propertiesCollapsed = true;
+        }
+        else
+        {
+            propertiesCollapsed = false;
+        }
+
+        StateHasChanged();
     }
 
 
@@ -121,8 +326,12 @@
         if (implementation == null)
             return;
 
-        foreach (var result in System.Activities.Validation.ActivityValidationServices.Validate(implementation).Errors)
+        var results = System.Activities.Validation.ActivityValidationServices.Validate(implementation);
+        foreach (var result in results.Errors)
             ValidationMessages.Add(result.Message);
+
+        //Per-node errors: the badge on the card uses the same validation results.
+        service.SetValidationErrors(results.Errors);
     }
 
     public void OpenPath(PathItem pathItem)
@@ -130,12 +339,17 @@
         service.OpenPath(pathItem);
     }
 
-    private async void OnDrop(DragEventArgs e) {
-
+    private async void OnDrop(DragEventArgs e)
+    {
         if (service.DraggedToolboxItem == null)
             return;
 
-        if (service.DraggedToolboxItem.TypeOfActivity.IsGenericType) {
+        //Blazor recycles event arguments: they are only valid until the handler returns, and the generic
+        //type dialog below awaits, so the drop position has to be read before that first await.
+        var position = diagram.GetRelativeMousePoint(e.ClientX, e.ClientY);
+
+        if (service.DraggedToolboxItem.TypeOfActivity.IsGenericType)
+        {
             var genericTypes = service.DraggedToolboxItem.TypeOfActivity
                 .GetGenericArguments()
                 .Where(t => t.IsGenericParameter)
@@ -150,23 +364,25 @@
                 {"TypeCollection",TypeCollection??new List<Type>()}
             });
 
-            if (modal != null && modal.ModalResult == ModalResult.Applied) {
-                (bool hasAdded, var result) = service.AddActivity(service.DraggedToolboxItem.TypeOfActivity, modal.BuildedTypes.ToArray()!);
-                if (!hasAdded) 
+            if (modal != null && modal.ModalResult == ModalResult.Applied)
+            {
+                (bool hasAdded, var result) = service.AddActivity(service.DraggedToolboxItem.TypeOfActivity,
+modal.BuildedTypes.ToArray()!);
+                //An inline add (a drop into a container region) has no node of its own on the diagram.
+                if (!hasAdded || result?.Node == null)
                     return;
 
-                var position = diagram.GetRelativeMousePoint(e.ClientX, e.ClientY);
                 result.Node.CenterPosition = position;
             }
 
             StateHasChanged();
         }
-        else {
+        else
+        {
             (bool hasAdded, var result) = service.AddActivity(service.DraggedToolboxItem.TypeOfActivity);
-            if (!hasAdded) 
+            if (!hasAdded || result?.Node == null)
                 return;
-            
-            var position = diagram.GetRelativeMousePoint(e.ClientX, e.ClientY);
+
             result.Node.CenterPosition = position;
         }
 

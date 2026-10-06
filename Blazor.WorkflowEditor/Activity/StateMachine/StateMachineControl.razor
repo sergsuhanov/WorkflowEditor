@@ -1,0 +1,26 @@
+@using Blazor.WorkflowEditor.Components
+
+<ActivityControl Node="@Node">
+    <Preview>
+        @*Read-only summary: states and transitions are edited inside the opened container.*@
+        <div class="we-graph-summary">
+            <div class="we-graph-summary-row">
+                <span class="we-graph-summary-label">Initial</span>
+                <span class="we-graph-summary-value">@(Node.InitialLabel ?? "not set")</span>
+            </div>
+            <div class="we-graph-summary-row">
+                <span class="we-graph-summary-label">States</span>
+                <span class="we-graph-summary-value">@(Node.StatesSummary ?? "empty")</span>
+            </div>
+        </div>
+    </Preview>
+    <Edit>
+        <FlowTargetSelect Label="Initial state" Container="Node" @bind-Value="Node.InitialIndex" />
+        <div class="form-text">Open the state machine to add states. Transitions are edited on each state.</div>
+    </Edit>
+</ActivityControl>
+
+@code {
+    [Parameter]
+    public StateMachineNode Node { get; set; } = default!;
+}

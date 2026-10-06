@@ -10,7 +10,7 @@ public static class WorkflowXamlSerializer {
         if (string.IsNullOrWhiteSpace(source))
             throw new ArgumentException("Workflow XAML cannot be empty.", nameof(source));
 
-        using var reader = new StringReader(source);
+        using var reader = new StringReader(source.TrimStart('\uFEFF', ' ', '\t', '\r', '\n'));
         using var xamlReader = new XamlXmlReader(reader);
         using var builderReader = ActivityXamlServices.CreateBuilderReader(xamlReader);
         return XamlServices.Load(builderReader) switch {

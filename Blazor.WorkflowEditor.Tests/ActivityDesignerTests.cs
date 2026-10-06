@@ -2,8 +2,14 @@ using System.Activities;
 using System.Activities.Expressions;
 using System.Activities.Statements;
 using Blazor.Diagrams;
+using Blazor.Diagrams.Core.Geometry;
 using Blazor.WorkflowEditor;
-using Blazor.WorkflowEditor.Activity.Statements;
+using Blazor.WorkflowEditor.Activity;
+using Blazor.WorkflowEditor.Activity.Stack.ControlFlow;
+using Blazor.WorkflowEditor.Activity.Stack.Primitives;
+using Blazor.WorkflowEditor.Activity.Stack.Collections;
+using Blazor.WorkflowEditor.Activity.Flow;
+using Blazor.WorkflowEditor.Activity.StateMachine;
 using Microsoft.VisualBasic.Activities;
 using State = System.Activities.Statements.State;
 using Parallel = System.Activities.Statements.Parallel;
@@ -65,6 +71,398 @@ public class ActivityDesignerTests {
         Assert.Equal("ready", ((VisualBasicValue<bool>)activity.Condition.Expression!).ExpressionText);
         Assert.Null(activity.Then);
         Assert.Same(elseActivity, activity.Else);
+    }
+
+    [Fact]
+    public void IfDesignerReplacesExistingBranchChild() {
+        using var service = new Service(new BlazorDiagram(), () => { });
+        var activity = new If();
+        var node = new IfNode(service, activity);
+        var first = new WriteLine();
+        var second = new Delay();
+
+        node.SelectedBranch = IfBranch.Then;
+        node.AddChild(new ActivityDesignerPair { Activity = first });
+        node.AddChild(new ActivityDesignerPair { Activity = second });
+
+        Assert.Same(second, activity.Then);
+    }
+
+    [Fact]
+    public void IfDesignerClearBranchRemovesChild() {
+        using var service = new Service(new BlazorDiagram(), () => { });
+        var activity = new If { Else = new Delay() };
+        var node = new IfNode(service, activity);
+
+        node.ClearBranch(IfBranch.Else);
+
+        Assert.Null(activity.Else);
+    }
+
+    [Fact]
+    public void DroppingOnNodeDropTargetAddsChildToThatNodeInsteadOfOpenedContainer() {
+        using var service = new Service(new BlazorDiagram(), () => { });
+        var inner = new Sequence();
+        var outer = new Sequence { Activities = { inner } };
+        service.SetActivityBuilder(new ActivityBuilder { Implementation = outer });
+        service.Open(service.Items.First(p => p.Activity == outer).Node);
+
+        var ifActivity = new If();
+        var ifNode = new IfNode(service, ifActivity) { SelectedBranch = IfBranch.Else };
+        service.DropTarget = ifNode;
+
+        var (hasAdded, _) = service.AddActivity(typeof(WriteLine));
+
+        Assert.True(hasAdded);
+        Assert.IsType<WriteLine>(ifActivity.Else);
+        Assert.Null(ifActivity.Then);
+        Assert.Empty(inner.Activities);
+        Assert.Null(service.DropTarget);
+    }
+
+    [Fact]
+    public void WhileDesignerReplacesBodyAndClearsIt() {
+        using var service = new Service(new BlazorDiagram(), () => { });
+        var activity = new While();
+        var node = new WhileNode(service, activity);
+
+        node.AddChild(new ActivityDesignerPair { Activity = new WriteLine() });
+        var second = new Delay();
+        node.AddChild(new ActivityDesignerPair { Activity = second });
+        Assert.Same(second, activity.Body);
+
+        node.ClearBody();
+        Assert.Null(activity.Body);
+    }
+
+    [Fact]
+    public void DoWhileAndForEachDesignersReplaceBodyAndClearIt() {
+        using var service = new Service(new BlazorDiagram(), () => { });
+        var doWhile = new DoWhile();
+        var doWhileNode = new DoWhileNode(service, doWhile);
+        var doWhileBody = new Delay();
+        doWhileNode.AddChild(new ActivityDesignerPair { Activity = doWhileBody });
+        Assert.Same(doWhileBody, doWhile.Body);
+        doWhileNode.ClearBody();
+        Assert.Null(doWhile.Body);
+
+        var forEach = new ForEach<int>();
+        var forEachNode = new ForEachNode<int>(service, forEach);
+        var forEachBody = new WriteLine();
+        forEachNode.AddChild(new ActivityDesignerPair { Activity = forEachBody });
+        Assert.Same(forEachBody, forEach.Body.Handler);
+        forEachNode.ClearBody();
+        Assert.Null(forEach.Body.Handler);
+    }
+
+    [Fact]
+    public void TryCatchDesignerReplacesAndClearsTryCatchFinallySections() {
+        using var service = new Service(new BlazorDiagram(), () => { });
+        var activity = new TryCatch();
+        var node = new TryCatchNode(service, activity);
+
+        node.SelectedSection = TryCatchSection.Try;
+        node.AddChild(new ActivityDesignerPair { Activity = new WriteLine() });
+        var replacement = new Delay();
+        node.AddChild(new ActivityDesignerPair { Activity = replacement });
+        Assert.Same(replacement, activity.Try);
+        node.ClearSection(TryCatchSection.Try);
+        Assert.Null(activity.Try);
+
+        node.SelectedSection = TryCatchSection.Finally;
+        var final = new WriteLine();
+        node.AddChild(new ActivityDesignerPair { Activity = final });
+        Assert.Same(final, activity.Finally);
+        node.ClearSection(TryCatchSection.Finally);
+        Assert.Null(activity.Finally);
+    }
+
+    [Fact]
+    public void TryCatchDesignerAddsAndClearsCatchHandler() {
+        using var service = new Service(new BlazorDiagram(), () => { });
+        var activity = new TryCatch();
+        var node = new TryCatchNode(service, activity) { SelectedSection = TryCatchSection.CatchException };
+        var handler = new WriteLine();
+
+        node.AddChild(new ActivityDesignerPair { Activity = handler });
+
+        Assert.True(node.HasCatch);
+        Assert.Single(activity.Catches);
+
+        node.ClearSection(TryCatchSection.CatchException);
+
+        Assert.False(node.HasCatch);
+    }
+
+    [Fact]
+    public void DroppingOnParallelNodeAddsBranchInsteadOfOpenedContainer() {
+        using var service = new Service(new BlazorDiagram(), () => { });
+        var sequence = new Sequence();
+        service.SetActivityBuilder(new ActivityBuilder { Implementation = sequence });
+        service.Open(service.Items.First(p => p.Activity == sequence).Node);
+
+        var parallel = new Parallel();
+        service.DropTarget = new ParallelNode(service, parallel);
+
+        var (hasAdded, _) = service.AddActivity(typeof(WriteLine));
+
+        Assert.True(hasAdded);
+        Assert.Single(parallel.Branches);
+        Assert.Empty(sequence.Activities);
+    }
+
+    [Fact]
+    public void FlowchartDesignerAddsStepOnDropTargetAndTracksStart() {
+        using var service = new Service(new BlazorDiagram(), () => { });
+        var sequence = new Sequence();
+        service.SetActivityBuilder(new ActivityBuilder { Implementation = sequence });
+        service.Open(service.Items.First(p => p.Activity == sequence).Node);
+
+        var chart = new Flowchart();
+        var node = new FlowchartNode(service, chart);
+        service.DropTarget = node;
+
+        var (hasAdded, _) = service.AddActivity(typeof(WriteLine));
+
+        Assert.True(hasAdded);
+        var step = Assert.IsType<FlowStep>(Assert.Single(chart.Nodes));
+        Assert.Same(step, chart.StartNode);
+        Assert.Equal(step.Action.DisplayName, node.StartLabel);
+        Assert.NotNull(node.StepsSummary);
+        Assert.Empty(sequence.Activities);
+        Assert.Null(service.DropTarget);
+    }
+
+    [Fact]
+    public void StateMachineDesignerAddsStateOnDropTargetAndTracksInitial() {
+        using var service = new Service(new BlazorDiagram(), () => { });
+        var sequence = new Sequence();
+        service.SetActivityBuilder(new ActivityBuilder { Implementation = sequence });
+        service.Open(service.Items.First(p => p.Activity == sequence).Node);
+
+        var machine = new StateMachine();
+        var node = new StateMachineNode(service, machine);
+        service.DropTarget = node;
+
+        var (hasAdded, _) = service.AddActivity(typeof(State));
+
+        Assert.True(hasAdded);
+        var state = Assert.Single(machine.States);
+        Assert.Same(state, machine.InitialState);
+        Assert.Equal(state.DisplayName, node.InitialLabel);
+        Assert.NotNull(node.StatesSummary);
+    }
+
+    [Fact]
+    public void StateMachineDesignerNamesAddedStates() {
+        using var service = new Service(new BlazorDiagram(), () => { });
+        var machine = new StateMachine();
+        var node = new StateMachineNode(service, machine);
+
+        node.AddChild(new ActivityDesignerPair { Element = new State(), Activity = null! });
+        node.AddChild(new ActivityDesignerPair { Element = new State(), Activity = null! });
+
+        Assert.Equal(new[] { "State1", "State2" }, machine.States.Select(s => s.DisplayName));
+        Assert.Equal("State1", node.InitialLabel);
+        Assert.Equal("State1, State2", node.StatesSummary);
+    }
+
+    [Fact]
+    public void FlowchartStepConnectionDrawnOnDiagramUpdatesNext() {
+        using var service = new Service(new BlazorDiagram(), () => { });
+        var one = new WriteLine { DisplayName = "one" };
+        var two = new Delay { DisplayName = "two" };
+        var chart = new Flowchart();
+        chart.Nodes.Add(new FlowStep { Action = one });
+        chart.Nodes.Add(new FlowStep { Action = two });
+        chart.StartNode = chart.Nodes[0];
+        service.SetActivityBuilder(new ActivityBuilder { Implementation = chart });
+        service.Open(service.Items.First(p => p.Activity == chart).Node);
+
+        var node = (FlowchartNode)service.Items.First(p => p.Activity == chart).Node;
+        var from = service.Items.First(p => ReferenceEquals(p.Element, one));
+        var to = service.Items.First(p => ReferenceEquals(p.Element, two));
+
+        Assert.True(node.TryConnect(from, to));
+        Assert.Same(chart.Nodes[1], ((FlowStep)chart.Nodes[0]).Next);
+
+        Assert.True(node.TryDisconnect(from, to));
+        Assert.Null(((FlowStep)chart.Nodes[0]).Next);
+    }
+
+    [Fact]
+    public void FlowchartDecisionConnectionsFillTrueThenFalse() {
+        using var service = new Service(new BlazorDiagram(), () => { });
+        var yes = new WriteLine { DisplayName = "yes" };
+        var no = new Delay { DisplayName = "no" };
+        var chart = new Flowchart();
+        var decision = new FlowDecision();
+        chart.Nodes.Add(decision);
+        chart.Nodes.Add(new FlowStep { Action = yes });
+        chart.Nodes.Add(new FlowStep { Action = no });
+        chart.StartNode = decision;
+        service.SetActivityBuilder(new ActivityBuilder { Implementation = chart });
+        service.Open(service.Items.First(p => p.Activity == chart).Node);
+
+        var node = (FlowchartNode)service.Items.First(p => p.Activity == chart).Node;
+        var decisionPair = service.Items.First(p => ReferenceEquals(p.Element, decision));
+        var yesPair = service.Items.First(p => ReferenceEquals(p.Element, yes));
+        var noPair = service.Items.First(p => ReferenceEquals(p.Element, no));
+
+        Assert.True(node.TryConnect(decisionPair, yesPair));
+        Assert.True(node.TryConnect(decisionPair, noPair));
+
+        Assert.Same(chart.Nodes[1], decision.True);
+        Assert.Same(chart.Nodes[2], decision.False);
+    }
+
+    [Fact]
+    public void StateMachineTransitionDrawnOnDiagramUpdatesTransitions() {
+        using var service = new Service(new BlazorDiagram(), () => { });
+        var a = new State { DisplayName = "A" };
+        var b = new State { DisplayName = "B" };
+        var machine = new StateMachine { InitialState = a };
+        machine.States.Add(a);
+        machine.States.Add(b);
+        service.SetActivityBuilder(new ActivityBuilder { Implementation = machine });
+        service.Open(service.Items.First(p => p.Activity == machine).Node);
+
+        var node = (StateMachineNode)service.Items.First(p => p.Activity == machine).Node;
+        var aPair = service.Items.First(p => ReferenceEquals(p.Element, a));
+        var bPair = service.Items.First(p => ReferenceEquals(p.Element, b));
+
+        Assert.True(node.TryConnect(aPair, bPair));
+        Assert.Same(b, Assert.Single(a.Transitions).To);
+
+        Assert.True(node.TryDisconnect(aPair, bPair));
+        Assert.Empty(a.Transitions);
+    }
+
+    [Fact]
+    public void FlowchartSwitchConnectionAddsAndRemovesCases() {
+        using var service = new Service(new BlazorDiagram(), () => { });
+        var sw = new FlowSwitch<string>();
+        var s1 = new WriteLine { DisplayName = "one" };
+        var s2 = new Delay { DisplayName = "two" };
+        var chart = new Flowchart();
+        chart.Nodes.Add(sw);
+        chart.Nodes.Add(new FlowStep { Action = s1 });
+        chart.Nodes.Add(new FlowStep { Action = s2 });
+        chart.StartNode = sw;
+        service.SetActivityBuilder(new ActivityBuilder { Implementation = chart });
+        service.Open(service.Items.First(p => p.Activity == chart).Node);
+
+        var node = (FlowchartNode)service.Items.First(p => p.Activity == chart).Node;
+        var swPair = service.Items.First(p => ReferenceEquals(p.Element, sw));
+        var s1Pair = service.Items.First(p => ReferenceEquals(p.Element, s1));
+        var s2Pair = service.Items.First(p => ReferenceEquals(p.Element, s2));
+
+        Assert.True(node.TryConnect(swPair, s1Pair));
+        Assert.True(node.TryConnect(swPair, s2Pair));
+
+        Assert.Equal(2, sw.Cases.Count);
+        Assert.Contains("1", sw.Cases.Keys);
+        Assert.Contains("2", sw.Cases.Keys);
+
+        Assert.True(node.TryDisconnect(swPair, s1Pair));
+        Assert.Single(sw.Cases);
+    }
+
+    [Fact]
+    public void FlowchartSwitchConnectionUsesNumericKeysForNumericSwitch() {
+        using var service = new Service(new BlazorDiagram(), () => { });
+        var sw = new FlowSwitch<int>();
+        var s1 = new WriteLine();
+        var chart = new Flowchart();
+        chart.Nodes.Add(sw);
+        chart.Nodes.Add(new FlowStep { Action = s1 });
+        chart.StartNode = sw;
+        service.SetActivityBuilder(new ActivityBuilder { Implementation = chart });
+        service.Open(service.Items.First(p => p.Activity == chart).Node);
+
+        var node = (FlowchartNode)service.Items.First(p => p.Activity == chart).Node;
+        var swPair = service.Items.First(p => ReferenceEquals(p.Element, sw));
+        var s1Pair = service.Items.First(p => ReferenceEquals(p.Element, s1));
+
+        Assert.True(node.TryConnect(swPair, s1Pair));
+
+        Assert.True(sw.Cases.ContainsKey(1));
+    }
+
+    [Fact]
+    public void StateDesignerEditsEntryExitTriggerAndAction() {
+        using var service = new Service(new BlazorDiagram(), () => { });
+        var state = new State();
+        var node = new StateNode(service, state);
+
+        node.SelectSlot(StateNode.Slot.Entry);
+        node.AddChild(new ActivityDesignerPair { Activity = new WriteLine { DisplayName = "entry" } });
+        Assert.Equal("entry", node.EntryName);
+
+        node.SelectSlot(StateNode.Slot.Exit);
+        node.AddChild(new ActivityDesignerPair { Activity = new Delay { DisplayName = "exit" } });
+        Assert.Equal("exit", node.ExitName);
+
+        node.ClearEntry();
+        Assert.Null(state.Entry);
+        Assert.False(node.HasEntry);
+
+        var transition = node.AddTransition();
+        node.SelectSlot(StateNode.Slot.Trigger, transition);
+        node.AddChild(new ActivityDesignerPair { Activity = new WriteLine { DisplayName = "trigger" } });
+        Assert.Equal("trigger", node.GetTrigger(transition));
+
+        node.SelectSlot(StateNode.Slot.Action, transition);
+        node.AddChild(new ActivityDesignerPair { Activity = new Delay { DisplayName = "action" } });
+        Assert.Equal("action", node.GetAction(transition));
+
+        node.ClearAction(transition);
+        Assert.Null(transition.Action);
+        Assert.NotNull(transition.Trigger);
+        Assert.NotNull(state.Exit);
+    }
+
+    [Fact]
+    public void AddActivityRejectsElementNotAcceptedByTarget() {
+        using var service = new Service(new BlazorDiagram(), () => { });
+        var sequence = new Sequence();
+        service.SetActivityBuilder(new ActivityBuilder { Implementation = sequence });
+        service.Open(service.Items.First(p => p.Activity == sequence).Node);
+
+        var machine = new StateMachine();
+        service.DropTarget = new StateMachineNode(service, machine);
+
+        var (hasAdded, _) = service.AddActivity(typeof(WriteLine));
+
+        Assert.False(hasAdded);
+        Assert.Empty(machine.States);
+        Assert.Empty(sequence.Activities);
+    }
+
+    [Fact]
+    public void CheckAddActivityAllowsGraphElementWhenGraphContainerIsPresent() {
+        using var service = new Service(new BlazorDiagram(), () => { });
+        var sequence = new Sequence();
+        service.SetActivityBuilder(new ActivityBuilder { Implementation = sequence });
+        service.Open(service.Items.First(p => p.Activity == sequence).Node);
+
+        Assert.False(service.CheckAddActivity(typeof(State)));
+
+        Assert.True(service.AddActivity(typeof(StateMachine)).hasAdded);
+
+        Assert.True(service.CheckAddActivity(typeof(State)));
+    }
+
+    [Fact]
+    public void DroppingOnRootDiagramAddsActivityToImplementation() {
+        using var service = new Service(new BlazorDiagram(), () => { });
+        var sequence = new Sequence();
+        service.SetActivityBuilder(new ActivityBuilder { Implementation = sequence });
+
+        var (hasAdded, _) = service.AddActivity(typeof(WriteLine));
+
+        Assert.True(hasAdded);
+        Assert.IsType<WriteLine>(Assert.Single(sequence.Activities));
     }
 
     [Fact]
@@ -132,6 +530,36 @@ public class ActivityDesignerTests {
         service.SetActivityBuilder(new ActivityBuilder { Implementation = new Sequence() });
         Assert.Equal(2, service.Items.Count());
         Assert.True(service.CheckAddActivity(typeof(WriteLine)));
+    }
+
+    /// <summary>
+    /// The root of the diagram is an ActivityBuilder wrapper (DynamicActivity) and the variables panel lists
+    /// the variables of its implementation, so adding and renaming a variable from the root has to land in
+    /// that collection instead of doing nothing.
+    /// </summary>
+    [Fact]
+    public void VariablesAddedAtTheRootLandInTheImplementation() {
+        using var service = new Service(new BlazorDiagram(), () => { });
+        var sequence = new Sequence();
+        service.SetActivityBuilder(new ActivityBuilder { Implementation = sequence });
+
+        //The panel passes the activity of the opened path item, which is the ActivityBuilder wrapper.
+        var root = service.Path.Last().Activity;
+        service.AddVariable(root, "counter", typeof(int), "1");
+        service.RefreshVariables();
+
+        var variable = Assert.Single(service.Variables);
+        Assert.Equal("counter", variable.Name);
+        Assert.Equal(typeof(int), variable.Type);
+        Assert.Same(root, variable.Activity);
+
+        //Renaming replaces the variable instead of adding a second one.
+        service.UpdateVariable(root, "counter", "count", typeof(int), "2");
+        service.RefreshVariables();
+
+        variable = Assert.Single(service.Variables);
+        Assert.Equal("count", variable.Name);
+        Assert.Equal("count", Assert.Single(sequence.Variables).Name);
     }
 
     [Fact]
@@ -519,6 +947,36 @@ public class ActivityDesignerTests {
     }
 
     [Fact]
+    public void XamlRoundTripPreservesDesignerNotes() {
+        using var service = new Service(new BlazorDiagram(), () => { });
+        var write = new WriteLine { DisplayName = "noted" };
+        var node = new WriteLineNode(service, write) { Note = "Check the VAT rate" };
+
+        Assert.True(node.HasNote);
+
+        var xaml = WorkflowXamlSerializer.SaveBuilder(new ActivityBuilder {
+            Implementation = new Sequence { Activities = { write } }
+        });
+        var sequence = Assert.IsType<Sequence>(WorkflowXamlSerializer.LoadBuilder(xaml).Implementation);
+        var loaded = Assert.IsType<WriteLine>(Assert.Single(sequence.Activities));
+
+        Assert.Equal("Check the VAT rate", Blazor.WorkflowEditor.Activity.State.Designer.GetNote(loaded));
+    }
+
+    [Fact]
+    public void XamlLoaderAcceptsLeadingWhitespaceBeforeTheDeclaration() {
+        var source = WorkflowXamlSerializer.SaveBuilder(new ActivityBuilder {
+            Implementation = new Sequence { Activities = { new WriteLine { DisplayName = "round trip" } } }
+        });
+
+        //Documents pasted into the editor often start with a newline; the declaration must stay first.
+        var builder = WorkflowXamlSerializer.LoadBuilder("\n\n  " + source + "\n");
+
+        var sequence = Assert.IsType<Sequence>(builder.Implementation);
+        Assert.IsType<WriteLine>(Assert.Single(sequence.Activities));
+    }
+
+    [Fact]
     public void XamlLoaderRejectsEmptyAndMalformedDocuments() {
         Assert.Throws<ArgumentException>(() => WorkflowXamlSerializer.LoadBuilder(" "));
         Assert.ThrowsAny<Exception>(() => WorkflowXamlSerializer.LoadBuilder("<Activity"));
@@ -529,6 +987,349 @@ public class ActivityDesignerTests {
         var result = System.Activities.Validation.ActivityValidationServices.Validate(new InvalidActivity());
 
         Assert.Contains(result.Errors, error => error.Message.Contains("Invalid test activity"));
+    }
+
+    [Fact]
+    public void GraphContainersUseDirectionalPorts() {
+        using var service = new Service(new BlazorDiagram(), () => { });
+        var one = new WriteLine { DisplayName = "one" };
+        var chart = new Flowchart();
+        chart.Nodes.Add(new FlowStep { Action = one });
+        chart.StartNode = chart.Nodes[0];
+        service.SetActivityBuilder(new ActivityBuilder { Implementation = chart });
+        service.Open(service.Items.First(p => p.Activity == chart).Node);
+
+        var node = service.Items.First(p => ReferenceEquals(p.Element, one)).Node;
+
+        //Graph nodes offer several anchors: incoming on the left/top, outgoing on the right/bottom edges.
+        Assert.Equal(4, node.Ports.Count);
+        Assert.Equal(2, node.Ports.OfType<GraphInPort>().Count());
+        Assert.Equal(2, node.Ports.OfType<GraphOutPort>().Count());
+        Assert.IsType<GraphInPort>(node.IncomingPort);
+        Assert.IsType<GraphOutPort>(node.OutcomingPort);
+        Assert.Same(node.Ports[0], node.IncomingPort);
+        Assert.Same(node.Ports[2], node.OutcomingPort);
+        Assert.All(node.Ports, port => Assert.False(port.Locked));
+        //Corner alignments are avoided on purpose: the orthogonal router cannot route them.
+        Assert.All(node.Ports, port => Assert.True(port.Alignment is Blazor.Diagrams.Core.Models.PortAlignment.Left or Blazor.Diagrams.Core.Models.PortAlignment.Top or Blazor.Diagrams.Core.Models.PortAlignment.Right or Blazor.Diagrams.Core.Models.PortAlignment.Bottom));
+    }
+
+    [Fact]
+    public void GraphPortsValidateConnectionDirection() {
+        using var service = new Service(new BlazorDiagram(), () => { });
+        var one = new WriteLine { DisplayName = "one" };
+        var two = new Delay { DisplayName = "two" };
+        var chart = new Flowchart();
+        chart.Nodes.Add(new FlowStep { Action = one });
+        chart.Nodes.Add(new FlowStep { Action = two });
+        chart.StartNode = chart.Nodes[0];
+        service.SetActivityBuilder(new ActivityBuilder { Implementation = chart });
+        service.Open(service.Items.First(p => p.Activity == chart).Node);
+
+        var nodeOne = service.Items.First(p => ReferenceEquals(p.Element, one)).Node;
+        var nodeTwo = service.Items.First(p => ReferenceEquals(p.Element, two)).Node;
+        var outOne = nodeOne.Ports.OfType<GraphOutPort>().First();
+        var inOne = nodeOne.Ports.OfType<GraphInPort>().First();
+        var outTwo = nodeTwo.Ports.OfType<GraphOutPort>().First();
+        var inTwo = nodeTwo.Ports.OfType<GraphInPort>().First();
+
+        //Only output -> input is accepted; the reverse and output -> output are rejected.
+        Assert.True(outOne.CanAttachTo(inTwo));
+        Assert.False(inOne.CanAttachTo(outTwo));
+        Assert.False(outOne.CanAttachTo(outTwo));
+        Assert.False(inOne.CanAttachTo(inTwo));
+
+        //Every anchor of the node follows the same rule, so any of them can be picked while drawing.
+        Assert.All(nodeOne.Ports.OfType<GraphOutPort>(), port => Assert.True(port.CanAttachTo(inTwo)));
+        Assert.All(nodeTwo.Ports.OfType<GraphInPort>(), port => Assert.True(outOne.CanAttachTo(port)));
+        Assert.All(nodeOne.Ports.OfType<GraphInPort>(), port => Assert.False(port.CanAttachTo(outTwo)));
+    }
+
+    [Fact]
+    public void StateMachineStatesUseDirectionalPorts() {
+        using var service = new Service(new BlazorDiagram(), () => { });
+        var machine = new System.Activities.Statements.StateMachine();
+        machine.States.Add(new State { DisplayName = "A" });
+        machine.States.Add(new State { DisplayName = "B" });
+        machine.InitialState = machine.States[0];
+        service.SetActivityBuilder(new ActivityBuilder { Implementation = machine });
+        service.Open(service.Items.First(p => p.Activity == machine).Node);
+
+        foreach (var state in machine.States) {
+            var node = service.FindPair(state)!.Node;
+
+            Assert.Equal(4, node.Ports.Count);
+            Assert.Equal(2, node.Ports.OfType<GraphInPort>().Count());
+            Assert.Equal(2, node.Ports.OfType<GraphOutPort>().Count());
+        }
+    }
+
+    [Fact]
+    public void RedrawingTheSameConnectionDoesNotAddASecondLink() {
+        var diagram = new BlazorDiagram();
+        using var service = new Service(diagram, () => { });
+        var one = new WriteLine { DisplayName = "one" };
+        var two = new Delay { DisplayName = "two" };
+        var chart = new Flowchart();
+        chart.Nodes.Add(new FlowStep { Action = one });
+        chart.Nodes.Add(new FlowStep { Action = two });
+        chart.StartNode = chart.Nodes[0];
+        service.SetActivityBuilder(new ActivityBuilder { Implementation = chart });
+        service.Open(service.Items.First(p => p.Activity == chart).Node);
+
+        var node = (FlowchartNode)service.Items.First(p => p.Activity == chart).Node;
+        var from = service.Items.First(p => ReferenceEquals(p.Element, one));
+        var to = service.Items.First(p => ReferenceEquals(p.Element, two));
+
+        Assert.True(node.TryConnect(from, to));
+        Assert.True(node.TryConnect(from, to));
+
+        //Rebuilding the diagram links from the model yields a single connection.
+        node.RebuildLinks();
+        var link = Assert.Single(diagram.Links.OfType<Blazor.Diagrams.Core.Models.LinkModel>());
+        measurePorts(from.Node, to.Node);
+        link.Refresh();
+        Assert.NotNull(link.PathGeneratorResult);
+    }
+
+    /// <summary>One link is anchored on the outgoing port, the other end on the incoming port.</summary>
+    [Fact]
+    public void FlowchartLinksAreAnchoredOnTheDirectionalPorts() {
+        var diagram = new BlazorDiagram();
+        using var service = new Service(diagram, () => { });
+        var one = new WriteLine { DisplayName = "one" };
+        var two = new Delay { DisplayName = "two" };
+        var chart = new Flowchart();
+        chart.Nodes.Add(new FlowStep { Action = one });
+        chart.Nodes.Add(new FlowStep { Action = two });
+        chart.StartNode = chart.Nodes[0];
+        service.SetActivityBuilder(new ActivityBuilder { Implementation = chart });
+        service.Open(service.Items.First(p => p.Activity == chart).Node);
+
+        var node = (FlowchartNode)service.Items.First(p => p.Activity == chart).Node;
+        Assert.True(node.TryConnect(service.Items.First(p => ReferenceEquals(p.Element, one)),
+            service.Items.First(p => ReferenceEquals(p.Element, two))));
+
+        //The diagram links mirror the model connection.
+        node.RebuildLinks();
+        var link = Assert.Single(diagram.Links.OfType<Blazor.Diagrams.Core.Models.LinkModel>());
+        Assert.IsType<Blazor.Diagrams.Core.Anchors.SinglePortAnchor>(link.Source);
+        Assert.IsType<Blazor.Diagrams.Core.Anchors.SinglePortAnchor>(link.Target);
+        Assert.IsType<GraphOutPort>(link.Source.Model);
+        Assert.IsType<GraphInPort>(link.Target.Model);
+    }
+
+    [Fact]
+    public void FlowchartLinksAreBuiltAfterChildrenAreLaidOut() {
+        var diagram = new BlazorDiagram();
+        using var service = new Service(diagram, () => { });
+        var one = new WriteLine { DisplayName = "one" };
+        var two = new Delay { DisplayName = "two" };
+        var chart = new Flowchart();
+        //A connection that already exists in the model: it must be drawn as soon as the container is opened.
+        var s2 = new FlowStep { Action = two };
+        chart.Nodes.Add(new FlowStep { Action = one, Next = s2 });
+        chart.Nodes.Add(s2);
+        chart.StartNode = chart.Nodes[0];
+        service.SetActivityBuilder(new ActivityBuilder { Implementation = chart });
+        service.Open(service.Items.First(p => p.Activity == chart).Node);
+
+        var link = Assert.Single(diagram.Links.OfType<Blazor.Diagrams.Core.Models.LinkModel>());
+        var nodes = chart.Nodes.Select(n => service.FindPair(((FlowStep)n).Action)!.Node).ToList();
+
+        //Children are laid out before links are created, so the ports of both nodes are usable.
+        Assert.NotEqual(nodes[0].Position.X, nodes[1].Position.X);
+        measurePorts(nodes[0], nodes[1]);
+        link.Refresh();
+        Assert.NotNull(link.PathGeneratorResult);
+    }
+
+    /// <summary>
+    /// Rebuilds the port rectangles of the given nodes from their box, which is what the browser does after
+    /// the layout changed.
+    /// </summary>
+    private static void measurePorts(params DefaultNode[] nodes) {
+        foreach (var node in nodes)
+            node.UpdatePortGeometry();
+    }
+
+    /// <summary>
+    /// The library measures a port rectangle once, in the DOM, and never again, so a node that is moved or
+    /// resized afterwards kept links attached to the old border point. The ports are placed from the node box
+    /// instead, which makes the anchors follow the node.
+    /// </summary>
+    [Fact]
+    public void PortGeometryIsComputedFromTheNodeBox() {
+        using var service = new Service(new BlazorDiagram(), () => { });
+        var one = new WriteLine { DisplayName = "one" };
+        var chart = new Flowchart();
+        chart.Nodes.Add(new FlowStep { Action = one });
+        chart.StartNode = chart.Nodes[0];
+        service.SetActivityBuilder(new ActivityBuilder { Implementation = chart });
+        service.Open(service.Items.First(p => p.Activity == chart).Node);
+
+        var node = service.Items.First(p => ReferenceEquals(p.Element, one)).Node;
+        var size = node.Size!;
+
+        //A stale rectangle, like the one the library keeps after its single DOM measurement.
+        node.OutcomingPort.Position = new Point(-1000, -1000);
+        node.IncomingPort.Position = new Point(-1000, -1000);
+        node.CenterPosition = new Point(500, 300);
+
+        //The port circle sits on the border: its center is the middle of the right (out) and left (in) edge.
+        Assert.Equal(node.Position.X + size.Width, node.OutcomingPort.MiddlePosition.X, 3);
+        Assert.Equal(node.Position.Y + size.Height / 2, node.OutcomingPort.MiddlePosition.Y, 3);
+        Assert.Equal(node.Position.X, node.IncomingPort.MiddlePosition.X, 3);
+        Assert.Equal(node.Position.Y + size.Height / 2, node.IncomingPort.MiddlePosition.Y, 3);
+        //And the anchors used by the links are on the outer edge of that circle.
+        Assert.Equal(node.Position.X + size.Width + 10, node.OutcomingPort.GetShape().GetPointAtAngle(0)!.X, 3);
+        Assert.Equal(node.Position.X - 10, node.IncomingPort.GetShape().GetPointAtAngle(180)!.X, 3);
+        //The top and bottom anchors are the second choice offered by the node.
+        Assert.Equal(node.Position.Y, node.Ports.Single(p => p.Alignment == Blazor.Diagrams.Core.Models.PortAlignment.Top).MiddlePosition.Y, 3);
+        Assert.Equal(node.Position.Y + size.Height, node.Ports.Single(p => p.Alignment == Blazor.Diagrams.Core.Models.PortAlignment.Bottom).MiddlePosition.Y, 3);
+        Assert.True(node.OutcomingPort.Initialized);
+    }
+
+    /// <summary>
+    /// Every connection ends on a port of the node box, whatever the node does afterwards: this is what the
+    /// Workflow Foundation designer does, and what keeps the routes attached when a node is expanded.
+    /// </summary>
+    [Fact]
+    public void LinkEndsFollowTheNodeWhenItMovesOrIsResized() {
+        var diagram = new BlazorDiagram();
+        using var service = new Service(diagram, () => { });
+        var one = new WriteLine { DisplayName = "one" };
+        var two = new Delay { DisplayName = "two" };
+        var chart = new Flowchart();
+        var s2 = new FlowStep { Action = two };
+        chart.Nodes.Add(new FlowStep { Action = one, Next = s2 });
+        chart.Nodes.Add(s2);
+        chart.StartNode = chart.Nodes[0];
+        service.SetActivityBuilder(new ActivityBuilder { Implementation = chart });
+        service.Open(service.Items.First(p => p.Activity == chart).Node);
+
+        var from = service.Items.First(p => ReferenceEquals(p.Element, one)).Node;
+        var to = service.Items.First(p => ReferenceEquals(p.Element, two)).Node;
+        var link = Assert.Single(diagram.Links.OfType<Blazor.Diagrams.Core.Models.LinkModel>());
+
+        //The card of the source grows (inline edit) and both nodes are moved.
+        from.Size = new Blazor.Diagrams.Core.Geometry.Size(480, 260);
+        from.CenterPosition = new Point(300, 200);
+        to.CenterPosition = new Point(1200, 260);
+        link.Refresh();
+
+        var route = link.Route ?? Array.Empty<Point>();
+        var source = link.Source.GetPosition(link, route);
+        var target = link.Target.GetPosition(link, route);
+        Assert.NotNull(source);
+        Assert.NotNull(target);
+        Assert.Equal(from.Position.X + from.Size!.Width + 10, source!.X, 3);
+        Assert.Equal(from.Position.Y + from.Size.Height / 2, source.Y, 3);
+        Assert.Equal(to.Position.X - 10, target!.X, 3);
+        Assert.Equal(to.Position.Y + to.Size!.Height / 2, target.Y, 3);
+    }
+
+    [Fact]
+    public void RedrawingADecisionConnectionDoesNotConsumeTheOtherBranch() {
+        using var service = new Service(new BlazorDiagram(), () => { });
+        var decisionActivity = new FlowDecision();
+        var yes = new WriteLine { DisplayName = "yes" };
+        var no = new WriteLine { DisplayName = "no" };
+        var chart = new Flowchart();
+        chart.Nodes.Add(decisionActivity);
+        chart.Nodes.Add(new FlowStep { Action = yes });
+        chart.Nodes.Add(new FlowStep { Action = no });
+        chart.StartNode = decisionActivity;
+        service.SetActivityBuilder(new ActivityBuilder { Implementation = chart });
+        service.Open(service.Items.First(p => p.Activity == chart).Node);
+
+        var node = (FlowchartNode)service.Items.First(p => p.Activity == chart).Node;
+        var from = service.Items.First(p => ReferenceEquals(p.Element, decisionActivity));
+        var yesPair = service.Items.First(p => ReferenceEquals(p.Element, yes));
+        var noPair = service.Items.First(p => ReferenceEquals(p.Element, no));
+
+        Assert.True(node.TryConnect(from, yesPair));
+        Assert.True(node.TryConnect(from, yesPair));
+
+        Assert.Same(chart.Nodes[1], decisionActivity.True);
+        Assert.Null(decisionActivity.False);
+
+        Assert.True(node.TryConnect(from, noPair));
+        Assert.Same(chart.Nodes[2], decisionActivity.False);
+    }
+
+    [Fact]
+    public void RedrawingASwitchConnectionDoesNotAddASecondCase() {
+        using var service = new Service(new BlazorDiagram(), () => { });
+        var sw = new FlowSwitch<string>();
+        var one = new WriteLine { DisplayName = "one" };
+        var chart = new Flowchart();
+        chart.Nodes.Add(sw);
+        chart.Nodes.Add(new FlowStep { Action = one });
+        chart.StartNode = sw;
+        service.SetActivityBuilder(new ActivityBuilder { Implementation = chart });
+        service.Open(service.Items.First(p => p.Activity == chart).Node);
+
+        var node = (FlowchartNode)service.Items.First(p => p.Activity == chart).Node;
+        var from = service.Items.First(p => ReferenceEquals(p.Element, sw));
+        var to = service.Items.First(p => ReferenceEquals(p.Element, one));
+
+        Assert.True(node.TryConnect(from, to));
+        Assert.Equal("1", Assert.Single(sw.Cases).Key);
+
+        Assert.True(node.TryConnect(from, to));
+        Assert.Equal("1", Assert.Single(sw.Cases).Key);
+    }
+
+    [Fact]
+    public void VisibleViewportAccountsForPanAndZoom() {
+        var diagram = new BlazorDiagram();
+        using var service = new Service(diagram, () => { });
+
+        Assert.Null(service.VisibleViewport);
+
+        diagram.SetContainer(new Rectangle(new Point(0, 0), new Size(800, 600)));
+        diagram.SetZoom(2);
+        diagram.SetPan(-200, -100);
+
+        var view = service.VisibleViewport!.Value;
+
+        Assert.Equal(100, view.Left);
+        Assert.Equal(50, view.Top);
+        Assert.Equal(400, view.Width);
+        Assert.Equal(300, view.Height);
+    }
+
+    [Fact]
+    public void FlowchartChildrenAreLaidOutInsideTheVisibleViewport() {
+        var diagram = new BlazorDiagram();
+        using var service = new Service(diagram, () => { });
+        diagram.SetContainer(new Rectangle(new Point(0, 0), new Size(1400, 900)));
+        //A panned and zoomed view: children must land in the visible area, not at the world origin.
+        diagram.SetPan(-100, -50);
+
+        var chart = new Flowchart();
+        var actions = new List<WriteLine>();
+        foreach (var name in new[] { "one", "two", "three", "four", "five" }) {
+            var action = new WriteLine { DisplayName = name };
+            actions.Add(action);
+            chart.Nodes.Add(new FlowStep { Action = action });
+        }
+        chart.StartNode = chart.Nodes[0];
+        service.SetActivityBuilder(new ActivityBuilder { Implementation = chart });
+        service.Open(service.Items.First(p => p.Activity == chart).Node);
+
+        var view = service.VisibleViewport!.Value;
+        //A FlowStep is shown through its action, so the diagram node is found by the action.
+        var children = actions.Select(a => service.FindPair(a)!.Node).ToList();
+
+        Assert.Equal(5, children.Count);
+        foreach (var child in children.Take(4)) {
+            var size = child.Size!;
+
+            Assert.InRange(child.Position.X, view.Left, view.Left + view.Width - size.Width);
+            Assert.InRange(child.Position.Y, view.Top, view.Top + view.Height - size.Height);
+        }
     }
 
     private sealed class InvalidActivity : CodeActivity {

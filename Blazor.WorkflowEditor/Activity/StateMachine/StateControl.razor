@@ -1,0 +1,60 @@
+@using Blazor.WorkflowEditor.Components
+
+<ActivityControl Node="@Node">
+    <Preview>
+        <div class="we-branches">
+            <ActivityRegion Node="Node" Label="Entry" Value="@Node.EntryName" CanClear="@Node.HasEntry"
+                            Active="@(Node.SelectedSlot == StateNode.Slot.Entry)"
+                            OnActivate="@(() => Node.SelectSlot(StateNode.Slot.Entry))" OnClear="@(() => Node.ClearEntry())" />
+            <ActivityRegion Node="Node" Label="Exit" Value="@Node.ExitName" CanClear="@Node.HasExit"
+                            Active="@(Node.SelectedSlot == StateNode.Slot.Exit)"
+                            OnActivate="@(() => Node.SelectSlot(StateNode.Slot.Exit))" OnClear="@(() => Node.ClearExit())" />
+        </div>
+    </Preview>
+    <Edit>
+        <div class="form-check">
+            <input type="checkbox" class="form-check-input" id="isInitial" checked="@Node.IsInitial"
+                   @onchange="e => Node.IsInitial = (bool)(e.Value ?? false)" @onmousedown:stopPropagation
+                   @onmouseup:stopPropagation @onmousemove:stopPropagation />
+            <label class="form-check-label" for="isInitial">Initial state</label>
+        </div>
+        <div class="form-check mb-3">
+            <input type="checkbox" class="form-check-input" id="isFinal" checked="@Node.IsFinal"
+                   @onchange="e => Node.IsFinal = (bool)(e.Value ?? false)" @onmousedown:stopPropagation
+                   @onmouseup:stopPropagation @onmousemove:stopPropagation />
+            <label class="form-check-label" for="isFinal">Final state</label>
+        </div>
+        @foreach (var transition in Node.Transitions)
+        {
+            var tr = transition;
+            <div class="border rounded p-2 mb-2">
+                <FlowTargetSelect Label="@tr.DisplayName" Container="Node.Container" Value="Node.GetTarget(tr)"
+                                  ValueChanged="v => Node.SetTarget(tr, v)" />
+                <input type="text" class="form-control mb-2" placeholder="Condition (Visual Basic, optional)"
+                       value="@Node.GetCondition(tr)"
+                       @onchange="e => Node.SetCondition(tr, e.Value?.ToString() ?? string.Empty)" @onmousedown:stopPropagation
+                       @onmouseup:stopPropagation @onmousemove:stopPropagation />
+                <div class="we-branches">
+                    <ActivityRegion Node="Node" Label="Trigger" Value="@Node.GetTrigger(tr)" CanClear="@Node.HasTrigger(tr)"
+                                    Active="@(Node.SelectedSlot == StateNode.Slot.Trigger && Node.SelectedTransition == tr)"
+                                    OnActivate="@(() => Node.SelectSlot(StateNode.Slot.Trigger, tr))"
+                                    OnClear="@(() => Node.ClearTrigger(tr))" />
+                    <ActivityRegion Node="Node" Label="Action" Value="@Node.GetAction(tr)" CanClear="@Node.HasAction(tr)"
+                                    Active="@(Node.SelectedSlot == StateNode.Slot.Action && Node.SelectedTransition == tr)"
+                                    OnActivate="@(() => Node.SelectSlot(StateNode.Slot.Action, tr))"
+                                    OnClear="@(() => Node.ClearAction(tr))" />
+                </div>
+                <button type="button" class="btn btn-sm btn-outline-danger mt-2" @onclick="() => Node.RemoveTransition(tr)"
+                        @onmousedown:stopPropagation @onmouseup:stopPropagation @onmousemove:stopPropagation>Remove
+                    transition</button>
+                </div>
+            }
+            <button type="button" class="btn btn-sm btn-outline-primary" @onclick="() => Node.AddTransition()"
+                    @onmousedown:stopPropagation @onmouseup:stopPropagation @onmousemove:stopPropagation>Add transition</button>
+        </Edit>
+    </ActivityControl>
+
+@code {
+    [Parameter]
+    public StateNode Node { get; set; } = default!;
+}

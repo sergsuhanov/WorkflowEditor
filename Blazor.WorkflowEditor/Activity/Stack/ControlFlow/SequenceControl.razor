@@ -1,0 +1,16 @@
+﻿@using Blazor.WorkflowEditor.Components
+
+<ActivityControl Node="@Node">
+    <Preview>
+        <div class="we-branches">
+            <ActivityRegion Node="Node" Label="Activities" Value="@Node.ActivitiesSummary"
+                            Title="Drop an activity here to append it to the sequence" />
+        </div>
+    </Preview>
+</ActivityControl>
+
+@code {
+    [Parameter]
+    public SequenceNode Node { get; set; } = default!;
+}
+

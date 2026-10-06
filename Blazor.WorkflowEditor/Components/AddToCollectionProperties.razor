@@ -1,13 +1,9 @@
-@using Blazor.WorkflowEditor.Activity.Statements
+@using Blazor.WorkflowEditor.Activity.Stack.Collections
 @typeparam T
 
-<VariableSelectControl Label="Collection"
-                       @bind-Value="Node.Collection"
-                       VariableCollection="CollectionVariables">
+<VariableSelectControl Label="Collection" @bind-Value="Node.Collection" VariableCollection="CollectionVariables">
 </VariableSelectControl>
-<VariableSelectControl Label="Item"
-                       @bind-Value="Node.Item"
-                       VariableCollection="ItemVariables">
+<VariableSelectControl Label="Item" @bind-Value="Node.Item" VariableCollection="ItemVariables">
 </VariableSelectControl>
 
 @code {

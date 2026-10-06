@@ -8,15 +8,106 @@
     display: flex;
     flex-direction: column;
     height: 100%;
+    min-width: 0;
+}
+
+/* --- Panel chrome: toolbox, properties and variables share one look (step 9) --- */
+.we-panel {
+    flex: none;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    margin: 2px;
+    background-color: #fff;
+    border: 1px solid #ced4da;
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+/* The whole header toggles the panel: same interaction for every panel. */
+.we-panel-header {
+    flex: none;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.35rem 0.5rem;
+    background-color: #f1f3f5;
+    border-bottom: 1px solid #ced4da;
+    color: #343a40;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    user-select: none;
+}
+
+.we-panel-header:hover {
+    background-color: #e9ecef;
+}
+
+.we-panel-header:focus-visible,
+.we-panel-rail:focus-visible {
+    outline: 2px solid #0d6efd;
+    outline-offset: -2px;
+}
+
+.we-panel-title {
+    flex: 1 1 auto;
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.we-panel-caret {
+    flex: none;
+    opacity: 0.7;
+}
+
+.we-panel-actions {
+    flex: none;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.we-panel-action {
+    padding: 0.05rem 0.3rem;
+    line-height: 1.2;
+}
+
+.we-panel-body {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: auto;
+    padding: 0.5rem;
+}
+
+/* A collapsed panel shrinks to a narrow strip; clicking anywhere on it expands the panel again. */
+.we-panel-rail {
+    flex: none;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    width: 2.25rem;
+    padding: 0.35rem 0.25rem;
+    margin: 2px;
+    background-color: #f1f3f5;
+    border: 1px solid #ced4da;
+    border-radius: 6px;
+    color: #343a40;
+    cursor: pointer;
+}
+
+.we-panel-rail:hover {
+    background-color: #e9ecef;
 }
 
 .we-properties-panel {
-    flex: 0 0 280px;
-    overflow: auto;
-    margin: 2px;
+    width: 280px;
+}
+
+.we-properties-panel .we-panel-body {
     padding: 0.75rem;
-    border: 1px solid #ced4da;
-    background-color: #fff;
 }
 
 .we-activity-path {
@@ -26,21 +117,34 @@
 
 .we-diagram {
     flex: auto;
+    min-height: 0;
+    overflow: hidden;
     background-color: darkgray;
     margin: 2px;
+    /*Anchors the floating zoom controls to the diagram area.*/
+    position: relative;
 }
 
 .we-custom-node {
     width: 250px;
-    height: 114px;
+    /*No min-height: the measured box must be exactly the card, because the port markers (and therefore the
+      link anchors) are placed on the box borders.*/
 }
 
-.we-custom-node-extended {
+/*Expanded node: same base class as the collapsed one so port and card rules apply.*/
+.we-custom-node-expanded {
     width: 480px;
+    min-height: 0;
 }
 
 .we-custom-node .card {
     border: 3px solid transparent;
+}
+
+.we-custom-node .we-node-icon {
+    float: left;
+    margin-right: 6px;
+    opacity: 0.75;
 }
 
 .we-custom-node .isSelected {
@@ -48,156 +152,228 @@
     z-index: 2147483646;
 }
 
-    .we-custom-node .isSelected .port {
-        z-index: 2147483647;
-    }
+/*The library scopes its port styles to .default-node; our nodes use .we-custom-node,
+  so ports need their own rules to be visible and draggable.*/
+.we-custom-node .card {
+    overflow: visible;
+}
 
-.we-custom-node .port {
+.we-custom-node .diagram-port {
     position: absolute;
     width: 20px;
     height: 20px;
+    margin: -10px;
     border-radius: 50%;
     background-color: #f5f5f5;
-    border: 1px solid #d4d4d4;
-    cursor: pointer;
-    visibility: visible;
-    margin: -10px;
+    border: 1px solid #adb5bd;
+    cursor: crosshair;
+    z-index: 1;
+    /*Hidden until the node is hovered/selected: keeps the diagram clean.*/
+    visibility: hidden;
 }
 
-    .we-custom-node .port.locked {
-        visibility: hidden;
-    }
+.we-custom-node .diagram-port:hover,
+.we-custom-node .diagram-port.has-links {
+    background-color: #0d6efd;
+    border-color: #0d6efd;
+}
 
-    .we-custom-node .port.bottom {
-        bottom: 0px;
-        left: 50%;
-    }
+.we-custom-node .diagram-port.bottom {
+    bottom: 0;
+    left: 50%;
+}
 
-    .we-custom-node .port.top {
-        top: 0px;
-        left: 50%;
-    }
+.we-custom-node .diagram-port.bottomleft {
+    bottom: 0;
+    left: 0;
+}
 
-    .we-custom-node .port.left {
-        left: 0px;
-        top: 50%;
-    }
+.we-custom-node .diagram-port.bottomright {
+    bottom: 0;
+    right: 0;
+}
 
-    .we-custom-node .port.right {
-        right: 0px;
-        top: 50%;
-    }
+.we-custom-node .diagram-port.top {
+    top: 0;
+    left: 50%;
+}
+
+.we-custom-node .diagram-port.topleft {
+    top: 0;
+    left: 0;
+}
+
+.we-custom-node .diagram-port.topright {
+    top: 0;
+    right: 0;
+}
+
+.we-custom-node .diagram-port.left {
+    left: 0;
+    top: 50%;
+}
+
+.we-custom-node .diagram-port.right {
+    right: 0;
+    top: 50%;
+}
+
+.we-custom-node .isSelected .diagram-port {
+    z-index: 2147483647;
+}
+
+/*Ports appear when the node is hovered, selected or expanded (keeps the diagram clean).*/
+.we-custom-node:hover .diagram-port,
+.we-custom-node .card.isSelected .diagram-port,
+.we-custom-node .card.isExpanded .diagram-port {
+    visibility: visible;
+}
+
+/*Locked ports stay hidden whatever the node state (declared last so it wins).*/
+.we-custom-node .diagram-port.locked {
+    visibility: hidden;
+}
 
 .we-autocomplete {
     position: relative;
 }
 
-    .we-autocomplete .options {
-        position: absolute;
-        top: 40px;
-        left: 0;
-        background: white;
-        width: 100%;
-        padding: 0;
-        z-index: 10;
-        border: 1px solid #ced4da;
-        border-radius: 0.5rem;
-        box-shadow: 0 30px 25px 8px rgba(0, 0, 0, 0.1);
-        max-height: 500px;
-        overflow: auto;
-    }
+.we-autocomplete .options {
+    position: absolute;
+    top: 40px;
+    left: 0;
+    background: white;
+    width: 100%;
+    padding: 0;
+    z-index: 10;
+    border: 1px solid #ced4da;
+    border-radius: 0.5rem;
+    box-shadow: 0 30px 25px 8px rgba(0, 0, 0, 0.1);
+    max-height: 500px;
+    overflow: auto;
+}
 
-    .we-autocomplete .option {
-        display: block;
-        padding: 0.25rem;
-    }
+.we-autocomplete .option {
+    display: block;
+    padding: 0.25rem;
+}
 
-    .we-autocomplete .option-filter {
-        display: block;
-        padding: 0.25rem;
-    }
+.we-autocomplete .option-filter {
+    display: block;
+    padding: 0.25rem;
+}
 
-    .we-autocomplete .option .option-text {
-        padding: 0.25rem 0.5rem;
-    }
+.we-autocomplete .option .option-text {
+    padding: 0.25rem 0.5rem;
+}
 
-    .we-autocomplete .option:hover {
-        background: #1E90FF;
-        color: #fff;
-    }
+.we-autocomplete .option:hover {
+    background: #1E90FF;
+    color: #fff;
+}
 
-    .we-autocomplete .option.disabled {
-        background-color: lightgrey;
-        cursor: not-allowed;
-    }
+.we-autocomplete .option.disabled {
+    background-color: lightgrey;
+    cursor: not-allowed;
+}
 
-        .we-autocomplete .option.disabled:hover {
-            background: lightgrey;
-            color: var(--bs-body);
-        }
+.we-autocomplete .option.disabled:hover {
+    background: lightgrey;
+    color: var(--bs-body);
+}
 
 
 /*Toolbox*/
 .we-toolbox {
-    width: 400px;
-    background-color: bisque;
-    margin: 2px;
-    border: 2px gray solid;
-    padding: 2px;
+    width: 320px;
 }
-.we-toolbox-collapsed {
-    width: 36px;
-    background-color: bisque;
+
+.we-toolbox .we-toolbox-search {
+    display: flex;
+    margin: 4px;
 }
-    .we-toolbox .we-toolbox-table_header {
-        cursor:pointer;
-        background-color: deepskyblue;
-        padding: 0px;
-        display: flex;
-        align-items: center;
-    }
 
-    .we-toolbox .we-toolbox-search {
-        display: flex;
-        margin: 4px;
-    }
+.we-toolbox .groupItem+.groupItem {
+    margin-top: 0.35rem;
+}
 
-    .we-toolbox .groupItem {
-    }
+.we-toolbox .groupItem .groupName {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.2rem 0.35rem;
+    background-color: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.8rem;
+}
 
-        .we-toolbox .groupItem .groupName {
-            cursor: pointer;
-            background-color: lightgray;
-        }
+.we-toolbox .groupItem .groupName:hover {
+    background-color: #e9ecef;
+}
 
-        .we-toolbox .groupItem .activityItem {
-            cursor: move;
-            padding-left: 12px;
-        }
+.we-toolbox .groupItem .activityItem {
+    cursor: grab;
+    padding: 0.15rem 0.35rem 0.15rem 0.9rem;
+    border-radius: 4px;
+}
 
-        .we-toolbox .groupItem .activityItemWithoutIcon {
-            cursor: move;
-            padding-left: 30px;
-        }
+.we-toolbox .groupItem .activityItem:hover {
+    background-color: #e7f5ff;
+}
+
+.we-toolbox .groupItem .activityItem>.oi {
+    margin-right: 6px;
+}
+
+.we-toolbox .groupItem .activityItemWithoutIcon {
+    cursor: grab;
+    padding: 0.15rem 0.35rem 0.15rem 1.9rem;
+    border-radius: 4px;
+}
+
+.we-toolbox .groupItem .activityItemWithoutIcon:hover {
+    background-color: #e7f5ff;
+}
 
 
 /*Variables*/
-.we-variables-table {
-    max-height: 30vh;
-    overflow: auto;
-    background-color: aliceblue;
-    margin: 2px;
-    border: 2px gray solid;
-    padding: 2px;
+.we-variables-panel {
+    max-height: 70vh;
+    overflow: hidden;
 }
 
-    .we-variables-table .we-variables-table_header {
-        background-color: deepskyblue;
-        padding: 0px;
-        display:flex;
-        justify-content:space-between;
-        align-items:center;
-    }
+/*Collapsed it keeps only its header row, like the other panels keep their strip.*/
+.we-variables-panel.is-collapsed .we-panel-header {
+    border-bottom-color: transparent;
+}
+
+.we-variable-group+.we-variable-group {
+    margin-top: 0.5rem;
+}
+
+.we-variable-group-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.15rem 0.25rem;
+    background-color: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.8rem;
+}
+
+.we-variable-group-header:hover {
+    background-color: #e9ecef;
+}
+
+.we-variable-group-header .we-panel-title {
+    font-weight: 600;
+}
 
 .we-options {
     width: 100%;
@@ -209,13 +385,356 @@
     /* padding-left: 2rem; */
 }
 
-    .we-vtc-options .option .option-text {
-        padding: 0.25rem 0.5rem;
-    }
+.we-vtc-options .option .option-text {
+    padding: 0.25rem 0.5rem;
+}
 
 
 .btn:focus,
 .btn:active {
     outline: none !important;
     box-shadow: none;
+}
+
+/*Resizable panels*/
+.we-splitter {
+    flex: none;
+    background-color: transparent;
+    touch-action: none;
+}
+
+.we-splitter:hover,
+.we-splitter:focus {
+    background-color: rgba(13, 110, 253, 0.35);
+    outline: none;
+}
+
+.we-splitter.vertical {
+    width: 6px;
+    cursor: col-resize;
+}
+
+.we-splitter.horizontal {
+    height: 6px;
+    cursor: row-resize;
+}
+
+.we-splitter-overlay {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 2147483647;
+    touch-action: none;
+    user-select: none;
+}
+
+.we-splitter-overlay.vertical {
+    cursor: col-resize;
+}
+
+.we-splitter-overlay.horizontal {
+    cursor: row-resize;
+}
+
+/*Container region designer (drop targets on stack container nodes)*/
+.we-branches {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    margin-top: 0.25rem;
+}
+
+.we-branch {
+    flex: 1 1 0;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0 0.3rem;
+    border: 1px dashed #adb5bd;
+    border-radius: 0.25rem;
+    background-color: rgba(0, 0, 0, 0.02);
+    font-size: 0.7rem;
+    line-height: 1.6;
+    cursor: pointer;
+}
+
+.we-branch.active {
+    border-style: solid;
+    border-color: #0d6efd;
+    background-color: rgba(13, 110, 253, 0.08);
+}
+
+.we-branch-static {
+    cursor: default;
+    border-style: solid;
+    border-color: #dee2e6;
+}
+
+.we-branch .we-branch-label {
+    flex: none;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: #495057;
+}
+
+/*Read-only summary rows of graph containers (flowchart, state machine).*/
+.we-graph-summary {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+    font-size: 0.7rem;
+}
+
+.we-graph-summary-row {
+    display: flex;
+    align-items: baseline;
+    gap: 0.35rem;
+    min-width: 0;
+}
+
+.we-graph-summary-label {
+    flex: none;
+    width: 3.1rem;
+    text-transform: uppercase;
+    font-weight: 600;
+    color: #6c757d;
+}
+
+.we-graph-summary-value {
+    flex: 1 1 auto;
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: #343a40;
+}
+
+.we-branch .we-branch-value {
+    flex: 1 1 auto;
+    min-width: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.we-branch .we-branch-clear {
+    flex: none;
+    padding: 0 0.15rem;
+    line-height: 1;
+}
+
+.we-node-wide {
+    width: 340px;
+}
+
+/* --- Diagram widgets: grid, minimap and zoom controls (step 8) --- */
+/* Widgets are rendered above the diagram layers; the grid must not swallow pointer events. */
+.we-diagram .grid {
+    pointer-events: none;
+    /*Much softer than the library default (rgb(211,211,211) lines), which was too dominant.*/
+    background-image: linear-gradient(rgb(0 0 0 / 4%) 1px, transparent 1px),
+        linear-gradient(90deg, rgb(0 0 0 / 4%) 1px, transparent 1px) !important;
+}
+
+.we-navigator {
+    position: absolute;
+    right: 10px;
+    bottom: 10px;
+    z-index: 4;
+    background-color: #fff;
+    border: 1px solid #ced4da;
+    border-radius: 6px;
+    box-shadow: 0 2px 8px rgb(0 0 0 / 15%);
+    pointer-events: none;
+}
+
+.we-zoom-controls {
+    position: absolute;
+    left: 10px;
+    bottom: 10px;
+    z-index: 5;
+    display: flex;
+    align-items: stretch;
+    gap: 2px;
+    padding: 2px;
+    border: 1px solid #ced4da;
+    border-radius: 6px;
+    background-color: #fff;
+    box-shadow: 0 2px 8px rgb(0 0 0 / 15%);
+}
+
+.we-zoom-controls .btn {
+    padding: 0.15rem 0.45rem;
+    line-height: 1.2;
+    border: none;
+}
+
+.we-zoom-controls .we-zoom-value {
+    min-width: 3.75rem;
+    font-variant-numeric: tabular-nums;
+}
+
+/*The auto-complete list is absolutely positioned and could cover the dialog footer, which made the
+  Apply/Cancel buttons unclickable while a drop-down was open.*/
+.modal-footer {
+    position: relative;
+    z-index: 20;
+}
+
+/* --- Node badges, families and validation state (step 8) --- */
+.we-custom-node .we-node-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    margin-left: 0.35rem;
+    padding: 0.05rem 0.4rem;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    border-radius: 999px;
+    background-color: #e7f5ff;
+    color: #0b7285;
+    white-space: nowrap;
+}
+
+.we-custom-node .we-node-error {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.2rem;
+    margin-left: 0.35rem;
+    padding: 0.05rem 0.4rem;
+    font-size: 0.72rem;
+    font-weight: 600;
+    border-radius: 999px;
+    background-color: #f8d7da;
+    color: #842029;
+}
+
+/* Family accent: coloured stripe on the left edge plus a tinted header. */
+.we-custom-node.we-family-stack .card {
+    border-left-color: #0d6efd;
+}
+
+.we-custom-node.we-family-flow .card {
+    border-left-color: #6f42c1;
+}
+
+.we-custom-node.we-family-state .card {
+    border-left-color: #198754;
+}
+
+.we-family-flow .card-header {
+    background-color: rgb(111 66 193 / 8%);
+}
+
+.we-family-state .card-header {
+    background-color: rgb(25 135 84 / 8%);
+}
+
+/* Start element and validation state of the node. */
+.we-custom-node.we-node-is-start .card {
+    box-shadow: 0 0 0 2px rgb(13 110 253 / 35%);
+}
+
+.we-custom-node.we-node-has-errors .card {
+    box-shadow: 0 0 0 2px rgb(220 53 69 / 70%);
+}
+
+.we-field-errors {
+    margin: 0 0 0.75rem;
+    padding-left: 1.1rem;
+    color: #b02a37;
+    font-size: 0.8rem;
+}
+
+/* --- Compact forms: node cards and panels use denser fields (step 10) --- */
+.we-custom-node .card-header {
+    padding: 0.25rem 0.4rem;
+}
+
+.we-custom-node .card-body {
+    padding: 0.35rem 0.4rem;
+}
+
+.we-custom-node .card-body .mb-3,
+.we-panel-body .mb-3 {
+    margin-bottom: 0.4rem !important;
+}
+
+.we-custom-node .form-label,
+.we-panel-body .form-label {
+    margin-bottom: 0.1rem;
+    font-size: 0.72rem;
+    color: #6c757d;
+}
+
+.we-custom-node .form-control,
+.we-custom-node .form-select,
+.we-panel-body .form-control,
+.we-panel-body .form-select {
+    min-height: 1.7rem;
+    padding: 0.15rem 0.4rem;
+    font-size: 0.8rem;
+    line-height: 1.3;
+}
+
+.we-custom-node textarea.form-control,
+.we-panel-body textarea.form-control {
+    min-height: 3rem;
+}
+
+.we-custom-node .invalid-feedback,
+.we-panel-body .invalid-feedback,
+.we-custom-node .form-text,
+.we-panel-body .form-text {
+    font-size: 0.72rem;
+}
+
+.we-custom-node .btn,
+.we-panel-body .btn {
+    padding: 0.1rem 0.4rem;
+    font-size: 0.78rem;
+}
+
+.we-custom-node h5.card-title {
+    margin-bottom: 0.15rem;
+    font-size: 0.85rem;
+}
+
+.we-panel-body .btn.we-panel-action {
+    padding: 0.05rem 0.3rem;
+}
+
+/* --- Designer notes on node cards (step 11) --- */
+.we-custom-node .we-note-active {
+    color: #f59f00 !important;
+}
+
+.we-custom-node .we-note-preview {
+    margin-top: 0.15rem;
+    font-size: 0.7rem;
+    font-style: italic;
+    color: #6c757d;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.we-custom-node .we-note-editor {
+    margin-top: 0.35rem;
+}
+
+.we-custom-node .we-note-input {
+    min-height: 3rem;
+    font-size: 0.75rem;
+}
+
+.we-custom-node .we-note-actions {
+    display: flex;
+    gap: 0.25rem;
+    margin-top: 0.2rem;
 }

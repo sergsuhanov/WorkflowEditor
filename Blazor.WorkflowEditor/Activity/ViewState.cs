@@ -38,6 +38,13 @@ public static class Designer {
     public static void SetCenterY(object target, int? value) => setValue(target, CenterYProperty, value);
     #endregion
 
+    #region Note
+    /// <summary>Free-form designer note; stored in XAML next to the activity (like the WF annotation).</summary>
+    public static readonly AttachableMemberIdentifier NoteProperty = new(typeof(Designer), "Note");
+    public static string? GetNote(object target) => getValue<string>(target, NoteProperty);
+    public static void SetNote(object target, string? value) => setValue(target, NoteProperty, value);
+    #endregion
+
 }
 
 public enum PortAlignment {

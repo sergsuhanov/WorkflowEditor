@@ -1,98 +1,135 @@
 @using Blazor.WorkflowEditor.Activity
-@using Blazor.WorkflowEditor.Activity.Statements
+@using Blazor.WorkflowEditor.Activity.Stack.ControlFlow
+@using Blazor.WorkflowEditor.Activity.Stack.Primitives
+@using Blazor.WorkflowEditor.Activity.Stack.Collections
 
-<aside class="we-properties-panel" aria-label="Activity properties">
-    <h2 class="h6">Activity properties</h2>
-
-    @if (selectedItems.Count == 0)
-    {
-        <p class="text-muted">Select an activity on the diagram to view its properties.</p>
-    }
-    else if (selectedItems.Count > 1)
-    {
-        <p class="text-muted">Select a single activity to edit its properties.</p>
-    }
-    else
-    {
-        var node = selectedItems[0];
-        <p class="text-muted">@activityTypeName(node)</p>
-        <div class="mb-3">
-            <label for="we-activity-display-name" class="form-label">Display name</label>
-            <input id="we-activity-display-name" class="form-control" @bind="node.DisplayName" />
+@if (Collapsed)
+{
+    <aside class="we-panel-rail" role="button" tabindex="0" aria-expanded="false" aria-label="Show properties"
+           title="Show properties" @onclick="toggleCollapsed" @onkeydown="onHeaderKeyDown" @onkeydown:preventDefault="true">
+        <span class="oi oi-chevron-left we-panel-caret" aria-hidden="true"></span>
+    </aside>
+}
+else
+{
+    <aside class="we-panel we-properties-panel" style="@($"width:{Width}px")" aria-label="Activity properties">
+        <div class="we-panel-header" role="button" tabindex="0" aria-expanded="true" aria-label="Hide properties"
+             title="Collapse the properties panel" @onclick="toggleCollapsed" @onkeydown="onHeaderKeyDown"
+             @onkeydown:preventDefault="true">
+            <span class="oi oi-chevron-right we-panel-caret" aria-hidden="true"></span>
+            <span class="we-panel-title">Activity properties</span>
         </div>
 
-        @if (node is AssignNode assign)
-        {
-            <div class="mb-3">
-                <label for="we-assign-destination" class="form-label">Destination</label>
-                <input id="we-assign-destination" class="form-control" @bind="assign.Destination" />
-            </div>
-            <div class="mb-3">
-                <label for="we-assign-source" class="form-label">Source</label>
-                <input id="we-assign-source" class="form-control" @bind="assign.Source" />
-            </div>
-        }
-        else if (node is WriteLineNode writeLine)
-        {
-            <div class="mb-3">
-                <label for="we-write-line-text" class="form-label">Text</label>
-                <input id="we-write-line-text" class="form-control" @bind="writeLine.Text" />
-            </div>
-        }
-        else if (node is DelayNode delay)
-        {
-            <div class="mb-3">
-                <label for="we-delay-duration" class="form-label">Duration</label>
-                <input id="we-delay-duration" class="form-control @(invalidDuration ? "is-invalid" : string.Empty)"
-                       value="@durationDraft" @oninput="eventArgs => updateDuration(delay, eventArgs)"
-                       placeholder="00:00:01" aria-describedby="we-delay-duration-error" />
-                @if (invalidDuration)
+        <div class="we-panel-body">
+            @if (selectedItems.Count == 0)
+            {
+                <p class="text-muted">Select an activity on the diagram to view its properties.</p>
+            }
+            else if (selectedItems.Count > 1)
+            {
+                <p class="text-muted">Select a single activity to edit its properties.</p>
+            }
+            else
+            {
+                var node = selectedItems[0];
+                <p class="text-muted">@activityTypeName(node)</p>
+                <div class="mb-3">
+                    <label for="we-activity-display-name" class="form-label">Display name</label>
+                    <input id="we-activity-display-name" class="form-control" @bind="node.DisplayName" />
+                </div>
+
+                @if (node is AssignNode assign)
                 {
-                    <div id="we-delay-duration-error" class="invalid-feedback">Enter a valid duration, for example 00:00:01.</div>
+                    <div class="mb-3">
+                        <label for="we-assign-destination" class="form-label">Destination</label>
+                        <input id="we-assign-destination" class="form-control" @bind="assign.Destination" />
+                    </div>
+                    <div class="mb-3">
+                        <label for="we-assign-source" class="form-label">Source</label>
+                        <input id="we-assign-source" class="form-control" @bind="assign.Source" />
+                    </div>
                 }
-            </div>
-        }
-        else if (node is IfNode conditional)
-        {
-            <div class="mb-3">
-                <label for="we-if-condition" class="form-label">Condition (Visual Basic expression)</label>
-                <input id="we-if-condition" class="form-control" @bind="conditional.Condition" />
-            </div>
-            <div class="mb-3">
-                <label for="we-if-branch" class="form-label">Branch for new child</label>
-                <select id="we-if-branch" class="form-select" @bind="conditional.SelectedBranch">
-                    <option value="@IfBranch.Then">Then</option>
-                    <option value="@IfBranch.Else">Else</option>
-                </select>
-            </div>
-        }
-        else if (node is WhileNode loop)
-        {
-            <div class="mb-3">
-                <label for="we-while-condition" class="form-label">Condition (Visual Basic expression)</label>
-                <input id="we-while-condition" class="form-control" @bind="loop.Condition" />
-            </div>
-            <p class="form-text">Add the loop body while this activity is open.</p>
-        }
-        else if (node is SequenceNode sequence)
-        {
-            <p class="form-text">Activities in this sequence run in order. Open the activity to manage its children.</p>
-        }
-        else if (isAddToCollectionNode(node))
-        {
-            <DynamicComponent Type="@getCollectionEditorType(node)"
-                              Parameters="@getCollectionEditorParameters(node)" />
-        }
-        else
-        {
-            <p class="text-muted">No additional property editor is available for this activity yet.</p>
-        }
-    }
-</aside>
+                else if (node is WriteLineNode writeLine)
+                {
+                    <div class="mb-3">
+                        <label for="we-write-line-text" class="form-label">Text</label>
+                        <input id="we-write-line-text" class="form-control" @bind="writeLine.Text" />
+                    </div>
+                }
+                else if (node is DelayNode delay)
+                {
+                    <div class="mb-3">
+                        <label for="we-delay-duration" class="form-label">Duration</label>
+                        <input id="we-delay-duration" class="form-control @(invalidDuration ? "is-invalid" : string.Empty)"
+                               value="@durationDraft" @oninput="eventArgs => updateDuration(delay, eventArgs)" placeholder="00:00:01"
+                               aria-describedby="we-delay-duration-error" />
+                        @if (invalidDuration)
+                        {
+                            <div id="we-delay-duration-error" class="invalid-feedback">Enter a valid duration, for example 00:00:01.
+                            </div>
+                        }
+                    </div>
+                }
+                else if (node is IfNode conditional)
+                {
+                    <div class="mb-3">
+                        <label for="we-if-condition" class="form-label">Condition (Visual Basic expression)</label>
+                        <input id="we-if-condition" class="form-control" @bind="conditional.Condition" />
+                    </div>
+                    <div class="mb-3">
+                        <label for="we-if-branch" class="form-label">Branch for new child</label>
+                        <select id="we-if-branch" class="form-select" @bind="conditional.SelectedBranch">
+                            <option value="@IfBranch.Then">Then</option>
+                            <option value="@IfBranch.Else">Else</option>
+                        </select>
+                    </div>
+                }
+                else if (node is WhileNode loop)
+                {
+                    <div class="mb-3">
+                        <label for="we-while-condition" class="form-label">Condition (Visual Basic expression)</label>
+                        <input id="we-while-condition" class="form-control" @bind="loop.Condition" />
+                    </div>
+                    <p class="form-text">Add the loop body while this activity is open.</p>
+                }
+                else if (node is SequenceNode sequence)
+                {
+                    <p class="form-text">Activities in this sequence run in order. Open the activity to manage its children.</p>
+                }
+                else if (isAddToCollectionNode(node))
+                {
+                    <DynamicComponent Type="@getCollectionEditorType(node)" Parameters="@getCollectionEditorParameters(node)" />
+                }
+                else
+                {
+                    <p class="text-muted">No additional property editor is available for this activity yet.</p>
+                }
+            }
+
+        </div>
+    </aside>
+}
 
 @code {
     [Parameter, EditorRequired]
     public Service Service { get; set; } = default!;
+
+    /// <summary>Panel width in pixels, controlled by the editor layout splitter.</summary>
+    [Parameter]
+    public int Width { get; set; } = 280;
+
+    /// <summary>Whether the panel is collapsed to its thin bar (controlled by the editor for compact mode).</summary>
+    [Parameter]
+    public bool Collapsed { get; set; }
+
+    [Parameter]
+    public EventCallback<bool> CollapsedChanged { get; set; }
+
+    private Task toggleCollapsed() => CollapsedChanged.InvokeAsync(!Collapsed);
+
+    /// <summary>Enter/Space toggle the panel, exactly like a click on the header.</summary>
+    private Task onHeaderKeyDown(KeyboardEventArgs e) =>
+        e.Key is "Enter" or " " or "Spacebar" ? toggleCollapsed() : Task.CompletedTask;
 
     private DelayNode? durationNode;
     private string durationDraft = string.Empty;

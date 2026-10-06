@@ -47,7 +47,14 @@ public partial class ModalService : IModalService {
         var modal = (modalObj.ObjRef as DynamicComponent)?.Instance as TModal;
         if (modal != null && (modal is IModal) == true) {
             if (modal is IModal imodal) {
-                await imodal.Show();
+                try {
+                    await imodal.Show();
+                } finally {
+                    //The dialog is closed: unmount it, otherwise every dialog ever shown keeps its whole
+                    //component tree (and the parameter dictionary) alive for the rest of the session.
+                    Modals.Remove(modalObj);
+                    StateHasChanged();
+                }
             }
         } else {
             throw new SystemException("Modal instance is null");

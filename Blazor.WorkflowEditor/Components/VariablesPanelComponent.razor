@@ -3,177 +3,189 @@
 @using Blazor.WorkflowEditor.Activity;
 @implements IDisposable
 
-<div class="we-variables-table">
-  <table class="table-sm caption-top w-100">
+<div class="we-panel we-variables-panel @(_collapsed ? "is-collapsed" : null)"
+     style="@(_collapsed ? null : $"height:{Height}px")">
 
-    @*header*@
-    <div class="we-variables-table_header" @onclick="()=>_collapsed=!_collapsed">
-            <div>Variables</div>
-            <div>
-                <button type="button" class="btn">
-                    <span class="oi oi-plus text-primary" aria-hidden="true" @onclick="()=>addVariable()"></span>
-                </button>
-                
-                <button type="button" class="btn" @onclick="()=>_collapsed=!_collapsed">
-                    <span class="oi @(_collapsed?"oi-caret-top":"oi-caret-bottom") text-primary" aria-hidden="true"></span>
-                </button>
-            </div>
-        </div>
-    
-        <tbody class="@(_collapsed?"collapse":"")">
+  <div class="we-panel-header" role="button" tabindex="0" aria-expanded="@(_collapsed ? "false" : "true")"
+       aria-label="Variables" title="@(_collapsed ? "Expand the variables panel" : "Collapse the variables panel")"
+       @onclick="toggleCollapsed" @onkeydown="onHeaderKeyDown" @onkeydown:preventDefault="true">
+    <span class="oi @(_collapsed ? "oi-caret-top" : "oi-caret-bottom") we-panel-caret" aria-hidden="true"></span>
+    <span class="we-panel-title">Variables</span>
+    <span class="we-panel-actions">
+      @*The add button must not toggle the panel, so it stops the click from bubbling to the header.*@
+      <button type="button" class="btn we-panel-action" title="Add a variable" aria-label="Add a variable"
+              @onclick="() => addVariable()" @onclick:stopPropagation="true">
+        <span class="oi oi-plus text-primary" aria-hidden="true"></span>
+      </button>
+    </span>
+  </div>
+
+  @if (!_collapsed)
+  {
+    <div class="we-panel-body">
       @foreach (var item in _groupedVariables)
       {
-        <tr>
+        <div class="we-variable-group" @key="item">
+          <div class="we-variable-group-header" role="button" tabindex="0"
+               aria-expanded="@(getCollapsedGroup(item) ? "false" : "true")"
+               title="@(getCollapsedGroup(item) ? "Show variables of this activity" : "Hide variables of this activity")"
+               @onclick="() => reversValueCollapsedGroup(item)">
+            <span class="oi @(getCollapsedGroup(item) ? "oi-caret-right" : "oi-caret-bottom") we-panel-caret"
+                  aria-hidden="true"></span>
+            <span class="we-panel-title">@(item.Activity?.DisplayName ?? "...")</span>
+          </div>
 
-          <td>
-            <table @key="item" class="table-sm caption-top w-100">
-              <caption class="clear-fix">
-                <div>
-
-                    @*show group name*@
-                    <span> @(item.Activity?.DisplayName ?? "...")</span>
-
-                    @*show collapce/show icon*@
-                    <div class="float-end">
-                        <button type="button" class="btn" @onclick="()=>reversValueCollapsedGroup(item)">
-                            <span class="oi text-primary @(getCollapsedGroup(item)?"oi-caret-top":"oi-caret-bottom")"
-                                style="vertical-align: text-top; cursor: pointer;" aria-hidden="true">
-                            </span>
-                        </button>
-                    </div>
-
-                </div>
-              </caption>
-
-              @if (!getCollapsedGroup(item))
-              {
-                <thead>
+          @if (!getCollapsedGroup(item))
+          {
+            <table class="table table-sm mb-2">
+              <thead>
+                <tr>
+                  <th scope="col"></th>
+                  <th scope="col">Name</th>
+                  <th scope="col">Type</th>
+                  <th scope="col">Default value</th>
+                  <th scope="col"></th>
+                </tr>
+              </thead>
+              <tbody>
+                @foreach (var variable in item.Variables)
+                {
                   <tr>
-                    <th scope="col"></th>
-                    <th scope="col">Name</th>
-                    <th scope="col">Type</th>
-                    <th scope="col">Default value</th>
-                    <th scope="col"></th>
+                    <td style="width: 20px;"></td>
+                    <td>@variable.Name</td>
+                    <td>@variable.Type</td>
+                    <td>@variable.DefaultValue</td>
+                    <td>
+                      <div class="float-end">
+                        <button type="button" class="btn we-panel-action" title="Edit the variable"
+                                aria-label="@($"Edit variable {variable.Name}")" @onclick="@(() => editVariable(variable))">
+                          <span class="oi oi-pencil text-primary" aria-hidden="true"></span>
+                        </button>
+                        <button type="button" class="btn we-panel-action" title="Delete the variable"
+                                aria-label="@($"Delete variable {variable.Name}")" @onclick="() => removeVariable(variable)">
+                          <span class="oi oi-x text-danger" aria-hidden="true"></span>
+                        </button>
+                      </div>
+                    </td>
                   </tr>
-                </thead>
-                <tbody>
-                  @foreach (var variable in item.Variables)
-                  {
-                    <tr>
-                      <td style="width: 20px;"></td>
-                      <td>@variable.Name</td>
-                      <td>@variable.Type</td>
-                      <td>@variable.DefaultValue</td>
-                      <td>
-                        <div class="float-end">
-                          <button type="button" class="btn" @onclick="@(()=>editVariable(variable))">
-                            <span class="oi oi-pencil text-primary" aria-hidden="true"></span>
-                          </button>
-                          <button type="button" class="btn" @onclick="()=>removeVariable(variable)">
-                            <span class="oi oi-x text-danger" aria-hidden="true"></span>
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  }
-                </tbody>
-              }
+                }
+              </tbody>
             </table>
-          </td>
-        </tr>
+          }
+        </div>
       }
-    </tbody>
-    
-    </table>
+    </div>
+  }
 </div>
 
 
 @code {
 
-    public class GroupedActivityVariable
-    {
-        public System.Activities.Activity? Activity { get; set; }
-        public List<Blazor.WorkflowEditor.Variable> Variables { get; set; } = new();
-    }
+  public class GroupedActivityVariable
+  {
+    public System.Activities.Activity? Activity { get; set; }
+    public List<Blazor.WorkflowEditor.Variable> Variables { get; set; } = new();
+  }
 
-    private Dictionary<string, bool> _collapsedGroup = new();
-    private bool _collapsed { get; set; } = false;
+  private Dictionary<string, bool> _collapsedGroup = new();
+  private bool _collapsed { get; set; } = false;
 
-    private List<GroupedActivityVariable> _groupedVariables
+  private List<GroupedActivityVariable> _groupedVariables
+  {
+    get
     {
-        get
+      List<GroupedActivityVariable> result = new List<GroupedActivityVariable>();
+      if (Service == null) return result;
+      foreach (var item in Service.Variables)
+      {
+        var group = result.FirstOrDefault(p => p.Activity == item.Activity);
+        if (group == null)
         {
-            List<GroupedActivityVariable> result = new List<GroupedActivityVariable>();
-            if (Service == null) return result;
-            foreach (var item in Service.Variables)
-            {
-                var group = result.FirstOrDefault(p => p.Activity == item.Activity);
-                if (group == null)
-                {
-                    group = new GroupedActivityVariable
+          group = new GroupedActivityVariable
           {
             Activity = item.Activity,
             Variables = new List<Blazor.WorkflowEditor.Variable>()
           };
-                    result.Add(group);
-                }
-                group.Variables.Add(item);
-                if (!_collapsedGroup.ContainsKey($"{group?.Activity?.DisplayName ?? ""}"))
-                {
-                    _collapsedGroup.Add($"{group?.Activity?.DisplayName ?? ""}", false);
-                }
-            };
-            return result;
+          result.Add(group);
         }
-    }
-
-    [CascadingParameter]
-    private ModalService? _modalService { get; set; }
-
-    [Parameter, EditorRequired]
-    public Service Service { get; set; } = default!;
-
-    [Parameter]
-    public List<Type> TypeCollection { get; set; } = default!;
-
-
-    private bool getCollapsedGroup(GroupedActivityVariable group){
-        return _collapsedGroup.ContainsKey($"{group?.Activity?.DisplayName ?? ""}")?_collapsedGroup[$"{group?.Activity?.DisplayName ?? ""}"]:false;
-    }
-
-    private void reversValueCollapsedGroup(GroupedActivityVariable group){
-        if(_collapsedGroup.ContainsKey($"{group?.Activity?.DisplayName ?? ""}")){
-            _collapsedGroup[$"{group?.Activity?.DisplayName ?? ""}"] = !_collapsedGroup[$"{group?.Activity?.DisplayName ?? ""}"];
+        group.Variables.Add(item);
+        if (!_collapsedGroup.ContainsKey($"{group?.Activity?.DisplayName ?? ""}"))
+        {
+          _collapsedGroup.Add($"{group?.Activity?.DisplayName ?? ""}", false);
         }
+      }
+      ;
+      return result;
     }
+  }
 
-    private async void removeVariable(Blazor.WorkflowEditor.Variable variable){
-        if(_modalService==null)return;
+  [CascadingParameter]
+  private ModalService? _modalService { get; set; }
 
-        var modal = await   _modalService.ShowModal<ConfirmationModal>(new (){
+  [Parameter, EditorRequired]
+  public Service Service { get; set; } = default!;
+
+  [Parameter]
+  public List<Type> TypeCollection { get; set; } = default!;
+
+  /// <summary>Panel height in pixels, controlled by the editor layout splitter.</summary>
+  [Parameter]
+  public int Height { get; set; } = 220;
+
+  private void toggleCollapsed() => _collapsed = !_collapsed;
+
+  /// <summary>Enter/Space toggle the panel, exactly like a click on the header.</summary>
+  private void onHeaderKeyDown(KeyboardEventArgs e)
+  {
+    if (e.Key is "Enter" or " " or "Spacebar")
+      toggleCollapsed();
+  }
+
+
+  private bool getCollapsedGroup(GroupedActivityVariable group)
+  {
+    return _collapsedGroup.ContainsKey($"{group?.Activity?.DisplayName ??
+""}") ? _collapsedGroup[$"{group?.Activity?.DisplayName ?? ""}"] : false;
+  }
+
+  private void reversValueCollapsedGroup(GroupedActivityVariable group)
+  {
+    if (_collapsedGroup.ContainsKey($"{group?.Activity?.DisplayName ?? ""}"))
+    {
+      _collapsedGroup[$"{group?.Activity?.DisplayName ?? ""}"] = !_collapsedGroup[$"{group?.Activity?.DisplayName ?? ""}"];
+    }
+  }
+
+  private async void removeVariable(Blazor.WorkflowEditor.Variable variable)
+  {
+    if (_modalService == null) return;
+
+    var modal = await _modalService.ShowModal<ConfirmationModal>(new(){
           {"Title","Delete variable"},
           {"Message",$"Delete variable {variable.Name}?"},
           {"ApplyButtonText","Delete"},
         });
 
-        if(modal.ModalResult==ModalResult.Applied){
-            Service.RemoveVariable(
-                variable.Activity,
-                variable.Name);
+    if (modal.ModalResult == ModalResult.Applied)
+    {
+      Service.RemoveVariable(
+          variable.Activity,
+          variable.Name);
 
-            Service.RefreshVariables();
-        }
-
-        StateHasChanged();
+      Service.RefreshVariables();
     }
 
-    private  async void editVariable(Blazor.WorkflowEditor.Variable variable){
-        if(_modalService==null)
-            return;
+    StateHasChanged();
+  }
+
+  private async void editVariable(Blazor.WorkflowEditor.Variable variable)
+  {
+    if (_modalService == null)
+      return;
         
-        var defaultValue = variable.DefaultValue?.ToString() ?? "";
-        var oldName = variable.Name;
-        var modal = await   _modalService.ShowModal<VariableCreateModal>(new (){
+    var defaultValue = variable.DefaultValue?.ToString() ?? "";
+    var oldName = variable.Name;
+    var modal = await _modalService.ShowModal<VariableCreateModal>(new(){
           {"Title","Edit variable"},
           {"ApplyButtonText","Apply"},
           {"TypeCollection",TypeCollection??new List<Type>()},
@@ -182,27 +194,30 @@
           {"VariableType",variable.Type},
         });
 
-        if(modal.ModalResult==ModalResult.Applied){
+    if (modal.ModalResult == ModalResult.Applied)
+    {
 
-            Service.UpdateVariable(
-                variable.Activity, 
-                oldName,
-                modal?.VariableName ?? string.Empty,
-                modal?.BuildedType ?? typeof(object), 
-                modal?.DefaultValue?? string.Empty);
+      Service.UpdateVariable(
+          variable.Activity,
+          oldName,
+          modal?.VariableName ?? string.Empty,
+          modal?.BuildedType ?? typeof(object),
+          modal?.DefaultValue ?? string.Empty);
 
-            //Service.RefreshVariables();
-        }
-
-        StateHasChanged();
+      //The panel shows a snapshot of the variables, so the table has to be rebuilt after the rename.
+      Service.RefreshVariables();
     }
 
-    private  async void addVariable(){
-        Blazor.WorkflowEditor.Variable variable = new(); 
-        if(_modalService==null)
-            return;
+    StateHasChanged();
+  }
+
+  private async void addVariable()
+  {
+    Blazor.WorkflowEditor.Variable variable = new();
+    if (_modalService == null)
+      return;
         
-        var modal = await   _modalService.ShowModal<VariableCreateModal>(new (){
+    var modal = await _modalService.ShowModal<VariableCreateModal>(new(){
             {"Title","Add variable"},
             {"ApplyButtonText","Apply"},
             {"TypeCollection",TypeCollection??new List<Type>()},
@@ -211,19 +226,20 @@
             {"VariableType",variable.Type},
         });
 
-        if(modal.ModalResult==ModalResult.Applied){
+    if (modal.ModalResult == ModalResult.Applied)
+    {
 
-            Service.AddVariable(
-                Service.Path.Last().Activity!, 
-                modal?.VariableName ?? string.Empty,
-                modal?.BuildedType ?? typeof(object), 
-                modal?.DefaultValue?? string.Empty);
+      Service.AddVariable(
+          Service.Path.Last().Activity!,
+          modal?.VariableName ?? string.Empty,
+          modal?.BuildedType ?? typeof(object),
+          modal?.DefaultValue ?? string.Empty);
 
-            Service.RefreshVariables();
+      Service.RefreshVariables();
 
-        }
+    }
         
-        StateHasChanged();
+    StateHasChanged();
   }
 
   protected override void OnInitialized()

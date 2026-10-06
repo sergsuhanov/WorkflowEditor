@@ -1,36 +1,61 @@
 ﻿@using System.Diagnostics.CodeAnalysis
+@using Blazor.WorkflowEditor.Activity
 
-<div class="@(!Node.IsExpanded?"we-custom-node":"we-custom-node-extended")">
+<div class="@nodeClass">
     <div class="card @Node.CssClass">
         @if (!Node.IsExpanded)
         {
             <div class="card-header">
+                @if (iconClass != null)
+                {
+                    <span class="@iconClass we-node-icon" aria-hidden="true"></span>
+                }
+                @Badges
                 <div class="float-end">
                     @if (Node.IsContainer)
                     {
-                        <a href="" class="card-link" @onclick="@open" @onclick:preventDefault>
+                        <a href="" class="card-link" title="Open" @onclick="@open" @onclick:preventDefault>
                             <span class="oi oi-fullscreen-enter" aria-hidden="true"></span>
                         </a>
                     }
-                    else
-                    {
-                        <a href="" class="card-link" @onclick="@expand" @onclick:preventDefault>
-                            <span class="oi oi-pencil" aria-hidden="true"></span>
-                        </a>
-                    }
-                    <a href="" class="card-link link-danger" @onclick="@delete" @onclick:preventDefault>
+                    <a href="" class="card-link @(Node.HasNote ? "we-note-active" : null)" title="@noteTitle"
+                       aria-label="Note" @onclick="toggleNote" @onclick:preventDefault>
+                        <span class="oi oi-comment-square" aria-hidden="true"></span>
+                    </a>
+                    <a href="" class="card-link" title="Edit properties" @onclick="@expand" @onclick:preventDefault>
+                        <span class="oi oi-pencil" aria-hidden="true"></span>
+                    </a>
+                    <a href="" class="card-link link-danger" title="Delete" @onclick="@delete" @onclick:preventDefault>
                         <span class="oi oi-circle-x" aria-hidden="true"></span>
                     </a>
                 </div>
             </div>
             <div class="card-body">
-            <h5 class="card-title">@Node.DisplayName</h5>
-        </div>
+                <h5 class="card-title">@Node.DisplayName</h5>
+                @if (Node.HasNote && !Node.IsNoteOpen)
+                {
+                    <div class="we-note-preview" title="@Node.Note">@Node.Note</div>
+                }
+                @Preview
+                @if (Node.IsNoteOpen)
+                {
+                    @noteEditor
+                }
+            </div>
         }
         else
         {
             <div class="card-header">
+                @if (iconClass != null)
+                {
+                    <span class="@iconClass we-node-icon" aria-hidden="true"></span>
+                }
+                @Badges
                 <div class=" float-end">
+                    <a href="" class="card-link @(Node.HasNote ? "we-note-active" : null)" title="@noteTitle"
+                       aria-label="Note" @onclick="toggleNote" @onclick:preventDefault>
+                        <span class="oi oi-comment-square" aria-hidden="true"></span>
+                    </a>
                     <a href="" class="card-link" @onclick="@collapce" @onclick:preventDefault>
                         <span class="oi oi-circle-check" aria-hidden="true"></span>
                     </a>
@@ -41,9 +66,23 @@
                     <div class="mb-3">
                         <label for="displayName" class="form-label">Display name</label>
                         <input type="text" class="form-control" id="displayName" @bind-value="Node.DisplayName"
-                        placeholder="Input activity display name" @onmousedown:stopPropagation
-                        @onmouseup:stopPropagation @onmousemove:stopPropagation />
+                               placeholder="Input activity display name" @onmousedown:stopPropagation
+                               @onmouseup:stopPropagation @onmousemove:stopPropagation />
                     </div>
+                    @*Validation messages of this activity, shown next to the fields.*@
+                    @if (errorCount > 0)
+                    {
+                        <ul class="we-field-errors" role="alert">
+                            @foreach (var message in Service.ErrorsFor(Node.Element))
+                            {
+                                <li>@message</li>
+                            }
+                        </ul>
+                    }
+                    @if (Node.IsNoteOpen)
+                    {
+                        @noteEditor
+                    }
                     @Edit
                 </form>
             </div>
@@ -68,6 +107,63 @@
     [Parameter, AllowNull]
     public RenderFragment? Edit { get; set; }
 
+    /// <summary>Optional compact preview shown on the collapsed node card.</summary>
+    [Parameter, AllowNull]
+    public RenderFragment? Preview { get; set; }
+
+    private string? iconClass => ActivityIcon.CssClass(Node.Element);
+
+    /// <summary>Badges shown in the card header: start element marker and validation errors.</summary>
+    private RenderFragment Badges => @<text>
+        @if (isStart)
+        {
+            <span class="we-node-badge" title="This element is the start of the opened container">
+                <span class="@startBadgeClass" aria-hidden="true"></span>@startBadgeText
+            </span>
+        }
+        @if (errorCount > 0)
+        {
+            <span class="we-node-error" title="@errorSummary" aria-label="@errorLabel">
+                <span class="oi oi-warning" aria-hidden="true"></span>@errorCount
+            </span>
+        }
+    </text>;
+
+    private IGraphContainer? openedGraph => Service?.OpenedGraph;
+
+    private bool isStart => openedGraph?.IsStartElement(Node.Element) == true;
+
+    private string startBadgeText => openedGraph?.StartBadgeText ?? "Start";
+
+    private string startBadgeClass => openedGraph?.StartBadgeClass ?? "oi oi-media-play";
+
+    private int errorCount => Service?.ErrorCount(Node.Element) ?? 0;
+
+    private string? errorSummary => Service?.ErrorSummary(Node.Element);
+
+    private string errorLabel => errorCount == 1 ? "1 validation message" : $"{errorCount} validation messages";
+
+    private string nodeClass
+    {
+        get
+        {
+            var result = Node.IsExpanded
+                ? "we-custom-node we-custom-node-expanded"
+                : string.IsNullOrEmpty(Node.NodeLayoutClass)
+                    ? "we-custom-node"
+                    : $"we-custom-node {Node.NodeLayoutClass}";
+
+            //Family accent colour (stack / flow / state), start marker and validation state.
+            result += $" we-family-{Node.NodeFamily}";
+            if (isStart)
+                result += " we-node-is-start";
+            if (errorCount > 0)
+                result += " we-node-has-errors";
+
+            return result;
+        }
+    }
+
     void open()
     {
         Service.Open(Node);
@@ -83,5 +179,28 @@
     void delete()
     {
         Service.Delete(Node);
+    }
+
+    private string noteTitle => Node.HasNote ? Node.Note : "Add a note";
+
+    /// <summary>Inline note editor, shown on the card in collapsed and expanded state.</summary>
+    private RenderFragment noteEditor => @<text>
+        <div class="we-note-editor">
+            <textarea class="form-control we-note-input" rows="3" placeholder="Note for this activity" aria-label="Note"
+                      @bind="Node.Note" @bind:event="oninput" @onmousedown:stopPropagation @onmouseup:stopPropagation
+                      @onmousemove:stopPropagation></textarea>
+            <div class="we-note-actions">
+                <button type="button" class="btn we-panel-action" @onclick="toggleNote">Done</button>
+                <button type="button" class="btn we-panel-action" @onclick="clearNote">Clear</button>
+            </div>
+        </div>
+    </text>;
+
+    private void toggleNote() => Node.IsNoteOpen = !Node.IsNoteOpen;
+
+    private void clearNote()
+    {
+        Node.Note = string.Empty;
+        Node.IsNoteOpen = false;
     }
 }

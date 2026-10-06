@@ -1,0 +1,27 @@
+@using Blazor.WorkflowEditor.Components
+
+<ActivityControl Node="@Node">
+    <Preview>
+        @*Read-only summary: a flowchart is filled and connected inside the opened container.*@
+        <div class="we-graph-summary">
+            <div class="we-graph-summary-row">
+                <span class="we-graph-summary-label">Start</span>
+                <span class="we-graph-summary-value">@(Node.StartLabel ?? "not set")</span>
+            </div>
+            <div class="we-graph-summary-row">
+                <span class="we-graph-summary-label">Steps</span>
+                <span class="we-graph-summary-value">@(Node.StepsSummary ?? "empty")</span>
+            </div>
+        </div>
+    </Preview>
+    <Edit>
+        <FlowTargetSelect Label="Start node" Container="Node" @bind-Value="Node.StartIndex" />
+        <div class="form-text">Open the flowchart to add and arrange steps. A step's form sets decision and switch
+            targets.</div>
+        </Edit>
+    </ActivityControl>
+
+@code {
+    [Parameter]
+    public FlowchartNode Node { get; set; } = default!;
+}

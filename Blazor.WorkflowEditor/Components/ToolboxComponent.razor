@@ -1,62 +1,68 @@
 ﻿@using Blazor.WorkflowEditor;
 @using Blazor.WorkflowEditor.Activity;
 
-@if (toolboxCollapsed) {
-    <div class="we-toolbox-collaosed">
-        <div class="we-toolbox-table_header" @onclick="()=> toolboxCollapsed = !toolboxCollapsed">
-            <button type="button" class="btn">
-                <span class="oi oi-caret-@(toolboxCollapsed ? "right" : "left") text-primary" aria-hidden="true"></span>
-            </button>
-        </div>
+@if (Collapsed)
+{
+    <div class="we-panel-rail" role="button" tabindex="0" aria-expanded="false" aria-label="Show toolbox"
+         title="Show toolbox" @onclick="toggleCollapsed" @onkeydown="onHeaderKeyDown" @onkeydown:preventDefault="true">
+        <span class="oi oi-caret-right we-panel-caret" aria-hidden="true"></span>
     </div>
 }
-else {
+else
+{
    
-    <div class="we-toolbox">
+    <div class="we-panel we-toolbox" style="@($"width:{Width}px")">
 
-        <div class="we-toolbox-table_header" @onclick="()=> toolboxCollapsed = !toolboxCollapsed">
-            <button type="button" class="btn">
-                <span class="oi oi-caret-@(toolboxCollapsed ? "right" : "left") text-primary" aria-hidden="true"></span>
-            </button>
-            <div> Toolbox components </div>
+        <div class="we-panel-header" role="button" tabindex="0" aria-expanded="true" aria-label="Hide toolbox"
+             title="Collapse the toolbox" @onclick="toggleCollapsed" @onkeydown="onHeaderKeyDown"
+             @onkeydown:preventDefault="true">
+            <span class="oi oi-caret-left we-panel-caret" aria-hidden="true"></span>
+            <span class="we-panel-title">Toolbox components</span>
         </div>
 
-        <div class="we-toolbox-search">
-            <input type="text" class="form-control" @bind="toolboxFilter">
-            <button type="button" class="btn" @onclick="()=>toolboxFilter=string.Empty">
-                <span class="oi oi-x text-primary" style="align-self: center;"></span>
-            </button>
+        <div class="we-panel-body">
+
+            <div class="we-toolbox-search">
+                <input type="text" class="form-control" @bind="toolboxFilter" placeholder="Search activities"
+                       aria-label="Search activities">
+                <button type="button" class="btn" title="Clear the search" aria-label="Clear the search"
+                        @onclick="() => toolboxFilter = string.Empty" @onclick:stopPropagation="true">
+                    <span class="oi oi-x text-primary" aria-hidden="true"></span>
+                </button>
+            </div>
+
+            <ul class="groups list-unstyled mb-0">
+                @foreach (var group in GetFilterdToolBoxGroups())
+                {
+                    <li class="groupItem">
+
+                        <div class="groupName" @onclick="() => group.Collapsed = !group.Collapsed">
+                            <span class="oi oi-caret-@(group.Collapsed ? "bottom" : "top")" aria-hidden="true"></span>
+                            @group.Name
+                        </div>
+
+                        <ul class="items list-unstyled @(group.Collapsed ? "collapse" : "")">
+                            @foreach (var item in group.Items)
+                            {
+                                @*ondragstart = "event.dataTransfer.setData('', event.target.id);"*@
+                                @*@ondragstart= "(p) => OnDragStart(p, item)"*@
+
+                                <li @key="item" draggable="true" @ondragstart="() => OnDragStart(item)" @ondragend="OnDragEnd"
+                                    @ondragenter="() => OnDragEnter(item)"
+                                    class="@((item.Image == null ? "activityItemWithoutIcon" : "activityItem"))">
+                                    @if (item.Image != null)
+                                    {
+                                        <span class="@item.Image" aria-hidden="true"></span>
+                                    }
+                                    @item.Name
+                                </li>
+                            }
+                        </ul>
+                    </li>
+                }
+            </ul>
+
         </div>
-
-        <ul class="groups list-unstyled">
-            @foreach (var group in GetFilterdToolBoxGroups()) {
-                <li class="groupItem">
-
-                    <div class="groupName" @onclick="()=>group.Collapsed = !group.Collapsed">
-                        <span class="oi oi-caret-@(group.Collapsed?"bottom":"top")" aria-hidden="true"></span>
-                        @group.Name
-                    </div>
-
-                    <ul class="items list-unstyled @(group.Collapsed? "collapse":"")">
-                        @foreach (var item in group.Items) {
-                            @*ondragstart = "event.dataTransfer.setData('', event.target.id);"*@
-                            @*@ondragstart= "(p) => OnDragStart(p, item)"*@
-
-                            <li @key="item"
-                                draggable="true"
-                                @ondragstart= "() => OnDragStart(item)"
-                                @ondragenter="() => OnDragEnter(item)"
-                                class="@((item.Image==null?"activityItemWithoutIcon":"activityItem"))">
-                                @if (item.Image != null) {
-                                    <span class="@item.Image" aria-hidden="true"></span>
-                                }
-                                @item.Name
-                            </li>
-                        }
-                    </ul>
-                </li>
-            }
-        </ul>
         
     </div>
 
@@ -64,7 +70,6 @@ else {
 
 
 @code {
-    private bool toolboxCollapsed = false;
     private string toolboxFilter { get; set; } = string.Empty;
 
     [Parameter, EditorRequired]
@@ -73,7 +78,25 @@ else {
     [Parameter, EditorRequired]
     public IEnumerable<ToolBoxGroup> ToolBoxGroups { get; set; } = default!;
 
-    protected override void OnInitialized() {
+    /// <summary>Panel width in pixels, controlled by the editor layout splitter.</summary>
+    [Parameter]
+    public int Width { get; set; } = 320;
+
+    /// <summary>Whether the toolbox is collapsed to its title bar (controlled by the editor for compact mode).</summary>
+    [Parameter]
+    public bool Collapsed { get; set; }
+
+    [Parameter]
+    public EventCallback<bool> CollapsedChanged { get; set; }
+
+    private Task toggleCollapsed() => CollapsedChanged.InvokeAsync(!Collapsed);
+
+    /// <summary>Enter/Space toggle the panel, exactly like a click on the header.</summary>
+    private Task onHeaderKeyDown(KeyboardEventArgs e) =>
+        e.Key is "Enter" or " " or "Spacebar" ? toggleCollapsed() : Task.CompletedTask;
+
+    protected override void OnInitialized()
+    {
         base.OnInitialized();
 
         // set all groups to state collapse
@@ -81,34 +104,47 @@ else {
             item.Collapsed = true;
     }
 
-    private IEnumerable<ToolBoxGroup> GetFilterdToolBoxGroups() {
+    private IEnumerable<ToolBoxGroup> GetFilterdToolBoxGroups()
+    {
         if (string.IsNullOrWhiteSpace(toolboxFilter))
             return ToolBoxGroups;
 
         var result = new List<ToolBoxGroup>();
-        foreach (var group in ToolBoxGroups) {
+        foreach (var group in ToolBoxGroups)
+        {
             var items = group.Items.Where(s => s.Name.ToLower().Contains(toolboxFilter.ToLower())).ToList();
-            if (items.Count > 0) {
-                result.Add(new ToolBoxGroup {
-                        Description = group.Description,
-                        Name = group.Name,
-                        Items = items,
-                        Collapsed = false
-                    });
+            if (items.Count > 0)
+            {
+                result.Add(new ToolBoxGroup
+                {
+                    Description = group.Description,
+                    Name = group.Name,
+                    Items = items,
+                    Collapsed = false
+                });
             }
         }
         return result;
 
     }
 
-    private void OnDragStart(ToolBoxItem key) {
+    private void OnDragStart(ToolBoxItem key)
+    {
         if (Service.CheckAddActivity(key.TypeOfActivity) == false)
             return;
 
+        Service.DropTarget = null;
         Service.DraggedToolboxItem = key;
     }
 
-    private void OnDragEnter(ToolBoxItem key) {
+    private void OnDragEnd()
+    {
+        Service.DropTarget = null;
+        Service.DraggedToolboxItem = null;
+    }
+
+    private void OnDragEnter(ToolBoxItem key)
+    {
         if (Service.CheckAddActivity(key.TypeOfActivity) == false)
             return;
     }

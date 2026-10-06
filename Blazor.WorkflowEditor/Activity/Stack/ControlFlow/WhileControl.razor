@@ -1,0 +1,23 @@
+@using Blazor.WorkflowEditor.Components
+
+<ActivityControl Node="@Node">
+    <Preview>
+        <div class="we-branches">
+            <ActivityRegion Node="Node" Label="Body" Value="@Node.BodyName" CanClear="@Node.HasBody"
+                            OnClear="@(() => Node.ClearBody())" />
+        </div>
+    </Preview>
+    <Edit>
+        <div class="mb-3">
+            <label for="condition" class="form-label">Condition (Visual Basic expression)</label>
+            <input type="text" class="form-control" id="condition" @bind-value="Node.Condition" placeholder="True"
+                   @onmousedown:stopPropagation @onmouseup:stopPropagation @onmousemove:stopPropagation />
+        </div>
+        <div class="form-text">Add the loop body while this activity is open.</div>
+    </Edit>
+</ActivityControl>
+
+@code {
+    [Parameter]
+    public WhileNode Node { get; set; } = default!;
+}

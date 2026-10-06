@@ -1,0 +1,53 @@
+@using Blazor.WorkflowEditor.Components
+
+<ActivityControl Node="@Node">
+    <Preview>
+        <div class="we-branches">
+            <ActivityRegion Node="Node" Label="Try" Value="@Node.TryName" CanClear="@Node.HasTry"
+                            Active="@(Node.SelectedSection == TryCatchSection.Try)"
+                            OnActivate="@(() => selectSection(TryCatchSection.Try))"
+                            OnClear="@(() => Node.ClearSection(TryCatchSection.Try))" />
+            <ActivityRegion Node="Node" Label="Catch" Value="@Node.CatchName"
+                            Placeholder="@($"({Node.SelectedExceptionType.Name})")" CanClear="@Node.HasCatch"
+                            Active="@(Node.SelectedSection == TryCatchSection.CatchException)"
+                            OnActivate="@(() => selectSection(TryCatchSection.CatchException))"
+                            OnClear="@(() => Node.ClearSection(TryCatchSection.CatchException))" />
+            <ActivityRegion Node="Node" Label="Finally" Value="@Node.FinallyName" CanClear="@Node.HasFinally"
+                            Active="@(Node.SelectedSection == TryCatchSection.Finally)"
+                            OnActivate="@(() => selectSection(TryCatchSection.Finally))"
+                            OnClear="@(() => Node.ClearSection(TryCatchSection.Finally))" />
+        </div>
+    </Preview>
+    <Edit>
+        <div class="mb-3">
+            <label for="section" class="form-label">Section for new child</label>
+            <select class="form-select" id="section" @bind="Node.SelectedSection" @onmousedown:stopPropagation
+                    @onmouseup:stopPropagation @onmousemove:stopPropagation>
+                <option value="@TryCatchSection.Try">Try</option>
+                <option value="@TryCatchSection.CatchException">Catch (System.Exception)</option>
+                <option value="@TryCatchSection.Finally">Finally</option>
+            </select>
+        </div>
+        <div class="mb-3">
+            <label for="exceptionType" class="form-label">Catch exception type</label>
+            <select class="form-select" id="exceptionType" @bind="Node.SelectedExceptionTypeName"
+                    @onmousedown:stopPropagation @onmouseup:stopPropagation @onmousemove:stopPropagation>
+                @foreach (var type in TryCatchNode.CatchExceptionTypes)
+                {
+                    <option value="@type.FullName">@type.Name</option>
+                }
+            </select>
+        </div>
+    </Edit>
+</ActivityControl>
+
+@code {
+    [Parameter]
+    public TryCatchNode Node { get; set; } = default!;
+
+    private void selectSection(TryCatchSection section)
+    {
+        if (Node.SelectedSection != section)
+            Node.SelectedSection = section;
+    }
+}

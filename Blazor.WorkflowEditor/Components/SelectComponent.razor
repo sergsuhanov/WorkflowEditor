@@ -3,15 +3,18 @@
 
 <div class="mb-3 row" @onmousedown:stopPropagation @onmouseup:stopPropagation @onmousemove:stopPropagation>
   <label class="col-form-label">@Label</label>
-    <div class="we-autocomplete">
+  <div class="we-autocomplete">
     <div class="col-auto">
       <div class="input-group">
         <div style="align-self: center;">
-         @if(_value==null){
-          <a href="#" class="link-primary" @onclick="@(()=>_collapsed=!_collapsed)">Select ...</a>
-        }else{
-          <a href="#" class="link-primary" @onclick="@(()=>_collapsed=!_collapsed)">@ConvertValueToString(_value)</a>
-        } 
+          @if (_value == null)
+          {
+            <a href="#" class="link-primary" @onclick="@(() => _collapsed = !_collapsed)">Select ...</a>
+          }
+          else
+          {
+            <a href="#" class="link-primary" @onclick="@(() => _collapsed = !_collapsed)">@ConvertValueToString(_value)</a>
+          }
         </div>
       </div>
     </div>
@@ -22,7 +25,7 @@
           <div class="col-auto">
             <div class="input-group">
               <input type="text" @bind="_filter" class="form-control" @oninput="onFilterChanged">
-              <button type="button" class="btn" @onclick="@(()=>_filter=string.Empty)">
+              <button type="button" class="btn" @onclick="@(() => _filter = string.Empty)">
                 <span class="oi oi-x text-primary" style="align-self: center;"></span>
               </button>
             </div>
@@ -30,7 +33,7 @@
         </li>
         @foreach (var item in SelectCollection.Where(p => FilteringCollection(p, _filter) == true).ToList())
         {
-          <li class="option" @onclick="@(()=>onValueSelected(item))">
+          <li class="option" @onclick="@(() => onValueSelected(item))">
             <span class="option-text">@ConvertValueToListItemString(item)</span>
           </li>
         }
@@ -57,24 +60,23 @@
   public Func<T?, string> ConvertValueToListItemString { get; set; } = default!;
 
   [Parameter]
-  public T? SelectedValue
-  {
-    get => _value;
-    set
-    {
-      if (!EqualityComparer<T>.Default.Equals(_value, value))
-      {
-        _value = value;
-        SelectedValueChanged.InvokeAsync(_value);
-      }
-    }
-  }
+  public T? SelectedValue { get; set; }
 
   [Parameter]
   public List<T>? SelectCollection { get; set; } = default!;
 
   [Parameter]
   public EventCallback<T> SelectedValueChanged { get; set; }
+
+  protected override void OnParametersSet()
+  {
+    //A value pushed down by the parent wins over the local copy, without echoing it back through the
+    //callback (which a setter would do and which the framework warns about, BL0007).
+    if (!EqualityComparer<T>.Default.Equals(_value, SelectedValue))
+      _value = SelectedValue;
+
+    base.OnParametersSet();
+  }
 
   private void onFilterChanged(ChangeEventArgs e)
   {
@@ -83,12 +85,15 @@
 
   private void onValueSelected(T? value)
   {
-    SelectedValue = value;
+    _value = value;
 
-    if(value != null)
-        _filter = ConvertValueToString(value);
+    if (value != null)
+      _filter = ConvertValueToString(value);
     
     _collapsed = true;
+
+    //The change is reported to the parent from the user interaction, not from the parameter setter.
+    SelectedValueChanged.InvokeAsync(_value);
   }
 
 

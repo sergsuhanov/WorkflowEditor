@@ -17,11 +17,25 @@ public class ToolBoxGroup {
 
     public void Add(Type type, string? imageToolbox = null) {
         var ti = new ToolBoxItem {
-            Name = type.Name,
-            Image = imageToolbox,
+            Name = displayName(type),
+            Image = imageToolbox ?? ActivityIcon.CssClass(type),
             TypeOfActivity = type
         };
         Items.Add(ti);
+    }
+
+    private static string displayName(Type type) {
+        var name = type.Name;
+        var tick = name.IndexOf('`');
+        if (tick < 0)
+            return name;
+
+        name = name[..tick];
+        if (type.IsGenericTypeDefinition) {
+            var parameters = type.GetGenericArguments().Select(a => a.Name);
+            return $"{name}<{string.Join(", ", parameters)}>";
+        }
+        return name;
     }
 }
 

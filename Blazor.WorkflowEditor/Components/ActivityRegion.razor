@@ -1,0 +1,78 @@
+@*A labeled region shown on a container node. When DropEnabled, dropping a toolbox item on it makes this node the drop target.*@
+@if (DropEnabled)
+{
+    <div class="we-branch @(Active ? "active" : null)" role="button" tabindex="0" title="@regionTitle"
+         @onclick="() => OnActivate.InvokeAsync()" @ondragover:preventDefault @ondragover:stopPropagation
+         @ondragover="onDragOver" @ondragenter:preventDefault @ondragenter:stopPropagation @ondragenter="onDragOver"
+         @onmousedown:stopPropagation @onmouseup:stopPropagation @onmousemove:stopPropagation>
+        @Body
+    </div>
+}
+else
+{
+    <div class="we-branch we-branch-static @(Active ? "active" : null)" title="@regionTitle">
+        @Body
+    </div>
+}
+
+@code {
+    [CascadingParameter]
+    public Service Service { get; set; } = default!;
+
+    [Parameter, EditorRequired]
+    public Activity.DefaultNode Node { get; set; } = default!;
+
+    [Parameter]
+    public string Label { get; set; } = "Body";
+
+    [Parameter]
+    public string? Value { get; set; }
+
+    [Parameter]
+    public string Placeholder { get; set; } = "(drop)";
+
+    /// <summary>Whether this region is the one that will receive the next dropped activity.</summary>
+    [Parameter]
+    public bool Active { get; set; } = true;
+
+    [Parameter]
+    public bool CanClear { get; set; }
+
+    /// <summary>When false the region only displays a value and does not accept drops.</summary>
+    [Parameter]
+    public bool DropEnabled { get; set; } = true;
+
+    [Parameter]
+    public string? Title { get; set; }
+
+    /// <summary>Selects this region as the target for the next drop.</summary>
+    [Parameter]
+    public EventCallback OnActivate { get; set; }
+
+    [Parameter]
+    public EventCallback OnClear { get; set; }
+
+    private string regionTitle => Title ?? $"Drop an activity here to fill {Label}";
+
+    private RenderFragment Body => @<text>
+        <span class="we-branch-label">@Label</span>
+        <span class="we-branch-value">@(Value ?? Placeholder)</span>
+        @if (CanClear)
+        {
+            <button type="button" class="btn we-branch-clear" title="@($"Clear {Label}")" aria-label="@($"Clear {Label}")"
+                    @onclick="() => OnClear.InvokeAsync()" @onclick:stopPropagation>
+                <span class="oi oi-x text-danger" aria-hidden="true"></span>
+            </button>
+        }
+    </text>;
+
+    private void onDragOver()
+    {
+        if (!DropEnabled)
+            return;
+
+        _ = OnActivate.InvokeAsync();
+        if (!ReferenceEquals(Service.DropTarget, Node))
+            Service.DropTarget = Node;
+    }
+}

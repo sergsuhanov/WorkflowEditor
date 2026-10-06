@@ -10,7 +10,7 @@
     <div class="container-fluid">
         <a class="navbar-brand" href="#">Workflow editor</a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown"
-            aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
+                aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarNavDropdown">
@@ -20,7 +20,8 @@
                 </li>
                 <li class="nav-item">
                     <label class="nav-link mb-0" for="workflow-file">Open XAML</label>
-                    <InputFile id="workflow-file" class="visually-hidden" accept=".xaml,.xml,text/xml,application/xml" OnChange="LoadFile" />
+                    <InputFile id="workflow-file" class="visually-hidden" accept=".xaml,.xml,text/xml,application/xml"
+                               OnChange="LoadFile" />
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="#" @onclick="Save">Save</a>
@@ -29,49 +30,71 @@
                     <a class="nav-link" href="#" @onclick="Validate">Validate</a>
                 </li>
                 <li class="nav-item dropdown">
+                    @*Bootstrap JS is not loaded, so the menu is toggled by Blazor itself.*@
                     <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownTest" role="button"
-                        data-bs-toggle="dropdown" aria-expanded="false">
+                       aria-haspopup="true" aria-expanded="@(openMenu == "test")" @onclick="toggleTestMenu"
+                       @onclick:preventDefault>
                         Test Activity
                     </a>
-                    <ul class="dropdown-menu" aria-labelledby="navbarDropdownTest">
-                        <li><a class="dropdown-item" href="#" @onclick="loadTestActivity">LoadTestActivity</a></li>
-                        <li><a class="dropdown-item" href="#" @onclick="loadTest2Activity">LoadTest2Activity</a></li>
-                        <li><a class="dropdown-item" href="#" @onclick="loadTest3Activity">LoadTest3Activity</a></li>
-                    </ul>
-                </li>
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button"
-                        data-bs-toggle="dropdown" aria-expanded="false">
-                        Theme
-                    </a>
-                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdownMenuLink">
-                        <li><a class="dropdown-item" href="#" @onclick="@(()=>changeTheme("light"))">Light</a></li>
-                        <li><a class=" dropdown-item" href="#" @onclick="@(()=>changeTheme("dark"))">Dark</a></li>
-                    </ul>
-                </li>
-            </ul>
-        </div>
-    </div>
-</nav>
+                    @if (openMenu == "test")
+                    {
+                        <div class="we-menu-backdrop" @onclick="closeMenu" @onclick:preventDefault></div>
+                        <ul class="dropdown-menu show" aria-labelledby="navbarDropdownTest">
+                            <li><a class="dropdown-item" href="#"
+                                       @onclick="() => runMenuAction(loadTestActivity)">LoadTestActivity</a></li>
+                                <li><a class="dropdown-item" href="#"
+                                           @onclick="() => runMenuAction(loadTest2Activity)">LoadTest2Activity</a></li>
+                                    <li><a class="dropdown-item" href="#"
+                                               @onclick="() => runMenuAction(loadTest3Activity)">LoadTest3Activity</a></li>
+                                    </ul>
+                                }
+                            </li>
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button"
+                                   aria-haspopup="true" aria-expanded="@(openMenu == "theme")" @onclick="toggleThemeMenu"
+                                   @onclick:preventDefault>
+                                    Theme
+                                </a>
+                                @if (openMenu == "theme")
+                                {
+                                    <div class="we-menu-backdrop" @onclick="closeMenu" @onclick:preventDefault></div>
+                                    <ul class="dropdown-menu dropdown-menu-end show" aria-labelledby="navbarDropdownMenuLink">
+                                        <li><a class="dropdown-item" href="#" @onclick="setLightTheme">Light</a></li>
+                                        <li><a class="dropdown-item" href="#" @onclick="setDarkTheme">Dark</a></li>
+                                    </ul>
+                                }
+                            </li>
+                            <li class="nav-item d-flex align-items-center">
+                                <span class="we-unsaved @(hasUnsavedChanges ? "is-dirty" : string.Empty)" role="status"
+                                      title="@(hasUnsavedChanges ? "The schema has changes that are not saved yet" : "All changes are saved")">
+                                    <span class="oi @(hasUnsavedChanges ? "oi-dot" : "oi-check")" aria-hidden="true"></span>
+                                    @(hasUnsavedChanges ? "Unsaved changes" : "Saved")
+                                </span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </nav>
 
-<Blazor.WorkflowEditor.Editor @ref="editor" ToolBoxGroups="groups" TypeCollection="TypeCollection" />
+            <Blazor.WorkflowEditor.Editor @ref="editor" ToolBoxGroups="groups" TypeCollection="TypeCollection"
+                                          DirtyChanged="onDirtyChanged" />
 
-@if (!string.IsNullOrWhiteSpace(statusMessage))
-{
-    <div class="alert @(isError ? "alert-danger" : "alert-info") m-2" role="status">@statusMessage</div>
-}
-@if (editor?.ValidationMessages.Count > 0)
-{
-    <div class="alert alert-warning m-2" role="alert">
-        <strong>Workflow validation</strong>
-        <ul class="mb-0">
-            @foreach (var message in editor.ValidationMessages)
+            @if (!string.IsNullOrWhiteSpace(statusMessage))
             {
-                <li>@message</li>
+                <div class="alert @(isError ? "alert-danger" : "alert-info") m-2" role="status">@statusMessage</div>
             }
-        </ul>
-    </div>
-}
+            @if (editor?.ValidationMessages.Count > 0)
+            {
+                <div class="alert alert-warning m-2" role="alert">
+                    <strong>Workflow validation</strong>
+                    <ul class="mb-0">
+                        @foreach (var message in editor.ValidationMessages)
+                        {
+                            <li>@message</li>
+                        }
+                    </ul>
+                </div>
+            }
 
 @code {
     private Blazor.WorkflowEditor.Editor? editor = default!;
@@ -79,6 +102,42 @@
     private List<Type> TypeCollection { get; set; } = new()!;
     private string? statusMessage;
     private bool isError;
+    private bool hasUnsavedChanges;
+    private string? openMenu;
+
+    private void toggleMenu(string menu) => openMenu = openMenu == menu ? null : menu;
+
+    private void toggleTestMenu() => toggleMenu("test");
+
+    private void toggleThemeMenu() => toggleMenu("theme");
+
+    private void setLightTheme() => runMenuAction(() => changeTheme("light"));
+
+    private void setDarkTheme() => runMenuAction(() => changeTheme("dark"));
+
+    private void closeMenu() => openMenu = null;
+
+    /// <summary>Closes the open menu and runs the selected action.</summary>
+    private void runMenuAction(Action action)
+    {
+        closeMenu();
+        action();
+    }
+
+    private void onDirtyChanged(bool dirty)
+    {
+        hasUnsavedChanges = dirty;
+        StateHasChanged();
+    }
+
+    /// <summary>Asks the user before a modified schema is replaced by New/Open.</summary>
+    private async Task<bool> confirmDiscardChanges()
+    {
+        if (!hasUnsavedChanges)
+            return true;
+
+        return await JS.InvokeAsync<bool>("confirm", "The schema has unsaved changes. Discard them?");
+    }
 
 
     private async void changeTheme(string theme)
@@ -89,31 +148,43 @@
     protected override void OnInitialized()
     {
 
-        var defaultGroup = new Blazor.WorkflowEditor.ToolBoxGroup() { Name = "Default" };
-        defaultGroup.Add<System.Activities.Statements.Sequence>();
-        defaultGroup.Add<System.Activities.Statements.Assign>("oi oi-pencil");
-        defaultGroup.Add<System.Activities.Statements.WriteLine>("oi oi-pencil");
-        defaultGroup.Add(typeof(System.Activities.Statements.Assign<>));
-        defaultGroup.Add<System.Activities.Statements.Delay>();
-        defaultGroup.Add<System.Activities.Statements.Throw>();
-        defaultGroup.Add<System.Activities.Statements.Rethrow>();
-        defaultGroup.Add<System.Activities.Statements.TerminateWorkflow>();
-        defaultGroup.Add<System.Activities.Statements.Flowchart>();
-        defaultGroup.Add(typeof(System.Activities.Statements.FlowDecision));
-        defaultGroup.Add(typeof(System.Activities.Statements.FlowSwitch<>));
-        defaultGroup.Add<System.Activities.Statements.StateMachine>();
-        defaultGroup.Add(typeof(System.Activities.Statements.State));
-        defaultGroup.Add<System.Activities.Statements.If>();
-        defaultGroup.Add<System.Activities.Statements.While>();
-        defaultGroup.Add<System.Activities.Statements.DoWhile>();
-        defaultGroup.Add<System.Activities.Statements.Parallel>();
-        defaultGroup.Add<System.Activities.Statements.TryCatch>();
-        defaultGroup.Add(typeof(System.Activities.Statements.ForEach<>));
-        defaultGroup.Add(typeof(System.Activities.Statements.AddToCollection<>));
-        defaultGroup.Add(typeof(System.Activities.Statements.RemoveFromCollection<>));
-        defaultGroup.Add(typeof(System.Activities.Statements.ExistsInCollection<>));
-        defaultGroup.Add(typeof(System.Activities.Statements.ClearCollection<>));
-        groups.Add(defaultGroup);
+        var controlFlow = new Blazor.WorkflowEditor.ToolBoxGroup() { Name = "Control Flow" };
+        controlFlow.Add<System.Activities.Statements.Sequence>();
+        controlFlow.Add<System.Activities.Statements.If>();
+        controlFlow.Add<System.Activities.Statements.While>();
+        controlFlow.Add<System.Activities.Statements.DoWhile>();
+        controlFlow.Add(typeof(System.Activities.Statements.ForEach<>));
+        controlFlow.Add<System.Activities.Statements.Parallel>();
+        controlFlow.Add<System.Activities.Statements.TryCatch>();
+        groups.Add(controlFlow);
+
+        var primitives = new Blazor.WorkflowEditor.ToolBoxGroup() { Name = "Primitives" };
+        primitives.Add<System.Activities.Statements.Assign>();
+        primitives.Add(typeof(System.Activities.Statements.Assign<>));
+        primitives.Add<System.Activities.Statements.WriteLine>();
+        primitives.Add<System.Activities.Statements.Delay>();
+        primitives.Add<System.Activities.Statements.Throw>();
+        primitives.Add<System.Activities.Statements.Rethrow>();
+        primitives.Add<System.Activities.Statements.TerminateWorkflow>();
+        groups.Add(primitives);
+
+        var collections = new Blazor.WorkflowEditor.ToolBoxGroup() { Name = "Collections" };
+        collections.Add(typeof(System.Activities.Statements.AddToCollection<>));
+        collections.Add(typeof(System.Activities.Statements.RemoveFromCollection<>));
+        collections.Add(typeof(System.Activities.Statements.ExistsInCollection<>));
+        collections.Add(typeof(System.Activities.Statements.ClearCollection<>));
+        groups.Add(collections);
+
+        var flowchart = new Blazor.WorkflowEditor.ToolBoxGroup() { Name = "Flowchart" };
+        flowchart.Add<System.Activities.Statements.Flowchart>();
+        flowchart.Add(typeof(System.Activities.Statements.FlowDecision));
+        flowchart.Add(typeof(System.Activities.Statements.FlowSwitch<>));
+        groups.Add(flowchart);
+
+        var stateMachine = new Blazor.WorkflowEditor.ToolBoxGroup() { Name = "State Machine" };
+        stateMachine.Add<System.Activities.Statements.StateMachine>();
+        stateMachine.Add(typeof(System.Activities.Statements.State));
+        groups.Add(stateMachine);
 
 
         TypeCollection.Add(typeof(System.Object));
@@ -129,10 +200,15 @@
             New();
     }
 
-    private void New()
+    private async void New()
     {
-        if (editor != null)
-            editor.New();
+        if (editor == null)
+            return;
+
+        if (!await confirmDiscardChanges())
+            return;
+
+        editor.New();
     }
 
     private async Task Save()
@@ -145,6 +221,7 @@
             var source = editor.Save();
             using var streamRef = new DotNetStreamReference(stream: new MemoryStream(Encoding.UTF8.GetBytes(source)));
             await JS.InvokeVoidAsync("downloadFileFromStream", "workflow.xaml", streamRef);
+            editor.MarkSaved();
             statusMessage = "Workflow saved.";
             isError = false;
         }
@@ -157,6 +234,9 @@
 
     private async Task LoadFile(InputFileChangeEventArgs e)
     {
+        if (!await confirmDiscardChanges())
+            return;
+
         try
         {
             await using var stream = e.File.OpenReadStream(10 * 1024 * 1024);

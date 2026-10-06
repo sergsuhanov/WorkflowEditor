@@ -1,0 +1,18 @@
+@using Blazor.WorkflowEditor.Components
+
+<ActivityControl Node="@Node">
+    <Preview>
+        <div class="we-branches">
+            <ActivityRegion Node="Node" Label="Branches" Value="@Node.BranchesSummary"
+                            Title="Drop an activity here to add a parallel branch" />
+        </div>
+    </Preview>
+    <Edit>
+        <div class="form-text">Every activity added while this activity is open becomes a parallel branch.</div>
+    </Edit>
+</ActivityControl>
+
+@code {
+    [Parameter]
+    public ParallelNode Node { get; set; } = default!;
+}

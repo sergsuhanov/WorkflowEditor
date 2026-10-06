@@ -1,0 +1,46 @@
+@*Draggable splitter used to resize the editor panels. Uses pointer events only - no JS interop.*@
+@if (dragging)
+{
+    <div class="we-splitter-overlay @(isVertical ? "vertical" : "horizontal")" @onpointermove="onPointerMove"
+         @onpointerup="stopDrag" @onpointerleave="stopDrag" @onpointercancel="stopDrag"></div>
+}
+
+<div class="we-splitter @(isVertical ? "vertical" : "horizontal")" @onpointerdown="startDrag"
+     @onpointerdown:preventDefault role="separator" tabindex="0"
+     aria-orientation="@(isVertical ? "vertical" : "horizontal")"
+     title="@(isVertical ? "Drag to resize" : "Drag to resize")"></div>
+
+@code {
+    public enum SplitDirection { Vertical, Horizontal }
+
+    [Parameter]
+    public SplitDirection Direction { get; set; } = SplitDirection.Vertical;
+
+    /// <summary>Raised with the pointer delta (px) along the resize axis.</summary>
+    [Parameter]
+    public EventCallback<double> OnResize { get; set; }
+
+    private bool dragging;
+    private double last;
+
+    private bool isVertical => Direction == SplitDirection.Vertical;
+
+    private void startDrag(PointerEventArgs e)
+    {
+        dragging = true;
+        last = isVertical ? e.ClientX : e.ClientY;
+    }
+
+    private void onPointerMove(PointerEventArgs e)
+    {
+        if (!dragging)
+            return;
+
+        var current = isVertical ? e.ClientX : e.ClientY;
+        var delta = current - last;
+        last = current;
+        OnResize.InvokeAsync(delta);
+    }
+
+    private void stopDrag(PointerEventArgs e) => dragging = false;
+}

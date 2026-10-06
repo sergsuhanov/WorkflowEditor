@@ -30,6 +30,26 @@ public class DefaultNode : NodeModel {
     public bool IsContainer { get; init; } = false;
     public bool IsGeneric { get; set; } = false;
     public bool IsExpanded { get; set; } = false;
+
+    /// <summary>
+    /// Free-form note of this node. It is saved in XAML (attached property) and shown on the card,
+    /// like the annotation of the classic Workflow Foundation designer.
+    /// </summary>
+    public string Note {
+        get => State.Designer.GetNote(activity) ?? string.Empty;
+        set {
+            if (string.Equals(State.Designer.GetNote(activity) ?? string.Empty, value ?? string.Empty))
+                return;
+
+            State.Designer.SetNote(activity, string.IsNullOrWhiteSpace(value) ? null : value);
+            service.NotifyStateChanged();
+        }
+    }
+
+    public bool HasNote => !string.IsNullOrWhiteSpace(State.Designer.GetNote(activity));
+
+    /// <summary>Whether the inline note editor is open (session-only UI state, not saved).</summary>
+    public bool IsNoteOpen { get; set; }
     public double? Zoom { get; set; }
     public Point? Offcet { get; set; }
 
@@ -45,9 +65,14 @@ public class DefaultNode : NodeModel {
         }
         set {
             if (Size != null)
-                this.Position = value.Add(-this.Size.Width / 2.0, -this.Size.Height / 2.0);
+                SetPosition(value.X - this.Size.Width / 2.0, value.Y - this.Size.Height / 2.0);
             else
-                this.Position = value;
+                SetPosition(value.X, value.Y);
+
+            //Programmatic position changes must refresh ports and link routes, otherwise links are drawn
+            //using stale port positions.
+            UpdatePortGeometry();
+            RefreshLinks();
         }
     }
 
@@ -92,6 +117,55 @@ public class DefaultNode : NodeModel {
         IncomingPort = topPort;
         OutcomingPort = bottomPort;
 
+        //The library measures the port rectangles once, in the browser, and never again: a node that is
+        //moved or resized afterwards would keep its links attached to the old border point. The node box is
+        //known here, so the ports are placed from it instead of from the DOM.
+        this.SizeChanged += onSizeChanged;
+    }
+
+    private void onSizeChanged(NodeModel model) => UpdatePortGeometry();
+
+    /// <summary>Radius of the round port marker. The port rectangle is a square of <c>2 * PortRadius</c>.</summary>
+    private const double PortRadius = 10;
+
+    /// <summary>
+    /// Places every port so that its circle sits exactly on the node border: the link anchors of the library
+    /// point at the outer edge of that circle, which is what makes a connection look attached to the card.
+    /// Called whenever the node is moved or resized, and safe to call at any time.
+    /// </summary>
+    public void UpdatePortGeometry() {
+        if (Size is not { } size)
+            return;
+
+        var right = Position.X + size.Width;
+        var bottom = Position.Y + size.Height;
+        var middleX = Position.X + size.Width / 2.0;
+        var middleY = Position.Y + size.Height / 2.0;
+
+        foreach (var port in Ports) {
+            var center = port.Alignment switch {
+                PortAlignment.Top => new Point(middleX, Position.Y),
+                PortAlignment.TopRight => new Point(right, Position.Y),
+                PortAlignment.Right => new Point(right, middleY),
+                PortAlignment.BottomRight => new Point(right, bottom),
+                PortAlignment.Bottom => new Point(middleX, bottom),
+                PortAlignment.BottomLeft => new Point(Position.X, bottom),
+                PortAlignment.Left => new Point(Position.X, middleY),
+                PortAlignment.TopLeft => new Point(Position.X, Position.Y),
+                _ => new Point(right, middleY)
+            };
+
+            port.Size = new Size(PortRadius * 2, PortRadius * 2);
+            port.Position = new Point(center.X - PortRadius, center.Y - PortRadius);
+            //Keep the port initialized: while it is false the library re-measures it in the DOM and would
+            //overwrite the computed rectangle with a stale one.
+            port.Initialized = true;
+        }
+
+        //NodeModel.RefreshLinks() only walks the links attached to the node itself, and the library attaches
+        //a port-anchored link to the port, so the routes have to be rebuilt through the ports.
+        foreach (var port in Ports)
+            port.RefreshLinks();
     }
 
     public bool HasViewState => State.Designer.HasProperty(activity);
@@ -102,6 +176,8 @@ public class DefaultNode : NodeModel {
         var centerY = State.Designer.GetCenterY(activity);
         if (centerX != null && centerY != null)
             this.CenterPosition = new Point((double)centerX, (double)centerY);
+        else if (this.service.VisibleViewport is { } view)
+            this.CenterPosition = new Point(view.Left + view.Width / 2, view.Top + view.Height / 2);
         else if (this.service.DiagramContainer is { } container)
             this.CenterPosition = new Diagrams.Core.Geometry.Point(container.Width / 2, container.Height / 2);
         else
@@ -269,13 +345,26 @@ public class DefaultNode : NodeModel {
     public virtual void LoadChilds(Func<System.Activities.Activity, ActivityDesignerPair> addActivity) {
 
     }
-    protected static void ArrangeRow(IReadOnlyList<ActivityDesignerPair> pairs, int startIndex = 0) {
+    /// <summary>
+    /// Lays out a row of nodes inside the currently visible part of the diagram (pan/zoom aware).
+    /// </summary>
+    protected void ArrangeRow(IReadOnlyList<ActivityDesignerPair> pairs, int startIndex = 0) {
+        if (pairs.Count == 0)
+            return;
+
+        var view = service.VisibleViewport;
+        var left = view?.Left ?? 0;
+        var top = view?.Top ?? 0;
+        var viewHeight = view?.Height ?? 0;
+        var rowY = viewHeight > 0 ? top + Math.Max(60, viewHeight * 0.4) : 150;
+        var step = (pairs[0].Node.Size?.Width ?? 250) + 72;
+
         for (var i = 0; i < pairs.Count; i++) {
             var node = pairs[i].Node;
             if (node.HasViewState && startIndex == 0)
                 continue;
             var width = node.Size?.Width ?? 250;
-            node.CenterPosition = new Point(150 + (startIndex + i) * (width + 30), 150);
+            node.CenterPosition = new Point(left + 24 + width / 2 + (startIndex + i) * step, rowY);
             node.UpdateViewState();
         }
     }
@@ -298,5 +387,50 @@ public class DefaultNode : NodeModel {
 
     /// <summary>Whether this container accepts a child of the given activity or element type.</summary>
     public virtual bool CanAdd(Type elementType) => typeof(System.Activities.Activity).IsAssignableFrom(elementType);
+
+    /// <summary>Extra CSS class for the collapsed node card, used by nodes with an inline region designer.</summary>
+    public virtual string NodeLayoutClass => string.Empty;
+
+    /// <summary>Visual family of the node: "stack", "flow" or "state". Drives the accent colour of the card.</summary>
+    public virtual string NodeFamily => "stack";
+
+    /// <summary>
+    /// Replaces the four default ports with the directional set used by graph containers: incoming ports on
+    /// the left and top edges, outgoing ports on the right and bottom edges. One anchor per side gives a
+    /// choice of connection point while drawing without using the corner alignments, which the orthogonal
+    /// router cannot handle.
+    /// </summary>
+    public void UseGraphPorts() {
+        if (Ports.Count == 4 && Ports.All(p => p is GraphInPort or GraphOutPort))
+            return;
+
+        foreach (var port in Ports.ToList())
+            RemovePort(port);
+
+        //Incoming: the left edge is the canonical anchor, the top edge takes vertical neighbours.
+        SetIncoming(AddPort(new GraphInPort(this, PortAlignment.Left)));
+        AddPort(new GraphInPort(this, PortAlignment.Top));
+
+        //Outgoing: the right edge is the canonical anchor, the bottom edge is the second choice.
+        SetOutcoming(AddPort(new GraphOutPort(this, PortAlignment.Right)));
+        AddPort(new GraphOutPort(this, PortAlignment.Bottom));
+
+        UpdatePortGeometry();
+    }
+
+    /// <summary>Deletes a child activity, removing its diagram node when it is currently shown.</summary>
+    public void RemoveChildEverywhere(System.Activities.Activity child) {
+        var pair = service.FindPair(child);
+        if (pair != null)
+            service.Delete(pair.Node);
+        else
+            RemoveChild(child);
+    }
+
+    /// <summary>Removes the current child of a single-slot region before a newly dropped one replaces it.</summary>
+    protected void ReplaceChild(System.Activities.Activity? existing, ActivityDesignerPair child) {
+        if (existing != null && !ReferenceEquals(existing, child.Activity))
+            RemoveChildEverywhere(existing);
+    }
 
 }

@@ -28,3 +28,345 @@
     font-size: 0.8rem;
     font-weight: normal;
 }
+
+.we-branch {
+    border-color: #6c757d;
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+.we-branch.active {
+    border-color: #4dabf7;
+    background-color: rgba(77, 171, 247, 0.15);
+}
+
+.we-branch .we-branch-label {
+    color: #ced4da;
+}
+
+.we-branch-static {
+    border-color: #495057;
+}
+
+/* --- Panel chrome (step 9, dark theme) --- */
+.we-panel {
+    background-color: #2b2b2b;
+    border-color: #6c757d;
+}
+
+.we-panel-header,
+.we-panel-rail {
+    background-color: #343a40;
+    border-color: #6c757d;
+    color: #e9ecef;
+}
+
+.we-panel-header:hover,
+.we-panel-rail:hover {
+    background-color: #3d444b;
+}
+
+.we-variables-panel.is-collapsed .we-panel-header {
+    border-bottom-color: transparent;
+}
+
+.we-variable-group-header {
+    background-color: #343a40;
+    border-color: #4d5157;
+    color: #e9ecef;
+}
+
+.we-variable-group-header:hover {
+    background-color: #3d444b;
+}
+
+.we-toolbox .groupItem .groupName {
+    background-color: #343a40;
+    border-color: #4d5157;
+    color: #e9ecef;
+}
+
+.we-toolbox .groupItem .groupName:hover,
+.we-toolbox .groupItem .activityItem:hover,
+.we-toolbox .groupItem .activityItemWithoutIcon:hover {
+    background-color: #3d444b;
+}
+
+/* --- Diagram widgets, family accents and badges (step 8, dark theme) --- */
+.we-diagram .grid {
+    /*Even softer in the dark theme so the grid does not fight the nodes.*/
+    background-image: linear-gradient(rgb(255 255 255 / 5%) 1px, transparent 1px),
+        linear-gradient(90deg, rgb(255 255 255 / 5%) 1px, transparent 1px) !important;
+}
+
+.we-navigator,
+.we-zoom-controls {
+    background-color: #2b2b2b;
+    border-color: #6c757d;
+}
+
+.we-navigator .diagram-node,
+.we-navigator rect {
+    fill: #4dabf7;
+}
+
+.we-custom-node.we-family-stack .card {
+    border-left-color: #4dabf7;
+}
+
+.we-custom-node.we-family-flow .card {
+    border-left-color: #b197fc;
+}
+
+.we-custom-node.we-family-state .card {
+    border-left-color: #69db7c;
+}
+
+.we-family-flow .card-header {
+    background-color: rgb(177 151 252 / 12%);
+}
+
+.we-family-state .card-header {
+    background-color: rgb(105 219 124 / 12%);
+}
+
+.we-custom-node .we-node-badge {
+    background-color: rgb(77 171 247 / 20%);
+    color: #a5d8ff;
+}
+
+.we-custom-node .we-node-error {
+    background-color: rgb(255 107 107 / 25%);
+    color: #ffc9c9;
+}
+
+.we-field-errors {
+    color: #ffa8a8;
+}
+
+/* Panel content must stay readable on the dark background (step 9). */
+.we-panel {
+    color: #e9ecef;
+}
+
+.we-panel .text-muted {
+    color: #adb5bd !important;
+}
+
+.we-panel .form-control,
+.we-panel .form-select {
+    background-color: #3d444b;
+    border-color: #6c757d;
+    color: #e9ecef;
+}
+
+.we-panel .form-control::placeholder {
+    color: #adb5bd;
+}
+
+.we-panel .table th,
+.we-panel .table td {
+    color: #e9ecef;
+    background-color: transparent;
+    border-color: #4d5157;
+}
+
+.we-panel .table thead th {
+    color: #ced4da;
+}
+
+.we-panel .we-panel-title,
+.we-variable-group-header .we-panel-title {
+    color: inherit;
+}
+
+/* Node cards follow the dark palette of the panels (step 10). */
+.we-custom-node .card {
+    background-color: #343a40;
+    border-color: #6c757d;
+    color: #e9ecef;
+}
+
+.we-custom-node .card-header {
+    background-color: #3d444b;
+    border-bottom: 1px solid #495057;
+}
+
+.we-custom-node h5.card-title {
+    color: #e9ecef;
+}
+
+.we-custom-node .card-link {
+    color: #adb5bd;
+}
+
+.we-custom-node .card-link:hover {
+    color: #fff;
+}
+
+.we-custom-node .card-link.link-danger {
+    color: #ff8787;
+}
+
+.we-custom-node .form-control {
+    background-color: #212529;
+    border-color: #6c757d;
+    color: #e9ecef;
+}
+
+.we-custom-node .form-label {
+    color: #adb5bd;
+}
+
+.we-custom-node .we-branch {
+    background-color: rgb(255 255 255 / 4%);
+    border-color: #6c757d;
+}
+
+.we-custom-node .we-branch.active {
+    border-color: #4dabf7;
+    background-color: rgb(77 171 247 / 12%);
+}
+
+/* Ports and region labels must stay subtle but readable on the dark card. */
+.we-custom-node .diagram-port {
+    background-color: #495057;
+    border-color: #868e96;
+}
+
+.we-custom-node .diagram-port:hover,
+.we-custom-node .diagram-port.has-links {
+    background-color: #4dabf7;
+    border-color: #4dabf7;
+}
+
+.we-custom-node .we-branch .we-branch-label,
+.we-custom-node .we-branch .we-branch-value {
+    color: #ced4da;
+}
+
+.we-custom-node .we-branch.we-branch-static,
+.we-custom-node .diagram-port.locked {
+    border-color: #6c757d;
+}
+
+/* Designer notes in the dark theme. */
+.we-custom-node .we-note-preview {
+    color: #adb5bd;
+}
+
+.we-custom-node .we-note-active {
+    color: #ffd43b !important;
+}
+
+/* --- Dialogs and drop-down lists (step 11): the dark theme has to reach the forms as well --- */
+/* Bootstrap keeps .modal-content white, but the text inherits the light colour of the dark theme,
+   which made every label, title and message inside a dialog unreadable. */
+.modal-content {
+    background-color: #343a40;
+    border-color: #6c757d;
+    color: #e9ecef;
+}
+
+.modal-header,
+.modal-footer {
+    border-color: #495057;
+}
+
+.modal-header .btn-close {
+    /*The Bootstrap icon is a black SVG: invert it so it stays visible on the dark header.*/
+    filter: invert(1) grayscale(1);
+    opacity: 0.7;
+}
+
+.modal-header .btn-close:hover {
+    opacity: 1;
+}
+
+.modal-body .form-control,
+.modal-body .form-select {
+    background-color: #212529;
+    border-color: #6c757d;
+    color: #e9ecef;
+}
+
+.modal-body .form-control::placeholder {
+    color: #adb5bd;
+}
+
+.modal-body .form-control:focus,
+.modal-body .form-select:focus {
+    background-color: #212529;
+    color: #e9ecef;
+    border-color: #4dabf7;
+}
+
+.modal a:not(.btn),
+.modal .link-primary {
+    color: #6ea8fe;
+}
+
+.modal a:not(.btn):hover,
+.modal .link-primary:hover {
+    color: #a5d8ff;
+}
+
+.modal .text-muted {
+    color: #adb5bd !important;
+}
+
+/* The auto-complete list is painted white by the base sheet, so its options were light on light. */
+.we-autocomplete .options {
+    background-color: #343a40;
+    border-color: #6c757d;
+    color: #e9ecef;
+    box-shadow: 0 30px 25px 8px rgb(0 0 0 / 40%);
+}
+
+.we-autocomplete .option,
+.we-autocomplete .option .option-text {
+    color: #e9ecef;
+}
+
+.we-autocomplete .option:hover {
+    background-color: #4dabf7;
+    color: #fff;
+}
+
+.we-autocomplete .option.disabled {
+    background-color: #495057;
+    color: #adb5bd;
+}
+
+.we-autocomplete .option.disabled:hover {
+    background-color: #495057;
+    color: #adb5bd;
+}
+
+/* --- Zoom controls: the Bootstrap .btn colour is dark and disappeared on the dark widget --- */
+.we-zoom-controls .btn {
+    color: #e9ecef;
+}
+
+.we-zoom-controls .btn:hover,
+.we-zoom-controls .btn:focus {
+    background-color: #495057;
+    color: #fff;
+}
+
+.we-zoom-controls .we-zoom-value {
+    color: #ced4da;
+}
+
+/* "Select ..." links of the value pickers sit on dark cards and panels (Bootstrap's .link-primary is
+   a dark blue, which is barely readable there). */
+.we-custom-node .link-primary,
+.we-panel .link-primary,
+.modal .link-primary {
+    color: #6ea8fe;
+}
+
+.we-custom-node .link-primary:hover,
+.we-panel .link-primary:hover,
+.modal .link-primary:hover {
+    color: #a5d8ff;
+}

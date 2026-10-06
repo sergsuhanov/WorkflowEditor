@@ -8,32 +8,29 @@
     <div class="col">
       <div class="">
         <label class="col-form-label">@Value.Value?.ToString()</label>
-        <button type="button" class="btn" @onclick="()=>Value.Value=null">
+        <button type="button" class="btn" @onclick="() => Value.Value = null">
           <span class="oi oi-x text-primary" aria-hidden="true"></span>
         </button>
-    </div>
+      </div>
 
-    @if (Value.Childs.Count > 0)
-    {
+      @if (Value.Childs.Count > 0)
+      {
         <ul class="we-vtc-options">
-        @foreach (var child in Value.Childs)
-        {
-          <li class="option">
-            <VariableTypeConstructorComponent 
-                @key="child" 
-                @ref="child.ObjRef" 
-                TypeCollection="TypeCollection"
-                Value="child">
-            </VariableTypeConstructorComponent>
-          </li>
-        }
+          @foreach (var child in Value.Childs)
+          {
+            <li class="option">
+              <VariableTypeConstructorComponent @key="child" @ref="child.ObjRef" TypeCollection="TypeCollection"
+                                                Value="child">
+              </VariableTypeConstructorComponent>
+            </li>
+          }
         </ul>
-    }
+      }
     </div>
   }
   @if (Value.Value == null)
   {
-    <div class="@(Value.Value != null?"col-8":"")">
+    <div class="@(Value.Value != null ? "col-8" : "")">
       <TypeSelectComponent TypeCollection="TypeCollection" @bind-Value="Value.Value"></TypeSelectComponent>
     </div>
   }
@@ -95,17 +92,23 @@
 
   private Type? _prevValue;
 
+  /// <summary>
+  /// Type the constructor starts from. It only seeds <see cref="Value"/>: the edited type lives in the
+  /// <see cref="TypeItem"/> tree, so the value is copied on the way in (a parameter setter would be called
+  /// during parameter binding, which Blazor warns about - BL0007).
+  /// </summary>
   [Parameter]
-  public Type? VariableType
+  public Type? VariableType { get; set; }
+
+  protected override void OnParametersSet()
   {
-    get => Value.Value;
-    set
+    if (_prevValue != VariableType)
     {
-      if (_prevValue == value) return;
-      _prevValue = value;
-      Value.Value = value;
-      StateHasChanged();
+      _prevValue = VariableType;
+      Value.Value = VariableType;
     }
+
+    base.OnParametersSet();
   }
 
   public Type? BuildedType { get => Value.BuildType(); }
