@@ -1,0 +1,38 @@
+@using Blazor.WorkflowEditor.Components
+
+<ActivityControl Node="@Node">
+    <Edit>
+        <div class="form-check">
+            <input type="checkbox" class="form-check-input" id="isInitial" checked="@Node.IsInitial"
+                   @onchange="e => Node.IsInitial = (bool)(e.Value ?? false)"
+                   @onmousedown:stopPropagation @onmouseup:stopPropagation @onmousemove:stopPropagation />
+            <label class="form-check-label" for="isInitial">Initial state</label>
+        </div>
+        <div class="form-check mb-3">
+            <input type="checkbox" class="form-check-input" id="isFinal" checked="@Node.IsFinal"
+                   @onchange="e => Node.IsFinal = (bool)(e.Value ?? false)"
+                   @onmousedown:stopPropagation @onmouseup:stopPropagation @onmousemove:stopPropagation />
+            <label class="form-check-label" for="isFinal">Final state</label>
+        </div>
+        @foreach (var transition in Node.Transitions)
+        {
+            var tr = transition;
+            <div class="border rounded p-2 mb-2">
+                <FlowTargetSelect Label="@tr.DisplayName" Container="Node.Container"
+                                  Value="Node.GetTarget(tr)" ValueChanged="v => Node.SetTarget(tr, v)" />
+                <input type="text" class="form-control mb-2" placeholder="Condition (Visual Basic, optional)"
+                       value="@Node.GetCondition(tr)" @onchange="e => Node.SetCondition(tr, e.Value?.ToString() ?? string.Empty)"
+                       @onmousedown:stopPropagation @onmouseup:stopPropagation @onmousemove:stopPropagation />
+                <button type="button" class="btn btn-sm btn-outline-danger" @onclick="() => Node.RemoveTransition(tr)"
+                        @onmousedown:stopPropagation @onmouseup:stopPropagation @onmousemove:stopPropagation>Remove transition</button>
+            </div>
+        }
+        <button type="button" class="btn btn-sm btn-outline-primary" @onclick="() => Node.AddTransition()"
+                @onmousedown:stopPropagation @onmouseup:stopPropagation @onmousemove:stopPropagation>Add transition</button>
+    </Edit>
+</ActivityControl>
+
+@code {
+    [Parameter]
+    public StateNode Node { get; set; } = default!;
+}

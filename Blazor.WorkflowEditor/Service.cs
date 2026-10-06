@@ -37,6 +37,8 @@ namespace Blazor.WorkflowEditor {
 
         public Diagrams.Core.Geometry.Rectangle? DiagramContainer => this.designer.Container;
 
+        public int LinkCount => designer.Links.Count;
+
         public ToolBoxItem? DraggedToolboxItem { get; set; }
 
         public event Action? SelectedOnMove;
@@ -71,14 +73,13 @@ namespace Blazor.WorkflowEditor {
             if (item is null)
                 return;
 
-            foreach (var link in designer.Links.Where(l => l.SourceNode() == node || l.TargetNode() == node).ToList())
-                designer.Links.Remove(link);
+            RemoveAllLinks(node);
             selectedLinks.RemoveAll(l => l.Item1 == item || l.Item2 == item);
 
             designer.Nodes.Remove(node);
 
-            //Remove activity in parent
-            Path.Last()?.Reference?.Node?.RemoveChild(item.Activity);
+            //Remove element in parent
+            Path.Last()?.Reference?.Node?.RemoveElement(item.Element);
 
             selectedItems.Remove(item);
             items.Remove(item);
@@ -98,8 +99,7 @@ namespace Blazor.WorkflowEditor {
             if (activityObject == null)
                 return (false, default!);
 
-            var activity = activityObject as System.Activities.Activity;
-            var result = addActivity(activity!);
+            var result = addElement(activityObject);
 
             var lastNode = Path.LastOrDefault()?.Reference?.Node;
             lastNode?.AddChild(result);
@@ -167,7 +167,16 @@ namespace Blazor.WorkflowEditor {
             if (last.Reference.Node.IsContainer == false)
                 return false;
 
+            var elementType = activityType.IsGenericType ? activityType.GetGenericTypeDefinition() : activityType;
+            if (!last.Reference.Node.CanAdd(elementType))
+                return false;
+
             return true;
+        }
+
+        internal void RemoveAllLinks(DefaultNode node) {
+            foreach (var link in designer.Links.Where(l => l.SourceNode() == node || l.TargetNode() == node).ToList())
+                designer.Links.Remove(link);
         }
 
         internal LinkModel LinkFromTo(ActivityDesignerPair from, ActivityDesignerPair to) {
@@ -185,6 +194,7 @@ namespace Blazor.WorkflowEditor {
             selectedLinks.Remove((from, to));
         }
 
+        public ActivityDesignerPair? FindPair(object element) => this.items.FirstOrDefault(p => ReferenceEquals(p.Element, element));
         internal ActivityDesignerPair GetPair(System.Activities.Activity source) => this.items.First(p => p.Activity == source);
         internal ActivityDesignerPair GetPair(DefaultNode node) => this.items.First(p => p.Node == node);
 
@@ -270,7 +280,7 @@ namespace Blazor.WorkflowEditor {
             foreach (var item in Path.SelectMany(p => p.Node.GetVariables()))
                 Variables.Add(item);
 
-            Path.Last().Reference.Node.LoadChilds(addActivity);
+            Path.Last().Reference.Node.LoadElements(addElement);
             updateState();
 
         }
@@ -296,7 +306,9 @@ namespace Blazor.WorkflowEditor {
             }
         }
 
-        private ActivityDesignerPair addActivity(System.Activities.Activity activity) {
+        private ActivityDesignerPair addActivity(System.Activities.Activity activity) => addElement(activity);
+
+        private ActivityDesignerPair addElement(object activity) {
             if (!typePairAttributes.Any())
                 discoverPairs();
 
@@ -324,7 +336,7 @@ namespace Blazor.WorkflowEditor {
             }
             designer.Nodes.Add(node);
             node.RestoreViewState();
-            ActivityDesignerPair result = new() { Activity = activity!, Node = node };
+            ActivityDesignerPair result = new() { Activity = (activity as System.Activities.Activity)!, Element = activity, Node = node };
             items.Add(result);
             return result;
         }
@@ -339,6 +351,7 @@ namespace Blazor.WorkflowEditor {
             System.Activities.Statements.Sequence sequence => sequence.Variables,
             System.Activities.Statements.Flowchart flowchart => flowchart.Variables,
             System.Activities.Statements.DoWhile doWhile => doWhile.Variables,
+            System.Activities.Statements.StateMachine stateMachine => stateMachine.Variables,
             _ => null
         };
 

@@ -10,9 +10,22 @@ public class DefaultNode : NodeModel {
 
     //    internal readonly Service service;
     public readonly Service service;
-    private readonly System.Activities.Activity activity;
+    private readonly object activity;
+    private readonly System.Reflection.PropertyInfo? displayNameProperty;
 
-    public string DisplayName { get => activity.DisplayName; set => activity.DisplayName = value; }
+    public object Element => activity;
+
+    public string DisplayName {
+        get => activity is System.Activities.Activity a
+            ? a.DisplayName
+            : displayNameProperty?.GetValue(activity) as string ?? activity.GetType().Name;
+        set {
+            if (activity is System.Activities.Activity a)
+                a.DisplayName = value;
+            else if (displayNameProperty?.CanWrite == true)
+                displayNameProperty.SetValue(activity, value);
+        }
+    }
     public string? Comment { get; set; }
     public bool IsContainer { get; init; } = false;
     public bool IsGeneric { get; set; } = false;
@@ -60,9 +73,10 @@ public class DefaultNode : NodeModel {
     private readonly PortModel rightPort = default!;
     private readonly PortModel bottomPort = default!;
 
-    public DefaultNode(Service service, System.Activities.Activity activity) : base() {
+    public DefaultNode(Service service, object activity) : base() {
         this.service = service;
         this.activity = activity;
+        this.displayNameProperty = activity.GetType().GetProperty("DisplayName");
 
         this.Size = defaultSize;
 
@@ -224,7 +238,7 @@ public class DefaultNode : NodeModel {
         var result = new List<Variable>();
         foreach (var property in source) {
             Variable variable = new() {
-                Activity = activity,
+                Activity = (System.Activities.Activity)activity,
                 Name = property.Name,
                 Type = property.Type,
                 DefaultValue = property.Default
@@ -238,7 +252,7 @@ public class DefaultNode : NodeModel {
         var result = new List<Variable>();
         foreach (var property in source) {
             Variable variable = new() {
-                Activity = activity,
+                Activity = (System.Activities.Activity)activity,
                 Name = property.Name,
                 Type = property.Type,
                 DefaultValue = property.Value
@@ -272,5 +286,17 @@ public class DefaultNode : NodeModel {
     public virtual void RemoveChild(System.Activities.Activity child) {
 
     }
+
+    /// <summary>Loads child elements, including non-activity ones. By default only activity children are loaded.</summary>
+    public virtual void LoadElements(Func<object, ActivityDesignerPair> addElement) => LoadChilds(a => addElement(a));
+
+    /// <summary>Removes a child element (activity or not) from the model.</summary>
+    public virtual void RemoveElement(object child) {
+        if (child is System.Activities.Activity a)
+            RemoveChild(a);
+    }
+
+    /// <summary>Whether this container accepts a child of the given activity or element type.</summary>
+    public virtual bool CanAdd(Type elementType) => typeof(System.Activities.Activity).IsAssignableFrom(elementType);
 
 }

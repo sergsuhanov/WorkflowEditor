@@ -99,6 +99,10 @@
         defaultGroup.Add<System.Activities.Statements.Rethrow>();
         defaultGroup.Add<System.Activities.Statements.TerminateWorkflow>();
         defaultGroup.Add<System.Activities.Statements.Flowchart>();
+        defaultGroup.Add(typeof(System.Activities.Statements.FlowDecision));
+        defaultGroup.Add(typeof(System.Activities.Statements.FlowSwitch<>));
+        defaultGroup.Add<System.Activities.Statements.StateMachine>();
+        defaultGroup.Add(typeof(System.Activities.Statements.State));
         defaultGroup.Add<System.Activities.Statements.If>();
         defaultGroup.Add<System.Activities.Statements.While>();
         defaultGroup.Add<System.Activities.Statements.DoWhile>();
