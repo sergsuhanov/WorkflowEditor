@@ -1,0 +1,16 @@
+@using Blazor.WorkflowEditor.Components
+
+<ActivityControl Node="@Node">
+    <Edit>
+        <div class="mb-3">
+            <label for="reason" class="form-label">Reason</label>
+            <input type="text" class="form-control" id="reason" @bind-value="Node.Reason"
+                   @onmousedown:stopPropagation @onmouseup:stopPropagation @onmousemove:stopPropagation />
+        </div>
+    </Edit>
+</ActivityControl>
+
+@code {
+    [Parameter]
+    public TerminateWorkflowNode Node { get; set; } = default!;
+}

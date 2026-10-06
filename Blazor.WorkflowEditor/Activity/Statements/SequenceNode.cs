@@ -10,8 +10,6 @@ public class SequenceNode : DefaultNode {
     public SequenceNode(Service service, System.Activities.Statements.Sequence sequenceActivity) : base(service, sequenceActivity) {
         this.sequenceActivity = sequenceActivity;
         this.IsContainer = true;
-
-        this.service.SelectedOnMove += onMove;
     }
 
     public override IEnumerable<Variable> GetVariables() {
@@ -23,6 +21,9 @@ public class SequenceNode : DefaultNode {
     }
 
     public override void LoadChilds(Func<System.Activities.Activity, ActivityDesignerPair> addActivity) {
+        this.service.SelectedOnMove -= onMove;
+        this.service.SelectedOnMove += onMove;
+
         var childHasViewState = false;
         ActivityDesignerPair? last = default;
         foreach (var activity in this.sequenceActivity.Activities) {
@@ -41,7 +42,7 @@ public class SequenceNode : DefaultNode {
 
         //Calc position
         if (childHasViewState == false) {
-            var horizontal = this.service.DiagramContainer!.Width / 2;
+            var horizontal = (this.service.DiagramContainer?.Width ?? 0) / 2;
             var minHeight = (int)this.service.Items.Min(p => p.Node.Size!.Height);
             var y = minHeight;
             var distance = minHeight;

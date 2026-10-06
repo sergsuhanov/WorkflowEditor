@@ -1,4 +1,4 @@
-using System.Activities;
+﻿using System.Activities;
 using System.Activities.Statements;
 
 namespace Blazor.WorkflowEditor.Activity.Statements;
@@ -21,6 +21,9 @@ public class IfNode : DefaultNode {
         get => ActivityArguments.GetText(activity.Condition);
         set => ActivityArguments.SetVisualBasicExpression(activity.Condition, argument => activity.Condition = (InArgument<bool>)argument, value, argumentType: typeof(bool));
     }
+
+    public string? ThenName => activity.Then?.DisplayName;
+    public string? ElseName => activity.Else?.DisplayName;
 
     public IfBranch SelectedBranch { get; set; } = IfBranch.Then;
 
