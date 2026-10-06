@@ -1,0 +1,12 @@
+@using Blazor.WorkflowEditor.Components
+
+<ActivityControl Node="@Node">
+    <Edit>
+        <div class="form-text">Open the flowchart to add steps. Steps run in the order they are linked; decisions and switches are not editable yet.</div>
+    </Edit>
+</ActivityControl>
+
+@code {
+    [Parameter]
+    public FlowchartNode Node { get; set; } = default!;
+}

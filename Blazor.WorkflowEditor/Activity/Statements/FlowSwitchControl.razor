@@ -1,0 +1,50 @@
+@using Blazor.WorkflowEditor.Components
+@typeparam T
+
+<ActivityControl Node="@Node">
+    <Edit>
+        <div class="mb-3">
+            <label for="expression" class="form-label">Expression (Visual Basic)</label>
+            <input type="text" class="form-control" id="expression" @bind-value="Node.Expression"
+                   @onmousedown:stopPropagation @onmouseup:stopPropagation @onmousemove:stopPropagation />
+        </div>
+        <FlowTargetSelect Label="Default target" Container="Node.Container" @bind-Value="Node.DefaultTarget" />
+        @foreach (var key in Node.CaseKeys)
+        {
+            var caseKey = key;
+            <div class="d-flex align-items-end">
+                <div class="flex-grow-1">
+                    <FlowTargetSelect Label="@($"Case {caseKey}")" Container="Node.Container"
+                                      Value="Node.GetCaseTarget(caseKey)" ValueChanged="v => Node.SetCase(caseKey, v)" />
+                </div>
+                <button type="button" class="btn btn-sm btn-outline-danger mb-3 ms-2" @onclick="() => Node.RemoveCase(caseKey)"
+                        @onmousedown:stopPropagation @onmouseup:stopPropagation @onmousemove:stopPropagation>Remove</button>
+            </div>
+        }
+        <div class="mb-3">
+            <label class="form-label">New case</label>
+            <input type="text" class="form-control mb-2" placeholder="Case value" @bind="newKey" @bind:event="oninput"
+                   @onmousedown:stopPropagation @onmouseup:stopPropagation @onmousemove:stopPropagation />
+            <FlowTargetSelect Label="Target" Container="Node.Container" @bind-Value="newTarget" />
+            <button type="button" class="btn btn-sm btn-outline-primary" @onclick="addCase"
+                    @onmousedown:stopPropagation @onmouseup:stopPropagation @onmousemove:stopPropagation>Add case</button>
+        </div>
+    </Edit>
+</ActivityControl>
+
+@code {
+    [Parameter]
+    public FlowSwitchNode<T> Node { get; set; } = default!;
+
+    private string newKey = string.Empty;
+    private int newTarget = -1;
+
+    private void addCase()
+    {
+        if (Node.SetCase(newKey, newTarget))
+        {
+            newKey = string.Empty;
+            newTarget = -1;
+        }
+    }
+}

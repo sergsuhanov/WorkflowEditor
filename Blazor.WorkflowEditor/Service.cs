@@ -5,6 +5,7 @@ using Blazor.Diagrams.Core;
 using Blazor.Diagrams.Core.Models;
 using Blazor.Diagrams.Core.Models.Base;
 using Blazor.WorkflowEditor.Activity;
+using System.Reflection;
 using Microsoft.AspNetCore.Components.Web;
 
 namespace Blazor.WorkflowEditor {
@@ -35,6 +36,8 @@ namespace Blazor.WorkflowEditor {
         public ObservableCollection<Variable> Variables { get; set; } = new();
 
         public Diagrams.Core.Geometry.Rectangle? DiagramContainer => this.designer.Container;
+
+        public int LinkCount => designer.Links.Count;
 
         public ToolBoxItem? DraggedToolboxItem { get; set; }
 
@@ -70,10 +73,13 @@ namespace Blazor.WorkflowEditor {
             if (item is null)
                 return;
 
+            RemoveAllLinks(node);
+            selectedLinks.RemoveAll(l => l.Item1 == item || l.Item2 == item);
+
             designer.Nodes.Remove(node);
 
-            //Remove activity in parent
-            Path.Last()?.Reference?.Node?.RemoveChild(item.Activity);
+            //Remove element in parent
+            Path.Last()?.Reference?.Node?.RemoveElement(item.Element);
 
             selectedItems.Remove(item);
             items.Remove(item);
@@ -93,8 +99,7 @@ namespace Blazor.WorkflowEditor {
             if (activityObject == null)
                 return (false, default!);
 
-            var activity = activityObject as System.Activities.Activity;
-            var result = addActivity(activity!);
+            var result = addElement(activityObject);
 
             var lastNode = Path.LastOrDefault()?.Reference?.Node;
             lastNode?.AddChild(result);
@@ -162,7 +167,16 @@ namespace Blazor.WorkflowEditor {
             if (last.Reference.Node.IsContainer == false)
                 return false;
 
+            var elementType = activityType.IsGenericType ? activityType.GetGenericTypeDefinition() : activityType;
+            if (!last.Reference.Node.CanAdd(elementType))
+                return false;
+
             return true;
+        }
+
+        internal void RemoveAllLinks(DefaultNode node) {
+            foreach (var link in designer.Links.Where(l => l.SourceNode() == node || l.TargetNode() == node).ToList())
+                designer.Links.Remove(link);
         }
 
         internal LinkModel LinkFromTo(ActivityDesignerPair from, ActivityDesignerPair to) {
@@ -180,6 +194,7 @@ namespace Blazor.WorkflowEditor {
             selectedLinks.Remove((from, to));
         }
 
+        public ActivityDesignerPair? FindPair(object element) => this.items.FirstOrDefault(p => ReferenceEquals(p.Element, element));
         internal ActivityDesignerPair GetPair(System.Activities.Activity source) => this.items.First(p => p.Activity == source);
         internal ActivityDesignerPair GetPair(DefaultNode node) => this.items.First(p => p.Node == node);
 
@@ -250,40 +265,53 @@ namespace Blazor.WorkflowEditor {
 
         private void updatePath() {
             //TODO: for variable try use
-            //System.Activities.ScopeUtils.GetLocals(this Activity activity) 
+            //System.Activities.ScopeUtils.GetLocals(this Activity activity)
 
             this.designer.Nodes.Clear();
             this.designer.Links.Clear();
 
             this.selectedItems.Clear();
             this.selectedLinks.Clear();
+            this.SelectedOnMove = null;
+
+            //Keep only the pairs of the opened path; children are recreated by LoadChilds
+            items.RemoveAll(p => !Path.Any(x => x.Reference == p));
 
             Variables.Clear();
             foreach (var item in Path.SelectMany(p => p.Node.GetVariables()))
                 Variables.Add(item);
 
-            Path.Last().Reference.Node.LoadChilds(addActivity);
+            Path.Last().Reference.Node.LoadElements(addElement);
             updateState();
 
         }
 
-        private ActivityDesignerPair addActivity(System.Activities.Activity activity) {
-            if (!typePairAttributes.Any()) {
-                var assemblies = AppDomain.CurrentDomain.GetAssemblies();
-                foreach (var assembly in assemblies) {
-                    foreach (var type in assembly.GetTypes()) {
-                        if (type.GetCustomAttributes(typeof(PairAttribute), true).Any()) {
-                            if (type.GetCustomAttributes(typeof(PairAttribute), true).FirstOrDefault() is not PairAttribute attr)
-                                continue;
-
-                            if (!typePairAttributes.ContainsKey(attr.Activity))
-                                typePairAttributes.Add(attr.Activity, new ActivityPairType(type, attr));
-
-                        }
-                    }
+        private void discoverPairs() {
+            foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies()) {
+                Type[] types;
+                try {
+                    types = assembly.GetTypes();
+                } catch (ReflectionTypeLoadException ex) {
+                    types = ex.Types.OfType<Type>().ToArray();
+                } catch (Exception) {
+                    continue;
                 }
 
+                foreach (var type in types) {
+                    if (type.GetCustomAttributes(typeof(PairAttribute), true).FirstOrDefault() is not PairAttribute attr)
+                        continue;
+
+                    if (!typePairAttributes.ContainsKey(attr.Activity))
+                        typePairAttributes.Add(attr.Activity, new ActivityPairType(type, attr));
+                }
             }
+        }
+
+        private ActivityDesignerPair addActivity(System.Activities.Activity activity) => addElement(activity);
+
+        private ActivityDesignerPair addElement(object activity) {
+            if (!typePairAttributes.Any())
+                discoverPairs();
 
             var activityType = activity.GetType();
             DefaultNode? node;
@@ -309,44 +337,9 @@ namespace Blazor.WorkflowEditor {
             }
             designer.Nodes.Add(node);
             node.RestoreViewState();
-            ActivityDesignerPair result = new() { Activity = activity!, Node = node };
+            ActivityDesignerPair result = new() { Activity = (activity as System.Activities.Activity)!, Element = activity, Node = node };
             items.Add(result);
             return result;
-
-            /*
-          var assemblies = AppDomain.CurrentDomain.GetAssemblies();
-          foreach (var assembly in assemblies) {
-              foreach (Type type in assembly.GetTypes()) {
-                  DefaultNode? node = null;
-                  if (type.GetCustomAttributes(typeof(PairAttribute), true).Length > 0) {
-                      var attr = type.GetCustomAttributes(typeof(PairAttribute), true).FirstOrDefault();
-                      if (attr == null) continue;
-                      var activityType = activity.GetType();
-                      if (activityType.IsGenericType) {
-                          if (activityType.GetGenericTypeDefinition() != ((PairAttribute)attr).Activity) continue;
-                          var genericTypes = activityType.GenericTypeArguments;
-                          node = (Activator.CreateInstance(type.MakeGenericType(genericTypes), this, activity) as Activity.DefaultNode)!;
-                          if (designer.GetComponentForModel(node) == null) {
-                              designer.RegisterModelComponent(type.MakeGenericType(genericTypes), ((PairAttribute)attr).Control.MakeGenericType(genericTypes));
-                          }
-                      } else {
-                          if (activityType != ((PairAttribute)attr).Activity) continue;
-                          node = (Activator.CreateInstance(type, this, activity) as Activity.DefaultNode)!;
-                          if (designer.GetComponentForModel(node) == null) {
-                              designer.RegisterModelComponent(type, ((PairAttribute)attr).Control);
-                          }
-                      }
-                      if (node == null) continue;
-                      designer.Nodes.Add(node);
-                      node.RestoreViewState();
-                      ActivityDesignerPair result = new() { Activity = activity!, Node = node };
-                      items.Add(result);
-                      return result;
-                  }
-              }
-          }
-          */
-            throw new NotSupportedException();
         }
 
         public void RefreshVariables() {
@@ -354,6 +347,14 @@ namespace Blazor.WorkflowEditor {
             foreach (var item in Path.SelectMany(p => p.Node.GetVariables()))
                 Variables.Add(item);
         }
+
+        private static ICollection<System.Activities.Variable>? getVariableCollection(object? activity) => activity switch {
+            System.Activities.Statements.Sequence sequence => sequence.Variables,
+            System.Activities.Statements.Flowchart flowchart => flowchart.Variables,
+            System.Activities.Statements.DoWhile doWhile => doWhile.Variables,
+            System.Activities.Statements.StateMachine stateMachine => stateMachine.Variables,
+            _ => null
+        };
 
         public virtual void AddVariable<TActivity>(TActivity activity, string name, Type type, string defaultValue) where TActivity : class {
             var genType = typeof(System.Activities.Variable<>).MakeGenericType(type);
@@ -365,30 +366,15 @@ namespace Blazor.WorkflowEditor {
                 constructorParams = new object?[] { name };
             }
             var variable = Activator.CreateInstance(genType, constructorParams);
-            if (variable != null) {
-                if (activity is System.Activities.Statements.Sequence) {
-                    (activity as System.Activities.Statements.Sequence)!.Variables.Add((System.Activities.Variable)variable);
-                }
-
-                if (activity is System.Activities.Statements.Flowchart) {
-                    (activity as System.Activities.Statements.Flowchart)!.Variables.Add((System.Activities.Variable)variable);
-                }
-            }
+            if (variable != null)
+                getVariableCollection(activity)?.Add((System.Activities.Variable)variable);
         }
 
         public virtual void RemoveVariable<TActivity>(TActivity activity, string name) where TActivity : class {
-            if (activity is System.Activities.Statements.Sequence) {
-                var variable = (activity as System.Activities.Statements.Sequence)!.Variables.FirstOrDefault(p => p.Name == name);
-                if (variable != null) {
-                    (activity as System.Activities.Statements.Sequence)!.Variables.Remove(variable);
-                }
-            }
-            if (activity is System.Activities.Statements.Flowchart) {
-                var variable = (activity as System.Activities.Statements.Flowchart)!.Variables.FirstOrDefault(p => p.Name == name);
-                if (variable != null) {
-                    (activity as System.Activities.Statements.Flowchart)!.Variables.Remove(variable);
-                }
-            }
+            var collection = getVariableCollection(activity);
+            var variable = collection?.FirstOrDefault(p => p.Name == name);
+            if (variable != null)
+                collection!.Remove(variable);
         }
 
         public virtual void UpdateVariable<TActivity>(TActivity activity, string oldName, string name, Type type, string defaultValue) where TActivity : class {

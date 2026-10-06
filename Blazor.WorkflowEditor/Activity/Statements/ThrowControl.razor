@@ -1,0 +1,16 @@
+@using Blazor.WorkflowEditor.Components
+
+<ActivityControl Node="@Node">
+    <Edit>
+        <div class="mb-3">
+            <label for="exception" class="form-label">Exception (Visual Basic expression)</label>
+            <input type="text" class="form-control" id="exception" @bind-value="Node.Exception"
+                   placeholder="New Exception(&quot;error&quot;)" @onmousedown:stopPropagation @onmouseup:stopPropagation @onmousemove:stopPropagation />
+        </div>
+    </Edit>
+</ActivityControl>
+
+@code {
+    [Parameter]
+    public ThrowNode Node { get; set; } = default!;
+}
