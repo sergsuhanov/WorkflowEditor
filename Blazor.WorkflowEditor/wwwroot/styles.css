@@ -10,6 +10,15 @@
     height: 100%;
 }
 
+.we-properties-panel {
+    flex: 0 0 280px;
+    overflow: auto;
+    margin: 2px;
+    padding: 0.75rem;
+    border: 1px solid #ced4da;
+    background-color: #fff;
+}
+
 .we-activity-path {
     flex: none;
     height: 24px;

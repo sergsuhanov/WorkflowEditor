@@ -86,7 +86,12 @@ public class ActivityDesignerTests {
     [Fact]
     public void AddToCollectionDesignerBindsSelectedWorkflowVariables() {
         using var service = new Service(new BlazorDiagram(), () => { });
-        var owner = new Sequence();
+        var owner = new Sequence {
+            Variables = {
+                new System.Activities.Variable<List<int>>("values"),
+                new System.Activities.Variable<int>("nextValue")
+            }
+        };
         var collection = new Variable {
             Activity = owner,
             Name = "values",
@@ -107,6 +112,13 @@ public class ActivityDesignerTests {
 
         Assert.Equal("values", ((VisualBasicValue<ICollection<int>>)activity.Collection.Expression!).ExpressionText);
         Assert.Equal("nextValue", ((VisualBasicValue<int>)activity.Item.Expression!).ExpressionText);
+
+        owner.Activities.Add(activity);
+        var xaml = WorkflowXamlSerializer.SaveBuilder(new ActivityBuilder { Implementation = owner });
+        var result = Assert.IsType<Sequence>(WorkflowXamlSerializer.LoadBuilder(xaml).Implementation);
+        var restoredActivity = Assert.IsType<AddToCollection<int>>(Assert.Single(result.Activities));
+        Assert.Equal("values", ((VisualBasicValue<ICollection<int>>)restoredActivity.Collection.Expression!).ExpressionText);
+        Assert.Equal("nextValue", ((VisualBasicValue<int>)restoredActivity.Item.Expression!).ExpressionText);
     }
 
     [Fact]
@@ -115,9 +127,11 @@ public class ActivityDesignerTests {
 
         service.SetActivityBuilder(new ActivityBuilder { Implementation = new Sequence() });
         Assert.Equal(2, service.Items.Count());
+        Assert.True(service.CheckAddActivity(typeof(WriteLine)));
 
         service.SetActivityBuilder(new ActivityBuilder { Implementation = new Sequence() });
         Assert.Equal(2, service.Items.Count());
+        Assert.True(service.CheckAddActivity(typeof(WriteLine)));
     }
 
     [Fact]

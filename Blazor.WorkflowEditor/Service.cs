@@ -211,6 +211,7 @@ namespace Blazor.WorkflowEditor {
                 else
                     selectedItems.Remove(item);
 
+                updateState();
             } else
             if (obj is LinkModel link) {
                 if (link.TargetNode() == null)
@@ -264,7 +265,7 @@ namespace Blazor.WorkflowEditor {
 
         private void updatePath() {
             //TODO: for variable try use
-            //System.Activities.ScopeUtils.GetLocals(this Activity activity) 
+            //System.Activities.ScopeUtils.GetLocals(this Activity activity)
 
             this.designer.Nodes.Clear();
             this.designer.Links.Clear();

@@ -1,0 +1,142 @@
+@using Blazor.WorkflowEditor.Activity
+@using Blazor.WorkflowEditor.Activity.Statements
+
+<aside class="we-properties-panel" aria-label="Activity properties">
+    <h2 class="h6">Activity properties</h2>
+
+    @if (selectedItems.Count == 0)
+    {
+        <p class="text-muted">Select an activity on the diagram to view its properties.</p>
+    }
+    else if (selectedItems.Count > 1)
+    {
+        <p class="text-muted">Select a single activity to edit its properties.</p>
+    }
+    else
+    {
+        var node = selectedItems[0];
+        <p class="text-muted">@activityTypeName(node)</p>
+        <div class="mb-3">
+            <label for="we-activity-display-name" class="form-label">Display name</label>
+            <input id="we-activity-display-name" class="form-control" @bind="node.DisplayName" />
+        </div>
+
+        @if (node is AssignNode assign)
+        {
+            <div class="mb-3">
+                <label for="we-assign-destination" class="form-label">Destination</label>
+                <input id="we-assign-destination" class="form-control" @bind="assign.Destination" />
+            </div>
+            <div class="mb-3">
+                <label for="we-assign-source" class="form-label">Source</label>
+                <input id="we-assign-source" class="form-control" @bind="assign.Source" />
+            </div>
+        }
+        else if (node is WriteLineNode writeLine)
+        {
+            <div class="mb-3">
+                <label for="we-write-line-text" class="form-label">Text</label>
+                <input id="we-write-line-text" class="form-control" @bind="writeLine.Text" />
+            </div>
+        }
+        else if (node is DelayNode delay)
+        {
+            <div class="mb-3">
+                <label for="we-delay-duration" class="form-label">Duration</label>
+                <input id="we-delay-duration" class="form-control @(invalidDuration ? "is-invalid" : string.Empty)"
+                       value="@durationDraft" @oninput="eventArgs => updateDuration(delay, eventArgs)"
+                       placeholder="00:00:01" aria-describedby="we-delay-duration-error" />
+                @if (invalidDuration)
+                {
+                    <div id="we-delay-duration-error" class="invalid-feedback">Enter a valid duration, for example 00:00:01.</div>
+                }
+            </div>
+        }
+        else if (node is IfNode conditional)
+        {
+            <div class="mb-3">
+                <label for="we-if-condition" class="form-label">Condition (Visual Basic expression)</label>
+                <input id="we-if-condition" class="form-control" @bind="conditional.Condition" />
+            </div>
+            <div class="mb-3">
+                <label for="we-if-branch" class="form-label">Branch for new child</label>
+                <select id="we-if-branch" class="form-select" @bind="conditional.SelectedBranch">
+                    <option value="@IfBranch.Then">Then</option>
+                    <option value="@IfBranch.Else">Else</option>
+                </select>
+            </div>
+        }
+        else if (node is WhileNode loop)
+        {
+            <div class="mb-3">
+                <label for="we-while-condition" class="form-label">Condition (Visual Basic expression)</label>
+                <input id="we-while-condition" class="form-control" @bind="loop.Condition" />
+            </div>
+            <p class="form-text">Add the loop body while this activity is open.</p>
+        }
+        else if (node is SequenceNode sequence)
+        {
+            <p class="form-text">Activities in this sequence run in order. Open the activity to manage its children.</p>
+        }
+        else if (isAddToCollectionNode(node))
+        {
+            <DynamicComponent Type="@getCollectionEditorType(node)"
+                              Parameters="@getCollectionEditorParameters(node)" />
+        }
+        else
+        {
+            <p class="text-muted">No additional property editor is available for this activity yet.</p>
+        }
+    }
+</aside>
+
+@code {
+    [Parameter, EditorRequired]
+    public Service Service { get; set; } = default!;
+
+    private DelayNode? durationNode;
+    private string durationDraft = string.Empty;
+    private bool invalidDuration;
+
+    private List<DefaultNode> selectedItems => Service.SelectedItems
+        .Select(item => item.Node)
+        .ToList();
+
+    private static string activityTypeName(DefaultNode node) =>
+        node.GetType().Name.Replace("Node", string.Empty, StringComparison.Ordinal);
+
+    private static bool isAddToCollectionNode(DefaultNode node) =>
+        node.GetType().IsGenericType &&
+        node.GetType().GetGenericTypeDefinition() == typeof(AddToCollectionNode<>);
+
+    private static Type getCollectionEditorType(DefaultNode node) =>
+        typeof(AddToCollectionProperties<>).MakeGenericType(node.GetType().GenericTypeArguments);
+
+    private static IDictionary<string, object> getCollectionEditorParameters(DefaultNode node) =>
+        new Dictionary<string, object> { ["Node"] = node };
+
+    protected override void OnParametersSet()
+    {
+        var selectedDelay = selectedItems.Count == 1 ? selectedItems[0] as DelayNode : null;
+        if (!ReferenceEquals(durationNode, selectedDelay))
+        {
+            durationNode = selectedDelay;
+            durationDraft = selectedDelay?.Duration ?? string.Empty;
+            invalidDuration = false;
+        }
+    }
+
+    private void updateDuration(DelayNode node, ChangeEventArgs eventArgs)
+    {
+        durationDraft = eventArgs.Value?.ToString() ?? string.Empty;
+        if (TimeSpan.TryParse(durationDraft, System.Globalization.CultureInfo.InvariantCulture, out _))
+        {
+            node.Duration = durationDraft;
+            invalidDuration = false;
+        }
+        else
+        {
+            invalidDuration = true;
+        }
+    }
+}
