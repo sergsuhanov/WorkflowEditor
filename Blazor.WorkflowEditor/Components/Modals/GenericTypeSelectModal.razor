@@ -13,11 +13,15 @@
         <VariableTypeConstructorComponent @key="item" @ref="item.ObjRef" TypeCollection="TypeCollection" VariableType="item.Value">
         </VariableTypeConstructorComponent>
       }
+      @if (!string.IsNullOrWhiteSpace(typeError))
+      {
+        <div class="alert alert-danger mt-2" role="alert">@typeError</div>
+      }
 
   </Body>
 
   <Footer>
-    <ModalFooter OnClose="Modal!.Close" OnApply="Modal!.Apply"></ModalFooter>
+    <ModalFooter OnClose="Modal!.Close" OnApply="apply"></ModalFooter>
   </Footer>
 </Modal>
 
@@ -44,6 +48,21 @@
       .Select(p => p.BuildedType).ToList();
 
     public ModalResult ModalResult => Modal!.ModalResult; 
+
+    private string? typeError;
+
+    private void apply()
+    {
+      var types = BuildedTypes;
+      if (types.Count != GenericTypes.Count || types.Any(type => type == null))
+      {
+        typeError = "Select a type for every generic parameter.";
+        return;
+      }
+
+      typeError = null;
+      Modal!.Apply();
+    }
 
     public Task<ModalResult> Show() {
         return Modal!.Show();

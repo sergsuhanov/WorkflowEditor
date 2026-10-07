@@ -77,7 +77,8 @@
             </nav>
 
             <Blazor.WorkflowEditor.Editor @ref="editor" ToolBoxGroups="groups" TypeCollection="TypeCollection"
-                                          DirtyChanged="onDirtyChanged" />
+                                          DirtyChanged="onDirtyChanged" ValidationChanged="onValidationChanged"
+                                          OperationFailed="onEditorOperationFailed" />
 
             @if (!string.IsNullOrWhiteSpace(statusMessage))
             {
@@ -130,6 +131,14 @@
         StateHasChanged();
     }
 
+    private Task onValidationChanged() => InvokeAsync(StateHasChanged);
+
+    private void onEditorOperationFailed(string message)
+    {
+        statusMessage = message;
+        isError = true;
+    }
+
     /// <summary>Asks the user before a modified schema is replaced by New/Open.</summary>
     private async Task<bool> confirmDiscardChanges()
     {
@@ -156,6 +165,7 @@
         controlFlow.Add(typeof(System.Activities.Statements.ForEach<>));
         controlFlow.Add<System.Activities.Statements.Parallel>();
         controlFlow.Add<System.Activities.Statements.TryCatch>();
+        controlFlow.Add(typeof(System.Activities.Statements.Switch<>));
         groups.Add(controlFlow);
 
         var primitives = new Blazor.WorkflowEditor.ToolBoxGroup() { Name = "Primitives" };

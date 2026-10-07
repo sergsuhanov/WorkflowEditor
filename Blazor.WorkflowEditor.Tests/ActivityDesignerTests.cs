@@ -709,6 +709,95 @@ public class ActivityDesignerTests {
     }
 
     [Fact]
+    public void SwitchDesignerEditsExpressionAndBranches() {
+        using var service = new Service(new BlazorDiagram(), () => { });
+        var activity = new System.Activities.Statements.Switch<int>();
+        var node = new SwitchNode<int>(service, activity);
+        var modelChanges = 0;
+        service.ModelChanged += () => modelChanges++;
+
+        Assert.Contains(System.Activities.Validation.ActivityValidationServices.Validate(
+                new Sequence { Activities = { activity } }).Errors,
+            error => error.PropertyName == "Expression");
+
+        node.Expression = "choice";
+        Assert.Equal(1, modelChanges);
+        Assert.Equal("choice", ((VisualBasicValue<int>)activity.Expression.Expression!).ExpressionText);
+        Assert.DoesNotContain(System.Activities.Validation.ActivityValidationServices.Validate(
+                new Sequence { Activities = { activity } }).Errors,
+            error => error.PropertyName == "Expression");
+        Assert.True(node.AddCase("01"));
+        Assert.False(node.AddCase("1"));
+        Assert.False(node.AddCase("invalid"));
+        Assert.Equal("1", Assert.Single(node.CaseKeys));
+
+        var caseBody = new WriteLine { DisplayName = "case 1" };
+        Assert.True(node.SelectCase("1"));
+        node.AddChild(new ActivityDesignerPair { Activity = caseBody });
+        Assert.Same(caseBody, activity.Cases[1]);
+
+        var defaultBody = new Delay { DisplayName = "default" };
+        node.SelectDefault();
+        node.AddChild(new ActivityDesignerPair { Activity = defaultBody });
+        Assert.Same(defaultBody, activity.Default);
+
+        node.ClearCase("1");
+        Assert.Contains("1", node.CaseKeys);
+        Assert.Null(activity.Cases[1]);
+        Assert.Null(node.CaseName("1"));
+    }
+
+    [Fact]
+    public void SwitchDesignerLoadsAndRoundTripsBranches() {
+        using var service = new Service(new BlazorDiagram(), () => { });
+        var activity = new System.Activities.Statements.Switch<int> {
+            Expression = new InArgument<int>(new VisualBasicValue<int> { ExpressionText = "choice" }),
+            Default = new WriteLine { Text = "other" }
+        };
+        activity.Cases.Add(1, new WriteLine { Text = "one" });
+        activity.Cases.Add(2, new Delay());
+        service.SetActivityBuilder(new ActivityBuilder { Implementation = activity });
+        service.Open(service.Items.Single(pair => ReferenceEquals(pair.Activity, activity)).Node);
+
+        var node = Assert.IsType<SwitchNode<int>>(service.FindPair(activity)! .Node);
+        Assert.Equal("choice", node.Expression);
+        Assert.Equal(2, node.CaseKeys.Count);
+        Assert.Contains(service.Items, pair => pair.Activity == activity.Default);
+        Assert.Contains(service.Items, pair => pair.Activity == activity.Cases[1]);
+        Assert.Contains(service.Items, pair => pair.Activity == activity.Cases[2]);
+
+        var xaml = WorkflowXamlSerializer.SaveBuilder(new ActivityBuilder { Implementation = activity });
+        var loaded = Assert.IsType<System.Activities.Statements.Switch<int>>(
+            WorkflowXamlSerializer.LoadBuilder(xaml).Implementation);
+        Assert.Equal("choice",
+            ((VisualBasicValue<int>)loaded.Expression.Expression!).ExpressionText);
+        Assert.Equal(new[] { 1, 2 }, loaded.Cases.Keys.OrderBy(key => key));
+        Assert.IsType<WriteLine>(loaded.Cases[1]);
+        Assert.IsType<Delay>(loaded.Cases[2]);
+        Assert.IsType<WriteLine>(loaded.Default);
+
+        Assert.True(node.RemoveCase("1"));
+        Assert.False(activity.Cases.ContainsKey(1));
+        Assert.DoesNotContain(service.Items, pair => pair.Activity.DisplayName == "one");
+    }
+
+    [Fact]
+    public void SwitchXamlRoundTripPreservesAnEmptyCase() {
+        using var service = new Service(new BlazorDiagram(), () => { });
+        var activity = new System.Activities.Statements.Switch<int>();
+        var node = new SwitchNode<int>(service, activity);
+
+        Assert.True(node.AddCase("3"));
+
+        var xaml = WorkflowXamlSerializer.SaveBuilder(new ActivityBuilder { Implementation = activity });
+        var loaded = Assert.IsType<System.Activities.Statements.Switch<int>>(
+            WorkflowXamlSerializer.LoadBuilder(xaml).Implementation);
+
+        Assert.Contains(3, loaded.Cases.Keys);
+        Assert.Null(loaded.Cases[3]);
+    }
+
+    [Fact]
     public void NewContainersRoundTripThroughXaml() {
         var source = new ActivityBuilder {
             Implementation = new Sequence {

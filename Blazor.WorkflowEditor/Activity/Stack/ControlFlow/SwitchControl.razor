@@ -1,0 +1,83 @@
+@using Blazor.WorkflowEditor.Components
+@typeparam T
+
+<ActivityControl Node="@Node">
+    <Preview>
+        <div class="we-branches">
+            <ActivityRegion Node="Node" Label="Default" Value="@Node.DefaultName" CanClear="@Node.HasDefault"
+                            Active="@Node.IsDefaultSelected" OnActivate="@(() => Node.SelectDefault())"
+                            OnClear="@(() => Node.ClearDefault())" />
+            @foreach (var key in Node.CaseKeys)
+            {
+                var caseKey = key;
+                <ActivityRegion Node="Node" Label="@($"Case {caseKey}")" Value="@Node.CaseName(caseKey)"
+                                CanClear="@Node.HasCaseBody(caseKey)" Active="@Node.IsCaseSelected(caseKey)"
+                                OnActivate="@(() => Node.SelectCase(caseKey))"
+                                OnClear="@(() => Node.ClearCase(caseKey))" />
+            }
+        </div>
+    </Preview>
+    <Edit>
+        <div class="mb-3">
+            <label for="switch-expression" class="form-label">Expression (Visual Basic)</label>
+            <input type="text" class="form-control" id="switch-expression" @bind-value="Node.Expression"
+                   @onmousedown:stopPropagation @onmouseup:stopPropagation @onmousemove:stopPropagation />
+        </div>
+        <div class="mb-3">
+            <label for="switch-new-case" class="form-label">New case value (@typeof(T).Name)</label>
+            <div class="input-group">
+                <input type="text" class="form-control" id="switch-new-case" @bind="newCaseKey" @bind:event="oninput"
+                       @onmousedown:stopPropagation @onmouseup:stopPropagation @onmousemove:stopPropagation />
+                <button type="button" class="btn btn-outline-primary" @onclick="addCase"
+                        @onmousedown:stopPropagation @onmouseup:stopPropagation @onmousemove:stopPropagation>Add case</button>
+            </div>
+            @if (!string.IsNullOrEmpty(caseError))
+            {
+                <div class="text-danger mt-1" role="alert">@caseError</div>
+            }
+        </div>
+        @if (Node.CaseKeys.Count > 0)
+        {
+            <div class="mb-3">
+                <label class="form-label">Cases</label>
+                @foreach (var key in Node.CaseKeys)
+                {
+                    var caseKey = key;
+                    <div class="d-flex align-items-center justify-content-between mb-1">
+                        <span>@caseKey</span>
+                        <button type="button" class="btn btn-sm btn-outline-danger" @onclick="() => removeCase(caseKey)"
+                                @onmousedown:stopPropagation @onmouseup:stopPropagation @onmousemove:stopPropagation>Remove</button>
+                    </div>
+                }
+            </div>
+        }
+        <div class="form-text">Collapse the node, then drop an activity onto a case or the Default region.</div>
+    </Edit>
+</ActivityControl>
+
+@code {
+    [Parameter]
+    public SwitchNode<T> Node { get; set; } = default!;
+
+    private string newCaseKey = string.Empty;
+    private string? caseError;
+
+    private void addCase()
+    {
+        if (Node.AddCase(newCaseKey))
+        {
+            newCaseKey = string.Empty;
+            caseError = null;
+        }
+        else
+        {
+            caseError = $"Enter a valid, unique {typeof(T).Name} case value.";
+        }
+    }
+
+    private void removeCase(string key)
+    {
+        if (Node.RemoveCase(key))
+            caseError = null;
+    }
+}

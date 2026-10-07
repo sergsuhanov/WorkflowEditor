@@ -17,6 +17,7 @@ public static class ActivityIcon {
         Add(typeof(DoWhile), "loop-square");
         Add(typeof(System.Activities.Statements.Parallel), "layers");
         Add(typeof(TryCatch), "shield");
+        Add(typeof(Switch<>), "fork");
 
         // Stack: primitives
         Add(typeof(Assign), "action-redo");

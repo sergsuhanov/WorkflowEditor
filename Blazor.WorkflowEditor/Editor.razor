@@ -97,6 +97,12 @@
     [Parameter]
     public EventCallback<bool> DirtyChanged { get; set; }
 
+    [Parameter]
+    public EventCallback ValidationChanged { get; set; }
+
+    [Parameter]
+    public EventCallback<string> OperationFailed { get; set; }
+
     /// <summary>True when the schema contains changes that are not saved yet.</summary>
     public bool HasUnsavedChanges => service?.IsDirty == true;
 
@@ -296,6 +302,7 @@
         var ab = new ActivityBuilder() { Implementation = new System.Activities.Statements.Sequence() };
         service.SetActivityBuilder(ab);
         ValidationMessages.Clear();
+        notifyValidationChanged();
     }
 
     public void Load(string source)
@@ -323,8 +330,10 @@
     {
         var implementation = service.GetActivityBuilder()?.Implementation;
         ValidationMessages = new List<string>();
-        if (implementation == null)
+        if (implementation == null) {
+            notifyValidationChanged();
             return;
+        }
 
         var results = System.Activities.Validation.ActivityValidationServices.Validate(implementation);
         foreach (var result in results.Errors)
@@ -332,6 +341,13 @@
 
         //Per-node errors: the badge on the card uses the same validation results.
         service.SetValidationErrors(results.Errors);
+        notifyValidationChanged();
+    }
+
+    private void notifyValidationChanged()
+    {
+        if (ValidationChanged.HasDelegate)
+            _ = InvokeAsync(() => ValidationChanged.InvokeAsync());
     }
 
     public void OpenPath(PathItem pathItem)
@@ -339,55 +355,85 @@
         service.OpenPath(pathItem);
     }
 
-    private async void OnDrop(DragEventArgs e)
+    private async Task OnDrop(DragEventArgs e)
     {
-        if (service.DraggedToolboxItem == null)
+        var draggedItem = service.DraggedToolboxItem;
+        if (draggedItem == null)
             return;
 
         //Blazor recycles event arguments: they are only valid until the handler returns, and the generic
         //type dialog below awaits, so the drop position has to be read before that first await.
         var position = diagram.GetRelativeMousePoint(e.ClientX, e.ClientY);
+        var dropTarget = service.DropTarget;
 
-        if (service.DraggedToolboxItem.TypeOfActivity.IsGenericType)
+        try
         {
-            var genericTypes = service.DraggedToolboxItem.TypeOfActivity
-                .GetGenericArguments()
-                .Where(t => t.IsGenericParameter)
-                .Select(s => new GenericTypeSelectModal.GenericTypeDescription { Key = s.ToString() })
-                .ToList();
-
-            if (modalService == null)
-                throw new NotSupportedException();
-
-            var modal = await modalService.ShowModal<GenericTypeSelectModal>(new(){
-                {"GenericTypes",genericTypes},
-                {"TypeCollection",TypeCollection??new List<Type>()}
-            });
-
-            if (modal != null && modal.ModalResult == ModalResult.Applied)
+            if (draggedItem.TypeOfActivity.IsGenericType)
             {
-                (bool hasAdded, var result) = service.AddActivity(service.DraggedToolboxItem.TypeOfActivity,
-modal.BuildedTypes.ToArray()!);
-                //An inline add (a drop into a container region) has no node of its own on the diagram.
-                if (!hasAdded || result?.Node == null)
-                    return;
+                var genericTypes = draggedItem.TypeOfActivity
+                    .GetGenericArguments()
+                    .Where(t => t.IsGenericParameter)
+                    .Select(s => new GenericTypeSelectModal.GenericTypeDescription { Key = s.ToString() })
+                    .ToList();
 
-                result.Node.CenterPosition = position;
+                if (modalService == null)
+                    throw new NotSupportedException();
+
+                var modal = await modalService.ShowModal<GenericTypeSelectModal>(new(){
+                    {"GenericTypes",genericTypes},
+                    {"TypeCollection",TypeCollection??new List<Type>()}
+                });
+
+                if (modal.ModalResult == ModalResult.Applied)
+                {
+                    var selectedTypes = modal.BuildedTypes;
+                    var resolvedTypes = selectedTypes.OfType<Type>().ToArray();
+                    if (resolvedTypes.Length != genericTypes.Count)
+                    {
+                        await OperationFailed.InvokeAsync("Select a type for every generic parameter.");
+                        return;
+                    }
+
+                    service.DraggedToolboxItem = draggedItem;
+                    service.DropTarget = dropTarget;
+                    var (hasAdded, result) = service.AddActivity(draggedItem.TypeOfActivity, resolvedTypes);
+                    if (!hasAdded || result?.Node == null)
+                    {
+                        await OperationFailed.InvokeAsync("This activity cannot be added to the selected region.");
+                        return;
+                    }
+
+                    //Inline children have a model node but are not displayed separately on the diagram.
+                    if (service.IsDisplayed(result.Node))
+                        result.Node.CenterPosition = position;
+                }
+            }
+            else
+            {
+                service.DraggedToolboxItem = draggedItem;
+                service.DropTarget = dropTarget;
+                var (hasAdded, result) = service.AddActivity(draggedItem.TypeOfActivity);
+                if (!hasAdded || result?.Node == null)
+                {
+                    await OperationFailed.InvokeAsync("This activity cannot be added to the selected region.");
+                    return;
+                }
+
+                if (service.IsDisplayed(result.Node))
+                    result.Node.CenterPosition = position;
             }
 
             StateHasChanged();
         }
-        else
+        catch (ArgumentException ex)
         {
-            (bool hasAdded, var result) = service.AddActivity(service.DraggedToolboxItem.TypeOfActivity);
-            if (!hasAdded || result?.Node == null)
-                return;
-
-            result.Node.CenterPosition = position;
+            await OperationFailed.InvokeAsync($"Could not add {draggedItem.Name}: {ex.Message}");
         }
-
-        service.DraggedToolboxItem = null;
-        
+        finally
+        {
+            service.DraggedToolboxItem = null;
+            service.DropTarget = null;
+        }
     }
 
 }

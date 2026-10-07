@@ -1,118 +1,49 @@
-# План развития WorkflowEditor.Web
+# Web editor implementation guide
 
-**Статус:** план согласован; техническая инвентаризация и аудит покрытия Activity — следующий этап.  
-**Область:** Web-редактор и проекты, необходимые для его сборки и работы.
+Use this file for current implementation state and engineering rules. The visual UX backlog is in [VISUAL_EDITOR_PLAN.md](VISUAL_EDITOR_PLAN.md).
 
-## Цель
+## Boundaries
 
-Развивать браузерный редактор WF-схем на .NET 10 с возможностями редактирования базовых Windows Workflow Foundation Activity, оптимизировать уже имеющиеся Blazor-реализации и заложить повторно используемые принципы для будущей библиотеки пользовательских Activity с Razor-дизайнерами.
+- Change `WorkflowEditor.Web` and projects required by its build only.
+- Do not change or migrate `WorkflowEditor.Win` or `glassPeople`.
+- Preserve WF XAML load/save behavior. Keep user Activity separate from the legacy Windows library.
+- Web projects target .NET 10; do not upgrade unrelated solution projects.
 
-Ориентир по UX и модели редактирования — базовый WF-дизайнер (`System.Activities.Presentation`,
-`System.Activities.Core.Presentation`): ActivityDesigner/ChildRegion, Grid для стековых контейнеров,
-Connector для графовых, ViewState. Подробная таксономия Activity (стековые / flow / state machine)
-и приоритеты визуальных работ — в `docs/VISUAL_EDITOR_PLAN.md`.
+## Current state
 
-## Границы и решения
+- Dependency graph: `WorkflowEditor.Web` → `Blazor.WorkflowEditor`; tests reference the editor library. The Web graph has no `glassPeople` reference or toolbox scan.
+- `WorkflowEditor.Web`, `Blazor.WorkflowEditor`, and `Blazor.WorkflowEditor.Tests` target `net10.0`. Package versions are pinned in their project files; a separate review of newer compatible stable versions remains.
+- XAML open/save, workflow validation, unsaved-change confirmation, and browser file download are implemented. Web view state and notes use `bwas:Designer` attached properties.
+- Specialized designers cover `Sequence`, `If`, `While`, `DoWhile`, `ForEach<T>`, `Parallel`, `TryCatch`, `Switch<T>`, `Assign`/`Assign<T>`, `WriteLine`, `Delay`, `Throw`, `TerminateWorkflow`, collection activities, `Flowchart`/`FlowDecision`/`FlowSwitch<T>`, and `StateMachine`/`State`.
+- `Rethrow` and other unpaired loaded activities use the generic fallback: only the display name is editable. Do not describe them as having type-specific editors.
+- Compared with the base Windows toolbox, remaining candidates are `ParallelForEach<T>`, `Pick`/`PickBranch`, and `Cast<T1,T2>`. `FinalState` needs XAML investigation before adding: Web already supports `State.IsFinal`.
 
-- `WorkflowEditor.Win` **не изменять**. Это отдельное Windows-приложение на .NET Framework для редактирования схем из Windows.
-- `glassPeople` **н�� изменять и не мигрировать**. Он остаётся источником классов для Windows-приложения.
-- Удалить зависимость Web-редактора от `glassPeople`: убрать ссылку из Web-графа и исключить загрузку его Activity в Web toolbox. Текущий Web-редактор на этом этапе работает с базовыми Activity и уже имеющимися совместимыми реализациями.
-- После завершения работ по базовым Activity спроектировать и подключить отдельную библиотеку под .NET 10 — аналог `glassPeople`, но содержащую совместимые Activity и Razor-формы. Её API и дизайнеры должны опираться на механизмы и соглашения, проверенные на базовых Activity.
-- Проекты и зависимости, необходимые Web-редактору, перевести на .NET 10 и обновить до последних совместимых стабильных версий после проверки совместимости. Не менять несвязанные Windows/legacy-проекты ради формального обновления всей solution.
-- Сохранить совместимость загрузки и сохранения WF XAML; изменения форм не должны незаметно ломать существующие схемы.
+## Adding or changing an Activity
 
-## Этапы работ
+1. Add the open generic Activity to the appropriate toolbox group in `WorkflowEditor.Web/Shared/MainLayout.razor`.
+2. Implement a paired `DefaultNode` and Razor control using `[Pair(typeof(Activity), typeof(Control))]`. Keep workflow-model mutations in the node and UI in the control.
+3. For containers, implement child loading, add, remove, and clear behavior. Ensure dropping into each region targets the intended slot.
+4. Add tests for editing, child management, invalid input, and XAML round-trip. Update the coverage list here when behavior changes.
+5. Build and test the Web graph, then restart the local host before browser verification.
 
-### 1. Инвентаризация Web-графа и текущего редактора
+## Verification
 
-- Проследить ссылки `trunk.sln` → `WorkflowEditor.Web` → `Blazor.WorkflowEditor` и остальные фактические зависимости.
-- Найти все места, где Web использует `glassPeople` — в частности регистрацию Activity в toolbox, загрузку сборок, пространства имён и сериализацию.
-- Составить каталог существующих пар Activity/Node/Control: что отображается и редактируется, что остаётся только в общем fallback, какие дочерние Activity поддерживаются.
-- Сопоставить каталог с базовыми Activity и наборами, используемыми Windows toolbox в `WorkflowEditor.Win/DesignerService.cs`; зафиксировать пробелы и приоритеты.
-- Проверить сериализацию, сохранение view state, обработку ошибок, существующие сценарии Web New/Load/Save и доступные тесты/CI.
+From the repository root:
 
-**Результат:** карта зависимостей Web, матрица покрытия Activity и согласованный список первых Activity для реализации.
+```sh
+dotnet test Blazor.WorkflowEditor.Tests/Blazor.WorkflowEditor.Tests.csproj -c Release
+dotnet build WorkflowEditor.Web/WorkflowEditor.Web.csproj -c Release
+```
 
-### 2. Отвязка Web от `glassPeople`
+Run the host with:
 
-- Удалить `ProjectReference` на `glassPeople` из Web-проекта, если аудит подтвердит, что прямых необходимых ссылок больше нет.
-- Удалить из Web-регистрации toolbox поиск и показ Activity из `glassPeople`; не подменять их миграцией самого `glassPeople`.
-- Удалить только ставшие ненужными импорты, типы и код, после чего проверить, что Web использует базовые Activity без legacy-сборки.
+```sh
+dotnet run --project WorkflowEditor.Web/WorkflowEditor.Web.csproj --urls http://localhost:5199
+```
 
-**Критерий готовности:** Web-граф не содержит ссылки на `glassPeople`; Windows-проект и его поведение не затронуты.
+After any rebuild, restart it and verify XAML open → edit → save → reopen in the browser.
 
-### 3. Переход Web-графа на .NET 10 и обновление компонентов
+## Deferred
 
-- Перевести на `net10.0` Web-проект и все необходимые ему совместимые проекты.
-- Проверить версии и совместимость Blazor, WF runtime, диаграммной библиотеки и остальных NuGet-зависимостей; выбрать последние стабильные версии, совместимые друг с другом и с .NET 10.
-- Обновлять связанные пакеты согласованно; фиксировать необходимые API/кодовые адаптации.
-- Проверить Debug/Release build Web-проекта и всех входящих в его граф проектов.
-
-**Критерий готовности:** Web-граф собирается на .NET 10, версии зависимостей согласованы, базовые тестовые XAML-сценарии не регрессировали. Точные версии фиксируются после проверки NuGet и сборки, а не предполагаются заранее.
-
-### 4. Общий механизм редактирования свойств Activity
-
-- Определить модель метаданных и редактор форм, позволяющие получить рабочий UI без отдельного компонента для каждого простого свойства.
-- Поддержать как минимум обычные CLR-свойства, WF `InArgument` / `OutArgument` / `InOutArgument`, отображаемые имена и категории, обязательность, enum, nullable и типы/коллекции, которые реально используются базовыми Activity.
-- Для специальных структурных или коллекционных Activity предусмотреть специализированные Razor-дизайнеры поверх общего механизма.
-- Не показывать служебные/непредназначенные для редактирования члены; проверять двустороннее изменение модели и корректную сериализацию XAML.
-
-**Критерий готовности:** Activity без специальной формы можно осмысленно настроить в редакторе, а специализированные формы можно добавлять по единому соглашению.
-
-### 5. Реализация и оптимизация дизайнеров базовых Activity
-
-- Сначала улучшить существующие пары и проверить их поведение, а не переписывать автоматически.
-- Реализовывать и проверять Activity итерациями в порядке, определённом аудитом. Начальный приоритет: `Sequence`, `Assign`, `WriteLine`, `If`, `While` и `DoWhile`; затем — `TryCatch`, `Parallel`, `ForEach` и другие базовые элементы, включённые в согласованный охват.
-- Для контейнеров и ветвлений проверить добавление, удаление, перемещение и повторное открытие дочерних узлов, связи на диаграмме и сохранение структуры.
-- Проверять соответствие каждой формы свойствам конкретной Activity и round-trip XAML.
-
-**Критерий готовности:** для каждого Activity из согласованного базового набора доступно подходящее представление/редактирование; матрица покрытия обновлена.
-
-### 6. Рабочий Web-сценарий редактора
-
-- Завершить создание новой схемы и toolbox для поддерживаемого базового набора.
-- Реализовать открытие/загрузку XAML и сохранение/скачивание, заменив пустой обработчик `Load()` в Web UI.
-- Добавить понятное отображение ошибок загрузки/валидации и защититься от потери несохранённых изменений, если это соответствует выбранному UX.
-- Проверить примеры простых и вложенных схем: открыть → отредактировать → сохранить → открыть сохранённый результат.
-
-**Критерий готовности:** пользователь может пройти основной цикл создания, открытия, редактирования и сохранения XAML через браузер.
-
-### 7. Будущая пользовательская библиотека Activity
-
-После базового покрытия отдельно спроектировать библиотеку под .NET 10, аналогичную по назначению `glassPeople`, но без з��висимости от legacy WPF-дизайнеров. Она будет содержать пользовательские Activity и Razor-формы, использующие соглашения общего механизма редактора. Этот этап не включён в удаление или миграцию текущего `glassPeople`.
-
-## Проверка качества на каждом этапе
-
-- Собирать Web-проект и затронутые зависимости.
-- Проверять добавление/редактирование Activity, сохранение XAML и повторную загрузку.
-- Для структурных Activity проверять вложенность и восстановление дочерних узлов/связей.
-- Обновлять матрицу Activity и список известных ограничений вместе с изменениями.
-- Не включать изменения в `WorkflowEditor.Win` и `glassPeople`.
-
-## Отложенные задачи (пока не выполняем)
-
-- **Совместимость view state с Windows-редактором.** Сейчас Web сохраняет позиции узлов как атрибуты `bwas:Designer.CenterX` / `CenterY` (`Blazor.WorkflowEditor.Activity.State.Designer`) в собственном пространстве имён; подтверждено тестом, что они читаются обратно. Windows-редактор использует `sap2010:WorkflowViewState` / `ViewStateManager`. Нужно проверить и реализовать чтение (и по возможности запись) раскладки узлов в формате Windows-редактора, чтобы одну и ту же схему можно было открывать в обоих редакторах без потери расположения. Задача пока **не** выполняется.
-
-## Известные ограничения (Web)
-
-- Flowchart/StateMachine: связи между узлами проводятся перетаскиванием от выходного порта к
-  входному (`FlowStep.Next`, `FlowDecision` True/False, случаи `FlowSwitch<T>` с авто-ключом,
-  переходы `State`) либо задаются в формах узлов. Направление валидируется: «вход → вход» и
-  «выход → выход» отклоняются, обратное ребро разрешено. У `State` редактируются `Entry`, `Exit` и
-  `Trigger`/`Action` переходов; ключи `FlowSwitch<T>` в форме вводятся строкой и приводятся к `T`
-  через `Convert.ChangeType`.
-- Раскладка детей контейнеров и графовых узлов учитывает pan/zoom (видимая область диаграммы), но
-  автоматической минимизации пересечений связей нет.
-- Элементы, не являющиеся `Activity` (`FlowDecision`, `FlowSwitch<T>`, `State`), отображаются узлами через `ActivityDesignerPair.Element` и `DefaultNode.LoadElements/RemoveElement/CanAdd`.
-- Публикация с trimming (`dotnet publish`) не проверялась; проверки в браузере выполнялись запуском WASM-хоста локально.
-- Диаграмма: сетка и привязка к ней (20 px), выделение рамкой, миникарта, кнопки масштаба («−», «100 %», «+», «Fit»); связи строятся ортогонально (`OrthogonalRouter` + `StraightPathGenerator`) с подписями `True`/`False`/ключа случая.
-- Узлы: цветовая полоса семейства (stack/flow/state), бейдж `Start`/`Initial`, бейдж и обводка при ошибках валидации; в тулбаре — признак несохранённых изменений с подтверждением при New/Open; у узла есть заметка (`bwas:Designer.Note`, сохраняется в XAML) с инлайн-редактором и предпросмотром на карточке.
-- Панели (toolbox, переменные, свойства) оформлены единообразно (`.we-panel*`): одинаковые заголовки, фон, рамка, скругление и скролл только внутри тела; сворачивание/разворачивание — кликом по всему заголовку, у свёрнутой панели — по всей полосе; заголовки работают с клавиатуры (`Enter`/`Space`). Тёмная тема стилизует содержимое панелей (текст, поля, таблицы).
-- Меню в шапке (Test Activity, Theme) открываются состоянием Blazor-компонента (Bootstrap JS не подключён), тема хранится в `localStorage`.
-- Узлы графовых контейнеров имеют 4 точки подключения (левая/верхняя — вход, правая/нижняя — выход), выбранная при протягивании точка запоминается в текущей сессии (в XAML не сохраняется). Геометрия портов вычисляется из прямоугольника узла, поэтому связи остаются на границе при перемещении, сворачивании и разворачивании узла. Связь удаляется клавишей `Delete`/`Backspace` или hover-контролом «×».
-- Точки излома связи не перетаскиваются (связи строится ортогонально, `OrthogonalRouter` + `StraightPathGenerator`); угловые выравнивания портов не используются, так как `OrthogonalRouter` их не поддерживает.
-- Сетка диаграммы перекрыта своим CSS (светлая — 4 % чёрного, тёмная — 5 % белого) и больше не доминирует; в тёмной теме шапка (`data-theme` на `<html>`), алерты, карточки узлов, порты и регионы перекрашены; поля форм компактные (плотные отступы, шрифт 0.8rem).
-
-## Первый ближайший шаг
-
-Выполнить этап 1: исследовать фактический Web dependency graph и текущие пары Node/Control, составить матрицу покрытия базовых Activity и предложить конкретный порядок первой итерации. На основании аудита перейти к этапу 2 и затем к миграции .NET 10.
+- Windows `sap2010:WorkflowViewState` interoperability; Web currently persists its own center coordinates and note properties.
+- A separate .NET 10 library for user-authored activities; design it after the base Activity editing conventions stabilize.

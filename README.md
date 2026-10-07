@@ -1,13 +1,28 @@
-Windows Workflow Foundation (WF) runtime to .NET 6. This project is still in the experimental phase.
+# WorkflowEditor
 
-<img src="./img/img1.png" width="800"/>
-<br/>
-<img src="./img/img2.png" width="800"/>
-<br/>
-<img src="./img/img3.jpg" width="800"/>
+Experimental Windows Workflow Foundation editor. The repository contains a legacy Windows application and a browser-based editor; current development targets the Web editor.
 
-## Web editor
+## Run the Web editor
 
-The Web toolbox currently supports Sequence, Assign, WriteLine, Delay, If, While, DoWhile, Parallel, TryCatch (Try, Finally, and Catch handlers for a fixed list of common exception types), ForEach<T>, and the collection activities AddToCollection<T>, RemoveFromCollection<T>, ExistsInCollection<T> (Collection and Item only), ClearCollection<T>, Flowchart (with FlowDecision and FlowSwitch<T>; link targets are chosen in the node forms), StateMachine with State (initial/final flags, transitions with target and Visual Basic condition; State Entry, Exit, Trigger and Action are not editable), Assign<T>, Throw, Rethrow (generic fallback), and TerminateWorkflow. Sequence, If, While, and DoWhile allow nested activities; If selects the branch for the next added child, and While and DoWhile use their Body as the child container. Other loaded activities use the generic display-only fallback and are not added to the toolbox.
+From the repository root:
 
-Assign source/destination and If/While conditions are Visual Basic expressions. AddToCollection selects variables from the active workflow scope. WriteLine text and Delay duration are edited as literal values (Delay uses a TimeSpan string). XAML files can be opened and saved from the Web editor, and built-in workflow validation errors are shown in the UI.
+```sh
+dotnet run --project WorkflowEditor.Web/WorkflowEditor.Web.csproj --urls http://localhost:5199
+```
+
+After rebuilding, stop and restart the host before checking the browser at <http://localhost:5199>.
+
+## Current Web capabilities
+
+The toolbox includes stack activities (`Sequence`, `Assign`, `WriteLine`, `Delay`, `If`, `While`, `DoWhile`, `ForEach<T>`, `Parallel`, `TryCatch`, `Switch<T>`, and collection activities), plus `Flowchart` and `StateMachine` editors. XAML can be opened, edited, validated, and saved. Unsupported loaded activities use a generic display-name editor.
+
+See [docs/WORK_PLAN.md](docs/WORK_PLAN.md) for implementation rules and coverage, and [docs/VISUAL_EDITOR_PLAN.md](docs/VISUAL_EDITOR_PLAN.md) for the active UX backlog.
+
+## Verify
+
+```sh
+dotnet test Blazor.WorkflowEditor.Tests/Blazor.WorkflowEditor.Tests.csproj -c Release
+dotnet build WorkflowEditor.Web/WorkflowEditor.Web.csproj -c Release
+```
+
+Do not change `WorkflowEditor.Win` or `glassPeople`.
