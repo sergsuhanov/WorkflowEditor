@@ -2,6 +2,13 @@
 @using Blazor.WorkflowEditor.Activity
 
 <div class="@nodeClass">
+    @if (ReferenceEquals(Service?.StartTargetNode, Node))
+    {
+        <div class="we-node-start-presentation" aria-hidden="true">
+            <div class="we-root-start-badge">START</div>
+            <div class="we-root-start-arrow"></div>
+        </div>
+    }
     <div class="card @Node.CssClass">
         @if (!Node.IsExpanded)
         {

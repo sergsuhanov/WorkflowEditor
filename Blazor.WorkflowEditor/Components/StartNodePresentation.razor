@@ -1,90 +1,15 @@
-@using Blazor.Diagrams
-@using Blazor.Diagrams.Core.Models
-@using Blazor.Diagrams.Core.Models.Base
 @using Blazor.WorkflowEditor
-@implements IDisposable
 
-@if (Service.ShowStartPresentation)
+@if (Service.ShowStartPresentation && Service.StartTargetNode is null)
 {
-    <div class="we-root-start-presentation" style="@presentationStyle" aria-hidden="true">
+    <div class="we-root-start-presentation" style="left:50%;top:calc(50% - 56px);" aria-hidden="true">
         <div class="we-root-start-badge">START</div>
         <div class="we-root-start-arrow"></div>
-        @if (Service.StartTargetNode is null)
-        {
-            <div class="we-root-start-drop">@Service.StartHint</div>
-        }
+        <div class="we-root-start-drop">@Service.StartHint</div>
     </div>
 }
 
 @code {
     [Parameter, EditorRequired]
-    public BlazorDiagram Diagram { get; set; } = default!;
-
-    [Parameter, EditorRequired]
     public Service Service { get; set; } = default!;
-
-    private BlazorDiagram? subscribedDiagram;
-    private NodeModel? subscribedTarget;
-
-    protected override void OnParametersSet()
-    {
-        if (!ReferenceEquals(subscribedDiagram, Diagram))
-        {
-            if (subscribedDiagram is not null)
-            {
-                subscribedDiagram.PanChanged -= onDiagramChanged;
-                subscribedDiagram.ZoomChanged -= onDiagramChanged;
-            }
-
-            subscribedDiagram = Diagram;
-            subscribedDiagram.PanChanged += onDiagramChanged;
-            subscribedDiagram.ZoomChanged += onDiagramChanged;
-        }
-
-        var target = Service.StartTargetNode;
-        if (!ReferenceEquals(subscribedTarget, target))
-        {
-            if (subscribedTarget is not null)
-                subscribedTarget.Changed -= onTargetChanged;
-
-            subscribedTarget = target;
-            if (subscribedTarget is not null)
-                subscribedTarget.Changed += onTargetChanged;
-        }
-    }
-
-    private string presentationStyle
-    {
-        get
-        {
-            var startTarget = Service.StartTargetNode;
-            if (startTarget?.Size is { } size)
-            {
-                var zoom = Diagram.Zoom;
-                var x = (startTarget.Position.X + size.Width / 2) * zoom + Diagram.Pan.X;
-                var top = startTarget.Position.Y * zoom + Diagram.Pan.Y - 64;
-                return $"left:{x}px;top:{top}px;";
-            }
-
-            if (Service.ShowStartPresentation)
-                return "left:50%;top:calc(50% - 56px);";
-
-            return "display:none";
-        }
-    }
-
-    private void onDiagramChanged() => _ = InvokeAsync(StateHasChanged);
-    private void onTargetChanged(Model model) => _ = InvokeAsync(StateHasChanged);
-
-    public void Dispose()
-    {
-        if (subscribedDiagram is not null)
-        {
-            subscribedDiagram.PanChanged -= onDiagramChanged;
-            subscribedDiagram.ZoomChanged -= onDiagramChanged;
-        }
-
-        if (subscribedTarget is not null)
-            subscribedTarget.Changed -= onTargetChanged;
-    }
 }
