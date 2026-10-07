@@ -401,31 +401,24 @@
 
                     service.DraggedToolboxItem = draggedItem;
                     service.DropTarget = dropTarget;
-                    var (hasAdded, result) = service.AddActivity(draggedItem.TypeOfActivity, resolvedTypes);
+                    var (hasAdded, result) = service.AddActivity(draggedItem.TypeOfActivity, position, resolvedTypes);
                     if (!hasAdded || result?.Node == null)
                     {
                         await OperationFailed.InvokeAsync("This activity cannot be added to the selected region.");
                         return;
                     }
-
-                    //Inline children have a model node but are not displayed separately on the diagram.
-                    if (service.IsDisplayed(result.Node))
-                        result.Node.CenterPosition = position;
                 }
             }
             else
             {
                 service.DraggedToolboxItem = draggedItem;
                 service.DropTarget = dropTarget;
-                var (hasAdded, result) = service.AddActivity(draggedItem.TypeOfActivity);
+                var (hasAdded, result) = service.AddActivity(draggedItem.TypeOfActivity, position);
                 if (!hasAdded || result?.Node == null)
                 {
                     await OperationFailed.InvokeAsync("This activity cannot be added to the selected region.");
                     return;
                 }
-
-                if (service.IsDisplayed(result.Node))
-                    result.Node.CenterPosition = position;
             }
 
             StateHasChanged();

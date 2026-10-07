@@ -511,6 +511,27 @@ public class ActivityDesignerTests {
     }
 
     [Fact]
+    public void AddActivityPlacesNodeAtTheSuppliedInitialPosition() {
+        using var service = new Service(new BlazorDiagram(), () => { });
+        service.SetActivityBuilder(new ActivityBuilder());
+        var dropPosition = new Point(320, 180);
+
+        var (hasAdded, result) = service.AddActivity(typeof(WriteLine), dropPosition);
+
+        Assert.True(hasAdded);
+        Assert.Equal(dropPosition, result.Node.CenterPosition);
+    }
+
+    [Fact]
+    public void StartPresentationIsAvailableBeforeTheEmptyBuilderIsInitialized() {
+        using var service = new Service(new BlazorDiagram(), () => { });
+
+        Assert.True(service.ShowStartPresentation);
+        Assert.Null(service.StartTargetNode);
+        Assert.Equal("Drop the first activity here", service.StartHint);
+    }
+
+    [Fact]
     public void DeletingRootImplementationMakesTheRootAvailableAgain() {
         using var service = new Service(new BlazorDiagram(), () => { });
         var builder = new ActivityBuilder { Implementation = new WriteLine() };

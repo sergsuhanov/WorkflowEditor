@@ -107,7 +107,8 @@ namespace Blazor.WorkflowEditor {
         public bool IsRootPath => Path.Count == 1 && Path[0].Reference.Node is DynamicActivityNode;
 
         /// <summary>Whether the current canvas shows the root workflow or an open Flowchart.</summary>
-        public bool ShowStartPresentation => IsRootPath || Path.LastOrDefault()?.Reference?.Node is FlowchartNode;
+        public bool ShowStartPresentation =>
+            Path.Count == 0 || IsRootPath || Path.LastOrDefault()?.Reference?.Node is FlowchartNode;
 
         /// <summary>The ActivityBuilder implementation or Flowchart start element shown on this canvas.</summary>
         public DefaultNode? StartTargetNode {
@@ -125,7 +126,7 @@ namespace Blazor.WorkflowEditor {
 
         public string StartHint {
             get {
-                if (IsRootPath)
+                if (Path.Count == 0 || IsRootPath)
                     return "Drop the first activity here";
 
                 return Path.LastOrDefault()?.Reference?.Node is FlowchartNode { Count: 0 }
@@ -268,7 +269,20 @@ namespace Blazor.WorkflowEditor {
         /// <summary>
         /// Add by activity type
         /// </summary>
-        public (bool hasAdded, ActivityDesignerPair result) AddActivity(Type activityType, params Type[] types) {
+        public (bool hasAdded, ActivityDesignerPair result) AddActivity(Type activityType, params Type[] types) =>
+            addActivity(activityType, null, types);
+
+        /// <summary>Adds an activity at its drop position before the diagram renders the new node.</summary>
+        public (bool hasAdded, ActivityDesignerPair result) AddActivity(
+            Type activityType,
+            Diagrams.Core.Geometry.Point initialPosition,
+            params Type[] types) =>
+            addActivity(activityType, initialPosition, types);
+
+        private (bool hasAdded, ActivityDesignerPair result) addActivity(
+            Type activityType,
+            Diagrams.Core.Geometry.Point? initialPosition,
+            Type[] types) {
             object? activityObject;
             if (types != null && types.Length > 0) {
                 activityObject = Activator.CreateInstance(activityType.MakeGenericType(types));
@@ -293,7 +307,7 @@ namespace Blazor.WorkflowEditor {
             var inline = DropTarget != null && !ReferenceEquals(DropTarget, openContainer);
             DropTarget = null;
 
-            var result = addElement(activityObject, addNode: !inline);
+            var result = addElement(activityObject, addNode: !inline, initialPosition);
             target.AddChild(result);
             notifyModelChanged();
 
@@ -709,7 +723,10 @@ namespace Blazor.WorkflowEditor {
 
         private ActivityDesignerPair addElement(object activity) => addElement(activity, addNode: true);
 
-        private ActivityDesignerPair addElement(object activity, bool addNode) {
+        private ActivityDesignerPair addElement(
+            object activity,
+            bool addNode,
+            Diagrams.Core.Geometry.Point? initialPosition = null) {
             if (!typePairAttributes.Any())
                 discoverPairs();
 
@@ -735,9 +752,11 @@ namespace Blazor.WorkflowEditor {
                     designer.RegisterComponent(typeof(DefaultNode), typeof(DefaultControl));
                 }
             }
+            node.RestoreViewState();
+            if (addNode && initialPosition is { } position)
+                node.CenterPosition = position;
             if (addNode)
                 designer.Nodes.Add(node);
-            node.RestoreViewState();
             //The library measures the card in the browser (expand/collapse changes its size), so the port
             //rectangles have to be measured again; otherwise link ends stay at the old card border.
             node.SizeChanged += onNodeSizeChanged;
