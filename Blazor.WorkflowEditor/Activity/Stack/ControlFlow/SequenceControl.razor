@@ -4,7 +4,9 @@
     <Preview>
         <div class="we-branches">
             <ActivityRegion Node="Node" Label="Activities" Value="@Node.ActivitiesSummary"
-                            Title="Drop an activity here to append it to the sequence" />
+                            Title="Open the sequence to add or arrange activities"
+                            Placeholder="(empty)"
+                            DropEnabled="false" Active="false" />
         </div>
     </Preview>
 </ActivityControl>
@@ -13,4 +15,3 @@
     [Parameter]
     public SequenceNode Node { get; set; } = default!;
 }
-

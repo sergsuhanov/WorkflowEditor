@@ -28,6 +28,13 @@ public class FlowchartNode : DefaultNode, IGraphContainer {
 
     public string StartBadgeClass => "oi oi-media-play";
 
+    /// <summary>The element shown as the flowchart's start target on the diagram.</summary>
+    public object? StartElement => activity.StartNode switch {
+        FlowStep step => step.Action,
+        { } node => node,
+        _ => null
+    };
+
     /// <summary>Label of the drawn connection: True/False for decisions, the case key for switches.</summary>
     public string? LinkLabel(ActivityDesignerPair from, ActivityDesignerPair to) {
         var fromNode = flowNodeOf(from);

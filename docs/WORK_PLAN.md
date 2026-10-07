@@ -13,7 +13,7 @@ Use this file for current implementation state and engineering rules. The visual
 
 - Dependency graph: `WorkflowEditor.Web` → `Blazor.WorkflowEditor`; tests reference the editor library. The Web graph has no `glassPeople` reference or toolbox scan.
 - `WorkflowEditor.Web`, `Blazor.WorkflowEditor`, and `Blazor.WorkflowEditor.Tests` target `net10.0`. Package versions are pinned in their project files; a separate review of newer compatible stable versions remains.
-- XAML open/save, workflow validation, unsaved-change confirmation, and browser file download are implemented. Web view state and notes use `bwas:Designer` attached properties.
+- XAML open/save, workflow validation, unsaved-change confirmation, and browser file download are implemented. A new `ActivityBuilder` starts empty and holds one root implementation Activity; root and Flowchart `START` cues are presentation-only. Web view state and notes use `bwas:Designer` attached properties.
 - Specialized designers cover `Sequence`, `If`, `While`, `DoWhile`, `ForEach<T>`, `Parallel`, `TryCatch`, `Switch<T>`, `Assign`/`Assign<T>`, `WriteLine`, `Delay`, `Throw`, `TerminateWorkflow`, collection activities, `Flowchart`/`FlowDecision`/`FlowSwitch<T>`, and `StateMachine`/`State`.
 - `Rethrow` and other unpaired loaded activities use the generic fallback: only the display name is editable. Do not describe them as having type-specific editors.
 - Compared with the base Windows toolbox, remaining candidates are `ParallelForEach<T>`, `Pick`/`PickBranch`, and `Cast<T1,T2>`. `FinalState` needs XAML investigation before adding: Web already supports `State.IsFinal`.

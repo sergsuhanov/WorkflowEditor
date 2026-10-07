@@ -1,0 +1,75 @@
+@using Blazor.Diagrams
+@using Blazor.WorkflowEditor
+@implements IDisposable
+
+@if (Service.ShowStartPresentation)
+{
+    <div class="we-root-start-presentation" style="@presentationStyle" aria-hidden="true">
+        <div class="we-root-start-badge">START</div>
+        <div class="we-root-start-arrow"></div>
+        @if (Service.StartTargetNode is null)
+        {
+            <div class="we-root-start-drop">@Service.StartHint</div>
+        }
+    </div>
+}
+
+@code {
+    [Parameter, EditorRequired]
+    public BlazorDiagram Diagram { get; set; } = default!;
+
+    [Parameter, EditorRequired]
+    public Service Service { get; set; } = default!;
+
+    private BlazorDiagram? subscribedDiagram;
+
+    protected override void OnParametersSet()
+    {
+        if (ReferenceEquals(subscribedDiagram, Diagram))
+            return;
+
+        if (subscribedDiagram is not null)
+        {
+            subscribedDiagram.Changed -= onDiagramChanged;
+            subscribedDiagram.PanChanged -= onDiagramChanged;
+            subscribedDiagram.ZoomChanged -= onDiagramChanged;
+        }
+
+        subscribedDiagram = Diagram;
+        subscribedDiagram.Changed += onDiagramChanged;
+        subscribedDiagram.PanChanged += onDiagramChanged;
+        subscribedDiagram.ZoomChanged += onDiagramChanged;
+    }
+
+    private string presentationStyle
+    {
+        get
+        {
+            var startTarget = Service.StartTargetNode;
+            if (startTarget?.Size is { } size)
+            {
+                var zoom = Diagram.Zoom;
+                var x = (startTarget.Position.X + size.Width / 2) * zoom + Diagram.Pan.X;
+                var top = startTarget.Position.Y * zoom + Diagram.Pan.Y - 64;
+                return $"left:{x}px;top:{top}px;";
+            }
+
+            if (Service.ShowStartPresentation && Service.DiagramContainer is { Width: > 0, Height: > 0 } container)
+                return $"left:{container.Width / 2}px;top:{container.Height / 2 - 56}px;";
+
+            return "display:none";
+        }
+    }
+
+    private void onDiagramChanged() => _ = InvokeAsync(StateHasChanged);
+
+    public void Dispose()
+    {
+        if (subscribedDiagram is null)
+            return;
+
+        subscribedDiagram.Changed -= onDiagramChanged;
+        subscribedDiagram.PanChanged -= onDiagramChanged;
+        subscribedDiagram.ZoomChanged -= onDiagramChanged;
+    }
+}

@@ -9,6 +9,7 @@ using Blazor.Diagrams.Core.Models;
 using Blazor.Diagrams.Core.Models.Base;
 using Blazor.Diagrams.Core.Positions;
 using Blazor.WorkflowEditor.Activity;
+using Blazor.WorkflowEditor.Activity.Flow;
 using System.Reflection;
 using Microsoft.AspNetCore.Components.Web;
 
@@ -49,6 +50,9 @@ namespace Blazor.WorkflowEditor {
 
         /// <summary>Set when the ports have to be measured again after the next render.</summary>
         private bool portGeometryDirty;
+
+        /// <summary>Set when an opened path was laid out before the diagram viewport was measured.</summary>
+        private bool pendingInitialLayout;
 
         public IEnumerable<ActivityDesignerPair> Items => items;
         public IEnumerable<ActivityDesignerPair> SelectedItems => selectedItems;
@@ -98,6 +102,37 @@ namespace Blazor.WorkflowEditor {
 
         /// <summary>The graph container currently opened in the editor, if any (Flowchart, StateMachine).</summary>
         public IGraphContainer? OpenedGraph => currentGraphContainer;
+
+        /// <summary>True while the ActivityBuilder root is open in the editor.</summary>
+        public bool IsRootPath => Path.Count == 1 && Path[0].Reference.Node is DynamicActivityNode;
+
+        /// <summary>Whether the current canvas shows the root workflow or an open Flowchart.</summary>
+        public bool ShowStartPresentation => IsRootPath || Path.LastOrDefault()?.Reference?.Node is FlowchartNode;
+
+        /// <summary>The ActivityBuilder implementation or Flowchart start element shown on this canvas.</summary>
+        public DefaultNode? StartTargetNode {
+            get {
+                if (IsRootPath && activityBuilder?.Implementation is { } implementation)
+                    return items.FirstOrDefault(p => ReferenceEquals(p.Activity, implementation))?.Node;
+
+                if (Path.LastOrDefault()?.Reference?.Node is FlowchartNode flowchart &&
+                    flowchart.StartElement is { } element)
+                    return items.FirstOrDefault(p => ReferenceEquals(p.Element, element))?.Node;
+
+                return null;
+            }
+        }
+
+        public string StartHint {
+            get {
+                if (IsRootPath)
+                    return "Drop the first activity here";
+
+                return Path.LastOrDefault()?.Reference?.Node is FlowchartNode { Count: 0 }
+                    ? "Add a node to create the flowchart start"
+                    : "Choose the start node in Flowchart properties";
+            }
+        }
 
         public Service(BlazorDiagram designer, Action updateState) {
             this.designer = designer;
@@ -172,7 +207,10 @@ namespace Blazor.WorkflowEditor {
             updateState();
         }
 
-        private void onContainerChanged() => requestPortGeometryRefresh();
+        private void onContainerChanged() {
+            CompletePendingInitialLayout();
+            requestPortGeometryRefresh();
+        }
 
         /// <summary>Re-measures the ports and rebuilds the link routes after the node card changed its size.</summary>
         private void onNodeSizeChanged(NodeModel model) {
@@ -224,6 +262,7 @@ namespace Blazor.WorkflowEditor {
             selectedItems.Remove(item);
             items.Remove(item);
             notifyModelChanged();
+            updateState();
         }
 
         /// <summary>
@@ -347,6 +386,24 @@ namespace Blazor.WorkflowEditor {
             ModelChanged?.Invoke();
         }
 
+        /// <summary>Sets the single implementation activity of the current ActivityBuilder.</summary>
+        internal void SetRootImplementation(System.Activities.Activity? activity) {
+            activityBuilder.Implementation = activity;
+        }
+
+        /// <summary>
+        /// Completes the initial layout once the browser has measured the diagram viewport. This avoids
+        /// leaving a new root activity at the world origin when the editor was initialized before layout.
+        /// </summary>
+        public void CompletePendingInitialLayout() {
+            if (!pendingInitialLayout || VisibleViewport == null)
+                return;
+
+            pendingInitialLayout = false;
+            updatePath();
+            requestPortGeometryRefresh();
+        }
+
         public void Open(Activity.DefaultNode node) {
             var item = getById(node.Id);
             if (item is null)
@@ -368,12 +425,15 @@ namespace Blazor.WorkflowEditor {
         }
 
         public bool CheckAddActivity(Type activityType) {
-            if (activityBuilder?.Implementation == null || activityType == null)
+            if (activityType == null)
                 return false;
 
             var elementType = activityType.IsGenericType ? activityType.GetGenericTypeDefinition() : activityType;
 
             var openContainer = Path.LastOrDefault()?.Reference?.Node;
+            if (openContainer is DynamicActivityNode)
+                return openContainer.CanAdd(elementType);
+
             if (openContainer is { IsContainer: true } && openContainer.CanAdd(elementType))
                 return true;
 
@@ -588,6 +648,7 @@ namespace Blazor.WorkflowEditor {
                     SelectedOnMove?.Invoke();
 
                     node.UpdateViewState();
+                    updateState();
                 }
             }
         }
@@ -619,8 +680,8 @@ namespace Blazor.WorkflowEditor {
                 Variables.Add(item);
 
             Path.Last().Reference.Node.LoadElements(addElement);
+            pendingInitialLayout = VisibleViewport == null;
             updateState();
-
         }
 
         private void discoverPairs() {

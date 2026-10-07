@@ -18,10 +18,7 @@ public class DynamicActivityNode : DefaultNode {
             addActivity(activity);
     }
 
-    /// <summary>
-    /// Node of the implementation activity (the real root container, for example a Sequence). Adding and
-    /// removing children is delegated to it so that drops on the root diagram reach the workflow model.
-    /// </summary>
+    /// <summary>The single root implementation activity, if one has been assigned.</summary>
     private DefaultNode? ImplementationNode {
         get {
             var activity = dynamicActivity.Implementation?.Invoke();
@@ -33,11 +30,19 @@ public class DynamicActivityNode : DefaultNode {
         }
     }
 
-    public override bool CanAdd(Type elementType) => ImplementationNode?.CanAdd(elementType) ?? base.CanAdd(elementType);
+    public override bool CanAdd(Type elementType) =>
+        dynamicActivity.Implementation?.Invoke() == null &&
+        typeof(System.Activities.Activity).IsAssignableFrom(elementType);
 
-    public override void AddChild(ActivityDesignerPair child) => ImplementationNode?.AddChild(child);
+    public override void AddChild(ActivityDesignerPair child) {
+        if (dynamicActivity.Implementation?.Invoke() == null)
+            service.SetRootImplementation(child.Activity);
+    }
 
-    public override void RemoveChild(System.Activities.Activity child) => ImplementationNode?.RemoveChild(child);
+    public override void RemoveChild(System.Activities.Activity child) {
+        if (ReferenceEquals(dynamicActivity.Implementation?.Invoke(), child))
+            service.SetRootImplementation(null);
+    }
 
     public override IEnumerable<Variable> GetVariables() {
         var result = new List<Variable>(GetVariables(dynamicActivity.Properties));
@@ -62,4 +67,3 @@ public class DynamicActivityNode : DefaultNode {
     }
 
 }
-

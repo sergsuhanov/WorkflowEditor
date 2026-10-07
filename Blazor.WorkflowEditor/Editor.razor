@@ -52,6 +52,8 @@
                     </CascadingValue>
                 </div>
 
+                <StartNodePresentation Diagram="diagram" Service="service"></StartNodePresentation>
+
                 <div class="we-zoom-controls" role="group" aria-label="Diagram zoom">
                     <button type="button" class="btn" title="Zoom out" aria-label="Zoom out" @onclick="zoomOut">
                         <span class="oi oi-minus" aria-hidden="true"></span>
@@ -236,6 +238,8 @@
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        service.CompletePendingInitialLayout();
+
         //Ports are measured from the DOM, so the re-measurement has to happen once the browser painted the
         //current layout: that is the only moment where a link anchor matches the port drawn on the card.
         if (service.PortGeometryDirty)
@@ -299,7 +303,7 @@
 
     public void New()
     {
-        var ab = new ActivityBuilder() { Implementation = new System.Activities.Statements.Sequence() };
+        ActivityBuilder? ab = new();
         service.SetActivityBuilder(ab);
         ValidationMessages.Clear();
         notifyValidationChanged();
@@ -330,7 +334,8 @@
     {
         var implementation = service.GetActivityBuilder()?.Implementation;
         ValidationMessages = new List<string>();
-        if (implementation == null) {
+        if (implementation == null)
+        {
             notifyValidationChanged();
             return;
         }

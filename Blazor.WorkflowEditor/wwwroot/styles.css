@@ -125,6 +125,67 @@
     position: relative;
 }
 
+.we-root-start-presentation {
+    position: absolute;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transform: translateX(-50%);
+    pointer-events: none;
+}
+
+.we-root-start-badge {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 96px;
+    height: 28px;
+    padding: 0 0.75rem;
+    border: 1px solid #198754;
+    border-radius: 14px;
+    background: #e8f5ed;
+    color: #146c43;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+}
+
+.we-root-start-arrow {
+    position: relative;
+    width: 2px;
+    height: 28px;
+    margin-top: 4px;
+    background: #198754;
+}
+
+.we-root-start-arrow::after {
+    position: absolute;
+    bottom: 0;
+    left: -4px;
+    width: 10px;
+    height: 10px;
+    border-right: 2px solid #198754;
+    border-bottom: 2px solid #198754;
+    content: "";
+    transform: rotate(45deg);
+}
+
+.we-root-start-drop {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 250px;
+    min-height: 56px;
+    margin-top: 2px;
+    border: 2px dashed #198754;
+    border-radius: 6px;
+    background: rgba(232, 245, 237, 0.75);
+    color: #146c43;
+    font-size: 0.85rem;
+    text-align: center;
+}
+
 .we-custom-node {
     width: 250px;
     /*No min-height: the measured box must be exactly the card, because the port markers (and therefore the

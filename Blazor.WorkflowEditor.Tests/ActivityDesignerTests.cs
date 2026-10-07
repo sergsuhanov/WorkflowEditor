@@ -234,6 +234,44 @@ public class ActivityDesignerTests {
     }
 
     [Fact]
+    public void FlowchartStartPresentationTargetsTheSelectedStartElement() {
+        using var service = new Service(new BlazorDiagram(), () => { });
+        var firstActivity = new WriteLine();
+        var secondActivity = new Delay();
+        var firstStep = new FlowStep { Action = firstActivity };
+        var secondStep = new FlowStep { Action = secondActivity };
+        var chart = new Flowchart {
+            StartNode = firstStep,
+            Nodes = { firstStep, secondStep }
+        };
+        service.SetActivityBuilder(new ActivityBuilder { Implementation = chart });
+        var chartNode = service.Items.Single(p => ReferenceEquals(p.Activity, chart)).Node;
+
+        service.Open(chartNode);
+
+        Assert.True(service.ShowStartPresentation);
+        Assert.Same(service.FindPair(firstActivity)!.Node, service.StartTargetNode);
+
+        ((FlowchartNode)chartNode).StartIndex = 1;
+
+        Assert.Same(service.FindPair(secondActivity)!.Node, service.StartTargetNode);
+    }
+
+    [Fact]
+    public void EmptyFlowchartStartPresentationExplainsHowToCreateTheStartNode() {
+        using var service = new Service(new BlazorDiagram(), () => { });
+        var chart = new Flowchart();
+        service.SetActivityBuilder(new ActivityBuilder { Implementation = chart });
+        var chartNode = service.Items.Single(p => ReferenceEquals(p.Activity, chart)).Node;
+
+        service.Open(chartNode);
+
+        Assert.True(service.ShowStartPresentation);
+        Assert.Null(service.StartTargetNode);
+        Assert.Equal("Add a node to create the flowchart start", service.StartHint);
+    }
+
+    [Fact]
     public void StateMachineDesignerAddsStateOnDropTargetAndTracksInitial() {
         using var service = new Service(new BlazorDiagram(), () => { });
         var sequence = new Sequence();
@@ -454,15 +492,46 @@ public class ActivityDesignerTests {
     }
 
     [Fact]
-    public void DroppingOnRootDiagramAddsActivityToImplementation() {
+    public void EmptyRootAcceptsExactlyOneImplementationActivity() {
+        using var service = new Service(new BlazorDiagram(), () => { });
+        var builder = new ActivityBuilder();
+        service.SetActivityBuilder(builder);
+
+        Assert.Null(builder.Implementation);
+        Assert.True(service.CheckAddActivity(typeof(WriteLine)));
+
+        var (hasAdded, result) = service.AddActivity(typeof(WriteLine));
+
+        Assert.True(hasAdded);
+        Assert.Same(result.Activity, builder.Implementation);
+        Assert.IsType<WriteLine>(builder.Implementation);
+        Assert.False(service.CheckAddActivity(typeof(Delay)));
+        Assert.False(service.AddActivity(typeof(Delay)).hasAdded);
+        Assert.IsType<WriteLine>(builder.Implementation);
+    }
+
+    [Fact]
+    public void DeletingRootImplementationMakesTheRootAvailableAgain() {
+        using var service = new Service(new BlazorDiagram(), () => { });
+        var builder = new ActivityBuilder { Implementation = new WriteLine() };
+        service.SetActivityBuilder(builder);
+        var rootNode = service.Items.Single(p => ReferenceEquals(p.Activity, builder.Implementation)).Node;
+
+        service.Delete(rootNode);
+
+        Assert.Null(builder.Implementation);
+        Assert.True(service.CheckAddActivity(typeof(Delay)));
+    }
+
+    [Fact]
+    public void RootDiagramDoesNotAddChildrenToAnExistingRootSequence() {
         using var service = new Service(new BlazorDiagram(), () => { });
         var sequence = new Sequence();
         service.SetActivityBuilder(new ActivityBuilder { Implementation = sequence });
 
-        var (hasAdded, _) = service.AddActivity(typeof(WriteLine));
-
-        Assert.True(hasAdded);
-        Assert.IsType<WriteLine>(Assert.Single(sequence.Activities));
+        Assert.False(service.CheckAddActivity(typeof(WriteLine)));
+        Assert.False(service.AddActivity(typeof(WriteLine)).hasAdded);
+        Assert.Empty(sequence.Activities);
     }
 
     [Fact]
@@ -525,11 +594,11 @@ public class ActivityDesignerTests {
 
         service.SetActivityBuilder(new ActivityBuilder { Implementation = new Sequence() });
         Assert.Equal(2, service.Items.Count());
-        Assert.True(service.CheckAddActivity(typeof(WriteLine)));
+        Assert.False(service.CheckAddActivity(typeof(WriteLine)));
 
         service.SetActivityBuilder(new ActivityBuilder { Implementation = new Sequence() });
         Assert.Equal(2, service.Items.Count());
-        Assert.True(service.CheckAddActivity(typeof(WriteLine)));
+        Assert.False(service.CheckAddActivity(typeof(WriteLine)));
     }
 
     /// <summary>

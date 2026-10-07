@@ -2,6 +2,26 @@
     background-color: #494949;
 }
 
+.we-root-start-badge {
+    border-color: #75b798;
+    background: #18392a;
+    color: #b7e4c7;
+}
+
+.we-root-start-arrow {
+    background: #75b798;
+}
+
+.we-root-start-arrow::after {
+    border-color: #75b798;
+}
+
+.we-root-start-drop {
+    border-color: #75b798;
+    background: rgba(24, 57, 42, 0.8);
+    color: #b7e4c7;
+}
+
 .we-custom-node .card {
     border: 1px solid darkgray;
 }
