@@ -3,6 +3,14 @@
 
 <ActivityControl Node="@Node">
     <Preview>
+        @*The expression and the cases of the switch belong on the card; the display name lives in the
+          properties panel.*@
+        <div class="we-field-row">
+            <label class="we-field-label" for="@expressionId">Switch</label>
+            <input type="text" class="form-control we-field-input" id="@expressionId" aria-label="Expression"
+                   @bind-value="Node.Expression" @onmousedown:stopPropagation @onmouseup:stopPropagation
+                   @onmousemove:stopPropagation />
+        </div>
         @*Default and every case hold a single activity each, rendered inside the card.*@
         <div class="we-branches we-branches-stacked">
             <ActivityRegion Node="Node" Slot="@Node.DefaultSlot" Label="Default">
@@ -10,49 +18,26 @@
             </ActivityRegion>
             @foreach (var key in Node.CaseKeys)
             {
-                var caseSlot = Node.CaseSlot(key);
-                <ActivityRegion Node="Node" Slot="@caseSlot" Label="@($"Case {key}")">
+                var caseKey = key;
+                var caseSlot = Node.CaseSlot(caseKey);
+                <ActivityRegion Node="Node" Slot="@caseSlot" Label="@($"Case {caseKey}")" CanClear="true"
+                                OnClear="@(() => removeCase(caseKey))">
                     <EmbeddedActivity Slot="@caseSlot" />
                 </ActivityRegion>
             }
-        </div>
-    </Preview>
-    <Edit>
-        <div class="mb-3">
-            <label for="switch-expression" class="form-label">Expression (Visual Basic)</label>
-            <input type="text" class="form-control" id="switch-expression" @bind-value="Node.Expression"
-                   @onmousedown:stopPropagation @onmouseup:stopPropagation @onmousemove:stopPropagation />
-        </div>
-        <div class="mb-3">
-            <label for="switch-new-case" class="form-label">New case value (@typeof(T).Name)</label>
-            <div class="input-group">
-                <input type="text" class="form-control" id="switch-new-case" @bind="newCaseKey" @bind:event="oninput"
+            <div class="we-field-row">
+                <input type="text" class="form-control we-field-input" aria-label="New case value"
+                       placeholder="@($"New case ({typeof(T).Name})")" @bind="newCaseKey" @bind:event="oninput"
                        @onmousedown:stopPropagation @onmouseup:stopPropagation @onmousemove:stopPropagation />
                 <button type="button" class="btn btn-outline-primary" @onclick="addCase"
                         @onmousedown:stopPropagation @onmouseup:stopPropagation @onmousemove:stopPropagation>Add case</button>
             </div>
             @if (!string.IsNullOrEmpty(caseError))
             {
-                <div class="text-danger mt-1" role="alert">@caseError</div>
+                <div class="text-danger" role="alert">@caseError</div>
             }
         </div>
-        @if (Node.CaseKeys.Count > 0)
-        {
-            <div class="mb-3">
-                <label class="form-label">Cases</label>
-                @foreach (var key in Node.CaseKeys)
-                {
-                    var caseKey = key;
-                    <div class="d-flex align-items-center justify-content-between mb-1">
-                        <span>@caseKey</span>
-                        <button type="button" class="btn btn-sm btn-outline-danger" @onclick="() => removeCase(caseKey)"
-                                @onmousedown:stopPropagation @onmouseup:stopPropagation @onmousemove:stopPropagation>Remove</button>
-                    </div>
-                }
-            </div>
-        }
-        <div class="form-text">Add a case above and drop an activity onto it; it is edited on the node itself.</div>
-    </Edit>
+    </Preview>
 </ActivityControl>
 
 @code {
@@ -61,6 +46,9 @@
 
     private string newCaseKey = string.Empty;
     private string? caseError;
+
+    /// <summary>Several cards can be on the diagram at once, so the input needs an id of its own.</summary>
+    private string expressionId => $"we-switch-expression-{Node.Id}";
 
     private void addCase()
     {

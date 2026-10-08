@@ -183,19 +183,27 @@
     transform: rotate(45deg);
 }
 
-.we-root-start-drop {
+/*Empty drop container: the start of a new schema and an empty branch look the same.*/
+.we-root-start-drop,
+.we-branch-drop {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 250px;
-    min-height: 56px;
+    min-height: 42px;
+    padding: 0.15rem 0.5rem;
     margin-top: 2px;
     border: 2px dashed #198754;
     border-radius: 6px;
     background: rgba(232, 245, 237, 0.75);
     color: #146c43;
-    font-size: 0.85rem;
+    font-size: 0.75rem;
     text-align: center;
+}
+
+.we-root-start-drop {
+    width: 250px;
+    min-height: 56px;
+    font-size: 0.85rem;
 }
 
 .we-custom-node {
@@ -210,6 +218,7 @@
     min-height: 0;
 }
 
+/*The card carries no frame of its own; the transparent border is where the selection highlight goes.*/
 .we-custom-node .card {
     border: 3px solid transparent;
 }
@@ -553,38 +562,6 @@
     color: #495057;
 }
 
-/*Read-only summary rows of graph containers (flowchart, state machine).*/
-.we-graph-summary {
-    display: flex;
-    flex-direction: column;
-    gap: 0.1rem;
-    font-size: 0.7rem;
-}
-
-.we-graph-summary-row {
-    display: flex;
-    align-items: baseline;
-    gap: 0.35rem;
-    min-width: 0;
-}
-
-.we-graph-summary-label {
-    flex: none;
-    width: 3.1rem;
-    text-transform: uppercase;
-    font-weight: 600;
-    color: #6c757d;
-}
-
-.we-graph-summary-value {
-    flex: 1 1 auto;
-    min-width: 0;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    color: #343a40;
-}
-
 .we-branch .we-branch-value {
     flex: 1 1 auto;
     min-width: 0;
@@ -608,13 +585,99 @@
     flex: 0 0 auto;
 }
 
-/*A branch that holds an activity: a plain container around the control of that activity.*/
+/*A branch that holds an activity: a caption above the control of that activity and no frame of its own,
+  so the card of the activity stays the only border inside the owner.*/
 .we-branch-filled {
     display: block;
-    padding: 0.2rem 0.3rem 0.3rem;
-    border-style: solid;
-    border-color: #dee2e6;
+    padding: 0;
+    border: none;
+    background: none;
     cursor: default;
+}
+
+/*Caption of a branch, of a case or of a field group: a label with an optional control that removes it.*/
+.we-caption {
+    display: flex;
+    align-items: center;
+    gap: 0.15rem;
+    min-width: 0;
+}
+
+.we-caption > .we-branch-label,
+.we-caption > .we-field-label {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.we-branch-filled .we-branch-label {
+    display: block;
+    font-size: 0.65rem;
+    color: #6c757d;
+}
+
+/*Compact labelled field on a card: the condition of a loop or the fields of ForEach.*/
+.we-field-row {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    min-width: 0;
+    margin-top: 0.25rem;
+}
+
+.we-field-row .we-field-label {
+    flex: none;
+}
+
+.we-field-row .we-field-input {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+/*A button in a field row keeps its full label instead of wrapping next to the input.*/
+.we-field-row .btn,
+.we-field-columns .btn {
+    flex: none;
+    white-space: nowrap;
+}
+
+/*Two fields next to each other, each with its caption above it.*/
+.we-field-columns {
+    display: flex;
+    gap: 0.35rem;
+    margin-top: 0.25rem;
+}
+
+.we-field-columns .we-field-column {
+    flex: 1 1 0;
+    min-width: 0;
+}
+
+.we-field-label {
+    font-size: 0.65rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: #6c757d;
+}
+
+.we-field-columns .we-field-label {
+    display: block;
+    margin-bottom: 0.1rem;
+}
+
+.we-field-input {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+/*Two boolean switches of an activity (initial and final state) next to each other.*/
+.we-switches {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: 0.25rem;
+    font-size: 0.75rem;
+}
+
+.we-switches .form-check {
+    margin: 0;
 }
 
 .we-embedded {
@@ -633,6 +696,11 @@
 
 .we-node-wide {
     width: 340px;
+}
+
+/*Cards whose branches sit next to each other instead of stacking.*/
+.we-node-split {
+    width: 460px;
 }
 
 /* --- Diagram widgets: grid, minimap and zoom controls (step 8) --- */
@@ -682,11 +750,13 @@
     font-variant-numeric: tabular-nums;
 }
 
-/*The auto-complete list is absolutely positioned and could cover the dialog footer, which made the
-  Apply/Cancel buttons unclickable while a drop-down was open.*/
-.modal-footer {
-    position: relative;
-    z-index: 20;
+/*A drop-down inside a dialog takes part in the layout instead of floating over it: a floating list grows
+  past the body and is painted under the footer, which hides its own first entries.*/
+.modal-body .we-autocomplete .options {
+    position: static;
+    max-height: 45vh;
+    margin-top: 0.25rem;
+    box-shadow: none;
 }
 
 /* --- Node badges, families and validation state (step 8) --- */
@@ -706,59 +776,35 @@
     white-space: nowrap;
 }
 
-.we-custom-node .we-node-error {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.2rem;
-    margin-left: 0.35rem;
-    padding: 0.05rem 0.4rem;
-    font-size: 0.72rem;
-    font-weight: 600;
-    border-radius: 999px;
-    background-color: #f8d7da;
-    color: #842029;
+/*The name is the drag handle of the card, so it truncates instead of wrapping and never gets selected.*/
+.we-custom-node .we-node-title {
+    flex: 1 1 auto;
+    min-width: 0;
+    margin: 0;
+    font-size: 0.85rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
-/* Family accent: coloured stripe on the left edge plus a tinted header. */
-.we-custom-node.we-family-stack .card {
-    border-left-color: #0d6efd;
-}
-
-.we-custom-node.we-family-flow .card {
-    border-left-color: #6f42c1;
-}
-
-.we-custom-node.we-family-state .card {
-    border-left-color: #198754;
-}
-
-.we-family-flow .card-header {
-    background-color: rgb(111 66 193 / 8%);
-}
-
-.we-family-state .card-header {
-    background-color: rgb(25 135 84 / 8%);
-}
-
-/* Start element and validation state of the node. */
-.we-custom-node.we-node-is-start .card {
+/* Start element and validation state of the node. An element that holds a broken child is outlined as
+   well, so an error that sits in a part the diagram does not render is still visible from the outside.
+   The card is matched as a direct child: branch children render their own cards inside this one. */
+.we-custom-node.we-node-is-start > .card {
     box-shadow: 0 0 0 2px rgb(13 110 253 / 35%);
 }
 
-.we-custom-node.we-node-has-errors .card {
+.we-custom-node.we-node-has-errors > .card {
     box-shadow: 0 0 0 2px rgb(220 53 69 / 70%);
-}
-
-.we-field-errors {
-    margin: 0 0 0.75rem;
-    padding-left: 1.1rem;
-    color: #b02a37;
-    font-size: 0.8rem;
 }
 
 /* --- Compact forms: node cards and panels use denser fields (step 10) --- */
 .we-custom-node .card-header {
+    display: flex;
+    align-items: center;
+    gap: 0.2rem;
     padding: 0.25rem 0.4rem;
+    user-select: none;
 }
 
 .we-custom-node .card-body {
@@ -805,41 +851,38 @@
     font-size: 0.78rem;
 }
 
-.we-custom-node h5.card-title {
-    margin-bottom: 0.15rem;
-    font-size: 0.85rem;
-}
 
 .we-panel-body .btn.we-panel-action {
     padding: 0.05rem 0.3rem;
 }
 
-/* --- Designer notes on node cards (step 11) --- */
-.we-custom-node .we-note-active {
-    color: #f59f00 !important;
+/* --- Validation messages of the selected activity (step 12) --- */
+.we-panel-errors {
+    margin: 0 0 0.5rem;
+    padding-left: 1.1rem;
+    color: #b02a37;
+    font-size: 0.78rem;
 }
 
+.we-panel .we-panel-errors-hint {
+    margin: 0 0 0.5rem;
+    color: #6c757d;
+    font-size: 0.75rem;
+    font-style: italic;
+}
+
+/* --- Designer notes on node cards (step 11) --- */
+/*The note is edited in the properties panel; the card only previews it. The preview keeps the line
+  breaks that were typed but never grows past three of them.*/
 .we-custom-node .we-note-preview {
     margin-top: 0.15rem;
     font-size: 0.7rem;
     font-style: italic;
     color: #6c757d;
-    white-space: nowrap;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
     overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.we-custom-node .we-note-editor {
-    margin-top: 0.35rem;
-}
-
-.we-custom-node .we-note-input {
-    min-height: 3rem;
-    font-size: 0.75rem;
-}
-
-.we-custom-node .we-note-actions {
-    display: flex;
-    gap: 0.25rem;
-    margin-top: 0.2rem;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
 }

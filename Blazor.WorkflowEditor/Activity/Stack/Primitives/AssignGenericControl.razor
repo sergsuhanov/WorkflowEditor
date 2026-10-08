@@ -2,30 +2,32 @@
 @typeparam T
 
 <ActivityControl Node="@Node">
-    <Edit>
-        <div class="mb-3">
-            <label for="destination" class="form-label">Destination</label>
-            <input type="text" class="form-control" id="destination"
-                   @bind-value="Node.Destination"
-                   placeholder="Input destination"
-                   @onmousedown:stopPropagation
-                   @onmouseup:stopPropagation
-                   @onmousemove:stopPropagation />
+    <Preview>
+        @*Both sides of the assignment belong on the card; the display name lives in the properties panel.*@
+        <div class="we-field-columns">
+            <div class="we-field-column">
+                <label class="we-field-label" for="@destinationId">Destination</label>
+                <input type="text" class="form-control we-field-input" id="@destinationId" aria-label="Destination"
+                       placeholder="Input destination" @bind-value="Node.Destination" @onmousedown:stopPropagation
+                       @onmouseup:stopPropagation @onmousemove:stopPropagation />
+            </div>
+            <div class="we-field-column">
+                <label class="we-field-label" for="@sourceId">Source</label>
+                <input type="text" class="form-control we-field-input" id="@sourceId" aria-label="Source"
+                       placeholder="Input source" @bind-value="Node.Source" @onmousedown:stopPropagation
+                       @onmouseup:stopPropagation @onmousemove:stopPropagation />
+            </div>
         </div>
-        <div class="mb-3">
-            <label for="source" class="form-label">Source</label>
-            <input type="text" class="form-control" id="source"
-                   @bind-value="Node.Source"
-                   placeholder="Input source"
-                   @onmousedown:stopPropagation
-                   @onmouseup:stopPropagation
-                   @onmousemove:stopPropagation />
-        </div>
-    </Edit>
+    </Preview>
 </ActivityControl>
 
 @code {
     [Parameter]
     public AssignGenericNode<T> Node { get; set; } = default!;
+
+    /// <summary>Several cards can be on the diagram at once, so the inputs need ids of their own.</summary>
+    private string destinationId => $"we-assign-destination-{Node.Id}";
+
+    private string sourceId => $"we-assign-source-{Node.Id}";
 }
 

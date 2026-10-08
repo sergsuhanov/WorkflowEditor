@@ -17,6 +17,7 @@
                 {
                     <span class="@iconClass we-node-icon" aria-hidden="true"></span>
                 }
+                <span class="we-node-title" title="@Node.DisplayName">@Node.DisplayName</span>
                 @Badges
                 <div class="float-end">
                     @if (Node.IsContainer)
@@ -25,30 +26,29 @@
                             <span class="oi oi-fullscreen-enter" aria-hidden="true"></span>
                         </a>
                     }
-                    <a href="" class="card-link @(Node.HasNote ? "we-note-active" : null)" title="@noteTitle"
-                       aria-label="Note" @onclick="toggleNote" @onclick:preventDefault>
-                        <span class="oi oi-comment-square" aria-hidden="true"></span>
-                    </a>
-                    <a href="" class="card-link" title="Edit properties" @onclick="@expand" @onclick:preventDefault>
-                        <span class="oi oi-pencil" aria-hidden="true"></span>
-                    </a>
+                    @if (Edit != null)
+                    {
+                        <a href="" class="card-link" title="Edit properties" @onclick="@expand" @onclick:preventDefault>
+                            <span class="oi oi-pencil" aria-hidden="true"></span>
+                        </a>
+                    }
                     <a href="" class="card-link link-danger" title="Delete" @onclick="@delete" @onclick:preventDefault>
                         <span class="oi oi-circle-x" aria-hidden="true"></span>
                     </a>
                 </div>
             </div>
-            <div class="card-body">
-                <h5 class="card-title">@Node.DisplayName</h5>
-                @if (Node.HasNote && !Node.IsNoteOpen)
-                {
-                    <div class="we-note-preview" title="@Node.Note">@Node.Note</div>
-                }
-                @Preview
-                @if (Node.IsNoteOpen)
-                {
-                    @noteEditor
-                }
-            </div>
+            @*The name lives in the header and the note is edited in the properties panel, so the body only
+              carries the preview of the note and the preview of the activity.*@
+            @if (Node.HasNote || Preview != null)
+            {
+                <div class="card-body">
+                    @if (Node.HasNote)
+                    {
+                        <div class="we-note-preview" title="@Node.Note">@Node.Note</div>
+                    }
+                    @Preview
+                </div>
+            }
         }
         else
         {
@@ -57,12 +57,9 @@
                 {
                     <span class="@iconClass we-node-icon" aria-hidden="true"></span>
                 }
+                <span class="we-node-title" title="@Node.DisplayName">@Node.DisplayName</span>
                 @Badges
                 <div class=" float-end">
-                    <a href="" class="card-link @(Node.HasNote ? "we-note-active" : null)" title="@noteTitle"
-                       aria-label="Note" @onclick="toggleNote" @onclick:preventDefault>
-                        <span class="oi oi-comment-square" aria-hidden="true"></span>
-                    </a>
                     <a href="" class="card-link" @onclick="@collapce" @onclick:preventDefault>
                         <span class="oi oi-circle-check" aria-hidden="true"></span>
                     </a>
@@ -76,20 +73,6 @@
                                placeholder="Input activity display name" @onmousedown:stopPropagation
                                @onmouseup:stopPropagation @onmousemove:stopPropagation />
                     </div>
-                    @*Validation messages of this activity, shown next to the fields.*@
-                    @if (errorCount > 0)
-                    {
-                        <ul class="we-field-errors" role="alert">
-                            @foreach (var message in Service.ErrorsFor(Node.Element))
-                            {
-                                <li>@message</li>
-                            }
-                        </ul>
-                    }
-                    @if (Node.IsNoteOpen)
-                    {
-                        @noteEditor
-                    }
                     @Edit
                 </form>
             </div>
@@ -115,6 +98,8 @@
     [Parameter]
     public Activity.DefaultNode Node { get; set; } = default!;
 
+    /// <summary>Inline editor of the activity, shown in the expanded card. A control that does not
+    /// provide one (the fallback control does not) has no expanded mode at all.</summary>
     [Parameter, AllowNull]
     public RenderFragment? Edit { get; set; }
 
@@ -124,18 +109,13 @@
 
     private string? iconClass => ActivityIcon.CssClass(Node.Element);
 
-    /// <summary>Badges shown in the card header: start element marker and validation errors.</summary>
+    /// <summary>Badges shown in the card header: the start element marker. Errors are shown by the card
+    /// outline and by the properties panel, so they need no badge here.</summary>
     private RenderFragment Badges => @<text>
         @if (isStart)
         {
             <span class="we-node-badge" title="This element is the start of the opened container">
                 <span class="@startBadgeClass" aria-hidden="true"></span>@startBadgeText
-            </span>
-        }
-        @if (errorCount > 0)
-        {
-            <span class="we-node-error" title="@errorSummary" aria-label="@errorLabel">
-                <span class="oi oi-warning" aria-hidden="true"></span>@errorCount
             </span>
         }
     </text>;
@@ -148,11 +128,7 @@
 
     private string startBadgeClass => openedGraph?.StartBadgeClass ?? "oi oi-media-play";
 
-    private int errorCount => Service?.ErrorCount(Node.Element) ?? 0;
-
-    private string? errorSummary => Service?.ErrorSummary(Node.Element);
-
-    private string errorLabel => errorCount == 1 ? "1 validation message" : $"{errorCount} validation messages";
+    private bool hasErrorsInTree => Service?.HasErrorsInTree(Node.Element) ?? false;
 
     private string nodeClass
     {
@@ -164,11 +140,10 @@
                     ? "we-custom-node"
                     : $"we-custom-node {Node.NodeLayoutClass}";
 
-            //Family accent colour (stack / flow / state), start marker and validation state.
-            result += $" we-family-{Node.NodeFamily}";
+            //Start marker and validation state of the card.
             if (isStart)
                 result += " we-node-is-start";
-            if (errorCount > 0)
+            if (hasErrorsInTree)
                 result += " we-node-has-errors";
 
             return result;
@@ -192,26 +167,13 @@
         Service.Delete(Node);
     }
 
-    private string noteTitle => Node.HasNote ? Node.Note : "Add a note";
-
-    /// <summary>Inline note editor, shown on the card in collapsed and expanded state.</summary>
-    private RenderFragment noteEditor => @<text>
-        <div class="we-note-editor">
-            <textarea class="form-control we-note-input" rows="3" placeholder="Note for this activity" aria-label="Note"
-                      @bind="Node.Note" @bind:event="oninput" @onmousedown:stopPropagation @onmouseup:stopPropagation
-                      @onmousemove:stopPropagation></textarea>
-            <div class="we-note-actions">
-                <button type="button" class="btn we-panel-action" @onclick="toggleNote">Done</button>
-                <button type="button" class="btn we-panel-action" @onclick="clearNote">Clear</button>
-            </div>
-        </div>
-    </text>;
-
-    private void toggleNote() => Node.IsNoteOpen = !Node.IsNoteOpen;
-
-    private void clearNote()
+    /// <summary>
+    /// A card without an inline editor has nothing to expand, even when the loaded view state says it was
+    /// expanded before, so the flag is dropped instead of rendering a form with only the display name.
+    /// </summary>
+    protected override void OnParametersSet()
     {
-        Node.Note = string.Empty;
-        Node.IsNoteOpen = false;
+        if (Edit == null)
+            Node.IsExpanded = false;
     }
 }

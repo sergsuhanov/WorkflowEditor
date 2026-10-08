@@ -1,6 +1,6 @@
-namespace Blazor.WorkflowEditor.Activity.Stack.ControlFlow;
+﻿namespace Blazor.WorkflowEditor.Activity.Stack.ControlFlow;
 
-[Pair(typeof(System.Activities.Statements.Parallel), typeof(ParallelControl))]
+[Pair(typeof(System.Activities.Statements.Parallel), typeof(DefaultControl))]
 public class ParallelNode : DefaultNode {
     private readonly System.Activities.Statements.Parallel activity;
 
@@ -11,17 +11,9 @@ public class ParallelNode : DefaultNode {
 
     public override IEnumerable<Variable> GetVariables() => GetVariables(activity.Variables);
 
-    /// <summary>Short summary of the parallel branches shown on the collapsed node.</summary>
-    public string? BranchesSummary {
-        get {
-            var count = activity.Branches.Count;
-            if (count == 0)
-                return null;
-
-            var names = string.Join(", ", activity.Branches.Take(3).Select(a => a.DisplayName));
-            return count > 3 ? $"{names} +{count - 3}" : names;
-        }
-    }
+    /// <summary>An empty parallel has nothing on its canvas, so it asks for the first branch.</summary>
+    public override string? EmptyHint =>
+        activity.Branches.Count == 0 ? "Drop the first branch here" : null;
 
     public override void LoadChilds(Func<System.Activities.Activity, ActivityDesignerPair> addActivity) =>
         ArrangeRow(activity.Branches.Select(addActivity).ToList());

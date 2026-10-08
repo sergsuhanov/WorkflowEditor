@@ -19,8 +19,17 @@ public class IfNode : DefaultNode {
 
     public string Condition {
         get => ActivityArguments.GetText(activity.Condition);
-        set => ActivityArguments.SetVisualBasicExpression(activity.Condition, argument => activity.Condition = (InArgument<bool>)argument, value, argumentType: typeof(bool));
+        set {
+            if (Condition == value)
+                return;
+
+            ActivityArguments.SetVisualBasicExpression(activity.Condition, argument => activity.Condition = (InArgument<bool>)argument, value, argumentType: typeof(bool));
+            service.NotifyStateChanged();
+        }
     }
+
+    /// <summary>Both branches are shown next to each other, so the card is wider than the default one.</summary>
+    public override string NodeLayoutClass => "we-node-split";
 
     public IfBranch SelectedBranch { get; set; } = IfBranch.Then;
 

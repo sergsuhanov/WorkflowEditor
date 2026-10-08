@@ -8,6 +8,13 @@
         <div class="we-root-start-drop">@Service.StartHint</div>
     </div>
 }
+else if (Service.EmptyContainerHint is { } containerHint)
+{
+    @*The container lays its first child out below the top of the visible area, so the hint sits there.*@
+    <div class="we-root-start-presentation" style="left:50%;top:60px;" aria-hidden="true">
+        <div class="we-root-start-drop">@containerHint</div>
+    </div>
+}
 
 @code {
     [Parameter, EditorRequired]

@@ -2,34 +2,48 @@
 @typeparam T
 
 <ActivityControl Node="@Node">
-    <Edit>
-        <div class="mb-3">
-            <label for="expression" class="form-label">Expression (Visual Basic)</label>
-            <input type="text" class="form-control" id="expression" @bind-value="Node.Expression"
-                   @onmousedown:stopPropagation @onmouseup:stopPropagation @onmousemove:stopPropagation />
+    <Preview>
+        @*The switch belongs on the card; the display name lives in the properties panel. Its targets can also
+          be drawn as links between the steps.*@
+        <div class="we-field-row">
+            <label class="we-field-label" for="@expressionId">Switch</label>
+            <input type="text" class="form-control we-field-input" id="@expressionId" aria-label="Expression"
+                   @bind-value="Node.Expression" @onmousedown:stopPropagation @onmouseup:stopPropagation
+                   @onmousemove:stopPropagation />
         </div>
-        <FlowTargetSelect Label="Default target" Container="Node.Container" @bind-Value="Node.DefaultTarget" />
+        <div class="we-field-columns">
+            <div class="we-field-column">
+                <FlowTargetSelect Label="Default target" Container="Node.Container" @bind-Value="Node.DefaultTarget" />
+            </div>
+        </div>
         @foreach (var key in Node.CaseKeys)
         {
             var caseKey = key;
-            <div class="d-flex align-items-end">
-                <div class="flex-grow-1">
-                    <FlowTargetSelect Label="@($"Case {caseKey}")" Container="Node.Container"
-                                      Value="Node.GetCaseTarget(caseKey)" ValueChanged="v => Node.SetCase(caseKey, v)" />
-                </div>
-                <button type="button" class="btn btn-sm btn-outline-danger mb-3 ms-2" @onclick="() => Node.RemoveCase(caseKey)"
-                        @onmousedown:stopPropagation @onmouseup:stopPropagation @onmousemove:stopPropagation>Remove</button>
+            <div class="we-caption">
+                <span class="we-branch-label">Case @caseKey</span>
+                <button type="button" class="btn we-branch-clear" title="@($"Remove case {caseKey}")"
+                        aria-label="@($"Remove case {caseKey}")" @onclick="() => Node.RemoveCase(caseKey)"
+                        @onmousedown:stopPropagation @onmouseup:stopPropagation @onmousemove:stopPropagation>
+                    <span class="oi oi-x text-danger" aria-hidden="true"></span>
+                </button>
             </div>
+            <FlowTargetSelect Label="@($"Case {caseKey} target")" Container="Node.Container"
+                              Value="Node.GetCaseTarget(caseKey)" ValueChanged="v => Node.SetCase(caseKey, v)" />
         }
-        <div class="mb-3">
-            <label class="form-label">New case</label>
-            <input type="text" class="form-control mb-2" placeholder="Case value" @bind="newKey" @bind:event="oninput"
-                   @onmousedown:stopPropagation @onmouseup:stopPropagation @onmousemove:stopPropagation />
-            <FlowTargetSelect Label="Target" Container="Node.Container" @bind-Value="newTarget" />
-            <button type="button" class="btn btn-sm btn-outline-primary" @onclick="addCase"
-                    @onmousedown:stopPropagation @onmouseup:stopPropagation @onmousemove:stopPropagation>Add case</button>
+        <div class="we-field-columns">
+            <div class="we-field-column">
+                <label class="we-field-label" for="@newCaseId">New case</label>
+                <input type="text" class="form-control we-field-input" id="@newCaseId" aria-label="New case value"
+                       placeholder="Case value" @bind="newKey" @bind:event="oninput" @onmousedown:stopPropagation
+                       @onmouseup:stopPropagation @onmousemove:stopPropagation />
+            </div>
+            <div class="we-field-column">
+                <FlowTargetSelect Label="Target" Container="Node.Container" @bind-Value="newTarget" />
+            </div>
         </div>
-    </Edit>
+        <button type="button" class="btn btn-outline-primary" @onclick="addCase"
+                @onmousedown:stopPropagation @onmouseup:stopPropagation @onmousemove:stopPropagation>Add case</button>
+    </Preview>
 </ActivityControl>
 
 @code {
@@ -38,6 +52,11 @@
 
     private string newKey = string.Empty;
     private int newTarget = -1;
+
+    /// <summary>Several cards can be on the diagram at once, so the inputs need ids of their own.</summary>
+    private string expressionId => $"we-flowswitch-expression-{Node.Id}";
+
+    private string newCaseId => $"we-flowswitch-new-case-{Node.Id}";
 
     private void addCase()
     {

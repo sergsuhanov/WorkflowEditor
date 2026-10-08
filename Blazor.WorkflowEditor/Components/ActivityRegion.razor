@@ -6,7 +6,16 @@
          @ondragover:preventDefault @ondragover:stopPropagation @ondragover="onDragOver"
          @ondragenter:preventDefault @ondragenter:stopPropagation @ondragenter="onDragOver"
          @onmousedown:stopPropagation @onmouseup:stopPropagation @onmousemove:stopPropagation>
-        <span class="we-branch-label">@Label</span>
+        <span class="we-caption">
+            <span class="we-branch-label">@Label</span>
+            @if (CanClear)
+            {
+                <button type="button" class="btn we-branch-clear" title="@($"Remove {Label}")"
+                        aria-label="@($"Remove {Label}")" @onclick="() => OnClear.InvokeAsync()" @onclick:stopPropagation>
+                    <span class="oi oi-x text-danger" aria-hidden="true"></span>
+                </button>
+            }
+        </span>
         @ChildContent
     </div>
 }

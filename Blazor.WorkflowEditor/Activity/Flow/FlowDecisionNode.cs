@@ -1,4 +1,4 @@
-using System.Activities.Statements;
+﻿using System.Activities.Statements;
 
 namespace Blazor.WorkflowEditor.Activity.Flow;
 
@@ -9,8 +9,6 @@ public class FlowDecisionNode : DefaultNode {
     public FlowDecisionNode(Service service, FlowDecision decision) : base(service, decision) {
         this.decision = decision;
     }
-
-    public override string NodeFamily => "flow";
 
     public IGraphContainer? Container => FlowchartNode.Of(service);
 

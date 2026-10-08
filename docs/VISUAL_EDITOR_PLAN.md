@@ -1,4 +1,4 @@
-# Web editor UX instructions
+﻿# Web editor UX instructions
 
 Keep the browser editor understandable, keyboard-accessible, and reliable for creating, opening, editing, validating, and saving WF workflows.
 
@@ -14,8 +14,17 @@ Keep the browser editor understandable, keyboard-accessible, and reliable for cr
 - New workflow starts with an empty `ActivityBuilder`; its root accepts one Activity. Toolbox is grouped by control flow, primitives, collections, flowchart, and state machine.
 - Resizable/collapsible toolbox, variables, and properties panels; diagram zoom controls include reset and fit.
 - Nested stack regions, Flowchart and StateMachine editing, directional connections, validation feedback, notes, dirty-state confirmation, and XAML open/save.
-- Sequence's collapsed card is a read-only summary; open the container to add or arrange its children.
+- The card header carries the icon, the activity display name (truncated, full name in the tooltip) and the card actions; the body only holds the note preview and the activity preview.
+- Every activity edits its own fields on its card, so no built-in card is expandable and no card shows an edit command. The `Edit` parameter of `ActivityControl` stays available for custom controls, which are then the only expandable ones and are the only cards that show the command.
+- Designer notes are edited in the properties panel in a multi-line field that keeps the line breaks the user typed; the card previews the note, clamped to three lines, and the note is saved in XAML next to its activity.
+- Validation has no panel of its own. A card whose activity reports errors, or that holds an activity reporting errors anywhere below it, is outlined in red, and the messages of the selected activity are listed in the properties panel.
+- Containers (`Sequence`, `Parallel`) are plain cards: a name, its actions and nothing else, because everything they hold is visible after opening them.
+- An opened container that holds nothing yet asks for its first element with the same dashed placeholder the empty root uses.
 - Branches that hold a single activity (`If`, `While`, `DoWhile`, `ForEach<T>`, `TryCatch`, `Switch<T>`) are edited on the node card: the branch renders the control of the activity it holds through a dynamic component, and that control can be selected to edit its properties. A container child keeps its `Open` action and is then edited through the path. These activities hold one activity per branch, so unlike `Sequence` and `Parallel` they are not containers and are never opened.
+- A branch is a caption plus the control of the activity it holds, with no frame of its own, so the inner card stays the only border. An empty branch shows the same dashed drop placeholder as the start of a new schema.
+- The card of an activity carries its properties as compact fields above its branches: `If`, `While`, `DoWhile` their condition, `ForEach<T>` its values and item name, `Switch<T>` its expression and cases, `TryCatch` its catch type, `WriteLine` its text, `Delay` its duration, `Assign` its destination and source, and the collection activities their variables. `If` places Then and Else next to each other.
+- A graph container keeps the one choice that is not made inside it: `Flowchart` its start node and `StateMachine` its initial state. A `FlowDecision` and a `FlowSwitch<T>` carry their condition, expression and targets, and a state carries its entry, exit, transitions, and its initial/final flags.
+- Editing a property on a card or in the properties panel marks the schema as changed and refreshes the diagram and the panel, because the model setters notify the service.
 - Light/dark theme toggle persisted in `localStorage`.
 - Properties panel supports display name plus focused editors for Assign, WriteLine, Delay, If, While, and AddToCollection. Dedicated node editors cover additional activities; unsupported types show a clear fallback.
 
@@ -38,7 +47,9 @@ Keep the browser editor understandable, keyboard-accessible, and reliable for cr
 - On the primary large-screen layout, the design surface, toolbox, properties, variables, commands, and navigation have clear roles and do not hide essential actions.
 - A user can search for and add an Activity with keyboard and pointer; empty search results are explained.
 - Selection, nested navigation, and loading a workflow keep the properties panel in sync.
+- A note typed in the properties panel appears on the card immediately, keeps its line breaks through save and reopen, and the card preview never exceeds three lines.
 - Invalid field values produce visible feedback and can be corrected.
+- An activity with a missing required argument, or holding one, is outlined in red on the diagram; selecting it lists its messages in the properties panel, and no card carries an error badge.
 - Sequence and graph edits preserve their model semantics through save and reopen.
 - Narrow viewport layouts remain usable without making essential navigation or actions unreachable.
 - Light and dark themes retain readable text, links, ports, validation messages, and focus indicators.

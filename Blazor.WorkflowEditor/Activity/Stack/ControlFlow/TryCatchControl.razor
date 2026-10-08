@@ -2,38 +2,39 @@
 
 <ActivityControl Node="@Node">
     <Preview>
-        @*Try, Catch and Finally hold a single activity each, rendered inside the card.*@
-        <div class="we-branches we-branches-stacked">
-            <ActivityRegion Node="Node" Slot="@Node.TrySlot" Label="Try">
-                <EmbeddedActivity Slot="@Node.TrySlot" />
-            </ActivityRegion>
-            <ActivityRegion Node="Node" Slot="@Node.CatchSlot" Label="@catchLabel">
-                <EmbeddedActivity Slot="@Node.CatchSlot"
-                                  Placeholder="@($"(no handler for {Node.SelectedExceptionType.Name})")" />
-            </ActivityRegion>
-            <ActivityRegion Node="Node" Slot="@Node.FinallySlot" Label="Finally">
-                <EmbeddedActivity Slot="@Node.FinallySlot" />
-            </ActivityRegion>
-        </div>
-    </Preview>
-    <Edit>
-        <div class="mb-3">
-            <label for="exceptionType" class="form-label">Catch exception type</label>
-            <select class="form-select" id="exceptionType" @bind="Node.SelectedExceptionTypeName" @onmousedown:stopPropagation
-                    @onmouseup:stopPropagation @onmousemove:stopPropagation>
+        @*The exception the catch section handles belongs on the card: it decides what the section means. The
+          card is not expandable, the display name lives in the properties panel.*@
+        <div class="we-field-row">
+            <label class="we-field-label" for="@exceptionTypeId">Catch</label>
+            <select class="form-select we-field-input" id="@exceptionTypeId" aria-label="Catch exception type"
+                    @bind="Node.SelectedExceptionTypeName" @onmousedown:stopPropagation @onmouseup:stopPropagation
+                    @onmousemove:stopPropagation>
                 @foreach (var type in TryCatchNode.CatchExceptionTypes)
                 {
                     <option value="@type.FullName">@type.Name</option>
                 }
             </select>
         </div>
-        <div class="form-text">Drop an activity onto a section; it is edited on the node itself.</div>
-    </Edit>
+        @*Try, Catch and Finally hold a single activity each, rendered inside the card.*@
+        <div class="we-branches we-branches-stacked">
+            <ActivityRegion Node="Node" Slot="@Node.TrySlot" Label="Try">
+                <EmbeddedActivity Slot="@Node.TrySlot" />
+            </ActivityRegion>
+            <ActivityRegion Node="Node" Slot="@Node.CatchSlot" Label="Catch">
+                <EmbeddedActivity Slot="@Node.CatchSlot"
+                                  Placeholder="@($"(handler for {Node.SelectedExceptionType.Name} is not set)")" />
+            </ActivityRegion>
+            <ActivityRegion Node="Node" Slot="@Node.FinallySlot" Label="Finally">
+                <EmbeddedActivity Slot="@Node.FinallySlot" />
+            </ActivityRegion>
+        </div>
+    </Preview>
 </ActivityControl>
 
 @code {
     [Parameter]
     public TryCatchNode Node { get; set; } = default!;
 
-    private string catchLabel => $"Catch {Node.SelectedExceptionType.Name}";
+    /// <summary>Several cards can be on the diagram at once, so the select needs an id of its own.</summary>
+    private string exceptionTypeId => $"we-catch-type-{Node.Id}";
 }

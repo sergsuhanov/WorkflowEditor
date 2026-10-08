@@ -3,6 +3,22 @@
 
 <ActivityControl Node="@Node">
     <Preview>
+        @*Both fields of the loop are edited right on the card. The card is not expandable: the display name
+          and the remaining properties live in the properties panel.*@
+        <div class="we-field-columns">
+            <div class="we-field-column">
+                <label class="we-field-label" for="@valuesId">Values</label>
+                <input type="text" class="form-control we-field-input" id="@valuesId" placeholder="items"
+                       aria-label="Values" @bind-value="Node.Values" @onmousedown:stopPropagation
+                       @onmouseup:stopPropagation @onmousemove:stopPropagation />
+            </div>
+            <div class="we-field-column">
+                <label class="we-field-label" for="@itemId">Item</label>
+                <input type="text" class="form-control we-field-input" id="@itemId" placeholder="item"
+                       aria-label="Item name" @bind-value="Node.ItemName" @onmousedown:stopPropagation
+                       @onmouseup:stopPropagation @onmousemove:stopPropagation />
+            </div>
+        </div>
         @*The body holds a single activity, rendered inside the card through its own control.*@
         <div class="we-branches we-branches-stacked">
             <ActivityRegion Node="Node" Slot="@Node.BodySlot" Label="Body">
@@ -10,22 +26,14 @@
             </ActivityRegion>
         </div>
     </Preview>
-    <Edit>
-        <div class="mb-3">
-            <label for="values" class="form-label">Values (Visual Basic expression)</label>
-            <input type="text" class="form-control" id="values" @bind-value="Node.Values" placeholder="items"
-                   @onmousedown:stopPropagation @onmouseup:stopPropagation @onmousemove:stopPropagation />
-        </div>
-        <div class="mb-3">
-            <label for="itemName" class="form-label">Item name</label>
-            <input type="text" class="form-control" id="itemName" @bind-value="Node.ItemName"
-                   @onmousedown:stopPropagation @onmouseup:stopPropagation @onmousemove:stopPropagation />
-        </div>
-        <div class="form-text">Drop an activity onto the body; it is edited on the node itself.</div>
-    </Edit>
 </ActivityControl>
 
 @code {
     [Parameter]
     public ForEachNode<T> Node { get; set; } = default!;
+
+    /// <summary>Several cards can be on the diagram at once, so the inputs need ids of their own.</summary>
+    private string valuesId => $"we-foreach-values-{Node.Id}";
+
+    private string itemId => $"we-foreach-item-{Node.Id}";
 }

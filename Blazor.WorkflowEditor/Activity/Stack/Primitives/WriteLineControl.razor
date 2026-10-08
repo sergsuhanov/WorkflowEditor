@@ -1,16 +1,21 @@
 ﻿@using Blazor.WorkflowEditor.Components;
 
 <ActivityControl Node="@Node">
-    <Edit>
-        <div class="mb-3">
-            <label for="text" class="form-label">Text</label>
-            <input type="text" class="form-control" id="text" @bind-value="Node.Text" placeholder="Input text"
-                @onmousedown:stopPropagation @onmouseup:stopPropagation @onmousemove:stopPropagation />
+    <Preview>
+        @*The text belongs on the card; the display name lives in the properties panel.*@
+        <div class="we-field-row">
+            <label class="we-field-label" for="@textId">Text</label>
+            <input type="text" class="form-control we-field-input" id="@textId" aria-label="Text" placeholder="Input text"
+                   @bind-value="Node.Text" @onmousedown:stopPropagation @onmouseup:stopPropagation
+                   @onmousemove:stopPropagation />
         </div>
-    </Edit>
+    </Preview>
 </ActivityControl>
 
 @code {
     [Parameter]
     public WriteLineNode Node { get; set; } = default!;
+
+    /// <summary>Several cards can be on the diagram at once, so the input needs an id of its own.</summary>
+    private string textId => $"we-writeline-text-{Node.Id}";
 }

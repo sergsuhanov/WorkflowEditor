@@ -14,7 +14,13 @@ public class DoWhileNode : DefaultNode {
 
     public string Condition {
         get => ActivityArguments.GetText(activity.Condition);
-        set => activity.Condition = ActivityArguments.CreateVisualBasicBooleanExpression(value);
+        set {
+            if (Condition == value)
+                return;
+
+            activity.Condition = ActivityArguments.CreateVisualBasicBooleanExpression(value);
+            service.NotifyStateChanged();
+        }
     }
 
     public override IEnumerable<Variable> GetVariables() => GetVariables(activity.Variables);

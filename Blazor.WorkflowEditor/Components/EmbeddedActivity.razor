@@ -8,7 +8,8 @@
 
 @if (held is null)
 {
-    <span class="we-branch-value">@Placeholder</span>
+    @*The empty slot keeps the look of the placeholder a new schema starts with.*@
+    <div class="we-branch-drop">@Placeholder</div>
 }
 else if (child is { } node && controlType is { } type)
 {
@@ -31,7 +32,7 @@ else
 
     /// <summary>Text shown while the slot holds no activity.</summary>
     [Parameter]
-    public string Placeholder { get; set; } = "(drop)";
+    public string Placeholder { get; set; } = "Drop an activity here";
 
     private static IDictionary<string, object> parameters(Activity.DefaultNode node) =>
         new Dictionary<string, object> { ["Node"] = node };

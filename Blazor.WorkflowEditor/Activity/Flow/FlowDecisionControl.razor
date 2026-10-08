@@ -1,18 +1,30 @@
 @using Blazor.WorkflowEditor.Components
 
 <ActivityControl Node="@Node">
-    <Edit>
-        <div class="mb-3">
-            <label for="condition" class="form-label">Condition (Visual Basic expression)</label>
-            <input type="text" class="form-control" id="condition" @bind-value="Node.Condition"
-                   placeholder="True" @onmousedown:stopPropagation @onmouseup:stopPropagation @onmousemove:stopPropagation />
+    <Preview>
+        @*The decision belongs on the card; the display name lives in the properties panel. Its targets can
+          also be drawn as links between the steps.*@
+        <div class="we-field-row">
+            <label class="we-field-label" for="@conditionId">If</label>
+            <input type="text" class="form-control we-field-input" id="@conditionId" aria-label="Condition"
+                   placeholder="True" @bind-value="Node.Condition" @onmousedown:stopPropagation
+                   @onmouseup:stopPropagation @onmousemove:stopPropagation />
         </div>
-        <FlowTargetSelect Label="True target" Container="Node.Container" @bind-Value="Node.TrueTarget" />
-        <FlowTargetSelect Label="False target" Container="Node.Container" @bind-Value="Node.FalseTarget" />
-    </Edit>
+        <div class="we-field-columns">
+            <div class="we-field-column">
+                <FlowTargetSelect Label="True target" Container="Node.Container" @bind-Value="Node.TrueTarget" />
+            </div>
+            <div class="we-field-column">
+                <FlowTargetSelect Label="False target" Container="Node.Container" @bind-Value="Node.FalseTarget" />
+            </div>
+        </div>
+    </Preview>
 </ActivityControl>
 
 @code {
     [Parameter]
     public FlowDecisionNode Node { get; set; } = default!;
+
+    /// <summary>Several cards can be on the diagram at once, so the input needs an id of its own.</summary>
+    private string conditionId => $"we-decision-condition-{Node.Id}";
 }

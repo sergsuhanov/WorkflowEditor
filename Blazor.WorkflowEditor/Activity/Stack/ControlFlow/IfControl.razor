@@ -2,8 +2,16 @@
 
 <ActivityControl Node="@Node">
     <Preview>
-        @*A branch holds a single activity, which is rendered inside the card through its own control.*@
-        <div class="we-branches we-branches-stacked">
+        @*The condition decides which branch runs, so it is edited right on the card. The card is not
+          expandable: the display name and the remaining properties live in the properties panel.*@
+        <div class="we-field-row">
+            <label class="we-field-label" for="@conditionId">If</label>
+            <input type="text" class="form-control we-field-input" id="@conditionId" placeholder="True"
+                   aria-label="If condition" @bind-value="Node.Condition" @onmousedown:stopPropagation
+                   @onmouseup:stopPropagation @onmousemove:stopPropagation />
+        </div>
+        @*Both branches sit next to each other: Then on the left, Else on the right.*@
+        <div class="we-branches">
             @foreach (var slot in Node.Slots)
             {
                 var item = slot;
@@ -13,18 +21,12 @@
             }
         </div>
     </Preview>
-    <Edit>
-        <div class="mb-3">
-            <label for="condition" class="form-label">Condition (Visual Basic expression)</label>
-            <input type="text" class="form-control" id="condition" @bind-value="Node.Condition" placeholder="True"
-                   @onmousedown:stopPropagation @onmouseup:stopPropagation @onmousemove:stopPropagation />
-        </div>
-        <div class="form-text">Drop an activity onto the Then or Else branch; it is edited on the node itself.
-        </div>
-    </Edit>
 </ActivityControl>
 
 @code {
     [Parameter]
     public IfNode Node { get; set; } = default!;
+
+    /// <summary>Several cards can be on the diagram at once, so the input needs an id of its own.</summary>
+    private string conditionId => $"we-if-condition-{Node.Id}";
 }

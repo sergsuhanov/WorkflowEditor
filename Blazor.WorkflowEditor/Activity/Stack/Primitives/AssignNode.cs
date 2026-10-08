@@ -10,13 +10,28 @@ public class AssignNode : DefaultNode {
         this.assignActivity.Value ??= new System.Activities.InArgument<object>();
     }
 
+    /// <summary>Destination and source sit next to each other, so the card is wider than the default one.</summary>
+    public override string NodeLayoutClass => "we-node-wide";
+
     public string Source {
         get => ActivityArguments.GetText(assignActivity.Value);
-        set => ActivityArguments.SetVisualBasicExpression(assignActivity.Value, argument => assignActivity.Value = (System.Activities.InArgument)argument, value);
+        set {
+            if (Source == value)
+                return;
+
+            ActivityArguments.SetVisualBasicExpression(assignActivity.Value, argument => assignActivity.Value = (System.Activities.InArgument)argument, value);
+            service.NotifyStateChanged();
+        }
     }
 
     public string Destination {
         get => ActivityArguments.GetText(assignActivity.To);
-        set => ActivityArguments.SetVisualBasicExpression(assignActivity.To, argument => assignActivity.To = (System.Activities.OutArgument)argument, value, isReference: true);
+        set {
+            if (Destination == value)
+                return;
+
+            ActivityArguments.SetVisualBasicExpression(assignActivity.To, argument => assignActivity.To = (System.Activities.OutArgument)argument, value, isReference: true);
+            service.NotifyStateChanged();
+        }
     }
 }

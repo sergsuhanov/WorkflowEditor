@@ -1,4 +1,4 @@
-using WfState = System.Activities.Statements.State;
+﻿using WfState = System.Activities.Statements.State;
 using System.Activities.Statements;
 
 namespace Blazor.WorkflowEditor.Activity.StateMachine;
@@ -10,8 +10,6 @@ public class StateNode : DefaultNode {
     public StateNode(Service service, WfState state) : base(service, state) {
         this.state = state;
     }
-
-    public override string NodeFamily => "state";
 
     public IGraphContainer? Container => StateMachineNode.Of(service);
 
@@ -31,7 +29,13 @@ public class StateNode : DefaultNode {
 
     public bool IsFinal {
         get => state.IsFinal;
-        set => state.IsFinal = value;
+        set {
+            if (state.IsFinal == value)
+                return;
+
+            state.IsFinal = value;
+            service.NotifyStateChanged();
+        }
     }
 
     public bool IsInitial {
@@ -71,12 +75,14 @@ public class StateNode : DefaultNode {
     public Transition AddTransition() {
         var transition = new Transition { DisplayName = $"Transition {state.Transitions.Count + 1}" };
         state.Transitions.Add(transition);
+        service.NotifyStateChanged();
         return transition;
     }
 
     public void RemoveTransition(Transition transition) {
         state.Transitions.Remove(transition);
         StateMachineNode.Of(service)?.RebuildLinks();
+        service.NotifyStateChanged();
     }
 
     public int GetTarget(Transition transition) => StateMachineNode.Of(service)?.IndexOf(transition.To) ?? -1;
@@ -87,12 +93,15 @@ public class StateNode : DefaultNode {
             return;
         transition.To = machine.At(index);
         machine.RebuildLinks();
+        service.NotifyStateChanged();
     }
 
     public string GetCondition(Transition transition) => ActivityArguments.GetText(transition.Condition);
 
-    public void SetCondition(Transition transition, string text) =>
+    public void SetCondition(Transition transition, string text) {
         transition.Condition = string.IsNullOrWhiteSpace(text) ? null : ActivityArguments.CreateVisualBasicBooleanExpression(text);
+        service.NotifyStateChanged();
+    }
 
     public string? GetTrigger(Transition transition) => transition.Trigger?.DisplayName;
     public bool HasTrigger(Transition transition) => transition.Trigger != null;

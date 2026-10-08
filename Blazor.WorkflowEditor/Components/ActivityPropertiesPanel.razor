@@ -33,9 +33,25 @@ else
             {
                 var node = selectedItems[0];
                 <p class="text-muted">@activityTypeName(node)</p>
+                @if (Service.ErrorCount(node.Element) > 0)
+                {
+                    <ul class="we-panel-errors" role="alert">
+                        @foreach (var message in Service.ErrorsFor(node.Element))
+                        {
+                            <li>@message</li>
+                        }
+                    </ul>
+                }
+                else if (Service.HasErrorsInTree(node.Element))
+                {
+                    <p class="we-panel-errors-hint" role="status">
+                        This activity holds an activity with validation messages.
+                    </p>
+                }
                 <div class="mb-3">
                     <label for="we-activity-display-name" class="form-label">Display name</label>
-                    <input id="we-activity-display-name" class="form-control" @bind="node.DisplayName" />
+                    <input id="we-activity-display-name" class="form-control" value="@node.DisplayName"
+                           @onchange="eventArgs => rename(node, eventArgs)" />
                 </div>
 
                 @if (node is AssignNode assign)
@@ -98,6 +114,14 @@ else
                 {
                     <p class="text-muted">No additional property editor is available for this activity yet.</p>
                 }
+
+                <div class="mb-3">
+                    <label for="we-activity-note" class="form-label">Note</label>
+                    <textarea id="we-activity-note" class="form-control" rows="4" placeholder="Note for this activity"
+                              aria-describedby="we-activity-note-hint" @bind="node.Note" @bind:event="oninput"></textarea>
+                    <div id="we-activity-note-hint" class="form-text">Shown on the activity card; line breaks are kept.
+                    </div>
+                </div>
             }
 
         </div>
@@ -156,6 +180,10 @@ else
             invalidDuration = false;
         }
     }
+
+    /// <summary>Renames the activity; the model setter refreshes the diagram and the dirty state.</summary>
+    private void rename(DefaultNode node, ChangeEventArgs eventArgs) =>
+        node.DisplayName = eventArgs.Value?.ToString() ?? string.Empty;
 
     private void updateDuration(DelayNode node, ChangeEventArgs eventArgs)
     {

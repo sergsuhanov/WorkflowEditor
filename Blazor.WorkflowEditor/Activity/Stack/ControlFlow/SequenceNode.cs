@@ -3,7 +3,7 @@ using Blazor.Diagrams.Core.Models;
 
 namespace Blazor.WorkflowEditor.Activity.Stack.ControlFlow;
 
-[Pair(typeof(System.Activities.Statements.Sequence), typeof(SequenceControl))]
+[Pair(typeof(System.Activities.Statements.Sequence), typeof(DefaultControl))]
 public class SequenceNode : DefaultNode {
     private readonly Sequence sequenceActivity;
 
@@ -16,17 +16,9 @@ public class SequenceNode : DefaultNode {
         return GetVariables(sequenceActivity.Variables);
     }
 
-    /// <summary>Short summary of the sequence children shown on the collapsed node.</summary>
-    public string? ActivitiesSummary {
-        get {
-            var count = sequenceActivity.Activities.Count;
-            if (count == 0)
-                return null;
-
-            var names = string.Join(", ", sequenceActivity.Activities.Take(3).Select(a => a.DisplayName));
-            return count > 3 ? $"{names} +{count - 3}" : names;
-        }
-    }
+    /// <summary>An empty sequence has nothing on its canvas, so it asks for the first activity.</summary>
+    public override string? EmptyHint =>
+        sequenceActivity.Activities.Count == 0 ? "Drop the first activity here" : null;
 
     void linkFromTo(ActivityDesignerPair from, ActivityDesignerPair to) {
         _ = service.LinkFromTo(from, to);

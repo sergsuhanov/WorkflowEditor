@@ -1,7 +1,15 @@
-@using Blazor.WorkflowEditor.Components
+﻿@using Blazor.WorkflowEditor.Components
 
 <ActivityControl Node="@Node">
     <Preview>
+        @*The condition ends the loop, so it is edited right on the card. The card is not expandable: the
+          display name and the remaining properties live in the properties panel.*@
+        <div class="we-field-row">
+            <label class="we-field-label" for="@conditionId">Do while</label>
+            <input type="text" class="form-control we-field-input" id="@conditionId" placeholder="True"
+                   aria-label="DoWhile condition" @bind-value="Node.Condition" @onmousedown:stopPropagation
+                   @onmouseup:stopPropagation @onmousemove:stopPropagation />
+        </div>
         @*The body holds a single activity, rendered inside the card through its own control.*@
         <div class="we-branches we-branches-stacked">
             <ActivityRegion Node="Node" Slot="@Node.BodySlot" Label="Body">
@@ -9,17 +17,12 @@
             </ActivityRegion>
         </div>
     </Preview>
-    <Edit>
-        <div class="mb-3">
-            <label for="condition" class="form-label">Condition (Visual Basic expression)</label>
-            <input type="text" class="form-control" id="condition" @bind-value="Node.Condition" placeholder="True"
-                   @onmousedown:stopPropagation @onmouseup:stopPropagation @onmousemove:stopPropagation />
-        </div>
-        <div class="form-text">Drop an activity onto the body; it is edited on the node itself and runs at least once.</div>
-    </Edit>
 </ActivityControl>
 
 @code {
     [Parameter]
     public DoWhileNode Node { get; set; } = default!;
+
+    /// <summary>Several cards can be on the diagram at once, so the input needs an id of its own.</summary>
+    private string conditionId => $"we-dowhile-condition-{Node.Id}";
 }

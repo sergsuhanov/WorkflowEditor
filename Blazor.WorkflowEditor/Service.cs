@@ -46,6 +46,9 @@ namespace Blazor.WorkflowEditor {
         /// <summary>Validation messages per activity (key = the model object that produced the error).</summary>
         private readonly Dictionary<object, List<string>> validationErrors = new();
 
+        /// <summary>Elements that hold validation messages, in themselves or in a nested element.</summary>
+        private readonly HashSet<object> elementsWithErrors = new(ReferenceEqualityComparer.Instance);
+
         private bool isDirty;
 
         /// <summary>Set when the ports have to be measured again after the next render.</summary>
@@ -140,6 +143,12 @@ namespace Blazor.WorkflowEditor {
                     : "Choose the start node in Flowchart properties";
             }
         }
+
+        /// <summary>
+        /// Hint of the canvas of the opened container, when it is still empty. The root and the Flowchart
+        /// draw a START cue of their own and report no hint here.
+        /// </summary>
+        public string? EmptyContainerHint => Path.LastOrDefault()?.Reference?.Node?.EmptyHint;
 
         public Service(BlazorDiagram designer, Action updateState) {
             this.designer = designer;
@@ -380,7 +389,7 @@ namespace Blazor.WorkflowEditor {
         }
 
         /// <summary>Replaces the per-activity validation messages with the last validation results.</summary>
-        public void SetValidationErrors(IEnumerable<System.Activities.Validation.ValidationError> errors) {
+        public void SetValidationErrors(System.Activities.Activity? implementation, IEnumerable<System.Activities.Validation.ValidationError> errors) {
             validationErrors.Clear();
             foreach (var error in errors) {
                 if (error.Source == null)
@@ -394,7 +403,31 @@ namespace Blazor.WorkflowEditor {
                     list.Add(message);
             }
 
+            elementsWithErrors.Clear();
+            if (implementation != null)
+                markElementsWithErrors(implementation, new HashSet<object>(ReferenceEqualityComparer.Instance));
+
             updateState();
+        }
+
+        /// <summary>
+        /// Marks the elements that hold a validation error, in themselves or in a nested element. A card
+        /// without nodes for its content (a container that is not opened, for example) shows an error this
+        /// way, so a broken element can always be reached from the outside.
+        /// </summary>
+        private bool markElementsWithErrors(object element, HashSet<object> visited) {
+            if (!visited.Add(element))
+                return elementsWithErrors.Contains(element);
+
+            var hasErrors = ErrorCount(element) > 0;
+            foreach (var child in ModelTree.Children(element))
+                if (markElementsWithErrors(child, visited))
+                    hasErrors = true;
+
+            if (hasErrors)
+                elementsWithErrors.Add(element);
+
+            return hasErrors;
         }
 
         /// <summary>Validation messages of one model element (an activity, a State, a FlowNode, ...).</summary>
@@ -403,11 +436,9 @@ namespace Blazor.WorkflowEditor {
 
         public int ErrorCount(object? element) => ErrorsFor(element).Count;
 
-        /// <summary>All validation messages of an element as a single tooltip text.</summary>
-        public string? ErrorSummary(object? element) {
-            var errors = ErrorsFor(element);
-            return errors.Count == 0 ? null : string.Join(Environment.NewLine, errors);
-        }
+        /// <summary>Whether the element itself or anything inside it has validation messages.</summary>
+        public bool HasErrorsInTree(object? element) =>
+            element != null && elementsWithErrors.Contains(element);
 
         public void SetActivityBuilder(ActivityBuilder activityBuilder) {
             SelectedOnMove = null;

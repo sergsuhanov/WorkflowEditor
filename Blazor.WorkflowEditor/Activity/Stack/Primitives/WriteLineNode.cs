@@ -17,8 +17,12 @@ public class WriteLineNode : DefaultNode {
             return ActivityArguments.GetText(activity.Text);
         }
         set {
+            if (ActivityArguments.GetText(activity.Text) == value)
+                return;
+
             var text = value ?? string.Empty;
             ActivityArguments.SetText(activity.Text, argument => activity.Text = argument, text, text);
+            service.NotifyStateChanged();
         }
     }
 }

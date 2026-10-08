@@ -14,8 +14,11 @@ public class ClearCollectionNode<T> : DefaultNode {
         get => service.Variables.FirstOrDefault(variable =>
             variable.Name == ActivityArguments.GetText(activity.Collection));
         set {
-            if (value != null)
-                ActivityArguments.SetVisualBasicExpression(activity.Collection, argument => activity.Collection = (System.Activities.InArgument<ICollection<T>>)argument, value.Name);
+            if (value == null || ActivityArguments.GetText(activity.Collection) == value.Name)
+                return;
+
+            ActivityArguments.SetVisualBasicExpression(activity.Collection, argument => activity.Collection = (System.Activities.InArgument<ICollection<T>>)argument, value.Name);
+            service.NotifyStateChanged();
         }
     }
 }

@@ -11,8 +11,11 @@ public class DelayNode : DefaultNode {
     public string Duration {
         get => ActivityArguments.GetText(activity.Duration);
         set {
-            if (TimeSpan.TryParse(value, System.Globalization.CultureInfo.InvariantCulture, out var duration))
-                ActivityArguments.SetLiteral(activity.Duration, argument => activity.Duration = argument, duration);
+            if (!TimeSpan.TryParse(value, System.Globalization.CultureInfo.InvariantCulture, out var duration))
+                return;
+
+            ActivityArguments.SetLiteral(activity.Duration, argument => activity.Duration = argument, duration);
+            service.NotifyStateChanged();
         }
     }
 }

@@ -20,10 +20,15 @@ public class DefaultNode : NodeModel {
             ? a.DisplayName
             : displayNameProperty?.GetValue(activity) as string ?? activity.GetType().Name;
         set {
+            if (DisplayName == value)
+                return;
+
             if (activity is System.Activities.Activity a)
                 a.DisplayName = value;
             else if (displayNameProperty?.CanWrite == true)
                 displayNameProperty.SetValue(activity, value);
+
+            service.NotifyStateChanged();
         }
     }
     public string? Comment { get; set; }
@@ -33,7 +38,8 @@ public class DefaultNode : NodeModel {
 
     /// <summary>
     /// Free-form note of this node. It is saved in XAML (attached property) and shown on the card,
-    /// like the annotation of the classic Workflow Foundation designer.
+    /// like the annotation of the classic Workflow Foundation designer. It is edited in the
+    /// properties panel, where the editor accepts line breaks.
     /// </summary>
     public string Note {
         get => State.Designer.GetNote(activity) ?? string.Empty;
@@ -48,8 +54,6 @@ public class DefaultNode : NodeModel {
 
     public bool HasNote => !string.IsNullOrWhiteSpace(State.Designer.GetNote(activity));
 
-    /// <summary>Whether the inline note editor is open (session-only UI state, not saved).</summary>
-    public bool IsNoteOpen { get; set; }
     public double? Zoom { get; set; }
     public Point? Offcet { get; set; }
 
@@ -424,11 +428,14 @@ public class DefaultNode : NodeModel {
     /// <summary>Whether this container accepts a child of the given activity or element type.</summary>
     public virtual bool CanAdd(Type elementType) => typeof(System.Activities.Activity).IsAssignableFrom(elementType);
 
+    /// <summary>
+    /// Hint drawn on the canvas while this container is open and holds nothing yet, or null when the
+    /// container needs no hint: it either has children or draws a cue of its own.
+    /// </summary>
+    public virtual string? EmptyHint => null;
+
     /// <summary>Extra CSS class for the collapsed node card, used by nodes with an inline region designer.</summary>
     public virtual string NodeLayoutClass => string.Empty;
-
-    /// <summary>Visual family of the node: "stack", "flow" or "state". Drives the accent colour of the card.</summary>
-    public virtual string NodeFamily => "stack";
 
     /// <summary>
     /// Replaces the four default ports with the directional set used by graph containers: incoming ports on

@@ -77,24 +77,12 @@
             </nav>
 
             <Blazor.WorkflowEditor.Editor @ref="editor" ToolBoxGroups="groups" TypeCollection="TypeCollection"
-                                          DirtyChanged="onDirtyChanged" ValidationChanged="onValidationChanged"
+                                          DirtyChanged="onDirtyChanged"
                                           OperationFailed="onEditorOperationFailed" />
 
             @if (!string.IsNullOrWhiteSpace(statusMessage))
             {
                 <div class="alert @(isError ? "alert-danger" : "alert-info") m-2" role="status">@statusMessage</div>
-            }
-            @if (editor?.ValidationMessages.Count > 0)
-            {
-                <div class="alert alert-warning m-2" role="alert">
-                    <strong>Workflow validation</strong>
-                    <ul class="mb-0">
-                        @foreach (var message in editor.ValidationMessages)
-                        {
-                            <li>@message</li>
-                        }
-                    </ul>
-                </div>
             }
 
 @code {
@@ -130,8 +118,6 @@
         hasUnsavedChanges = dirty;
         StateHasChanged();
     }
-
-    private Task onValidationChanged() => InvokeAsync(StateHasChanged);
 
     private void onEditorOperationFailed(string message)
     {

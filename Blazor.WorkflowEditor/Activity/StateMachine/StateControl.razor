@@ -1,7 +1,9 @@
 @using Blazor.WorkflowEditor.Components
+@using System.Activities.Statements
 
 <ActivityControl Node="@Node">
     <Preview>
+        @*Everything a state owns is edited on the card; the display name lives in the properties panel.*@
         <div class="we-branches">
             <ActivityRegion Node="Node" Label="Entry" Value="@Node.EntryName" CanClear="@Node.HasEntry"
                             Active="@(Node.SelectedSlot == StateNode.Slot.Entry)"
@@ -10,51 +12,68 @@
                             Active="@(Node.SelectedSlot == StateNode.Slot.Exit)"
                             OnActivate="@(() => Node.SelectSlot(StateNode.Slot.Exit))" OnClear="@(() => Node.ClearExit())" />
         </div>
-    </Preview>
-    <Edit>
-        <div class="form-check">
-            <input type="checkbox" class="form-check-input" id="isInitial" checked="@Node.IsInitial"
-                   @onchange="e => Node.IsInitial = (bool)(e.Value ?? false)" @onmousedown:stopPropagation
-                   @onmouseup:stopPropagation @onmousemove:stopPropagation />
-            <label class="form-check-label" for="isInitial">Initial state</label>
-        </div>
-        <div class="form-check mb-3">
-            <input type="checkbox" class="form-check-input" id="isFinal" checked="@Node.IsFinal"
-                   @onchange="e => Node.IsFinal = (bool)(e.Value ?? false)" @onmousedown:stopPropagation
-                   @onmouseup:stopPropagation @onmousemove:stopPropagation />
-            <label class="form-check-label" for="isFinal">Final state</label>
-        </div>
-        @foreach (var transition in Node.Transitions)
-        {
-            var tr = transition;
-            <div class="border rounded p-2 mb-2">
-                <FlowTargetSelect Label="@tr.DisplayName" Container="Node.Container" Value="Node.GetTarget(tr)"
-                                  ValueChanged="v => Node.SetTarget(tr, v)" />
-                <input type="text" class="form-control mb-2" placeholder="Condition (Visual Basic, optional)"
-                       value="@Node.GetCondition(tr)"
-                       @onchange="e => Node.SetCondition(tr, e.Value?.ToString() ?? string.Empty)" @onmousedown:stopPropagation
+        <div class="we-switches">
+            <div class="form-check">
+                <input type="checkbox" class="form-check-input" id="@initialId" checked="@Node.IsInitial"
+                       @onchange="e => Node.IsInitial = (bool)(e.Value ?? false)" @onmousedown:stopPropagation
                        @onmouseup:stopPropagation @onmousemove:stopPropagation />
-                <div class="we-branches">
-                    <ActivityRegion Node="Node" Label="Trigger" Value="@Node.GetTrigger(tr)" CanClear="@Node.HasTrigger(tr)"
-                                    Active="@(Node.SelectedSlot == StateNode.Slot.Trigger && Node.SelectedTransition == tr)"
-                                    OnActivate="@(() => Node.SelectSlot(StateNode.Slot.Trigger, tr))"
-                                    OnClear="@(() => Node.ClearTrigger(tr))" />
-                    <ActivityRegion Node="Node" Label="Action" Value="@Node.GetAction(tr)" CanClear="@Node.HasAction(tr)"
-                                    Active="@(Node.SelectedSlot == StateNode.Slot.Action && Node.SelectedTransition == tr)"
-                                    OnActivate="@(() => Node.SelectSlot(StateNode.Slot.Action, tr))"
-                                    OnClear="@(() => Node.ClearAction(tr))" />
-                </div>
-                <button type="button" class="btn btn-sm btn-outline-danger mt-2" @onclick="() => Node.RemoveTransition(tr)"
-                        @onmousedown:stopPropagation @onmouseup:stopPropagation @onmousemove:stopPropagation>Remove
-                    transition</button>
-                </div>
-            }
-            <button type="button" class="btn btn-sm btn-outline-primary" @onclick="() => Node.AddTransition()"
-                    @onmousedown:stopPropagation @onmouseup:stopPropagation @onmousemove:stopPropagation>Add transition</button>
-        </Edit>
-    </ActivityControl>
+                <label class="form-check-label" for="@initialId">Initial</label>
+            </div>
+            <div class="form-check">
+                <input type="checkbox" class="form-check-input" id="@finalId" checked="@Node.IsFinal"
+                       @onchange="e => Node.IsFinal = (bool)(e.Value ?? false)" @onmousedown:stopPropagation
+                       @onmouseup:stopPropagation @onmousemove:stopPropagation />
+                <label class="form-check-label" for="@finalId">Final</label>
+            </div>
+        </div>
+        @for (var i = 0; i < transitionList.Count; i++)
+        {
+            var tr = transitionList[i];
+            var index = i;
+            <div class="we-caption">
+                <span class="we-branch-label">@tr.DisplayName</span>
+                <button type="button" class="btn we-branch-clear" title="@($"Remove {tr.DisplayName}")"
+                        aria-label="@($"Remove {tr.DisplayName}")" @onclick="() => Node.RemoveTransition(tr)"
+                        @onmousedown:stopPropagation @onmouseup:stopPropagation @onmousemove:stopPropagation>
+                    <span class="oi oi-x text-danger" aria-hidden="true"></span>
+                </button>
+            </div>
+            <FlowTargetSelect Label="Target" Container="Node.Container" Value="Node.GetTarget(tr)"
+                              ValueChanged="v => Node.SetTarget(tr, v)" />
+            <div class="we-field-row">
+                <label class="we-field-label" for="@conditionId(index)">Condition</label>
+                <input type="text" class="form-control we-field-input" id="@conditionId(index)"
+                       aria-label="@($"{tr.DisplayName} condition")" placeholder="Optional Visual Basic expression"
+                       value="@Node.GetCondition(tr)"
+                       @onchange="e => Node.SetCondition(tr, e.Value?.ToString() ?? string.Empty)"
+                       @onmousedown:stopPropagation @onmouseup:stopPropagation @onmousemove:stopPropagation />
+            </div>
+            <div class="we-branches">
+                <ActivityRegion Node="Node" Label="Trigger" Value="@Node.GetTrigger(tr)" CanClear="@Node.HasTrigger(tr)"
+                                Active="@(Node.SelectedSlot == StateNode.Slot.Trigger && Node.SelectedTransition == tr)"
+                                OnActivate="@(() => Node.SelectSlot(StateNode.Slot.Trigger, tr))"
+                                OnClear="@(() => Node.ClearTrigger(tr))" />
+                <ActivityRegion Node="Node" Label="Action" Value="@Node.GetAction(tr)" CanClear="@Node.HasAction(tr)"
+                                Active="@(Node.SelectedSlot == StateNode.Slot.Action && Node.SelectedTransition == tr)"
+                                OnActivate="@(() => Node.SelectSlot(StateNode.Slot.Action, tr))"
+                                OnClear="@(() => Node.ClearAction(tr))" />
+            </div>
+        }
+        <button type="button" class="btn btn-outline-primary" @onclick="() => Node.AddTransition()"
+                @onmousedown:stopPropagation @onmouseup:stopPropagation @onmousemove:stopPropagation>Add transition</button>
+    </Preview>
+</ActivityControl>
 
 @code {
     [Parameter]
     public StateNode Node { get; set; } = default!;
+
+    private IReadOnlyList<Transition> transitionList => Node.Transitions;
+
+    /// <summary>Several cards can be on the diagram at once, so the controls need ids of their own.</summary>
+    private string initialId => $"we-state-initial-{Node.Id}";
+
+    private string finalId => $"we-state-final-{Node.Id}";
+
+    private string conditionId(int index) => $"we-state-condition-{Node.Id}-{index}";
 }

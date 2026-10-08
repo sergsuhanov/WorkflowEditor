@@ -1,4 +1,4 @@
-using WfState = System.Activities.Statements.State;
+﻿using WfState = System.Activities.Statements.State;
 using WfStateMachine = System.Activities.Statements.StateMachine;
 using System.Activities.Statements;
 
@@ -18,7 +18,9 @@ public class StateMachineNode : DefaultNode, IGraphContainer {
 
     public static StateMachineNode? Of(Service service) => service.Path.LastOrDefault()?.Reference?.Node as StateMachineNode;
 
-    public override string NodeFamily => "state";
+    /// <summary>An empty state machine has nothing on its canvas, so it asks for the first state.</summary>
+    public override string? EmptyHint =>
+        activity.States.Count == 0 ? "Drop the first state here" : null;
 
     public bool IsStartElement(object element) => ReferenceEquals(activity.InitialState, element);
 
@@ -56,9 +58,6 @@ public class StateMachineNode : DefaultNode, IGraphContainer {
         set => activity.InitialState = value;
     }
 
-    /// <summary>Display name of the initial state, or null when the machine is empty.</summary>
-    public string? InitialLabel => activity.InitialState == null ? null : stateName(activity.InitialState);
-
     /// <summary>Index of the initial state, used by the initial state selector.</summary>
     public int InitialIndex {
         get => IndexOf(activity.InitialState);
@@ -70,17 +69,6 @@ public class StateMachineNode : DefaultNode, IGraphContainer {
         service.NotifyStateChanged();
     }
 
-    /// <summary>Short summary of the states shown on the collapsed node.</summary>
-    public string? StatesSummary {
-        get {
-            var count = activity.States.Count;
-            if (count == 0)
-                return null;
-
-            var names = string.Join(", ", activity.States.Take(2).Select(stateName));
-            return count > 2 ? $"{names} +{count - 2}" : names;
-        }
-    }
 
     public override IEnumerable<Variable> GetVariables() => GetVariables(activity.Variables);
 

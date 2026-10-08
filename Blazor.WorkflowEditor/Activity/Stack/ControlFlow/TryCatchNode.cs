@@ -39,7 +39,14 @@ public class TryCatchNode : DefaultNode {
 
     public string SelectedExceptionTypeName {
         get => SelectedExceptionType.FullName!;
-        set => SelectedExceptionType = CatchExceptionTypes.FirstOrDefault(t => t.FullName == value) ?? typeof(System.Exception);
+        set {
+            var type = CatchExceptionTypes.FirstOrDefault(t => t.FullName == value) ?? typeof(System.Exception);
+            if (SelectedExceptionType == type)
+                return;
+
+            SelectedExceptionType = type;
+            service.NotifyStateChanged();
+        }
     }
 
     private static Type? exceptionTypeOf(Catch c) => c.GetType().IsGenericType ? c.GetType().GetGenericArguments()[0] : null;

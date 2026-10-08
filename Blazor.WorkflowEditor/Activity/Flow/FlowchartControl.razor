@@ -2,24 +2,11 @@
 
 <ActivityControl Node="@Node">
     <Preview>
-        @*Read-only summary: a flowchart is filled and connected inside the opened container.*@
-        <div class="we-graph-summary">
-            <div class="we-graph-summary-row">
-                <span class="we-graph-summary-label">Start</span>
-                <span class="we-graph-summary-value">@(Node.StartLabel ?? "not set")</span>
-            </div>
-            <div class="we-graph-summary-row">
-                <span class="we-graph-summary-label">Steps</span>
-                <span class="we-graph-summary-value">@(Node.StepsSummary ?? "empty")</span>
-            </div>
-        </div>
-    </Preview>
-    <Edit>
+        @*A flowchart is filled and connected inside the opened container, so the card only carries the one
+          choice that is not made there: which step starts it.*@
         <FlowTargetSelect Label="Start node" Container="Node" @bind-Value="Node.StartIndex" />
-        <div class="form-text">Open the flowchart to add and arrange steps. A step's form sets decision and switch
-            targets.</div>
-        </Edit>
-    </ActivityControl>
+    </Preview>
+</ActivityControl>
 
 @code {
     [Parameter]

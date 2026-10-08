@@ -16,13 +16,28 @@ public class ForEachNode<T> : DefaultNode {
 
     public string Values {
         get => ActivityArguments.GetText(activity.Values);
-        set => ActivityArguments.SetVisualBasicExpression(activity.Values, argument => activity.Values = (InArgument<IEnumerable<T>>)argument, value);
+        set {
+            if (Values == value)
+                return;
+
+            ActivityArguments.SetVisualBasicExpression(activity.Values, argument => activity.Values = (InArgument<IEnumerable<T>>)argument, value);
+            service.NotifyStateChanged();
+        }
     }
 
     public string ItemName {
         get => activity.Body.Argument?.Name ?? "item";
-        set => activity.Body.Argument = new DelegateInArgument<T>(string.IsNullOrWhiteSpace(value) ? "item" : value);
+        set {
+            if (ItemName == value)
+                return;
+
+            activity.Body.Argument = new DelegateInArgument<T>(string.IsNullOrWhiteSpace(value) ? "item" : value);
+            service.NotifyStateChanged();
+        }
     }
+
+    /// <summary>Values and item name sit next to each other, so the card is wider than the default one.</summary>
+    public override string NodeLayoutClass => "we-node-wide";
 
     public override void LoadChilds(Func<System.Activities.Activity, ActivityDesignerPair> addActivity) {
         if (activity.Body?.Handler != null)

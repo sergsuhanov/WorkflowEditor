@@ -1,10 +1,11 @@
-@using Blazor.WorkflowEditor.Components;
+﻿@using Blazor.WorkflowEditor.Components;
 @typeparam T
 
 <ActivityControl Node="@Node">
-    <Edit>
+    <Preview>
+        @*The collection and the item belong on the card; the display name lives in the properties panel.*@
         <AddToCollectionProperties Node="Node"></AddToCollectionProperties>
-    </Edit>
+    </Preview>
 </ActivityControl>
 
 @code {

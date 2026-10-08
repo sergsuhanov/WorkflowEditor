@@ -13,13 +13,28 @@ public class AssignGenericNode<T> : DefaultNode {
         IsGeneric = true;
     }
 
+    /// <summary>Destination and source sit next to each other, so the card is wider than the default one.</summary>
+    public override string NodeLayoutClass => "we-node-wide";
+
     public string Source {
         get => ActivityArguments.GetText(activity.Value);
-        set => ActivityArguments.SetVisualBasicExpression(activity.Value, argument => activity.Value = (InArgument<T>)argument, value);
+        set {
+            if (Source == value)
+                return;
+
+            ActivityArguments.SetVisualBasicExpression(activity.Value, argument => activity.Value = (InArgument<T>)argument, value);
+            service.NotifyStateChanged();
+        }
     }
 
     public string Destination {
         get => ActivityArguments.GetText(activity.To);
-        set => ActivityArguments.SetVisualBasicExpression(activity.To, argument => activity.To = (OutArgument<T>)argument, value, isReference: true);
+        set {
+            if (Destination == value)
+                return;
+
+            ActivityArguments.SetVisualBasicExpression(activity.To, argument => activity.To = (OutArgument<T>)argument, value, isReference: true);
+            service.NotifyStateChanged();
+        }
     }
 }

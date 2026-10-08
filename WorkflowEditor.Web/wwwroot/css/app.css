@@ -227,11 +227,3 @@ html[data-theme="dark"] .navbar .dropdown-item:focus {
     background-color: #3d444b;
     color: #fff;
 }
-
-html[data-theme="dark"] .we-graph-summary-value {
-    color: #e9ecef;
-}
-
-html[data-theme="dark"] .we-graph-summary-label {
-    color: #adb5bd;
-}

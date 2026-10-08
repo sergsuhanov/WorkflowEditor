@@ -1,16 +1,21 @@
 @using Blazor.WorkflowEditor.Components
 
 <ActivityControl Node="@Node">
-    <Edit>
-        <div class="mb-3">
-            <label for="duration" class="form-label">Duration</label>
-            <input type="text" class="form-control" id="duration" @bind-value="Node.Duration"
-                   placeholder="00:00:01" @onmousedown:stopPropagation @onmouseup:stopPropagation @onmousemove:stopPropagation />
+    <Preview>
+        @*The duration belongs on the card; the display name lives in the properties panel.*@
+        <div class="we-field-row">
+            <label class="we-field-label" for="@durationId">Duration</label>
+            <input type="text" class="form-control we-field-input" id="@durationId" aria-label="Duration"
+                   placeholder="00:00:01" @bind-value="Node.Duration" @onmousedown:stopPropagation
+                   @onmouseup:stopPropagation @onmousemove:stopPropagation />
         </div>
-    </Edit>
+    </Preview>
 </ActivityControl>
 
 @code {
     [Parameter]
     public DelayNode Node { get; set; } = default!;
+
+    /// <summary>Several cards can be on the diagram at once, so the input needs an id of its own.</summary>
+    private string durationId => $"we-delay-duration-{Node.Id}";
 }

@@ -1,4 +1,4 @@
-using System.Activities.Statements;
+﻿using System.Activities.Statements;
 
 namespace Blazor.WorkflowEditor.Activity.Flow;
 
@@ -18,8 +18,6 @@ public class FlowchartNode : DefaultNode, IGraphContainer {
 
     /// <summary>The flowchart currently opened in the editor, if any.</summary>
     public static FlowchartNode? Of(Service service) => service.Path.LastOrDefault()?.Reference?.Node as FlowchartNode;
-
-    public override string NodeFamily => "flow";
 
     public bool IsStartElement(object element) =>
         activity.StartNode is FlowStep step ? ReferenceEquals(step.Action, element) : ReferenceEquals(activity.StartNode, element);
@@ -70,9 +68,6 @@ public class FlowchartNode : DefaultNode, IGraphContainer {
 
     public FlowNode? At(int index) => index >= 0 && index < activity.Nodes.Count ? activity.Nodes[index] : null;
 
-    /// <summary>Label of the flowchart start node, or null when the flowchart is empty.</summary>
-    public string? StartLabel => activity.StartNode == null ? null : Label(activity.StartNode);
-
     /// <summary>Index of the start node, used by the start node selector.</summary>
     public int StartIndex {
         get => IndexOf(activity.StartNode);
@@ -82,18 +77,6 @@ public class FlowchartNode : DefaultNode, IGraphContainer {
     public void SetStart(int index) {
         activity.StartNode = At(index);
         service.NotifyStateChanged();
-    }
-
-    /// <summary>Short summary of the flowchart nodes shown on the collapsed node.</summary>
-    public string? StepsSummary {
-        get {
-            var count = activity.Nodes.Count;
-            if (count == 0)
-                return null;
-
-            var names = string.Join(", ", activity.Nodes.Take(2).Select(Label));
-            return count > 2 ? $"{names} +{count - 2}" : names;
-        }
     }
 
     public static string Label(FlowNode node) => node switch {

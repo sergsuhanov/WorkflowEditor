@@ -1,4 +1,4 @@
-.we-diagram {
+﻿.we-diagram {
     background-color: #494949;
 }
 
@@ -16,7 +16,8 @@
     border-color: #75b798;
 }
 
-.we-root-start-drop {
+.we-root-start-drop,
+.we-branch-drop {
     border-color: #75b798;
     background: rgba(24, 57, 42, 0.8);
     color: #b7e4c7;
@@ -42,12 +43,6 @@
     padding: 0.2rem;
 }
 
-
-.card-title {
-    margin-bottom: 0px;
-    font-size: 0.8rem;
-    font-weight: normal;
-}
 
 .we-branch {
     border-color: #6c757d;
@@ -129,38 +124,9 @@
     fill: #4dabf7;
 }
 
-.we-custom-node.we-family-stack .card {
-    border-left-color: #4dabf7;
-}
-
-.we-custom-node.we-family-flow .card {
-    border-left-color: #b197fc;
-}
-
-.we-custom-node.we-family-state .card {
-    border-left-color: #69db7c;
-}
-
-.we-family-flow .card-header {
-    background-color: rgb(177 151 252 / 12%);
-}
-
-.we-family-state .card-header {
-    background-color: rgb(105 219 124 / 12%);
-}
-
 .we-custom-node .we-node-badge {
     background-color: rgb(77 171 247 / 20%);
     color: #a5d8ff;
-}
-
-.we-custom-node .we-node-error {
-    background-color: rgb(255 107 107 / 25%);
-    color: #ffc9c9;
-}
-
-.we-field-errors {
-    color: #ffa8a8;
 }
 
 /* Panel content must stay readable on the dark background (step 9). */
@@ -199,6 +165,20 @@
     color: inherit;
 }
 
+/* Validation messages of the selected activity (step 12). */
+.we-panel-errors {
+    margin: 0 0 0.5rem;
+    padding-left: 1.1rem;
+    color: #ffa8a8;
+    font-size: 0.78rem;
+}
+
+.we-panel .we-panel-errors-hint {
+    margin: 0 0 0.5rem;
+    color: #ffc9c9;
+    font-size: 0.75rem;
+}
+
 /* Node cards follow the dark palette of the panels (step 10). */
 .we-custom-node .card {
     background-color: #343a40;
@@ -211,7 +191,19 @@
     border-bottom: 1px solid #495057;
 }
 
-.we-custom-node h5.card-title {
+.we-custom-node .we-node-title {
+    color: #e9ecef;
+}
+
+.we-custom-node .we-field-label {
+    color: #adb5bd;
+}
+
+.we-custom-node .we-branch-filled .we-branch-label {
+    color: #adb5bd;
+}
+
+.we-custom-node .we-field-input {
     color: #e9ecef;
 }
 
@@ -272,10 +264,6 @@
 /* Designer notes in the dark theme. */
 .we-custom-node .we-note-preview {
     color: #adb5bd;
-}
-
-.we-custom-node .we-note-active {
-    color: #ffd43b !important;
 }
 
 /* --- Dialogs and drop-down lists (step 11): the dark theme has to reach the forms as well --- */

@@ -1,11 +1,12 @@
-@using Blazor.WorkflowEditor.Components;
+﻿@using Blazor.WorkflowEditor.Components;
 @typeparam T
 
 <ActivityControl Node="@Node">
-    <Edit>
+    <Preview>
+        @*The collection belongs on the card; the display name lives in the properties panel.*@
         <VariableSelectControl Label="Collection" @bind-Value="Node.Collection" VariableCollection="VariableCollection">
         </VariableSelectControl>
-    </Edit>
+    </Preview>
 </ActivityControl>
 
 @code {

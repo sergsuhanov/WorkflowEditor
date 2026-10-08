@@ -1,4 +1,4 @@
-using System.Activities;
+﻿using System.Activities;
 using System.Activities.Statements;
 using Microsoft.VisualBasic.Activities;
 
@@ -12,8 +12,6 @@ public class FlowSwitchNode<T> : DefaultNode {
         this.flowSwitch = flowSwitch;
         IsGeneric = true;
     }
-
-    public override string NodeFamily => "flow";
 
     public IGraphContainer? Container => FlowchartNode.Of(service);
 

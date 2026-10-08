@@ -1,4 +1,4 @@
-using System.Activities;
+﻿using System.Activities;
 using System.Activities.Expressions;
 using System.Activities.Statements;
 using Blazor.Diagrams;
@@ -417,8 +417,7 @@ public class ActivityDesignerTests {
         Assert.True(hasAdded);
         var step = Assert.IsType<FlowStep>(Assert.Single(chart.Nodes));
         Assert.Same(step, chart.StartNode);
-        Assert.Equal(step.Action.DisplayName, node.StartLabel);
-        Assert.NotNull(node.StepsSummary);
+        Assert.Equal(0, node.StartIndex);
         Assert.Empty(sequence.Activities);
         Assert.Null(service.DropTarget);
     }
@@ -477,8 +476,7 @@ public class ActivityDesignerTests {
         Assert.True(hasAdded);
         var state = Assert.Single(machine.States);
         Assert.Same(state, machine.InitialState);
-        Assert.Equal(state.DisplayName, node.InitialLabel);
-        Assert.NotNull(node.StatesSummary);
+        Assert.Equal(0, node.InitialIndex);
     }
 
     [Fact]
@@ -491,8 +489,8 @@ public class ActivityDesignerTests {
         node.AddChild(new ActivityDesignerPair { Element = new State(), Activity = null! });
 
         Assert.Equal(new[] { "State1", "State2" }, machine.States.Select(s => s.DisplayName));
-        Assert.Equal("State1", node.InitialLabel);
-        Assert.Equal("State1, State2", node.StatesSummary);
+        Assert.Equal(0, node.InitialIndex);
+        Assert.Equal(new[] { "State1", "State2" }, new[] { node.LabelAt(0), node.LabelAt(1) });
     }
 
     [Fact]
@@ -1331,6 +1329,57 @@ public class ActivityDesignerTests {
         var loaded = Assert.IsType<WriteLine>(Assert.Single(sequence.Activities));
 
         Assert.Equal("Check the VAT rate", Blazor.WorkflowEditor.Activity.State.Designer.GetNote(loaded));
+    }
+
+    [Fact]
+    public void XamlRoundTripPreservesForEachBody() {
+        using var service = new Service(new BlazorDiagram(), () => { });
+        var loop = new ForEach<string> { DisplayName = "each" };
+        loop.Body = new ActivityAction<string> {
+            Argument = new DelegateInArgument<string>("item"),
+            Handler = new WriteLine { Text = new InArgument<string>("plain") }
+        };
+
+        var xaml = WorkflowXamlSerializer.SaveBuilder(new ActivityBuilder {
+            Implementation = new Sequence { Activities = { loop } }
+        });
+        var sequence = Assert.IsType<Sequence>(WorkflowXamlSerializer.LoadBuilder(xaml).Implementation);
+        var loaded = Assert.IsType<ForEach<string>>(Assert.Single(sequence.Activities));
+
+        Assert.Equal("item", loaded.Body.Argument?.Name);
+        Assert.IsType<WriteLine>(loaded.Body.Handler);
+    }
+
+    [Fact]
+    public void XamlRoundTripPreservesEditedIfCondition() {
+        using var service = new Service(new BlazorDiagram(), () => { });
+        var conditional = new If { DisplayName = "check" };
+        var node = new IfNode(service, conditional) { Condition = "busy = true" };
+
+        Assert.Equal("busy = true", node.Condition);
+
+        var xaml = WorkflowXamlSerializer.SaveBuilder(new ActivityBuilder {
+            Implementation = new Sequence { Activities = { conditional } }
+        });
+        var sequence = Assert.IsType<Sequence>(WorkflowXamlSerializer.LoadBuilder(xaml).Implementation);
+        var loaded = Assert.IsType<If>(Assert.Single(sequence.Activities));
+
+        Assert.Equal("busy = true", new IfNode(service, loaded).Condition);
+    }
+
+    [Fact]
+    public void XamlRoundTripPreservesLineBreaksInDesignerNotes() {
+        using var service = new Service(new BlazorDiagram(), () => { });
+        var write = new WriteLine { DisplayName = "noted" };
+        var node = new WriteLineNode(service, write) { Note = "First line\nSecond line" };
+
+        var xaml = WorkflowXamlSerializer.SaveBuilder(new ActivityBuilder {
+            Implementation = new Sequence { Activities = { write } }
+        });
+        var sequence = Assert.IsType<Sequence>(WorkflowXamlSerializer.LoadBuilder(xaml).Implementation);
+        var loaded = Assert.IsType<WriteLine>(Assert.Single(sequence.Activities));
+
+        Assert.Equal("First line\nSecond line", Blazor.WorkflowEditor.Activity.State.Designer.GetNote(loaded));
     }
 
     [Fact]

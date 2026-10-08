@@ -3,15 +3,13 @@
 @typeparam T
 
 <ActivityControl Node="@Node">
-    <Edit>
-        <div class="mb-3">
-            <label for="destination" class="form-label">Destination</label>
-        </div>
+    <Preview>
+        @*The collection and the item belong on the card; the display name lives in the properties panel.*@
         <VariableSelectControl Label="Collection" @bind-Value="Node.Collection" VariableCollection="VariableCollection">
         </VariableSelectControl>
         <VariableSelectControl Label="Item" @bind-Value="Node.Item" VariableCollection="Variables">
         </VariableSelectControl>
-    </Edit>
+    </Preview>
 </ActivityControl>
 
 @code {
