@@ -13,7 +13,7 @@ public class SwitchNode<T> : DefaultNode {
 
     public SwitchNode(Service service, System.Activities.Statements.Switch<T> activity) : base(service, activity) {
         this.activity = activity;
-        IsContainer = true;
+        //Not a container: the card renders the single activity of each case inline.
         IsGeneric = true;
     }
 
@@ -31,22 +31,64 @@ public class SwitchNode<T> : DefaultNode {
     public IReadOnlyList<string> CaseKeys =>
         activity.Cases.Keys.Select(formatKey).ToList();
 
-    public string? DefaultName => activity.Default?.DisplayName;
+    private IActivityHolder? defaultSlot;
+    private readonly Dictionary<string, IActivityHolder> caseSlots = new();
 
-    public bool HasDefault => activity.Default != null;
+    /// <summary>Slot that holds the Default branch.</summary>
+    public IActivityHolder DefaultSlot => defaultSlot ??= new DefaultBranch(this);
 
-    public bool IsDefaultSelected => defaultSelected;
+    public override IReadOnlyList<IActivityHolder> Slots =>
+        new[] { DefaultSlot }.Concat(CaseKeys.Select(CaseSlot)).ToList();
 
-    public bool IsCaseSelected(string key) =>
-        !defaultSelected && string.Equals(selectedCaseKey, key, StringComparison.Ordinal);
+    /// <summary>Slot that holds the body of the case with the given key.</summary>
+    public IActivityHolder CaseSlot(string key) {
+        if (!caseSlots.TryGetValue(key, out var slot))
+            caseSlots[key] = slot = new CaseBranch(this, key);
+        return slot;
+    }
 
-    public string? CaseName(string key) =>
-        tryParseKey(key, out var parsed) && activity.Cases.TryGetValue(parsed, out var child)
-            ? child?.DisplayName
-            : null;
+    /// <summary>One case of the Switch, exposed as a slot so the editor can navigate into it.</summary>
+    private sealed class CaseBranch : IActivityHolder {
+        private readonly SwitchNode<T> owner;
+        private readonly string key;
 
-    public bool HasCaseBody(string key) =>
-        tryParseKey(key, out var parsed) && activity.Cases.TryGetValue(parsed, out var child) && child != null;
+        public CaseBranch(SwitchNode<T> owner, string key) {
+            this.owner = owner;
+            this.key = key;
+        }
+
+        public DefaultNode Owner => owner;
+
+        public string SlotLabel => $"Case {key}";
+
+        public System.Activities.Activity? Held =>
+            tryParseKey(key, out var parsed) && owner.activity.Cases.TryGetValue(parsed, out var child)
+                ? child
+                : null;
+
+        public void Attach(ActivityDesignerPair child) {
+            owner.SelectCase(key);
+            owner.AddChild(child);
+        }
+    }
+
+    /// <summary>The Default branch of the Switch, exposed as a slot.</summary>
+    private sealed class DefaultBranch : IActivityHolder {
+        private readonly SwitchNode<T> owner;
+
+        public DefaultBranch(SwitchNode<T> owner) => this.owner = owner;
+
+        public DefaultNode Owner => owner;
+
+        public string SlotLabel => "Default";
+
+        public System.Activities.Activity? Held => owner.activity.Default;
+
+        public void Attach(ActivityDesignerPair child) {
+            owner.SelectDefault();
+            owner.AddChild(child);
+        }
+    }
 
     public void SelectDefault() {
         defaultSelected = true;
@@ -85,35 +127,6 @@ public class SwitchNode<T> : DefaultNode {
 
         service.NotifyStateChanged();
         return true;
-    }
-
-    public void ClearDefault() {
-        if (activity.Default == null)
-            return;
-
-        RemoveChildEverywhere(activity.Default);
-        service.NotifyStateChanged();
-    }
-
-    public void ClearCase(string key) {
-        if (!tryParseKey(key, out var parsed) ||
-            !activity.Cases.TryGetValue(parsed, out var child) ||
-            child == null)
-            return;
-
-        RemoveChildEverywhere(child);
-        service.NotifyStateChanged();
-    }
-
-    public override void LoadChilds(Func<System.Activities.Activity, ActivityDesignerPair> addActivity) {
-        var children = new List<ActivityDesignerPair>();
-        if (activity.Default != null)
-            children.Add(addActivity(activity.Default));
-
-        foreach (var child in activity.Cases.Values.OfType<System.Activities.Activity>())
-            children.Add(addActivity(child));
-
-        ArrangeRow(children);
     }
 
     public override void AddChild(ActivityDesignerPair child) {

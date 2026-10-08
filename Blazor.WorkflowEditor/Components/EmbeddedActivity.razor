@@ -1,0 +1,38 @@
+@*The activity a slot holds, rendered inside the card of its owner. A container child keeps its Open action,
+  which navigates into it through the path like any other node.*@
+@{
+    var held = Slot.Held;
+    var child = held is null ? null : Service.FindPair(held)?.Node;
+    var controlType = child is null ? null : Service.GetControlType(child);
+}
+
+@if (held is null)
+{
+    <span class="we-branch-value">@Placeholder</span>
+}
+else if (child is { } node && controlType is { } type)
+{
+    <div class="we-embedded" @onclick="() => Service.Select(node)" @onclick:stopPropagation="true">
+        <DynamicComponent Type="@type" Parameters="@parameters(node)" />
+    </div>
+}
+else
+{
+    @*The node of the child is not available, so there is no control to bind; the name still shows the branch.*@
+    <span class="we-branch-value">@held.DisplayName</span>
+}
+
+@code {
+    [CascadingParameter]
+    public Service Service { get; set; } = default!;
+
+    [Parameter, EditorRequired]
+    public Activity.IActivityHolder Slot { get; set; } = default!;
+
+    /// <summary>Text shown while the slot holds no activity.</summary>
+    [Parameter]
+    public string Placeholder { get; set; } = "(drop)";
+
+    private static IDictionary<string, object> parameters(Activity.DefaultNode node) =>
+        new Dictionary<string, object> { ["Node"] = node };
+}

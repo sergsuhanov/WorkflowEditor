@@ -1,5 +1,16 @@
-@*A labeled region shown on a container node. When DropEnabled, dropping a toolbox item on it makes this node the drop target.*@
-@if (DropEnabled)
+@*A labeled region shown on a node card. When DropEnabled, dropping a toolbox item on it fills the slot the
+  region represents; a region with content hosts the control of the activity the slot holds.*@
+@if (ChildContent is not null)
+{
+    <div class="we-branch we-branch-filled" title="@regionTitle"
+         @ondragover:preventDefault @ondragover:stopPropagation @ondragover="onDragOver"
+         @ondragenter:preventDefault @ondragenter:stopPropagation @ondragenter="onDragOver"
+         @onmousedown:stopPropagation @onmouseup:stopPropagation @onmousemove:stopPropagation>
+        <span class="we-branch-label">@Label</span>
+        @ChildContent
+    </div>
+}
+else if (DropEnabled && !Node.IsEmbedded)
 {
     <div class="we-branch @(Active ? "active" : null)" role="button" tabindex="0" title="@regionTitle"
          @onclick="() => OnActivate.InvokeAsync()" @ondragover:preventDefault @ondragover:stopPropagation
@@ -10,6 +21,7 @@
 }
 else
 {
+    @*A card rendered inside a branch of another card is not a drop target: it is opened first.*@
     <div class="we-branch we-branch-static @(Active ? "active" : null)" title="@regionTitle">
         @Body
     </div>
@@ -42,8 +54,22 @@ else
     [Parameter]
     public bool DropEnabled { get; set; } = true;
 
+    /// <summary>
+    /// When set, the region represents that single-activity slot: a drop fills the slot it belongs to. Otherwise
+    /// the region belongs to a container and dropping targets the node itself.
+    /// </summary>
+    [Parameter]
+    public Activity.IActivityHolder? Slot { get; set; }
+
     [Parameter]
     public string? Title { get; set; }
+
+    /// <summary>
+    /// Content of a filled region: the control of the activity the slot holds. When set, the region renders that
+    /// content instead of the value placeholder.
+    /// </summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
 
     /// <summary>Selects this region as the target for the next drop.</summary>
     [Parameter]
@@ -52,7 +78,9 @@ else
     [Parameter]
     public EventCallback OnClear { get; set; }
 
-    private string regionTitle => Title ?? $"Drop an activity here to fill {Label}";
+    private string regionTitle => Title ?? (ChildContent is not null
+        ? $"Drop an activity here to replace {Label}"
+        : $"Drop an activity here to fill {Label}");
 
     private RenderFragment Body => @<text>
         <span class="we-branch-label">@Label</span>
@@ -68,8 +96,17 @@ else
 
     private void onDragOver()
     {
-        if (!DropEnabled)
+        if (!DropEnabled || Node.IsEmbedded)
             return;
+
+        //A slot region fills that single branch; a container region makes the node the drop target instead
+        //(the region may also select which child slot the drop belongs to, as the state node does).
+        if (Slot != null)
+        {
+            Service.DropTarget = null;
+            Service.DropSlot = Slot;
+            return;
+        }
 
         _ = OnActivate.InvokeAsync();
         if (!ReferenceEquals(Service.DropTarget, Node))

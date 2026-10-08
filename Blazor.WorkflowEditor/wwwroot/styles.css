@@ -599,6 +599,38 @@
     line-height: 1;
 }
 
+/*Branches stack once they host a control, so each one gets the full card width.*/
+.we-branches-stacked {
+    flex-direction: column;
+}
+
+.we-branches-stacked .we-branch {
+    flex: 0 0 auto;
+}
+
+/*A branch that holds an activity: a plain container around the control of that activity.*/
+.we-branch-filled {
+    display: block;
+    padding: 0.2rem 0.3rem 0.3rem;
+    border-style: solid;
+    border-color: #dee2e6;
+    cursor: default;
+}
+
+.we-embedded {
+    margin-top: 0.2rem;
+}
+
+/*The embedded card follows the width of the branch instead of the fixed diagram card width.*/
+.we-embedded .we-custom-node {
+    width: auto;
+}
+
+.we-embedded .card {
+    border-width: 1px;
+    margin-bottom: 0;
+}
+
 .we-node-wide {
     width: 340px;
 }

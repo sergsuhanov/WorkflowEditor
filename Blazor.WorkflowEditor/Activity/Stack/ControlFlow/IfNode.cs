@@ -14,7 +14,7 @@ public class IfNode : DefaultNode {
 
     public IfNode(Service service, System.Activities.Statements.If activity) : base(service, activity) {
         this.activity = activity;
-        IsContainer = true;
+        //Not a container: the card renders the single activity of each branch inline.
     }
 
     public string Condition {
@@ -22,54 +22,18 @@ public class IfNode : DefaultNode {
         set => ActivityArguments.SetVisualBasicExpression(activity.Condition, argument => activity.Condition = (InArgument<bool>)argument, value, argumentType: typeof(bool));
     }
 
-    public string? ThenName => activity.Then?.DisplayName;
-    public string? ElseName => activity.Else?.DisplayName;
-
-    public bool HasThen => activity.Then != null;
-    public bool HasElse => activity.Else != null;
-
     public IfBranch SelectedBranch { get; set; } = IfBranch.Then;
 
-    public override void LoadChilds(Func<System.Activities.Activity, ActivityDesignerPair> addActivity) {
-        var then = activity.Then != null ? addActivity(activity.Then) : null;
-        var els = activity.Else != null ? addActivity(activity.Else) : null;
+    private IActivityHolder? thenSlot;
+    private IActivityHolder? elseSlot;
 
-        //WF-like layout: Then on the left, Else on the right, side by side.
-        (var thenX, var elseX) = branchPositions(then?.Node.Size?.Width ?? els?.Node.Size?.Width ?? 250);
+    /// <summary>Slot that holds the Then branch; the card renders that activity inline.</summary>
+    public IActivityHolder ThenSlot => thenSlot ??= new Branch(this, IfBranch.Then);
 
-        var view = service.VisibleViewport;
-        var rowY = view.HasValue ? view.Value.Top + Math.Max(60, view.Value.Height * 0.4) : 150;
+    /// <summary>Slot that holds the Else branch.</summary>
+    public IActivityHolder ElseSlot => elseSlot ??= new Branch(this, IfBranch.Else);
 
-        if (then != null && !then.Node.HasViewState)
-            place(then, thenX, rowY);
-        if (els != null && !els.Node.HasViewState)
-            place(els, elseX, rowY);
-    }
-
-    private (double thenX, double elseX) branchPositions(double nodeWidth) {
-        if (service.VisibleViewport is { } view && view.Width > 0) {
-            var center = view.Left + view.Width / 2;
-            var offset = Math.Min(nodeWidth / 2 + 30, view.Width / 4);
-            return (center - offset, center + offset);
-        }
-
-        return (150, 150 + nodeWidth + 40);
-    }
-
-    private static void place(ActivityDesignerPair pair, double x, double y) {
-        pair.Node.CenterPosition = new Diagrams.Core.Geometry.Point(x, y);
-        pair.Node.UpdateViewState();
-    }
-
-    /// <summary>Removes the child of the given branch, whether or not it is currently shown on the diagram.</summary>
-    public void ClearBranch(IfBranch branch) {
-        var child = branch == IfBranch.Then ? activity.Then : activity.Else;
-        if (child == null)
-            return;
-
-        RemoveChildEverywhere(child);
-        service.NotifyStateChanged();
-    }
+    public override IReadOnlyList<IActivityHolder> Slots => new[] { ThenSlot, ElseSlot };
 
     public override void AddChild(ActivityDesignerPair child) {
         var branch = SelectedBranch;
@@ -91,5 +55,28 @@ public class IfNode : DefaultNode {
             activity.Then = null;
         if (activity.Else == child)
             activity.Else = null;
+    }
+
+    /// <summary>One branch of the If, exposed as a slot so the card can render it.</summary>
+    private sealed class Branch : IActivityHolder {
+        private readonly IfNode owner;
+        private readonly IfBranch branch;
+
+        public Branch(IfNode owner, IfBranch branch) {
+            this.owner = owner;
+            this.branch = branch;
+        }
+
+        public DefaultNode Owner => owner;
+
+        public string SlotLabel => branch == IfBranch.Then ? "Then" : "Else";
+
+        public System.Activities.Activity? Held =>
+            branch == IfBranch.Then ? owner.activity.Then : owner.activity.Else;
+
+        public void Attach(ActivityDesignerPair child) {
+            owner.SelectedBranch = branch;
+            owner.AddChild(child);
+        }
     }
 }

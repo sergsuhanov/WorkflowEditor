@@ -2,16 +2,15 @@
 
 <ActivityControl Node="@Node">
     <Preview>
-        @*WF-like designer: Then on the left, Else on the right, both are drop targets.*@
-        <div class="we-branches">
-            <ActivityRegion Node="Node" Label="Then" Value="@Node.ThenName"
-                            Active="@(Node.SelectedBranch == IfBranch.Then)" CanClear="@Node.HasThen"
-                            Title="Drop an activity here to add it to the Then branch" OnActivate="@(() => select(IfBranch.Then))"
-                            OnClear="@(() => Node.ClearBranch(IfBranch.Then))" />
-            <ActivityRegion Node="Node" Label="Else" Value="@Node.ElseName"
-                            Active="@(Node.SelectedBranch == IfBranch.Else)" CanClear="@Node.HasElse"
-                            Title="Drop an activity here to add it to the Else branch" OnActivate="@(() => select(IfBranch.Else))"
-                            OnClear="@(() => Node.ClearBranch(IfBranch.Else))" />
+        @*A branch holds a single activity, which is rendered inside the card through its own control.*@
+        <div class="we-branches we-branches-stacked">
+            @foreach (var slot in Node.Slots)
+            {
+                var item = slot;
+                <ActivityRegion Node="Node" Slot="item" Label="@item.SlotLabel">
+                    <EmbeddedActivity Slot="item" />
+                </ActivityRegion>
+            }
         </div>
     </Preview>
     <Edit>
@@ -20,7 +19,7 @@
             <input type="text" class="form-control" id="condition" @bind-value="Node.Condition" placeholder="True"
                    @onmousedown:stopPropagation @onmouseup:stopPropagation @onmousemove:stopPropagation />
         </div>
-        <div class="form-text">Drag an activity from the toolbox onto Then or Else on the node to fill that branch.
+        <div class="form-text">Drop an activity onto the Then or Else branch; it is edited on the node itself.
         </div>
     </Edit>
 </ActivityControl>
@@ -28,10 +27,4 @@
 @code {
     [Parameter]
     public IfNode Node { get; set; } = default!;
-
-    private void select(IfBranch branch)
-    {
-        if (Node.SelectedBranch != branch)
-            Node.SelectedBranch = branch;
-    }
 }

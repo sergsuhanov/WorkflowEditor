@@ -170,6 +170,26 @@ public class DefaultNode : NodeModel {
 
     public bool HasViewState => State.Designer.HasProperty(activity);
 
+    /// <summary>
+    /// Position the container layout assigned to this node. The layout keeps a node where the user moved it, and
+    /// it only re-places a node whose card grew, which is how a re-layout stays out of the way.
+    /// </summary>
+    internal Diagrams.Core.Geometry.Point? LayoutPosition { get; set; }
+
+    /// <summary>Height the layout used when it placed the node, so a grown card can be laid out again.</summary>
+    internal double LayoutHeight { get; set; }
+
+    /// <summary>Whether the node is still where the container layout put it.</summary>
+    internal bool IsAtLayoutPosition => LayoutPosition is not { } auto
+        || (Math.Abs(Position.X - auto.X) < 0.5 && Math.Abs(Position.Y - auto.Y) < 0.5);
+
+    /// <summary>
+    /// Re-places the children of an opened container once the browser measured the cards, so a card that grew
+    /// (an expanded node, a branch that holds an activity) does not overlap the next one.
+    /// </summary>
+    public virtual void RelayoutChildren() {
+    }
+
     public bool RestoreViewState() {
 
         var centerX = State.Designer.GetCenterX(activity);
@@ -385,6 +405,22 @@ public class DefaultNode : NodeModel {
             RemoveChild(a);
     }
 
+    /// <summary>
+    /// Single-activity slots of this node (If branches, loop body, catch handlers, switch cases). The card
+    /// renders the activity of each slot itself, so such a node returns no slots from <see cref="LoadElements"/>.
+    /// Containers (Sequence, Parallel) hold several children at once and return none.
+    /// </summary>
+    public virtual IReadOnlyList<IActivityHolder> Slots => Array.Empty<IActivityHolder>();
+
+    /// <summary>
+    /// True when the node is rendered inside a branch region of another card instead of being a node of the
+    /// diagram itself. Such a node has no ports and is selected by clicking its card.
+    /// </summary>
+    public bool IsEmbedded { get; set; }
+
+    /// <summary>The node whose branch region renders this embedded node, if any.</summary>
+    public DefaultNode? EmbeddedOwner { get; set; }
+
     /// <summary>Whether this container accepts a child of the given activity or element type.</summary>
     public virtual bool CanAdd(Type elementType) => typeof(System.Activities.Activity).IsAssignableFrom(elementType);
 
@@ -423,8 +459,10 @@ public class DefaultNode : NodeModel {
         var pair = service.FindPair(child);
         if (pair != null)
             service.Delete(pair.Node);
-        else
-            RemoveChild(child);
+
+        //The node cleanup above removes the child from the surface it was shown on, which is not necessarily
+        //this node, so the model reference is released here as well.
+        RemoveChild(child);
     }
 
     /// <summary>Removes the current child of a single-slot region before a newly dropped one replaces it.</summary>

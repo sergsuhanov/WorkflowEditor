@@ -134,12 +134,14 @@ else
             return;
 
         Service.DropTarget = null;
+        Service.DropSlot = null;
         Service.DraggedToolboxItem = key;
     }
 
     private void OnDragEnd()
     {
         Service.DropTarget = null;
+        Service.DropSlot = null;
         Service.DraggedToolboxItem = null;
     }
 

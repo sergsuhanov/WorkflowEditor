@@ -10,7 +10,7 @@ public class ForEachNode<T> : DefaultNode {
         this.activity = activity;
         this.activity.Values ??= new InArgument<IEnumerable<T>>();
         this.activity.Body ??= new ActivityAction<T> { Argument = new DelegateInArgument<T>("item") };
-        IsContainer = true;
+        //Not a container: the card renders the single activity of the body inline.
         IsGeneric = true;
     }
 
@@ -29,16 +29,26 @@ public class ForEachNode<T> : DefaultNode {
             addActivity(activity.Body.Handler);
     }
 
-    public string? BodyName => activity.Body?.Handler?.DisplayName;
-    public bool HasBody => activity.Body?.Handler != null;
+    private IActivityHolder? bodySlot;
 
-    public void ClearBody() {
-        var handler = activity.Body?.Handler;
-        if (handler == null)
-            return;
+    /// <summary>Slot that holds the loop body; the card renders that activity inline.</summary>
+    public IActivityHolder BodySlot => bodySlot ??= new Body(this);
 
-        RemoveChildEverywhere(handler);
-        service.NotifyStateChanged();
+    public override IReadOnlyList<IActivityHolder> Slots => new[] { BodySlot };
+
+    /// <summary>The loop body, exposed as a slot so the card can render it.</summary>
+    private sealed class Body : IActivityHolder {
+        private readonly ForEachNode<T> owner;
+
+        public Body(ForEachNode<T> owner) => this.owner = owner;
+
+        public DefaultNode Owner => owner;
+
+        public string SlotLabel => "Body";
+
+        public System.Activities.Activity? Held => owner.activity.Body?.Handler;
+
+        public void Attach(ActivityDesignerPair child) => owner.AddChild(child);
     }
 
     public override void AddChild(ActivityDesignerPair child) {

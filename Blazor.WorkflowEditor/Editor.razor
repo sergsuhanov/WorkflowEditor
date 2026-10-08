@@ -132,7 +132,11 @@
     private void resizeVariables(double delta) => variablesHeight = (int)Math.Clamp(variablesHeight - delta, 80, 900);
 
     /// <summary>Over the empty canvas the next drop goes to the opened container, not to a node region.</summary>
-    private void onDragOverDiagram() => service.DropTarget = null;
+    private void onDragOverDiagram()
+    {
+        service.DropTarget = null;
+        service.DropSlot = null;
+    }
 
 
     protected override void OnInitialized()
@@ -370,6 +374,7 @@
         //type dialog below awaits, so the drop position has to be read before that first await.
         var position = diagram.GetRelativeMousePoint(e.ClientX, e.ClientY);
         var dropTarget = service.DropTarget;
+        var dropSlot = service.DropSlot;
 
         try
         {
@@ -401,6 +406,7 @@
 
                     service.DraggedToolboxItem = draggedItem;
                     service.DropTarget = dropTarget;
+                    service.DropSlot = dropSlot;
                     var (hasAdded, result) = service.AddActivity(draggedItem.TypeOfActivity, position, resolvedTypes);
                     if (!hasAdded || result?.Node == null)
                     {
@@ -413,6 +419,7 @@
             {
                 service.DraggedToolboxItem = draggedItem;
                 service.DropTarget = dropTarget;
+                service.DropSlot = dropSlot;
                 var (hasAdded, result) = service.AddActivity(draggedItem.TypeOfActivity, position);
                 if (!hasAdded || result?.Node == null)
                 {

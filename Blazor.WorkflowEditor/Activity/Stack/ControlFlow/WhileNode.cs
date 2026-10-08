@@ -9,7 +9,7 @@ public class WhileNode : DefaultNode {
 
     public WhileNode(Service service, System.Activities.Statements.While activity) : base(service, activity) {
         this.activity = activity;
-        IsContainer = true;
+        //Not a container: the card renders the single activity of the body inline.
     }
 
     public string Condition {
@@ -17,20 +17,28 @@ public class WhileNode : DefaultNode {
         set => activity.Condition = ActivityArguments.CreateVisualBasicBooleanExpression(value);
     }
 
-    public override void LoadChilds(Func<System.Activities.Activity, ActivityDesignerPair> addActivity) {
-        if (activity.Body != null)
-            addActivity(activity.Body);
-    }
+    public override IEnumerable<Variable> GetVariables() => GetVariables(activity.Variables);
 
-    public string? BodyName => activity.Body?.DisplayName;
-    public bool HasBody => activity.Body != null;
+    private IActivityHolder? bodySlot;
 
-    public void ClearBody() {
-        if (activity.Body == null)
-            return;
+    /// <summary>Slot that holds the loop body; the card renders that activity inline.</summary>
+    public IActivityHolder BodySlot => bodySlot ??= new Body(this);
 
-        RemoveChildEverywhere(activity.Body);
-        service.NotifyStateChanged();
+    public override IReadOnlyList<IActivityHolder> Slots => new[] { BodySlot };
+
+    /// <summary>The loop body, exposed as a slot so the card can render it.</summary>
+    private sealed class Body : IActivityHolder {
+        private readonly WhileNode owner;
+
+        public Body(WhileNode owner) => this.owner = owner;
+
+        public DefaultNode Owner => owner;
+
+        public string SlotLabel => "Body";
+
+        public System.Activities.Activity? Held => owner.activity.Body;
+
+        public void Attach(ActivityDesignerPair child) => owner.AddChild(child);
     }
 
     public override void AddChild(ActivityDesignerPair child) {

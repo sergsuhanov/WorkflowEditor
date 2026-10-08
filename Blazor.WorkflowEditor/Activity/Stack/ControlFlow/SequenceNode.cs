@@ -16,8 +16,6 @@ public class SequenceNode : DefaultNode {
         return GetVariables(sequenceActivity.Variables);
     }
 
-    public int ActivityCount => sequenceActivity.Activities.Count;
-
     /// <summary>Short summary of the sequence children shown on the collapsed node.</summary>
     public string? ActivitiesSummary {
         get {
@@ -38,7 +36,6 @@ public class SequenceNode : DefaultNode {
         this.service.SelectedOnMove -= onMove;
         this.service.SelectedOnMove += onMove;
 
-        var childHasViewState = false;
         ActivityDesignerPair? last = default;
         foreach (var activity in this.sequenceActivity.Activities) {
             var result = addActivity(activity);
@@ -50,30 +47,46 @@ public class SequenceNode : DefaultNode {
                 linkFromTo(last, result);
 
             last = result;
-
-            childHasViewState |= result.Node.HasViewState;
         }
 
-        //Calc position inside the visible part of the diagram (pan/zoom aware)
-        if (childHasViewState == false) {
-            var view = this.service.VisibleViewport;
-            var horizontal = view.HasValue
-                ? view.Value.Left + view.Value.Width / 2
-                : (this.service.DiagramContainer?.Width ?? 0) / 2;
-            var minHeight = (int)this.service.Items.Min(p => p.Node.Size!.Height);
-            var y = (view.HasValue ? view.Value.Top + 60 : 0) + minHeight;
-            var distance = minHeight;
-            foreach (var activity in this.sequenceActivity.Activities) {
-                var node = this.service.GetPair(activity).Node;
-                var size = node.Size!;
+        placeChildren();
+    }
 
+    public override void RelayoutChildren() => placeChildren();
+
+    /// <summary>
+    /// Lays the children out in a column, using the height the browser measured for each card so a tall card
+    /// does not overlap the next one. A card that came from a saved position, or that the user moved, keeps its
+    /// position.
+    /// </summary>
+    private void placeChildren() {
+        var view = this.service.VisibleViewport;
+        var horizontal = view.HasValue
+            ? view.Value.Left + view.Value.Width / 2
+            : (this.service.DiagramContainer?.Width ?? 0) / 2;
+        var y = view.HasValue ? view.Value.Top + 60 : 0;
+        const double gap = 24;
+
+        foreach (var activity in this.sequenceActivity.Activities) {
+            var node = this.service.FindPair(activity)?.Node;
+            if (node?.Size is not { } size)
+                continue;
+
+            y += size.Height / 2;
+
+            var place = node.LayoutPosition is null
+                ? !node.HasViewState
+                : node.IsAtLayoutPosition && Math.Abs(node.LayoutHeight - size.Height) > 0.5;
+
+            if (place) {
                 node.CenterPosition = new Diagrams.Core.Geometry.Point(horizontal, y);
-                y += ((int)size.Height) / 2 + distance;
-
+                node.LayoutPosition = node.Position;
+                node.LayoutHeight = size.Height;
                 node.UpdateViewState();
             }
-        }
 
+            y += size.Height / 2 + gap;
+        }
     }
 
     public override void AddChild(ActivityDesignerPair child) {

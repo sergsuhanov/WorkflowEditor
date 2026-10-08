@@ -3,17 +3,17 @@
 
 <ActivityControl Node="@Node">
     <Preview>
-        <div class="we-branches">
-            <ActivityRegion Node="Node" Label="Default" Value="@Node.DefaultName" CanClear="@Node.HasDefault"
-                            Active="@Node.IsDefaultSelected" OnActivate="@(() => Node.SelectDefault())"
-                            OnClear="@(() => Node.ClearDefault())" />
+        @*Default and every case hold a single activity each, rendered inside the card.*@
+        <div class="we-branches we-branches-stacked">
+            <ActivityRegion Node="Node" Slot="@Node.DefaultSlot" Label="Default">
+                <EmbeddedActivity Slot="@Node.DefaultSlot" />
+            </ActivityRegion>
             @foreach (var key in Node.CaseKeys)
             {
-                var caseKey = key;
-                <ActivityRegion Node="Node" Label="@($"Case {caseKey}")" Value="@Node.CaseName(caseKey)"
-                                CanClear="@Node.HasCaseBody(caseKey)" Active="@Node.IsCaseSelected(caseKey)"
-                                OnActivate="@(() => Node.SelectCase(caseKey))"
-                                OnClear="@(() => Node.ClearCase(caseKey))" />
+                var caseSlot = Node.CaseSlot(key);
+                <ActivityRegion Node="Node" Slot="@caseSlot" Label="@($"Case {key}")">
+                    <EmbeddedActivity Slot="@caseSlot" />
+                </ActivityRegion>
             }
         </div>
     </Preview>
@@ -51,7 +51,7 @@
                 }
             </div>
         }
-        <div class="form-text">Collapse the node, then drop an activity onto a case or the Default region.</div>
+        <div class="form-text">Add a case above and drop an activity onto it; it is edited on the node itself.</div>
     </Edit>
 </ActivityControl>
 

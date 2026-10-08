@@ -15,8 +15,8 @@ public class TryCatchNode : DefaultNode {
 
     public TryCatchNode(Service service, System.Activities.Statements.TryCatch activity) : base(service, activity) {
         this.activity = activity;
-        IsContainer = true;
-        // Wider card so Try / Catch / Finally regions fit in one row.
+        //Not a container: the card renders the single activity of each section inline.
+        //A wider card leaves room for the controls of Try, Catch and Finally.
         this.Size = new Diagrams.Core.Geometry.Size(340, 114);
     }
 
@@ -72,52 +72,55 @@ public class TryCatchNode : DefaultNode {
 
     public override IEnumerable<Variable> GetVariables() => GetVariables(activity.Variables);
 
-    public string? TryName => activity.Try?.DisplayName;
-    public bool HasTry => activity.Try != null;
-    public string? FinallyName => activity.Finally?.DisplayName;
-    public bool HasFinally => activity.Finally != null;
+    private IActivityHolder? trySlot;
+    private IActivityHolder? catchSlot;
+    private IActivityHolder? finallySlot;
 
-    public string? CatchName => currentCatchHandler()?.DisplayName;
-    public bool HasCatch => currentCatchHandler() != null;
+    /// <summary>Slot that holds the Try section.</summary>
+    public IActivityHolder TrySlot => trySlot ??= new Section(this, TryCatchSection.Try);
+
+    /// <summary>Slot that holds the Catch section of the currently selected exception type.</summary>
+    public IActivityHolder CatchSlot => catchSlot ??= new Section(this, TryCatchSection.CatchException);
+
+    /// <summary>Slot that holds the Finally section.</summary>
+    public IActivityHolder FinallySlot => finallySlot ??= new Section(this, TryCatchSection.Finally);
+
+    public override IReadOnlyList<IActivityHolder> Slots => new[] { TrySlot, CatchSlot, FinallySlot };
+
+    /// <summary>One section of the TryCatch, exposed as a slot so the editor can navigate into it.</summary>
+    private sealed class Section : IActivityHolder {
+        private readonly TryCatchNode owner;
+        private readonly TryCatchSection section;
+
+        public Section(TryCatchNode owner, TryCatchSection section) {
+            this.owner = owner;
+            this.section = section;
+        }
+
+        public DefaultNode Owner => owner;
+
+        public string SlotLabel => section switch {
+            TryCatchSection.Try => "Try",
+            TryCatchSection.Finally => "Finally",
+            _ => $"Catch {owner.SelectedExceptionType.Name}"
+        };
+
+        public System.Activities.Activity? Held => section switch {
+            TryCatchSection.Try => owner.activity.Try,
+            TryCatchSection.Finally => owner.activity.Finally,
+            _ => owner.currentCatchHandler()
+        };
+
+        public void Attach(ActivityDesignerPair child) {
+            owner.SelectedSection = section;
+            owner.AddChild(child);
+        }
+    }
 
     private Catch? findCatch(Type exceptionType) => activity.Catches.FirstOrDefault(c => exceptionTypeOf(c) == exceptionType);
 
     private System.Activities.Activity? currentCatchHandler() =>
         findCatch(SelectedExceptionType) is { } c ? handlerOf(c) : null;
-
-    /// <summary>Removes the child of one section (Try, the selected Catch, or Finally).</summary>
-    public void ClearSection(TryCatchSection section) {
-        switch (section) {
-            case TryCatchSection.Try:
-                if (activity.Try != null)
-                    RemoveChildEverywhere(activity.Try);
-                break;
-            case TryCatchSection.Finally:
-                if (activity.Finally != null)
-                    RemoveChildEverywhere(activity.Finally);
-                break;
-            default:
-                if (currentCatchHandler() is { } handler)
-                    RemoveChildEverywhere(handler);
-                break;
-        }
-
-        service.NotifyStateChanged();
-    }
-
-    public override void LoadChilds(Func<System.Activities.Activity, ActivityDesignerPair> addActivity) {
-        var pairs = new List<ActivityDesignerPair>();
-        if (activity.Try != null)
-            pairs.Add(addActivity(activity.Try));
-        foreach (var c in activity.Catches) {
-            var handler = handlerOf(c);
-            if (handler != null)
-                pairs.Add(addActivity(handler));
-        }
-        if (activity.Finally != null)
-            pairs.Add(addActivity(activity.Finally));
-        ArrangeRow(pairs);
-    }
 
     public override void AddChild(ActivityDesignerPair child) {
         switch (SelectedSection) {

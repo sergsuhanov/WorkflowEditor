@@ -76,13 +76,7 @@ else
                         <label for="we-if-condition" class="form-label">Condition (Visual Basic expression)</label>
                         <input id="we-if-condition" class="form-control" @bind="conditional.Condition" />
                     </div>
-                    <div class="mb-3">
-                        <label for="we-if-branch" class="form-label">Branch for new child</label>
-                        <select id="we-if-branch" class="form-select" @bind="conditional.SelectedBranch">
-                            <option value="@IfBranch.Then">Then</option>
-                            <option value="@IfBranch.Else">Else</option>
-                        </select>
-                    </div>
+                    <p class="form-text">Drop an activity onto Then or Else; it is edited on the node itself.</p>
                 }
                 else if (node is WhileNode loop)
                 {
@@ -90,7 +84,7 @@ else
                         <label for="we-while-condition" class="form-label">Condition (Visual Basic expression)</label>
                         <input id="we-while-condition" class="form-control" @bind="loop.Condition" />
                     </div>
-                    <p class="form-text">Add the loop body while this activity is open.</p>
+                    <p class="form-text">Open the body branch on the node to edit the activity it holds.</p>
                 }
                 else if (node is SequenceNode sequence)
                 {

@@ -95,10 +95,14 @@
             </div>
         }
 
-        @foreach (var port in Node.Ports)
+        @*A branch child rendered inside another card has no place on the diagram, so it shows no ports.*@
+        @if (!Node.IsEmbedded)
         {
-            var portClass = port.Locked ? "locked" : "unlocked";
-            <PortRenderer Port="port" Class="@portClass"></PortRenderer>
+            foreach (var port in Node.Ports)
+            {
+                var portClass = port.Locked ? "locked" : "unlocked";
+                <PortRenderer Port="port" Class="@portClass"></PortRenderer>
+            }
         }
     </div>
 

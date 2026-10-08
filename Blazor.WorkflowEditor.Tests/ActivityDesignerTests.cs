@@ -89,14 +89,204 @@ public class ActivityDesignerTests {
     }
 
     [Fact]
-    public void IfDesignerClearBranchRemovesChild() {
+    public void IfDesignerRemovesTheChildOfABranch() {
         using var service = new Service(new BlazorDiagram(), () => { });
-        var activity = new If { Else = new Delay() };
+        var elseActivity = new Delay();
+        var activity = new If { Else = elseActivity };
         var node = new IfNode(service, activity);
 
-        node.ClearBranch(IfBranch.Else);
+        node.RemoveChildEverywhere(elseActivity);
 
         Assert.Null(activity.Else);
+    }
+
+    [Fact]
+    public void BranchHoldersAreNotContainersAndExposeTheirBranchesAsSlots() {
+        using var service = new Service(new BlazorDiagram(), () => { });
+        var ifActivity = new If();
+        var whileActivity = new While();
+        service.SetActivityBuilder(new ActivityBuilder {
+            Implementation = new Sequence { Activities = { ifActivity, whileActivity } }
+        });
+        service.Open(service.Items.First(pair => pair.Activity is Sequence).Node);
+
+        var ifNode = Assert.IsType<IfNode>(service.Items.Single(pair => ReferenceEquals(pair.Activity, ifActivity)).Node);
+        var whileNode = Assert.IsType<WhileNode>(service.Items.Single(pair => ReferenceEquals(pair.Activity, whileActivity)).Node);
+
+        //A branch holds a single activity that the card renders itself, so there is nothing to open.
+        Assert.False(ifNode.IsContainer);
+        Assert.False(whileNode.IsContainer);
+        Assert.Equal(new[] { "Then", "Else" }, ifNode.Slots.Select(slot => slot.SlotLabel));
+        Assert.Equal(new[] { "Body" }, whileNode.Slots.Select(slot => slot.SlotLabel));
+        Assert.All(ifNode.Slots, slot => Assert.Same(ifNode, slot.Owner));
+    }
+
+    [Fact]
+    public void DroppingOnABranchRegionRendersTheChildInsideTheCard() {
+        using var service = new Service(new BlazorDiagram(), () => { });
+        var sequence = new Sequence();
+        service.SetActivityBuilder(new ActivityBuilder { Implementation = sequence });
+        service.Open(service.Items.First(pair => pair.Activity == sequence).Node);
+
+        var ifActivity = new If();
+        var ifNode = new IfNode(service, ifActivity);
+        service.DropSlot = ifNode.ElseSlot;
+
+        var (hasAdded, result) = service.AddActivity(typeof(WriteLine));
+
+        Assert.True(hasAdded);
+        Assert.IsType<WriteLine>(ifActivity.Else);
+        Assert.Null(ifActivity.Then);
+        Assert.Null(service.DropSlot);
+
+        //The child is not a node of the diagram: its control is rendered inside the branch region instead.
+        Assert.False(service.IsDisplayed(result.Node));
+        Assert.True(result.Node.IsEmbedded);
+        Assert.Same(ifNode, result.Node.EmbeddedOwner);
+        Assert.NotNull(service.GetControlType(result.Node));
+    }
+
+    [Fact]
+    public void LoadingAWorkflowCreatesTheNodesOfTheBranchChildren() {
+        using var service = new Service(new BlazorDiagram(), () => { });
+        var thenActivity = new WriteLine { DisplayName = "then" };
+        var elseActivity = new Delay();
+        var ifActivity = new If { Then = thenActivity, Else = elseActivity };
+        service.SetActivityBuilder(new ActivityBuilder { Implementation = ifActivity });
+
+        var ifNode = Assert.IsType<IfNode>(service.Items.Single(pair => ReferenceEquals(pair.Activity, ifActivity)).Node);
+        var thenNode = service.FindPair(thenActivity)!.Node;
+        var elseNode = service.FindPair(elseActivity)!.Node;
+
+        Assert.True(thenNode.IsEmbedded);
+        Assert.Same(ifNode, thenNode.EmbeddedOwner);
+        Assert.True(elseNode.IsEmbedded);
+        Assert.Same(ifNode, elseNode.EmbeddedOwner);
+        Assert.False(service.IsDisplayed(thenNode));
+        Assert.Same(thenActivity, ifNode.ThenSlot.Held);
+        Assert.Same(elseActivity, ifNode.ElseSlot.Held);
+    }
+
+    [Fact]
+    public void SelectingABranchChildFillsThePropertiesPanelAndTheDiagramNodeTakesItOver() {
+        using var service = new Service(new BlazorDiagram(), () => { });
+        var thenActivity = new WriteLine();
+        var ifActivity = new If { Then = thenActivity };
+        service.SetActivityBuilder(new ActivityBuilder { Implementation = ifActivity });
+
+        var ifNode = Assert.IsType<IfNode>(service.Items.Single(pair => ReferenceEquals(pair.Activity, ifActivity)).Node);
+        var thenNode = service.FindPair(thenActivity)!.Node;
+
+        service.Select(thenNode);
+        Assert.Contains(service.SelectedItems, item => ReferenceEquals(item.Node, thenNode));
+
+        service.Select(ifNode);
+        Assert.Contains(service.SelectedItems, item => ReferenceEquals(item.Node, ifNode));
+        Assert.DoesNotContain(service.SelectedItems, item => ReferenceEquals(item.Node, thenNode));
+    }
+
+    [Fact]
+    public void DeletingABranchChildClearsTheBranchItBelongsTo() {
+        using var service = new Service(new BlazorDiagram(), () => { });
+        var thenActivity = new WriteLine();
+        var ifActivity = new If { Then = thenActivity };
+        service.SetActivityBuilder(new ActivityBuilder { Implementation = ifActivity });
+
+        var thenNode = service.FindPair(thenActivity)!.Node;
+
+        service.Delete(thenNode);
+
+        Assert.Null(ifActivity.Then);
+        Assert.DoesNotContain(service.Items, pair => ReferenceEquals(pair.Activity, thenActivity));
+    }
+
+    [Fact]
+    public void OpeningAnEmbeddedContainerChildNavigatesIntoIt() {
+        using var service = new Service(new BlazorDiagram(), () => { });
+        var inner = new Sequence { DisplayName = "inside", Activities = { new WriteLine() } };
+        var ifActivity = new If { Then = inner };
+        service.SetActivityBuilder(new ActivityBuilder { Implementation = ifActivity });
+
+        var innerNode = service.FindPair(inner)!.Node;
+        Assert.True(innerNode.IsContainer);
+
+        service.Open(innerNode);
+
+        Assert.Equal("inside", service.Path.Last().Name);
+        Assert.False(innerNode.IsEmbedded);
+        Assert.True(service.IsDisplayed(service.FindPair(inner.Activities[0])!.Node));
+    }
+
+    [Fact]
+    public void DroppingOnALoopBodyRegionRendersTheBodyInsideTheCard() {
+        using var service = new Service(new BlazorDiagram(), () => { });
+        var sequence = new Sequence();
+        service.SetActivityBuilder(new ActivityBuilder { Implementation = sequence });
+        service.Open(service.Items.First(pair => pair.Activity == sequence).Node);
+
+        var whileActivity = new While();
+        var whileNode = new WhileNode(service, whileActivity);
+        service.DropSlot = whileNode.BodySlot;
+
+        var (hasAdded, result) = service.AddActivity(typeof(WriteLine));
+
+        Assert.True(hasAdded);
+        Assert.IsType<WriteLine>(whileActivity.Body);
+        Assert.False(service.IsDisplayed(result.Node));
+        Assert.True(result.Node.IsEmbedded);
+        Assert.Same(whileNode, result.Node.EmbeddedOwner);
+    }
+
+    [Fact]
+    public void LoadingALoopCreatesTheNodeOfItsBody() {
+        using var service = new Service(new BlazorDiagram(), () => { });
+        var body = new WriteLine { DisplayName = "body" };
+        var whileActivity = new While { Body = body };
+        service.SetActivityBuilder(new ActivityBuilder { Implementation = whileActivity });
+
+        var bodyNode = service.FindPair(body)!.Node;
+
+        Assert.True(bodyNode.IsEmbedded);
+        Assert.False(service.IsDisplayed(bodyNode));
+    }
+
+    [Fact]
+    public void TryCatchAndSwitchSlotsAttachTheirBranch() {
+        using var service = new Service(new BlazorDiagram(), () => { });
+        var tryCatch = new TryCatchNode(service, new TryCatch());
+        Assert.Equal(new[] { "Try", "Catch Exception", "Finally" }, tryCatch.Slots.Select(slot => slot.SlotLabel));
+
+        var handler = new WriteLine();
+        tryCatch.CatchSlot.Attach(new ActivityDesignerPair { Activity = handler });
+        Assert.Same(handler, tryCatch.CatchSlot.Held);
+
+        var switchActivity = new System.Activities.Statements.Switch<int>();
+        var switchNode = new SwitchNode<int>(service, switchActivity);
+        Assert.True(switchNode.AddCase("1"));
+        var caseBody = new Delay();
+        switchNode.CaseSlot("1").Attach(new ActivityDesignerPair { Activity = caseBody });
+        Assert.Same(caseBody, switchActivity.Cases[1]);
+        Assert.Contains("Case 1", switchNode.Slots.Select(slot => slot.SlotLabel));
+    }
+
+    [Fact]
+    public void LoadingASwitchCreatesTheNodesOfItsBranches() {
+        using var service = new Service(new BlazorDiagram(), () => { });
+        var switchActivity = new System.Activities.Statements.Switch<int>();
+        var first = new WriteLine { DisplayName = "one" };
+        var second = new Delay { DisplayName = "two" };
+        switchActivity.Cases.Add(1, first);
+        switchActivity.Cases.Add(2, second);
+        switchActivity.Default = new WriteLine { DisplayName = "other" };
+        service.SetActivityBuilder(new ActivityBuilder { Implementation = switchActivity });
+
+        var node = Assert.IsType<SwitchNode<int>>(service.Items.Single(pair => ReferenceEquals(pair.Activity, switchActivity)).Node);
+
+        Assert.False(node.IsContainer);
+        Assert.Equal(new[] { "Default", "Case 1", "Case 2" }, node.Slots.Select(slot => slot.SlotLabel));
+        Assert.All(service.Items.Where(pair => pair.Node.IsEmbedded), pair => Assert.Same(node, pair.Node.EmbeddedOwner));
+        Assert.Same(second, node.CaseSlot("2").Held);
+        Assert.Same(switchActivity.Default, node.DefaultSlot.Held);
     }
 
     [Fact]
@@ -131,19 +321,19 @@ public class ActivityDesignerTests {
         node.AddChild(new ActivityDesignerPair { Activity = second });
         Assert.Same(second, activity.Body);
 
-        node.ClearBody();
+        node.RemoveChildEverywhere(second);
         Assert.Null(activity.Body);
     }
 
     [Fact]
-    public void DoWhileAndForEachDesignersReplaceBodyAndClearIt() {
+    public void DoWhileAndForEachDesignersReplaceBodyAndRemoveIt() {
         using var service = new Service(new BlazorDiagram(), () => { });
         var doWhile = new DoWhile();
         var doWhileNode = new DoWhileNode(service, doWhile);
         var doWhileBody = new Delay();
         doWhileNode.AddChild(new ActivityDesignerPair { Activity = doWhileBody });
         Assert.Same(doWhileBody, doWhile.Body);
-        doWhileNode.ClearBody();
+        doWhileNode.RemoveChildEverywhere(doWhileBody);
         Assert.Null(doWhile.Body);
 
         var forEach = new ForEach<int>();
@@ -151,12 +341,12 @@ public class ActivityDesignerTests {
         var forEachBody = new WriteLine();
         forEachNode.AddChild(new ActivityDesignerPair { Activity = forEachBody });
         Assert.Same(forEachBody, forEach.Body.Handler);
-        forEachNode.ClearBody();
+        forEachNode.RemoveChildEverywhere(forEachBody);
         Assert.Null(forEach.Body.Handler);
     }
 
     [Fact]
-    public void TryCatchDesignerReplacesAndClearsTryCatchFinallySections() {
+    public void TryCatchDesignerReplacesAndRemovesTryCatchFinallySections() {
         using var service = new Service(new BlazorDiagram(), () => { });
         var activity = new TryCatch();
         var node = new TryCatchNode(service, activity);
@@ -166,19 +356,19 @@ public class ActivityDesignerTests {
         var replacement = new Delay();
         node.AddChild(new ActivityDesignerPair { Activity = replacement });
         Assert.Same(replacement, activity.Try);
-        node.ClearSection(TryCatchSection.Try);
+        node.RemoveChildEverywhere(replacement);
         Assert.Null(activity.Try);
 
         node.SelectedSection = TryCatchSection.Finally;
         var final = new WriteLine();
         node.AddChild(new ActivityDesignerPair { Activity = final });
         Assert.Same(final, activity.Finally);
-        node.ClearSection(TryCatchSection.Finally);
+        node.RemoveChildEverywhere(final);
         Assert.Null(activity.Finally);
     }
 
     [Fact]
-    public void TryCatchDesignerAddsAndClearsCatchHandler() {
+    public void TryCatchDesignerAddsAndRemovesCatchHandler() {
         using var service = new Service(new BlazorDiagram(), () => { });
         var activity = new TryCatch();
         var node = new TryCatchNode(service, activity) { SelectedSection = TryCatchSection.CatchException };
@@ -186,12 +376,12 @@ public class ActivityDesignerTests {
 
         node.AddChild(new ActivityDesignerPair { Activity = handler });
 
-        Assert.True(node.HasCatch);
         Assert.Single(activity.Catches);
+        Assert.Same(handler, node.CatchSlot.Held);
 
-        node.ClearSection(TryCatchSection.CatchException);
+        node.RemoveChildEverywhere(handler);
 
-        Assert.False(node.HasCatch);
+        Assert.Null(node.CatchSlot.Held);
     }
 
     [Fact]
@@ -831,10 +1021,10 @@ public class ActivityDesignerTests {
         node.AddChild(new ActivityDesignerPair { Activity = defaultBody });
         Assert.Same(defaultBody, activity.Default);
 
-        node.ClearCase("1");
+        node.RemoveChildEverywhere(caseBody);
         Assert.Contains("1", node.CaseKeys);
         Assert.Null(activity.Cases[1]);
-        Assert.Null(node.CaseName("1"));
+        Assert.Null(node.CaseSlot("1").Held);
     }
 
     [Fact]
@@ -847,14 +1037,15 @@ public class ActivityDesignerTests {
         activity.Cases.Add(1, new WriteLine { Text = "one" });
         activity.Cases.Add(2, new Delay());
         service.SetActivityBuilder(new ActivityBuilder { Implementation = activity });
-        service.Open(service.Items.Single(pair => ReferenceEquals(pair.Activity, activity)).Node);
+        var node = Assert.IsType<SwitchNode<int>>(service.FindPair(activity)!.Node);
 
-        var node = Assert.IsType<SwitchNode<int>>(service.FindPair(activity)! .Node);
         Assert.Equal("choice", node.Expression);
         Assert.Equal(2, node.CaseKeys.Count);
-        Assert.Contains(service.Items, pair => pair.Activity == activity.Default);
-        Assert.Contains(service.Items, pair => pair.Activity == activity.Cases[1]);
-        Assert.Contains(service.Items, pair => pair.Activity == activity.Cases[2]);
+
+        //Every branch is rendered inside the card, so all of them get a node without opening the Switch.
+        Assert.Contains(service.Items, pair => ReferenceEquals(pair.Activity, activity.Default) && pair.Node.IsEmbedded);
+        Assert.Contains(service.Items, pair => ReferenceEquals(pair.Activity, activity.Cases[1]) && pair.Node.IsEmbedded);
+        Assert.Contains(service.Items, pair => ReferenceEquals(pair.Activity, activity.Cases[2]) && pair.Node.IsEmbedded);
 
         var xaml = WorkflowXamlSerializer.SaveBuilder(new ActivityBuilder { Implementation = activity });
         var loaded = Assert.IsType<System.Activities.Statements.Switch<int>>(

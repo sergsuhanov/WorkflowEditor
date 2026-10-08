@@ -89,6 +89,12 @@ namespace Blazor.WorkflowEditor {
         /// </summary>
         public DefaultNode? DropTarget { get; set; }
 
+        /// <summary>
+        /// Slot that should receive the next dropped activity (the branch region of an activity that holds one
+        /// Activity per branch). Cleared after the next add. Takes precedence over <see cref="DropTarget"/>.
+        /// </summary>
+        public IActivityHolder? DropSlot { get; set; }
+
         public event Action? SelectedOnMove;
 
         /// <summary>Raised when the workflow model changed (used to re-run validation).</summary>
@@ -205,6 +211,10 @@ namespace Blazor.WorkflowEditor {
             foreach (var item in items)
                 item.Node?.RefreshLinks();
 
+            //A card that grew (an expanded node, a branch holding an activity) is laid out again so it does not
+            //overlap the next one; the layout only moves nodes it placed itself.
+            Path.LastOrDefault()?.Reference?.Node.RelayoutChildren();
+
             updateState();
         }
 
@@ -257,8 +267,13 @@ namespace Blazor.WorkflowEditor {
 
             designer.Nodes.Remove(node);
 
-            //Remove element in parent
-            Path.LastOrDefault()?.Reference?.Node?.RemoveElement(item.Element);
+            //A branch child belongs to the card that renders it, not to the opened container.
+            if (node.EmbeddedOwner is { } owner)
+                owner.RemoveElement(item.Element);
+            else
+                Path.LastOrDefault()?.Reference?.Node?.RemoveElement(item.Element);
+
+            removeEmbeddedDescendants(node);
 
             selectedItems.Remove(item);
             items.Remove(item);
@@ -293,12 +308,33 @@ namespace Blazor.WorkflowEditor {
             if (activityObject == null)
                 return (false, default!);
 
-            var openContainer = Path.LastOrDefault()?.Reference?.Node;
+            var entry = Path.LastOrDefault();
+            var openContainer = entry?.Reference?.Node;
+            var elementType = activityObject.GetType();
+
+            //A slot (a branch region of a card) holds a single activity, so the drop goes straight into it
+            //instead of through AddChild on the opened container.
+            var slot = DropSlot;
+            DropSlot = null;
+            if (slot != null) {
+                if (activityObject is not System.Activities.Activity activity)
+                    return (false, default!);
+
+                //The child is rendered by the card that holds the branch, not as a node of the diagram.
+                var attached = addElement(activity, addNode: false, initialPosition);
+                slot.Attach(attached);
+                attached.Node.IsEmbedded = true;
+                attached.Node.EmbeddedOwner = slot.Owner;
+                createEmbeddedChildren(attached.Node, new HashSet<DefaultNode>());
+
+                notifyModelChanged();
+                return (true, attached);
+            }
+
             var target = DropTarget ?? openContainer;
 
             //The target must accept the element (keeps non-activity elements such as State or FlowDecision
             //out of containers that only accept Activity children).
-            var elementType = activityObject.GetType();
             if (target == null || !target.CanAdd(elementType.IsGenericType ? elementType.GetGenericTypeDefinition() : elementType))
                 return (false, default!);
 
@@ -444,6 +480,10 @@ namespace Blazor.WorkflowEditor {
 
             var elementType = activityType.IsGenericType ? activityType.GetGenericTypeDefinition() : activityType;
 
+            //A branch region of a card takes a single activity of any kind.
+            if (DropSlot != null)
+                return typeof(System.Activities.Activity).IsAssignableFrom(elementType);
+
             var openContainer = Path.LastOrDefault()?.Reference?.Node;
             if (openContainer is DynamicActivityNode)
                 return openContainer.CanAdd(elementType);
@@ -451,9 +491,9 @@ namespace Blazor.WorkflowEditor {
             if (openContainer is { IsContainer: true } && openContainer.CanAdd(elementType))
                 return true;
 
-            //A region on another container node (for example a collapsed StateMachine or Flowchart)
-            //may be the actual drop target.
-            return items.Any(item => item.Node.IsContainer && item.Node.CanAdd(elementType));
+            //A region on another container node (for example a collapsed StateMachine or Flowchart) may be the
+            //actual drop target. A card rendered inside a branch is opened before anything is added to it.
+            return items.Any(item => item.Node.IsContainer && !item.Node.IsEmbedded && item.Node.CanAdd(elementType));
         }
 
         /// <summary>Whether a node is currently shown on the diagram.</summary>
@@ -607,6 +647,37 @@ namespace Blazor.WorkflowEditor {
         internal ActivityDesignerPair GetPair(System.Activities.Activity source) => this.items.First(p => p.Activity == source);
         internal ActivityDesignerPair GetPair(DefaultNode node) => this.items.First(p => p.Node == node);
 
+        /// <summary>Control component registered for the node, used to render a branch child inside its owner card.</summary>
+        public Type? GetControlType(DefaultNode node) => designer.GetComponent(node);
+
+        /// <summary>
+        /// Selects a node from the UI. A branch child is rendered inside another card instead of the diagram,
+        /// so the diagram selection never picks it up.
+        /// </summary>
+        public void Select(DefaultNode node) {
+            var item = getById(node.Id);
+            if (item is null)
+                return;
+
+            designer.SelectModel(node, true);
+
+            if (!item.Node.IsEmbedded)
+                clearEmbeddedSelection();
+
+            if (!selectedItems.Contains(item))
+                selectedItems.Add(item);
+
+            updateState();
+        }
+
+        /// <summary>Clears the selection of the branch children, which the diagram does not track.</summary>
+        private void clearEmbeddedSelection() {
+            foreach (var item in selectedItems.Where(i => i.Node.IsEmbedded).ToList()) {
+                designer.UnselectModel(item.Node);
+                selectedItems.Remove(item);
+            }
+        }
+
         private ActivityDesignerPair? getById(string id) => this.items.FirstOrDefault(p => p.Node.Id == id);
 
         private void selectionChanged(Diagrams.Core.Models.Base.SelectableModel obj) {
@@ -615,9 +686,14 @@ namespace Blazor.WorkflowEditor {
                 if (item == null)
                     return;
 
-                if (obj.Selected)
-                    selectedItems.Add(item);
-                else
+                if (obj.Selected) {
+                    //A node of the diagram takes the selection over from a branch child rendered inside a card.
+                    if (!item.Node.IsEmbedded)
+                        clearEmbeddedSelection();
+
+                    if (!selectedItems.Contains(item))
+                        selectedItems.Add(item);
+                } else
                     selectedItems.Remove(item);
 
                 updateState();
@@ -654,6 +730,10 @@ namespace Blazor.WorkflowEditor {
         }
 
         private void pointerUp(Model? model, Diagrams.Core.Events.PointerEventArgs arg) {
+            //A click anywhere else takes the selection over from a branch child rendered inside a card. The
+            //click that selects such a child runs after this handler, so the order is not a problem.
+            clearEmbeddedSelection();
+
             if (model is null)
                 return;
 
@@ -689,13 +769,65 @@ namespace Blazor.WorkflowEditor {
             //Keep only the pairs of the opened path; children are recreated by LoadChilds
             items.RemoveAll(p => !Path.Any(x => x.Reference == p));
 
+            //A node reached through the path is a node of the opened container again, not a card in a branch.
+            foreach (var pair in items) {
+                if (!pair.Node.IsEmbedded || !Path.Any(x => ReferenceEquals(x.Reference, pair)))
+                    continue;
+
+                pair.Node.IsEmbedded = false;
+                pair.Node.EmbeddedOwner = null;
+            }
+
             Variables.Clear();
             foreach (var item in Path.SelectMany(p => p.Node.GetVariables()))
                 Variables.Add(item);
 
             Path.Last().Reference.Node.LoadElements(addElement);
+            ensureEmbeddedChildren();
+
             pendingInitialLayout = VisibleViewport == null;
             updateState();
+        }
+
+        /// <summary>
+        /// Creates the nodes of the activities the branches hold. A branch child is rendered inside its owner
+        /// card instead of the diagram, but it still needs a node for its control, its selection and its
+        /// validation badge.
+        /// </summary>
+        private void ensureEmbeddedChildren() {
+            var visited = new HashSet<DefaultNode>();
+            foreach (var item in items.ToList())
+                createEmbeddedChildren(item.Node, visited);
+        }
+
+        private void createEmbeddedChildren(DefaultNode owner, HashSet<DefaultNode> visited) {
+            if (!visited.Add(owner))
+                return;
+
+            //Containers hold several children on their own surface, so they expose no slots.
+            foreach (var slot in owner.Slots) {
+                if (slot.Held is not { } held)
+                    continue;
+
+                var pair = FindPair(held);
+                if (pair is null) {
+                    pair = addElement(held, addNode: false);
+                    pair.Node.IsEmbedded = true;
+                    pair.Node.EmbeddedOwner = owner;
+                }
+
+                //A branch may hold another branch holder, whose own branches are rendered the same way.
+                createEmbeddedChildren(pair.Node, visited);
+            }
+        }
+
+        /// <summary>Drops the nodes rendered inside a removed node, which are not part of the diagram.</summary>
+        private void removeEmbeddedDescendants(DefaultNode node) {
+            foreach (var pair in items.Where(p => ReferenceEquals(p.Node.EmbeddedOwner, node)).ToList()) {
+                removeEmbeddedDescendants(pair.Node);
+                selectedItems.Remove(pair);
+                items.Remove(pair);
+            }
         }
 
         private void discoverPairs() {

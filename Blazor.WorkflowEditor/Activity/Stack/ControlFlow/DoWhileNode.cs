@@ -9,7 +9,7 @@ public class DoWhileNode : DefaultNode {
 
     public DoWhileNode(Service service, System.Activities.Statements.DoWhile activity) : base(service, activity) {
         this.activity = activity;
-        IsContainer = true;
+        //Not a container: the card renders the single activity of the body inline.
     }
 
     public string Condition {
@@ -19,20 +19,26 @@ public class DoWhileNode : DefaultNode {
 
     public override IEnumerable<Variable> GetVariables() => GetVariables(activity.Variables);
 
-    public override void LoadChilds(Func<System.Activities.Activity, ActivityDesignerPair> addActivity) {
-        if (activity.Body != null)
-            addActivity(activity.Body);
-    }
+    private IActivityHolder? bodySlot;
 
-    public string? BodyName => activity.Body?.DisplayName;
-    public bool HasBody => activity.Body != null;
+    /// <summary>Slot that holds the loop body; the card renders that activity inline.</summary>
+    public IActivityHolder BodySlot => bodySlot ??= new Body(this);
 
-    public void ClearBody() {
-        if (activity.Body == null)
-            return;
+    public override IReadOnlyList<IActivityHolder> Slots => new[] { BodySlot };
 
-        RemoveChildEverywhere(activity.Body);
-        service.NotifyStateChanged();
+    /// <summary>The loop body, exposed as a slot so the card can render it.</summary>
+    private sealed class Body : IActivityHolder {
+        private readonly DoWhileNode owner;
+
+        public Body(DoWhileNode owner) => this.owner = owner;
+
+        public DefaultNode Owner => owner;
+
+        public string SlotLabel => "Body";
+
+        public System.Activities.Activity? Held => owner.activity.Body;
+
+        public void Attach(ActivityDesignerPair child) => owner.AddChild(child);
     }
 
     public override void AddChild(ActivityDesignerPair child) {

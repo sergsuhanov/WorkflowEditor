@@ -11,8 +11,6 @@ public class ParallelNode : DefaultNode {
 
     public override IEnumerable<Variable> GetVariables() => GetVariables(activity.Variables);
 
-    public int BranchCount => activity.Branches.Count;
-
     /// <summary>Short summary of the parallel branches shown on the collapsed node.</summary>
     public string? BranchesSummary {
         get {

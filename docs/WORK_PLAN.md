@@ -15,6 +15,7 @@ Use this file for current implementation state and engineering rules. The visual
 - `WorkflowEditor.Web`, `Blazor.WorkflowEditor`, and `Blazor.WorkflowEditor.Tests` target `net10.0`. Package versions are pinned in their project files; a separate review of newer compatible stable versions remains.
 - XAML open/save, workflow validation, unsaved-change confirmation, and browser file download are implemented. A new `ActivityBuilder` starts empty and holds one root implementation Activity; root and Flowchart `START` cues are presentation-only. Web view state and notes use `bwas:Designer` attached properties.
 - Specialized designers cover `Sequence`, `If`, `While`, `DoWhile`, `ForEach<T>`, `Parallel`, `TryCatch`, `Switch<T>`, `Assign`/`Assign<T>`, `WriteLine`, `Delay`, `Throw`, `TerminateWorkflow`, collection activities, `Flowchart`/`FlowDecision`/`FlowSwitch<T>`, and `StateMachine`/`State`.
+- Activities that hold one Activity per branch expose those branches as `IActivityHolder` slots (`DefaultNode.Slots`) and are not containers, so they never place their children on the parent surface and are never opened. Each branch renders the control of the activity it holds as an embedded node (`EmbeddedActivity` + `DynamicComponent`), created by `Service` in `updatePath`; the child can be selected to edit its properties, and a container child keeps its `Open` action and is then edited through the path. `Sequence` and `Parallel` stay containers that list several children on their own surface.
 - `Rethrow` and other unpaired loaded activities use the generic fallback: only the display name is editable. Do not describe them as having type-specific editors.
 - Compared with the base Windows toolbox, remaining candidates are `ParallelForEach<T>`, `Pick`/`PickBranch`, and `Cast<T1,T2>`. `FinalState` needs XAML investigation before adding: Web already supports `State.IsFinal`.
 
@@ -22,7 +23,7 @@ Use this file for current implementation state and engineering rules. The visual
 
 1. Add the open generic Activity to the appropriate toolbox group in `WorkflowEditor.Web/Shared/MainLayout.razor`.
 2. Implement a paired `DefaultNode` and Razor control using `[Pair(typeof(Activity), typeof(Control))]`. Keep workflow-model mutations in the node and UI in the control.
-3. For containers, implement child loading, add, remove, and clear behavior. Ensure dropping into each region targets the intended slot.
+3. For containers, implement child loading, add, remove, and clear behavior. When the activity holds one Activity per branch, expose the branches as `IActivityHolder` slots (`DefaultNode.Slots`) instead of loading children, and render each one with `EmbeddedActivity`, so a drop fills the branch it landed on.
 4. Add tests for editing, child management, invalid input, and XAML round-trip. Update the coverage list here when behavior changes.
 5. Build and test the Web graph, then restart the local host before browser verification.
 
