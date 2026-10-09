@@ -36,9 +36,6 @@ public class ForEachNode<T> : DefaultNode {
         }
     }
 
-    /// <summary>Values and item name sit next to each other, so the card is wider than the default one.</summary>
-    public override string NodeLayoutClass => "we-node-wide";
-
     public override void LoadChilds(Func<System.Activities.Activity, ActivityDesignerPair> addActivity) {
         if (activity.Body?.Handler != null)
             addActivity(activity.Body.Handler);

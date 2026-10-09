@@ -13,9 +13,6 @@ public class AssignGenericNode<T> : DefaultNode {
         IsGeneric = true;
     }
 
-    /// <summary>Destination and source sit next to each other, so the card is wider than the default one.</summary>
-    public override string NodeLayoutClass => "we-node-wide";
-
     public string Source {
         get => ActivityArguments.GetText(activity.Value);
         set {

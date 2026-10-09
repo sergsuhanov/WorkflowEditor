@@ -10,9 +10,6 @@ public class AssignNode : DefaultNode {
         this.assignActivity.Value ??= new System.Activities.InArgument<object>();
     }
 
-    /// <summary>Destination and source sit next to each other, so the card is wider than the default one.</summary>
-    public override string NodeLayoutClass => "we-node-wide";
-
     public string Source {
         get => ActivityArguments.GetText(assignActivity.Value);
         set {

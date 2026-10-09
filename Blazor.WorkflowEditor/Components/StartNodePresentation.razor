@@ -1,13 +1,14 @@
 @using Blazor.WorkflowEditor
 @using Blazor.WorkflowEditor.Activity.Flow
 
-@*The cue of the current canvas: the box asks for the element the surface has none of yet. Only a Flowchart
-  carries a badge and an arrow with it, because only there is the start element a choice of the user; every other
-  surface is started by its first element, so its box is a plain request for that element.*@
+@*The cue of the current canvas: it asks for the element the surface holds none of yet. The request itself is a
+  plain line of text centred on the surface, because an empty surface draws nothing to point at; only a Flowchart
+  carries a badge and an arrow with it, because only there is the start element a choice of the user.*@
 @if (Service?.StartHint is { } hint)
 {
-    <div class="we-root-start-presentation" style="left:50%;top:12px;" aria-hidden="true">
-        @if (Service.OpenedGraph is FlowchartNode)
+    var anchored = Service.OpenedGraph is FlowchartNode;
+    <div class="we-root-start-presentation @(anchored ? "is-anchored" : "is-centred")" aria-hidden="true">
+        @if (anchored)
         {
             <div class="we-root-start-badge">START</div>
             <div class="we-root-start-arrow"></div>

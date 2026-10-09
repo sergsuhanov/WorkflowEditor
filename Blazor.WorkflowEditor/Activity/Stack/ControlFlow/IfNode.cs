@@ -28,9 +28,6 @@ public class IfNode : DefaultNode {
         }
     }
 
-    /// <summary>Both branches are shown next to each other, so the card is wider than the default one.</summary>
-    public override string NodeLayoutClass => "we-node-split";
-
     public IfBranch SelectedBranch { get; set; } = IfBranch.Then;
 
     private IActivityHolder? thenSlot;

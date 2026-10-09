@@ -38,9 +38,6 @@ public class SequenceNode : DefaultNode, IStackContainer {
     /// </summary>
     public override IReadOnlyList<object> InlineChildren => sequenceActivity.Activities;
 
-    /// <summary>A sequence card holds a list of cards, so it uses the wider card layout.</summary>
-    public override string NodeLayoutClass => "we-node-wide";
-
     public override void LoadChilds(Func<System.Activities.Activity, ActivityDesignerPair> addActivity) {
         foreach (var activity in this.sequenceActivity.Activities) {
             var result = addActivity(activity);

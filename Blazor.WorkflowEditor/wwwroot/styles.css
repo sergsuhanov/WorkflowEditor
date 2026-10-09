@@ -125,14 +125,30 @@
     position: relative;
 }
 
+/*The cue an empty surface shows. A surface that holds nothing asks in the middle of the canvas and draws
+  nothing else; the start cue of a Flowchart stays at the top, where its arrow points at the place the start
+  node takes.*/
 .we-root-start-presentation {
     position: absolute;
     z-index: 2;
+    width: max-content;
+    max-width: 90%;
     display: flex;
     flex-direction: column;
     align-items: center;
-    transform: translateX(-50%);
     pointer-events: none;
+}
+
+.we-root-start-presentation.is-centred {
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.we-root-start-presentation.is-anchored {
+    top: 12px;
+    left: 50%;
+    transform: translateX(-50%);
 }
 
 .we-node-start-presentation {
@@ -183,27 +199,31 @@
     transform: rotate(45deg);
 }
 
-/*Empty drop container: the start of a new schema and an empty branch look the same.*/
-.we-root-start-drop,
-.we-branch-drop {
+/*The placeholder of a drop zone looks the same wherever it is drawn: the branch of a card that holds nothing,
+  and the list of a Sequence card that holds none. The placeholder keeps a readable width, so a region next to
+  one that holds a card is not squeezed to its text. The request an empty surface shows is plain text instead,
+  so nothing is drawn over the canvas.*/
+.we-branch-drop,
+.we-inline-empty {
     display: flex;
     align-items: center;
     justify-content: center;
-    min-height: 42px;
-    padding: 0.15rem 0.5rem;
+    min-width: 120px;
+    min-height: 44px;
+    padding: 0.5rem;
     margin-top: 2px;
-    border: 2px dashed #198754;
-    border-radius: 6px;
-    background: rgba(232, 245, 237, 0.75);
-    color: #146c43;
+    border: 1px dashed #adb5bd;
+    border-radius: 0.25rem;
+    color: #6c757d;
     font-size: 0.75rem;
     text-align: center;
 }
 
 .we-root-start-drop {
-    width: 250px;
-    min-height: 56px;
-    font-size: 0.85rem;
+    color: #1b3b2b;
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-align: center;
 }
 
 .we-custom-node {
@@ -238,15 +258,25 @@
     min-height: 60px;
 }
 
-/*Expanded node: same base class as the collapsed one so port and card rules apply.*/
+/*Expanded node: same base class as the collapsed one so port and card rules apply. The card keeps the width
+  of the collapsed one and grows past it only when the editor holds nested cards, so an activity with nothing
+  inside it does not widen when it is opened.*/
 .we-custom-node-expanded {
-    width: 480px;
+    width: auto;
+    min-width: 250px;
     min-height: 0;
 }
 
 /*The card carries no frame of its own; the transparent border is where the selection highlight goes.*/
 .we-custom-node .card {
     border: 3px solid transparent;
+}
+
+/*A card that shows no problem still draws a neat outline, so its box reads on the canvas. A picked card steps
+  aside for its own border, and the start element and the error state replace the ring with one of their own;
+  those two are declared later, so they win over this one and over the picked card.*/
+.we-custom-node > .card {
+    box-shadow: 0 0 0 1px rgb(33 37 41 / 50%);
 }
 
 .we-custom-node .we-node-icon {
@@ -257,6 +287,8 @@
 
 .we-custom-node .isSelected {
     border-color: #0d6efd;
+    /*A picked card is outlined by that border alone, so the neutral ring steps aside for it.*/
+    box-shadow: none;
     z-index: 2147483646;
 }
 
@@ -546,10 +578,11 @@
     cursor: row-resize;
 }
 
-/*Container region designer (drop targets on stack container nodes)*/
+/*Container region designer (drop targets on stack container nodes). The regions of a row stay on that row:
+  the card is measured from them, so a region that holds a card makes the owner grow instead of wrapping.*/
 .we-branches {
     display: flex;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     gap: 0.35rem;
     margin-top: 0.25rem;
 }
@@ -612,13 +645,15 @@
 }
 
 /*A branch that holds an activity: a caption above the control of that activity and no frame of its own,
-  so the card of the activity stays the only border inside the owner.*/
+  so the card of the activity stays the only border inside the owner. The region is never narrower than what
+  it holds, otherwise a card of a fixed width would spill out of the owner that measures itself from it.*/
 .we-branch-filled {
     display: block;
     padding: 0;
     border: none;
     background: none;
     cursor: default;
+    min-width: min-content;
 }
 
 /*Caption of a branch, of a case or of a field group: a label with an optional control that removes it.*/
@@ -715,23 +750,9 @@
     cursor: grabbing;
 }
 
-/*The embedded card follows the width of the branch instead of the fixed diagram card width.*/
-.we-embedded .we-custom-node {
-    width: auto;
-}
-
 .we-embedded .card {
     border-width: 1px;
     margin-bottom: 0;
-}
-
-.we-node-wide {
-    width: 340px;
-}
-
-/*Cards whose branches sit next to each other instead of stacking.*/
-.we-node-split {
-    width: 460px;
 }
 
 /* --- Diagram widgets: grid, minimap and zoom controls (step 8) --- */
@@ -955,18 +976,6 @@
 
 .we-inline-item.is-target {
     box-shadow: inset 0 2px 0 #1f6feb;
-}
-
-.we-inline-empty {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 44px;
-    padding: 0.5rem;
-    border: 1px dashed #adb5bd;
-    border-radius: 0.25rem;
-    color: #6c757d;
-    font-size: 0.75rem;
 }
 
 /* --- Ordered container (Sequence) editing surface --- */

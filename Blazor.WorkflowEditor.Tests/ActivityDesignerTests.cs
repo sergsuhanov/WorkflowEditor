@@ -977,6 +977,60 @@ public class ActivityDesignerTests {
         Assert.Equal(expanded, reopened.IsExpanded);
     }
 
+    /// <summary>
+    /// The library measures the card in the browser after the diagram rendered it, and keeps the top-left corner
+    /// of the node box where it is. The saved view state stores the center, so a card that was placed with the
+    /// default box and then measured would move: the drop lands off-center and every open/return of its container
+    /// moves it further. The center therefore has to stay where the user put it while the box changes.
+    /// </summary>
+    [Fact]
+    public void ACardKeepsItsCenterWhenTheBrowserMeasuresItsBox() {
+        using var service = new Service(new BlazorDiagram(), () => { });
+        service.SetActivityBuilder(new ActivityBuilder());
+        var dropPosition = new Point(320, 180);
+
+        var (hasAdded, result) = service.AddActivity(typeof(Sequence), dropPosition);
+        Assert.True(hasAdded);
+
+        //The card was placed at the drop point with the default box; the browser then reports the real one.
+        result.Node.Size = new Size(340, 60);
+
+        Assert.Equal(dropPosition.X, result.Node.CenterPosition.X, 3);
+        Assert.Equal(dropPosition.Y, result.Node.CenterPosition.Y, 3);
+    }
+
+    /// <summary>
+    /// A card is rebuilt every time its container is opened and left, and the new box is measured again after it
+    /// was placed from the saved center. Both measurements have to leave the saved place alone, otherwise a card
+    /// would crawl a little further on every round trip.
+    /// </summary>
+    [Fact]
+    public void ACardKeepsItsPlaceWhileItsContainerIsOpenedAndLeft() {
+        using var service = new Service(new BlazorDiagram(), () => { });
+        var sequence = new Sequence { Activities = { new WriteLine() } };
+        service.SetActivityBuilder(new ActivityBuilder { Implementation = sequence });
+
+        var card = service.Items.First(p => p.Activity == sequence).Node;
+        card.CenterPosition = new Point(400, 300);
+        //The browser measured the card and the released pointer saved its place, exactly like in the editor.
+        card.Size = new Size(340, 60);
+        card.UpdateViewState();
+
+        var root = service.Path.First();
+        service.Open(card);
+        service.OpenPath(root);
+
+        var reopened = service.Items.First(p => p.Activity == sequence).Node;
+        Assert.NotSame(card, reopened);
+
+        //The restored card derives its top-left from the saved center and the default box, so the measurement
+        //that follows has to bring the center back to the saved place instead of moving it.
+        reopened.Size = new Size(340, 60);
+
+        Assert.Equal(400, reopened.CenterPosition.X, 3);
+        Assert.Equal(300, reopened.CenterPosition.Y, 3);
+    }
+
     [Fact]
     public void ExpandedSequenceCardSurvivesXamlRoundTrip() {
         var inner = new Sequence { Activities = { new WriteLine() } };

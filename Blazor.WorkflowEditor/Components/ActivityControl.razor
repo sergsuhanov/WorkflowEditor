@@ -39,9 +39,14 @@
                         <span class="oi oi-fullscreen-enter" aria-hidden="true"></span>
                     </a>
                 }
-                <a href="" class="card-link link-danger" title="Delete" @onclick="@delete" @onclick:preventDefault>
-                    <span class="oi oi-circle-x" aria-hidden="true"></span>
-                </a>
+                @*The remove command is shown only on the selected card, so a surface of many cards is not covered
+                  with red circles; the Delete key removes the selected card as well.*@
+                @if (Node.Selected)
+                {
+                    <a href="" class="card-link link-danger" title="Delete" @onclick="@delete" @onclick:preventDefault>
+                        <span class="oi oi-circle-x" aria-hidden="true"></span>
+                    </a>
+                }
             </div>
         </div>
         @*The name lives in the header and the note is edited in the properties panel, so the body carries the note
@@ -131,11 +136,11 @@
     {
         get
         {
+            //Every collapsed card is the same width; an expanded one keeps that width and grows only to fit
+            //the nested cards its editor holds.
             var result = Node.IsExpanded
                 ? "we-custom-node we-custom-node-expanded"
-                : string.IsNullOrEmpty(Node.NodeLayoutClass)
-                    ? "we-custom-node"
-                    : $"we-custom-node {Node.NodeLayoutClass}";
+                : "we-custom-node";
 
             //Start marker and validation state of the card.
             if (isStart)

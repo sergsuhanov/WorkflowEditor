@@ -30,7 +30,7 @@
                          @ondragend="() => Service.EndCardDrag()"
                          @ondragover:preventDefault @ondragover:stopPropagation @ondragover="() => hover(gapIndex)"
                          @onclick="() => Service.Select(child.Node)" @onclick:stopPropagation="true"
-                         @onpointerdown:stopPropagation @onmousedown:stopPropagation>
+                         @onpointerdown:stopPropagation @onpointerup:stopPropagation @onmousedown:stopPropagation>
                         <DynamicComponent Type="@Service.GetControlType(child.Node)" Parameters="@cardParameters(child.Node)" />
                     </div>
                 }

@@ -15,11 +15,13 @@
 else if (child is { } node && controlType is { } type)
 {
     @*The card of the branch is a drag source of its own: dragging it moves the activity it holds to another
-      target instead of dragging the card that draws it, so the pointer events never reach its owner.*@
+      target instead of dragging the card that draws it, so the pointer events never reach its owner. The
+      release is part of that: the owner drops the selection of a card it draws on a release, which would take
+      the remove command away between the press and the click that has to run it.*@
     <div class="we-embedded" draggable="true"
          @ondragstart:stopPropagation="true" @ondragstart="() => Service.StartCardDrag(node)"
          @ondragend="() => Service.EndCardDrag()"
-         @onpointerdown:stopPropagation
+         @onpointerdown:stopPropagation @onpointerup:stopPropagation
          @onclick="() => Service.Select(node)" @onclick:stopPropagation="true">
         <DynamicComponent Type="@type" Parameters="@parameters(node)" />
     </div>

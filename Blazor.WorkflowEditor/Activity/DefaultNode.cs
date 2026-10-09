@@ -142,6 +142,7 @@ public class DefaultNode : NodeModel {
         this.isExpanded = State.Designer.GetIsExpanded(activity) == true;
 
         this.Size = defaultSize;
+        measuredSize = defaultSize;
 
         topPort = this.AddPort(PortAlignment.Top);
         topPort.Locked = true;
@@ -161,7 +162,27 @@ public class DefaultNode : NodeModel {
         this.SizeChanged += onSizeChanged;
     }
 
-    private void onSizeChanged(NodeModel model) => UpdatePortGeometry();
+    /// <summary>
+    /// The box the node had before the browser measured the card. The library measures the card itself (the
+    /// default box here is only a starting point) and keeps the top-left corner where it is, so a card that
+    /// grows or shrinks would move its center. The center is what the saved view state stores, so the last
+    /// measured box is kept to hold the center in place instead.
+    /// </summary>
+    private Size? measuredSize;
+
+    private void onSizeChanged(NodeModel model) {
+        //The visible box of the card changed (the browser measured it, or the card was expanded/collapsed).
+        //Keep the center: otherwise a restored card would be placed from the default box and then move when
+        //the real one is measured — a little on the first drop and more on every open/return of its container.
+        if (measuredSize is { } previous && Size is { } current && !previous.Equals(current)) {
+            SetPosition(
+                Position.X - (current.Width - previous.Width) / 2.0,
+                Position.Y - (current.Height - previous.Height) / 2.0);
+        }
+
+        measuredSize = Size;
+        UpdatePortGeometry();
+    }
 
     /// <summary>Radius of the round port marker. The port rectangle is a square of <c>2 * PortRadius</c>.</summary>
     private const double PortRadius = 10;
@@ -467,9 +488,6 @@ public class DefaultNode : NodeModel {
     /// container needs no hint: it either has children or draws a cue of its own.
     /// </summary>
     public virtual string? EmptyHint => null;
-
-    /// <summary>Extra CSS class for the collapsed node card, used by nodes with an inline region designer.</summary>
-    public virtual string NodeLayoutClass => string.Empty;
 
     /// <summary>
     /// Replaces the four default ports with the directional set used by graph containers: incoming ports on

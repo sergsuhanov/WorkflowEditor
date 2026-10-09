@@ -16,15 +16,25 @@
     border-color: #75b798;
 }
 
-.we-root-start-drop,
-.we-branch-drop {
-    border-color: #75b798;
-    background: rgba(24, 57, 42, 0.8);
+/*Every drop-zone placeholder in a card shares one look (see styles.css).*/
+.we-branch-drop,
+.we-inline-empty {
+    border-color: #6c757d;
+    color: #ced4da;
+}
+
+.we-root-start-drop {
     color: #b7e4c7;
 }
 
+/*The dark theme draws the outline as the card border it already had, so the neutral ring of the light theme
+  (see styles.css) is not drawn here: the two would sit on top of each other.*/
 .we-custom-node .card {
     border: 1px solid darkgray;
+}
+
+.we-custom-node > .card {
+    box-shadow: none;
 }
 
 .we-custom-node .isSelected {
@@ -390,11 +400,6 @@
 .we-inline-item.is-target {
     background-color: rgba(77, 171, 247, 0.2);
     box-shadow: inset 0 2px 0 #4dabf7;
-}
-
-.we-inline-empty {
-    border-color: #6c757d;
-    color: #ced4da;
 }
 
 /* --- Ordered container (Sequence) editing surface (dark theme) --- */

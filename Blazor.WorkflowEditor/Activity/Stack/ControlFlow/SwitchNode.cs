@@ -31,9 +31,6 @@ public class SwitchNode<T> : DefaultNode {
     public IReadOnlyList<string> CaseKeys =>
         activity.Cases.Keys.Select(formatKey).ToList();
 
-    /// <summary>A case per row reads better on the wider card.</summary>
-    public override string NodeLayoutClass => "we-node-wide";
-
     private IActivityHolder? defaultSlot;
     private readonly Dictionary<string, IActivityHolder> caseSlots = new();
 

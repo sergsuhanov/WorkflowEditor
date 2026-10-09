@@ -15,12 +15,9 @@ public class TryCatchNode : DefaultNode {
 
     public TryCatchNode(Service service, System.Activities.Statements.TryCatch activity) : base(service, activity) {
         this.activity = activity;
-        //Not a container: the card renders the single activity of each section inline.
-        //A wider card leaves room for the controls of Try, Catch and Finally.
-        this.Size = new Diagrams.Core.Geometry.Size(340, 114);
+        //Not a container: the card renders the single activity of each section inline. The card is measured
+        //from its editor, which grows to fit the sections it holds.
     }
-
-    public override string NodeLayoutClass => "we-node-wide";
 
     public static readonly IReadOnlyList<Type> CatchExceptionTypes = new[] {
         typeof(System.Exception),
