@@ -1,0 +1,90 @@
+@using Blazor.WorkflowEditor.Components
+
+@*Card of a Sequence: the elements it holds are drawn inside the card, one under another in the order they run,
+  so the whole sequence is edited in place. The card keeps its Open action, which shows the same elements on a
+  surface of their own. A card is dragged by its body to another place in the list; a drop in a gap inserts an
+  element there.*@
+<ActivityControl Node="Node">
+    <Content>
+        <div class="we-inline-list" @ondragover:preventDefault @ondragover:stopPropagation @ondragover="onListDragOver"
+             @ondrop="onListDrop">
+            @if (children.Count == 0)
+            {
+                <div class="we-inline-empty @(isListTarget ? "is-target" : null)">Drop the first activity here</div>
+            }
+            else
+            {
+                @for (var index = 0; index < children.Count; index++)
+                {
+                    var child = children[index];
+                    <div class="we-inline-gap @(isTarget(index) ? "is-target" : null)" aria-hidden="true"
+                         @ondragover:preventDefault @ondragover:stopPropagation @ondragover="() => hover(index)"></div>
+                    <div class="we-inline-item @(isTarget(index) ? "is-target" : null)" draggable="true" @key="child.Element"
+                         title="Drag the card to change its place in the sequence"
+                         @ondragstart:stopPropagation="true" @ondragstart="() => Service.StartInlineDrag(child.Node)"
+                         @ondragend="() => Service.EndInlineDrag()"
+                         @ondragover:preventDefault @ondragover:stopPropagation @ondragover="() => hover(index)"
+                         @onclick="() => Service.Select(child.Node)" @onclick:stopPropagation="true"
+                         @onpointerdown:stopPropagation @onmousedown:stopPropagation>
+                        <DynamicComponent Type="@Service.GetControlType(child.Node)" Parameters="@cardParameters(child.Node)" />
+                    </div>
+                }
+                <div class="we-inline-gap @(isTarget(children.Count) ? "is-target" : null)" aria-hidden="true"
+                     @ondragover:preventDefault @ondragover:stopPropagation @ondragover="() => hover(children.Count)"></div>
+            }
+        </div>
+    </Content>
+</ActivityControl>
+
+@code {
+    /// <summary>A child of the sequence: the model element and the card the sequence draws for it.</summary>
+    private sealed record ChildCard(System.Activities.Activity Element, DefaultNode Node);
+
+    [CascadingParameter]
+    public Service Service { get; set; } = default!;
+
+    [Parameter, EditorRequired]
+    public SequenceNode Node { get; set; } = default!;
+
+    /// <summary>The children of the sequence, in model order.</summary>
+    private List<ChildCard> children => Node.InlineChildren
+        .OfType<System.Activities.Activity>()
+        .Select(element => Service.FindPair(element)?.Node is { } card ? new ChildCard(element, card) : null)
+        .Where(child => child != null)
+        .ToList()!;
+
+    private static IDictionary<string, object> cardParameters(DefaultNode node) =>
+        new Dictionary<string, object> { ["Node"] = node };
+
+    /// <summary>Whether the list itself is the drop target, which an empty list shows on its placeholder.</summary>
+    private bool isListTarget =>
+        ReferenceEquals(Service.DropTarget, Node)
+        && (Service.DraggedToolboxItem != null || Service.DraggedInlineChild != null);
+
+    /// <summary>Whether the list points at this place, either for a dropped activity or for a dragged card.</summary>
+    private bool isTarget(int index) =>
+        Service.DropInsertIndex == index
+        && (ReferenceEquals(Service.DropTarget, Node)
+            || ReferenceEquals(Service.DraggedInlineChild?.EmbeddedOwner, Node));
+
+    /// <summary>Shows where an element dropped here lands and makes this card the drop target.</summary>
+    private void hover(int index) => Service.SetInlineDropTarget(Node, index);
+
+    /// <summary>
+    /// Dragging over the list itself keeps the list as the drop target, so a dropped activity is added to this
+    /// sequence instead of the container that is opened.
+    /// </summary>
+    private void onListDragOver() => Service.SetInlineDropTarget(Node, Service.DropInsertIndex ?? children.Count);
+
+    /// <summary>
+    /// A card released over the list takes the place the drag showed. A toolbox item is left to the editor, which
+    /// adds it where the list points.
+    /// </summary>
+    private void onListDrop()
+    {
+        if (Service.DraggedInlineChild is { } dragged && ReferenceEquals(dragged.EmbeddedOwner, Node))
+            Service.MoveInlineChild(dragged, Service.DropInsertIndex ?? children.Count);
+
+        Service.EndInlineDrag();
+    }
+}

@@ -212,6 +212,32 @@
       link anchors) are placed on the box borders.*/
 }
 
+/*The card of an activity that holds detail is opened and closed by the chevron that sits where the activity
+  icon sits on every other card.*/
+.we-node-toggle {
+    float: left;
+    margin-right: 0.4rem;
+    padding: 0 0.1rem;
+    color: inherit;
+    text-decoration: none;
+    line-height: 1;
+}
+
+.we-node-toggle:hover,
+.we-node-toggle:focus-visible {
+    color: #0d6efd;
+}
+
+.we-node-toggle .oi {
+    font-size: 0.8rem;
+}
+
+/*A container card hides a whole surface behind its header, so it keeps a body-sized shape: the empty body is
+  what tells the user that there is more inside than the name.*/
+.we-custom-node.we-node-container .card {
+    min-height: 60px;
+}
+
 /*Expanded node: same base class as the collapsed one so port and card rules apply.*/
 .we-custom-node-expanded {
     width: 480px;
@@ -885,4 +911,77 @@
     overflow: hidden;
     white-space: pre-wrap;
     overflow-wrap: anywhere;
+}
+
+/* --- Children of a Sequence drawn inside its card --- */
+/*The card of a Sequence is its own editing surface: the elements it holds are drawn under its header, in the
+  order they run, and a card is dragged by its body to another place in that list.*/
+.we-inline-list {
+    display: flex;
+    flex-direction: column;
+    margin-top: 0.35rem;
+}
+
+/*A card drawn inside a card fills the room it gets, whatever width the outer card has.*/
+.we-inline-list .we-custom-node {
+    width: 100%;
+}
+
+.we-inline-item {
+    cursor: grab;
+    border-radius: 0.25rem;
+}
+
+.we-inline-item:active {
+    cursor: grabbing;
+}
+
+/*The gap between two cards of the list is a drop target: a dropped or dropped-back card lands there.*/
+.we-inline-gap {
+    height: 10px;
+    border-radius: 2px;
+}
+
+.we-inline-gap.is-target,
+.we-inline-item.is-target {
+    background-color: rgba(31, 111, 235, 0.25);
+    box-shadow: inset 0 2px 0 #1f6feb;
+}
+
+.we-inline-item.is-target {
+    box-shadow: inset 0 2px 0 #1f6feb;
+}
+
+.we-inline-empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    padding: 0.5rem;
+    border: 1px dashed #adb5bd;
+    border-radius: 0.25rem;
+    color: #6c757d;
+    font-size: 0.75rem;
+}
+
+/* --- Ordered container (Sequence) editing surface --- */
+/*The children of an opened Sequence form a column, so a card shows where a dropped or dragged element lands.
+  Cards of the column have no ports: the order of the model is the only connection between them.*/
+.we-stack-caret-above::after,
+.we-stack-caret-below::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 2px;
+    border-radius: 1px;
+    background-color: #1f6feb;
+}
+
+.we-stack-caret-above::after {
+    top: -14px;
+}
+
+.we-stack-caret-below::after {
+    bottom: -14px;
 }

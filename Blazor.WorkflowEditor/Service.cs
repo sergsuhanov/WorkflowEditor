@@ -98,7 +98,29 @@ namespace Blazor.WorkflowEditor {
         /// </summary>
         public IActivityHolder? DropSlot { get; set; }
 
-        public event Action? SelectedOnMove;
+        /// <summary>
+        /// Index a new element takes in the column of the opened stack container (Sequence) when it is dropped
+        /// at the current pointer place. Null while no stack is opened or the pointer is over another surface.
+        /// Set while an activity is dragged over the canvas, so the column can show where the element lands.
+        /// </summary>
+        public int? DropInsertIndex { get; private set; }
+
+        /// <summary>True while the user drags a card inside the column of the opened stack container.</summary>
+        public bool IsReordering { get; private set; }
+
+        /// <summary>Gap of the column that shows where the dragged card lands, while the drag changes the order.</summary>
+        public int? ReorderGapIndex { get; private set; }
+
+        /// <summary>
+        /// Card the user drags inside the inline list of a card (a container shown on a surface), or null.
+        /// </summary>
+        public DefaultNode? DraggedInlineChild { get; private set; }
+
+        /// <summary>Card of the opened stack container the user drags, or null.</summary>
+        private DefaultNode? draggedStackChild;
+
+        /// <summary>Index the dragged card takes in the column, once it is taken out of it.</summary>
+        private int? reorderIndex;
 
         /// <summary>Raised when the workflow model changed (used to re-run validation).</summary>
         public event Action? ModelChanged;
@@ -112,49 +134,72 @@ namespace Blazor.WorkflowEditor {
         /// <summary>The graph container currently opened in the editor, if any (Flowchart, StateMachine).</summary>
         public IGraphContainer? OpenedGraph => currentGraphContainer;
 
+        /// <summary>The ordered container currently opened in the editor, if any (Sequence).</summary>
+        public IStackContainer? OpenedStack => Path.LastOrDefault()?.Reference?.Node as IStackContainer;
+
+        /// <summary>Number of children of the opened ordered container, or 0.</summary>
+        public int StackCount => OpenedStack?.Count ?? 0;
+
         /// <summary>True while the ActivityBuilder root is open in the editor.</summary>
         public bool IsRootPath => Path.Count == 1 && Path[0].Reference.Node is DynamicActivityNode;
 
-        /// <summary>Whether the current canvas shows the root workflow or an open Flowchart.</summary>
-        public bool ShowStartPresentation =>
-            Path.Count == 0 || IsRootPath || Path.LastOrDefault()?.Reference?.Node is FlowchartNode;
+        /// <summary>True while the work surface of the editor shows the workflow root.</summary>
+        public bool IsRootCanvas => Path.Count == 0 || IsRootPath;
 
-        /// <summary>The ActivityBuilder implementation or Flowchart start element shown on this canvas.</summary>
+        /// <summary>
+        /// What the start cue of the current canvas asks for, or null when the canvas draws no cue: it either
+        /// shows a start element (the cue is then drawn on the card of that element) or it is a container that
+        /// already holds elements.
+        /// </summary>
+        public string? StartHint {
+            get {
+                if (StartTargetNode != null)
+                    return null;
+
+                if (IsRootCanvas)
+                    return "Drop the first activity here";
+
+                if (Path.LastOrDefault()?.Reference?.Node is not { } container)
+                    return "Drop the first activity here";
+
+                //A container that holds nothing asks for its first element exactly like the empty root does; a
+                //Flowchart also asks for the start node while it is not chosen yet.
+                return container.EmptyHint ?? container switch {
+                    FlowchartNode { Count: 0 } => "Add a node to create the flowchart start",
+                    FlowchartNode => "Choose the start node in Flowchart properties",
+                    _ => null
+                };
+            }
+        }
+
+        /// <summary>The element the current canvas starts with: the root implementation, the start element of a
+        /// graph container, or the first element of an ordered container.</summary>
         public DefaultNode? StartTargetNode {
             get {
                 if (IsRootPath && activityBuilder?.Implementation is { } implementation)
                     return items.FirstOrDefault(p => ReferenceEquals(p.Activity, implementation))?.Node;
 
-                if (Path.LastOrDefault()?.Reference?.Node is FlowchartNode flowchart &&
-                    flowchart.StartElement is { } element)
+                if (Path.LastOrDefault()?.Reference?.Node is not { } container)
+                    return null;
+
+                if (container is FlowchartNode flowchart && flowchart.StartElement is { } element)
                     return items.FirstOrDefault(p => ReferenceEquals(p.Element, element))?.Node;
+
+                //The first element of an ordered container is where its execution starts.
+                if (container is IStackContainer stack)
+                    return stackChildren(stack).FirstOrDefault()?.Node;
 
                 return null;
             }
         }
-
-        public string StartHint {
-            get {
-                if (Path.Count == 0 || IsRootPath)
-                    return "Drop the first activity here";
-
-                return Path.LastOrDefault()?.Reference?.Node is FlowchartNode { Count: 0 }
-                    ? "Add a node to create the flowchart start"
-                    : "Choose the start node in Flowchart properties";
-            }
-        }
-
-        /// <summary>
-        /// Hint of the canvas of the opened container, when it is still empty. The root and the Flowchart
-        /// draw a START cue of their own and report no hint here.
-        /// </summary>
-        public string? EmptyContainerHint => Path.LastOrDefault()?.Reference?.Node?.EmptyHint;
 
         public Service(BlazorDiagram designer, Action updateState) {
             this.designer = designer;
 
             this.designer.SelectionChanged += selectionChanged;
             this.designer.PointerDoubleClick += pointerDoubleClick;
+            this.designer.PointerDown += pointerDown;
+            this.designer.PointerMove += pointerMove;
             this.designer.PointerUp += pointerUp;
             this.designer.PanChanged += panChanged;
             this.designer.ZoomChanged += zoomChanged;
@@ -171,6 +216,8 @@ namespace Blazor.WorkflowEditor {
             this.designer.SelectionChanged -= selectionChanged;
             this.designer.PointerDoubleClick -= pointerDoubleClick;
 
+            this.designer.PointerDown -= pointerDown;
+            this.designer.PointerMove -= pointerMove;
             this.designer.PointerUp -= pointerUp;
 
             this.designer.PanChanged -= panChanged;
@@ -211,14 +258,17 @@ namespace Blazor.WorkflowEditor {
             portGeometryDirty = false;
 
             foreach (var item in items.Where(i => i.Node != null)) {
-                if (!IsDisplayed(item.Node))
+                //A card of the column of an ordered container has no ports and no connections to refresh.
+                if (item.Node.IsStackChild || !IsDisplayed(item.Node))
                     continue;
 
                 item.Node.UpdatePortGeometry();
             }
 
-            foreach (var item in items)
-                item.Node?.RefreshLinks();
+            foreach (var item in items.Where(i => i.Node != null)) {
+                if (!item.Node.IsStackChild)
+                    item.Node.RefreshLinks();
+            }
 
             //A card that grew (an expanded node, a branch holding an activity) is laid out again so it does not
             //overlap the next one; the layout only moves nodes it placed itself.
@@ -242,6 +292,13 @@ namespace Blazor.WorkflowEditor {
 
         /// <summary>Delete removes the selected connections or the selected nodes.</summary>
         private void keyDown(Blazor.Diagrams.Core.Events.KeyboardEventArgs e) {
+            //Alt with the arrows moves the selected card inside the column of an opened ordered container.
+            if (e.AltKey && e.Key is "ArrowUp" or "ArrowDown") {
+                if (selectedItems.Count == 1
+                    && MoveInStack(selectedItems[0].Node, e.Key == "ArrowUp" ? -1 : 1))
+                    return;
+            }
+
             if (e.Key is not ("Delete" or "Backspace"))
                 return;
 
@@ -353,7 +410,25 @@ namespace Blazor.WorkflowEditor {
             DropTarget = null;
 
             var result = addElement(activityObject, addNode: !inline, initialPosition);
-            target.AddChild(result);
+
+            //A child of a card that is not the opened container is drawn inside that card, exactly like a branch
+            //child, so it gets no node on the surface.
+            if (inline) {
+                result.Node.IsEmbedded = true;
+                result.Node.EmbeddedOwner = target;
+                createEmbeddedChildren(result.Node, new HashSet<DefaultNode>());
+            }
+
+            //A drop into an ordered container lands at the index of the drop point; anywhere else the child is
+            //appended (containers) or takes the branch it was dropped on (region targets).
+            if (target is IStackContainer stack) {
+                var index = DropInsertIndex ?? stack.Count;
+                resetStackInteraction();
+                stack.InsertChild(index, result);
+            } else {
+                target.AddChild(result);
+            }
+
             notifyModelChanged();
 
             return (true, result);
@@ -441,7 +516,7 @@ namespace Blazor.WorkflowEditor {
             element != null && elementsWithErrors.Contains(element);
 
         public void SetActivityBuilder(ActivityBuilder activityBuilder) {
-            SelectedOnMove = null;
+            resetStackInteraction();
             designer.Nodes.Clear();
             designer.Links.Clear();
             items.Clear();
@@ -490,6 +565,18 @@ namespace Blazor.WorkflowEditor {
             if (item is null)
                 return;
 
+            //A card can be opened from the card that draws it, so the containers between the surface that is
+            //shown and that card become part of the path as well: the breadcrumb then leads back through them.
+            var owners = new List<ActivityDesignerPair>();
+            for (var owner = item.Node.EmbeddedOwner; owner != null; owner = owner.EmbeddedOwner) {
+                if (getById(owner.Id) is { } ownerItem && !Path.Any(p => ReferenceEquals(p.Reference, ownerItem)))
+                    owners.Add(ownerItem);
+            }
+
+            owners.Reverse();
+            foreach (var owner in owners)
+                Path.Add(new PathItem(owner));
+
             Path.Add(new PathItem(item));
             updatePath();
 
@@ -515,17 +602,20 @@ namespace Blazor.WorkflowEditor {
             if (DropSlot != null)
                 return typeof(System.Activities.Activity).IsAssignableFrom(elementType);
 
+            //The container that is opened takes the element itself.
             var openContainer = Path.LastOrDefault()?.Reference?.Node;
-            if (openContainer is DynamicActivityNode)
-                return openContainer.CanAdd(elementType);
-
             if (openContainer is { IsContainer: true } && openContainer.CanAdd(elementType))
                 return true;
 
-            //A region on another container node (for example a collapsed StateMachine or Flowchart) may be the
-            //actual drop target. A card rendered inside a branch is opened before anything is added to it.
-            return items.Any(item => item.Node.IsContainer && !item.Node.IsEmbedded && item.Node.CanAdd(elementType));
+            //A card of the surface takes it as well: a branch region on the card, or the list an ordered
+            //container draws inside itself. A card rendered inside a branch is opened before anything is
+            //added to it.
+            return items.Any(item => takesChildren(item.Node, elementType));
         }
+
+        /// <summary>Whether the card accepts the element itself, as a branch or as the children of its list.</summary>
+        private static bool takesChildren(DefaultNode node, Type elementType) =>
+            (node.IsContainer && node.CanAdd(elementType)) || node.Slots.Count > 0;
 
         /// <summary>Whether a node is currently shown on the diagram.</summary>
         public bool IsDisplayed(DefaultNode node) => designer.Nodes.Contains(node);
@@ -579,14 +669,6 @@ namespace Blazor.WorkflowEditor {
                 .Add(new RemoveControl(new LinkPathPositionProvider(0.6, 0, -16)));
 
             return linkModel;
-        }
-
-        internal void RemoveLinkFromTo(ActivityDesignerPair from, ActivityDesignerPair to) {
-            var link = designer.Links.OfType<LinkModel>().FirstOrDefault(p => nodeOf(p.Source) == from.Node && nodeOf(p.Target) == to.Node);
-            if (link != null)
-                removeLink(link);
-
-            selectedLinks.Remove((from, to));
         }
 
         /// <summary>Adds a link without re-entering the user link handlers (the model is already up to date).</summary>
@@ -765,18 +847,264 @@ namespace Blazor.WorkflowEditor {
             //click that selects such a child runs after this handler, so the order is not a problem.
             clearEmbeddedSelection();
 
+            //A released card of the column takes the place the drag showed, instead of keeping the pixels it
+            //was dropped on.
+            if (draggedStackChild is { } dragged && OpenedStack is { } stack) {
+                finishReorder(stack, dragged);
+                return;
+            }
+
             if (model is null)
                 return;
 
             if (arg.ClientX > 50 || arg.ClientY > 50) {
                 if (model is DefaultNode node) {
-                    SelectedOnMove?.Invoke();
-
                     node.UpdateViewState();
                     updateState();
                 }
             }
         }
+        private void pointerDown(Model? model, Diagrams.Core.Events.PointerEventArgs arg) {
+            //Only a card of the column of the opened ordered container can be dragged to another index.
+            draggedStackChild = model is DefaultNode { IsStackChild: true } node && OpenedStack != null
+                ? node
+                : null;
+            reorderIndex = null;
+            ReorderGapIndex = null;
+            IsReordering = false;
+        }
+
+        private void pointerMove(Model? model, Diagrams.Core.Events.PointerEventArgs arg) {
+            //The library reports every move over the canvas, so the state of the drag is only followed while a
+            //button is down: a press that ended outside the canvas must not leave a card reordering.
+            if (arg.Buttons == 0)
+                return;
+
+            if (draggedStackChild is { } dragged && OpenedStack is { } stack)
+                updateReorder(stack, dragged);
+        }
+
+        /// <summary>
+        /// Reads the place the dragged card would take from the order of the column: the card lands before the
+        /// first card whose middle is below its own middle. The column shows that place while the drag changes
+        /// the order, and the order is applied when the card is released.
+        /// </summary>
+        private void updateReorder(IStackContainer stack, DefaultNode dragged) {
+            var others = stackChildren(stack).Where(p => !ReferenceEquals(p.Node, dragged)).ToList();
+            var index = placementAmong(others, dragged.CenterPosition.Y);
+
+            var gap = index < others.Count
+                ? stack.IndexOf(others[index].Element)
+                : others.Count > 0
+                    ? stack.IndexOf(others[others.Count - 1].Element) + 1
+                    : 0;
+
+            var reordering = index != stack.IndexOf(dragged.Element);
+            if (reorderIndex == index && ReorderGapIndex == gap && IsReordering == reordering)
+                return;
+
+            reorderIndex = index;
+            ReorderGapIndex = gap;
+            IsReordering = reordering;
+            updateState();
+        }
+
+        /// <summary>
+        /// Index a card of the column takes from the place it was dragged to. Null when the opened container is
+        /// not an ordered one or the card does not belong to it.
+        /// </summary>
+        public int? StackPlacementFor(DefaultNode dragged) {
+            if (OpenedStack is not { } stack || !dragged.IsStackChild)
+                return null;
+
+            var others = stackChildren(stack).Where(p => !ReferenceEquals(p.Node, dragged)).ToList();
+            return placementAmong(others, dragged.CenterPosition.Y);
+        }
+
+        /// <summary>
+        /// Place an element takes among the other cards of the column: the number of cards whose middle is above
+        /// the given position, which is where the element goes once it is taken out of the column.
+        /// </summary>
+        private static int placementAmong(IReadOnlyList<ActivityDesignerPair> others, double y) {
+            var index = 0;
+            while (index < others.Count && y > others[index].Node.CenterPosition.Y)
+                index++;
+
+            return index;
+        }
+
+        /// <summary>Applies the order the user dragged a card to, and puts the column back in place.</summary>
+        private void finishReorder(IStackContainer stack, DefaultNode dragged) {
+            var from = stack.IndexOf(dragged.Element);
+            var to = reorderIndex;
+            resetStackInteraction();
+
+            if (to is { } index && from >= 0 && index != from)
+                stack.MoveChild(from, index);
+
+            stack.LayoutChildren();
+            updateState();
+        }
+
+        /// <summary>Forgets the drags and the drop place of an ordered container, which the next interaction sets again.</summary>
+        private void resetStackInteraction() {
+            draggedStackChild = null;
+            DraggedInlineChild = null;
+            reorderIndex = null;
+            ReorderGapIndex = null;
+            IsReordering = false;
+            DropInsertIndex = null;
+        }
+
+        /// <summary>The displayed children of a stack container, in model order.</summary>
+        private IEnumerable<ActivityDesignerPair> stackChildren(IStackContainer stack) =>
+            items.Where(p => p.Node.IsStackChild && stack.IndexOf(p.Element) >= 0)
+                .OrderBy(p => stack.IndexOf(p.Element));
+
+        /// <summary>Index of a card in the column of the opened ordered container, or -1.</summary>
+        public int StackIndexOf(DefaultNode node) => OpenedStack?.IndexOf(node.Element) ?? -1;
+
+        /// <summary>
+        /// Place a new element dropped at the given diagram point takes in the opened stack container: before the
+        /// first card whose middle is below the point, or at the end of the column. Null when no ordered
+        /// container is opened, which is also how the column learns that the caret has to disappear.
+        /// </summary>
+        public void UpdateDropInsertIndex(Diagrams.Core.Geometry.Point position) {
+            //A card that owns the drop (a branch region, or the list a container draws inside itself) decides the
+            //place itself, so the surface must not overwrite it with a place of its own.
+            if (DropTarget != null || DropSlot != null)
+                return;
+
+            var index = OpenedStack is { } stack
+                ? stackChildren(stack).Count(p => position.Y >= p.Node.CenterPosition.Y)
+                : (int?)null;
+
+            if (DropInsertIndex == index)
+                return;
+
+            DropInsertIndex = index;
+            updateState();
+        }
+
+        /// <summary>Shows the place a dropped element takes in the list of an ordered container.</summary>
+        public void SetDropInsertIndex(int index) {
+            if (DropInsertIndex == index)
+                return;
+
+            DropInsertIndex = index;
+            updateState();
+        }
+
+        /// <summary>Forgets the place the column showed for a drop, once the drag or the drop is over.</summary>
+        public void ClearDropInsertIndex() {
+            if (DropInsertIndex is null)
+                return;
+
+            DropInsertIndex = null;
+            updateState();
+        }
+
+        /// <summary>Whether the column draws the place of a new element above the given card.</summary>
+        public bool StackCaretAbove(DefaultNode node) {
+            if (DropTarget != null || DropSlot != null)
+                return false;
+
+            var index = StackIndexOf(node);
+            if (index < 0)
+                return false;
+
+            return DropInsertIndex == index || (IsReordering && ReorderGapIndex == index);
+        }
+
+        /// <summary>Whether the column draws the place of a new element below the given card.</summary>
+        public bool StackCaretBelow(DefaultNode node) {
+            if (DropTarget != null || DropSlot != null)
+                return false;
+
+            var index = StackIndexOf(node);
+            if (index < 0 || index != StackCount - 1)
+                return false;
+
+            return DropInsertIndex == StackCount || (IsReordering && ReorderGapIndex == StackCount);
+        }
+
+        /// <summary>Moves a card of an ordered container one place up or down.</summary>
+        public bool MoveInStack(DefaultNode node, int delta) {
+            if (stackOf(node) is not { } stack)
+                return false;
+
+            var index = stack.IndexOf(node.Element);
+            if (index < 0)
+                return false;
+
+            var target = index + delta;
+            if (target < 0 || target >= stack.Count)
+                return false;
+
+            stack.MoveChild(index, target);
+            updateState();
+            return true;
+        }
+
+        /// <summary>
+        /// Ordered container a card belongs to: the card that draws it inside itself (the list of a container
+        /// shown on a surface), or the container that is opened and draws it in its column.
+        /// </summary>
+        private IStackContainer? stackOf(DefaultNode node) {
+            if (node.EmbeddedOwner is IStackContainer owner)
+                return owner;
+
+            return node.IsStackChild ? Path.LastOrDefault()?.Reference?.Node as IStackContainer : null;
+        }
+
+        /// <summary>Starts dragging a card inside the inline list of a card.</summary>
+        public void StartInlineDrag(DefaultNode node) {
+            DraggedInlineChild = node;
+            DropTarget = null;
+            DropSlot = null;
+        }
+
+        /// <summary>Ends a drag inside an inline list, whether or not the card was dropped on a place.</summary>
+        public void EndInlineDrag() {
+            if (DraggedInlineChild is null)
+                return;
+
+            //The place a *dropped* element takes is kept: an activity dragged from the toolbox still lands where
+            //the list pointed when its drop runs after this.
+            DraggedInlineChild = null;
+        }
+
+        /// <summary>
+        /// Makes a card the drop target and shows the place a dropped element takes in its inline list: the gap
+        /// before the child at the given index. Used by the card that draws the list, and by its gaps.
+        /// </summary>
+        public void SetInlineDropTarget(DefaultNode owner, int index) {
+            DropTarget = owner;
+            DropSlot = null;
+            SetDropInsertIndex(index);
+        }
+
+        /// <summary>
+        /// Moves a card of an inline list to the place a drop showed. The gap index counts the children of the
+        /// list as they are now, so the card is taken out of the list first.
+        /// </summary>
+        public bool MoveInlineChild(DefaultNode dragged, int gapIndex) {
+            if (stackOf(dragged) is not { } stack)
+                return false;
+
+            var from = stack.IndexOf(dragged.Element);
+            if (from < 0)
+                return false;
+
+            var target = gapIndex > from ? gapIndex - 1 : gapIndex;
+            if (target == from)
+                return false;
+
+            stack.MoveChild(from, target);
+            updateState();
+            return true;
+        }
+
         private void zoomChanged() {
             //this.Path.Last().Reference.Node.
             //throw new NotImplementedException();
@@ -795,7 +1123,7 @@ namespace Blazor.WorkflowEditor {
 
             this.selectedItems.Clear();
             this.selectedLinks.Clear();
-            this.SelectedOnMove = null;
+            resetStackInteraction();
 
             //Keep only the pairs of the opened path; children are recreated by LoadChilds
             items.RemoveAll(p => !Path.Any(x => x.Reference == p));
@@ -848,6 +1176,22 @@ namespace Blazor.WorkflowEditor {
                 }
 
                 //A branch may hold another branch holder, whose own branches are rendered the same way.
+                createEmbeddedChildren(pair.Node, visited);
+            }
+
+            //Only a card that is actually drawn (on the surface or inside another card) renders the elements it
+            //holds; an opened container shows them as nodes of the surface instead.
+            if (!owner.IsEmbedded && !IsDisplayed(owner))
+                return;
+
+            foreach (var element in owner.InlineChildren) {
+                var pair = FindPair(element);
+                if (pair is null) {
+                    pair = addElement(element, addNode: false);
+                    pair.Node.IsEmbedded = true;
+                    pair.Node.EmbeddedOwner = owner;
+                }
+
                 createEmbeddedChildren(pair.Node, visited);
             }
         }

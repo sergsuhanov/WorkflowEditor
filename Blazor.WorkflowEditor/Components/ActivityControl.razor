@@ -10,76 +10,68 @@
         </div>
     }
     <div class="card @Node.CssClass">
-        @if (!Node.IsExpanded)
-        {
-            <div class="card-header">
-                @if (iconClass != null)
+        <div class="card-header">
+            @*A card that holds detail (a list of children, an inline editor) is opened and closed by the chevron
+              that takes the place of the activity icon.*@
+            @if (hasDetail)
+            {
+                <a href="" class="we-node-toggle" title="@(Node.IsExpanded ? "Collapse" : "Expand")"
+                   aria-label="@(Node.IsExpanded ? "Collapse" : "Expand")"
+                   aria-expanded="@(Node.IsExpanded ? "true" : "false")" @onclick="@toggleDetail" @onclick:preventDefault
+                   @onmousedown:stopPropagation @onmouseup:stopPropagation>
+                    <span class="oi @(Node.IsExpanded ? "oi-caret-bottom" : "oi-caret-right")" aria-hidden="true"></span>
+                </a>
+            }
+            else if (iconClass != null)
+            {
+                <span class="@iconClass we-node-icon" aria-hidden="true"></span>
+            }
+            <span class="we-node-title" title="@Node.DisplayName">@Node.DisplayName</span>
+            @Badges
+            <div class="float-end">
+                @if (Node.IsContainer)
                 {
-                    <span class="@iconClass we-node-icon" aria-hidden="true"></span>
+                    <a href="" class="card-link" title="Open" @onclick="@open" @onclick:preventDefault>
+                        <span class="oi oi-fullscreen-enter" aria-hidden="true"></span>
+                    </a>
                 }
-                <span class="we-node-title" title="@Node.DisplayName">@Node.DisplayName</span>
-                @Badges
-                <div class="float-end">
-                    @if (Node.IsContainer)
-                    {
-                        <a href="" class="card-link" title="Open" @onclick="@open" @onclick:preventDefault>
-                            <span class="oi oi-fullscreen-enter" aria-hidden="true"></span>
-                        </a>
-                    }
+                <a href="" class="card-link link-danger" title="Delete" @onclick="@delete" @onclick:preventDefault>
+                    <span class="oi oi-circle-x" aria-hidden="true"></span>
+                </a>
+            </div>
+        </div>
+        @*The name lives in the header and the note is edited in the properties panel, so the body carries the
+          note preview, the preview of the activity and, while the card is expanded, the detail it holds.*@
+        @if (Node.HasNote || Preview != null || (Node.IsExpanded && hasDetail))
+        {
+            <div class="card-body">
+                @if (Node.HasNote)
+                {
+                    <div class="we-note-preview" title="@Node.Note">@Node.Note</div>
+                }
+                @Preview
+                @if (Node.IsExpanded)
+                {
+                    @Content
                     @if (Edit != null)
                     {
-                        <a href="" class="card-link" title="Edit properties" @onclick="@expand" @onclick:preventDefault>
-                            <span class="oi oi-pencil" aria-hidden="true"></span>
-                        </a>
+                        <form>
+                            <div class="mb-3">
+                                <label for="@displayNameId" class="form-label">Display name</label>
+                                <input type="text" class="form-control" id="@displayNameId" @bind-value="Node.DisplayName"
+                                       placeholder="Input activity display name" @onmousedown:stopPropagation
+                                       @onmouseup:stopPropagation @onmousemove:stopPropagation />
+                            </div>
+                            @Edit
+                        </form>
                     }
-                    <a href="" class="card-link link-danger" title="Delete" @onclick="@delete" @onclick:preventDefault>
-                        <span class="oi oi-circle-x" aria-hidden="true"></span>
-                    </a>
-                </div>
-            </div>
-            @*The name lives in the header and the note is edited in the properties panel, so the body only
-              carries the preview of the note and the preview of the activity.*@
-            @if (Node.HasNote || Preview != null)
-            {
-                <div class="card-body">
-                    @if (Node.HasNote)
-                    {
-                        <div class="we-note-preview" title="@Node.Note">@Node.Note</div>
-                    }
-                    @Preview
-                </div>
-            }
-        }
-        else
-        {
-            <div class="card-header">
-                @if (iconClass != null)
-                {
-                    <span class="@iconClass we-node-icon" aria-hidden="true"></span>
                 }
-                <span class="we-node-title" title="@Node.DisplayName">@Node.DisplayName</span>
-                @Badges
-                <div class=" float-end">
-                    <a href="" class="card-link" @onclick="@collapce" @onclick:preventDefault>
-                        <span class="oi oi-circle-check" aria-hidden="true"></span>
-                    </a>
-                </div>
-            </div>
-            <div class="card-body">
-                <form>
-                    <div class="mb-3">
-                        <label for="displayName" class="form-label">Display name</label>
-                        <input type="text" class="form-control" id="displayName" @bind-value="Node.DisplayName"
-                               placeholder="Input activity display name" @onmousedown:stopPropagation
-                               @onmouseup:stopPropagation @onmousemove:stopPropagation />
-                    </div>
-                    @Edit
-                </form>
             </div>
         }
 
-        @*A branch child rendered inside another card has no place on the diagram, so it shows no ports.*@
-        @if (!Node.IsEmbedded)
+        @*A branch child rendered inside another card, and a card of an ordered container, have no connections
+          of their own, so they show no ports.*@
+        @if (!Node.IsEmbedded && !Node.IsStackChild)
         {
             foreach (var port in Node.Ports)
             {
@@ -98,8 +90,8 @@
     [Parameter]
     public Activity.DefaultNode Node { get; set; } = default!;
 
-    /// <summary>Inline editor of the activity, shown in the expanded card. A control that does not
-    /// provide one (the fallback control does not) has no expanded mode at all.</summary>
+    /// <summary>Inline editor of the activity, shown while the card is expanded. A control that does not
+    /// provide one (the fallback control does not) has no detail of its own.</summary>
     [Parameter, AllowNull]
     public RenderFragment? Edit { get; set; }
 
@@ -107,7 +99,18 @@
     [Parameter, AllowNull]
     public RenderFragment? Preview { get; set; }
 
+    /// <summary>Editable content of the card, shown under the note preview: the children of an ordered
+    /// container, which are edited and reordered inside the card itself.</summary>
+    [Parameter, AllowNull]
+    public RenderFragment? Content { get; set; }
+
     private string? iconClass => ActivityIcon.CssClass(Node.Element);
+
+    /// <summary>Whether the card holds detail that the chevron opens and closes.</summary>
+    private bool hasDetail => Edit != null || Content != null;
+
+    /// <summary>Unique id of the display name field of the expanded card.</summary>
+    private string displayNameId => $"we-activity-display-name-{Node.Id}";
 
     /// <summary>Badges shown in the card header: the start element marker. Errors are shown by the card
     /// outline and by the properties panel, so they need no badge here.</summary>
@@ -146,21 +149,38 @@
             if (hasErrorsInTree)
                 result += " we-node-has-errors";
 
+            //A container card hides a whole surface behind its header, so it keeps a body-sized shape.
+            if (Node.IsContainer)
+                result += " we-node-container";
+
+            //A card of the column of an opened ordered container: the line that shows it belongs to the column,
+            //and the caret that shows where a dragged or dropped element lands.
+            if (stackIndex >= 0)
+            {
+                result += " we-stack-child";
+                if (Service?.StackCaretAbove(Node) == true)
+                    result += " we-stack-caret-above";
+                if (Service?.StackCaretBelow(Node) == true)
+                    result += " we-stack-caret-below";
+            }
+
             return result;
         }
     }
+
+    /// <summary>Index of this card in the column of the opened ordered container, or -1 when it is not one.</summary>
+    private int stackIndex => Node.IsStackChild ? Service?.StackIndexOf(Node) ?? -1 : -1;
 
     void open()
     {
         Service.Open(Node);
     }
-    void expand()
+
+    /// <summary>Opens or closes the detail the card holds.</summary>
+    void toggleDetail()
     {
-        Node.IsExpanded = true;
-    }
-    void collapce()
-    {
-        Node.IsExpanded = false;
+        Node.IsExpanded = !Node.IsExpanded;
+        Service?.NotifyStateChanged();
     }
     void delete()
     {
@@ -173,7 +193,8 @@
     /// </summary>
     protected override void OnParametersSet()
     {
-        if (Edit == null)
+        //A card without detail has nothing to open, even when the node it shows was expanded before.
+        if (!hasDetail)
             Node.IsExpanded = false;
     }
 }

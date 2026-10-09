@@ -1,4 +1,4 @@
-@using Blazor.WorkflowEditor.Activity
+﻿@using Blazor.WorkflowEditor.Activity
 @using Blazor.WorkflowEditor.Activity.Stack.ControlFlow
 @using Blazor.WorkflowEditor.Activity.Stack.Primitives
 @using Blazor.WorkflowEditor.Activity.Stack.Collections
@@ -104,7 +104,7 @@ else
                 }
                 else if (node is SequenceNode sequence)
                 {
-                    <p class="form-text">Activities in this sequence run in order. Open the activity to manage its children.</p>
+                    <p class="form-text">Activities in this sequence run in order: they are edited and reordered inside this card, or on a surface of their own after Open.</p>
                 }
                 else if (isAddToCollectionNode(node))
                 {
@@ -113,6 +113,12 @@ else
                 else
                 {
                     <p class="text-muted">No additional property editor is available for this activity yet.</p>
+                }
+
+                @if (sequencePlace(node) is { } place)
+                {
+                    <p class="form-text">The order of this sequence is the order of its cards: drag the card @place,
+                        or press Alt+↑ or Alt+↓, to change its place.</p>
                 }
 
                 <div class="mb-3">
@@ -159,6 +165,17 @@ else
 
     private static string activityTypeName(DefaultNode node) =>
         node.GetType().Name.Replace("Node", string.Empty, StringComparison.Ordinal);
+
+    /// <summary>
+    /// Where the card sits in its ordered container, when it belongs to one: the list drawn inside the card of
+    /// that container, or the column of the container that is opened. Null when the card has no place to change.
+    /// </summary>
+    private string? sequencePlace(DefaultNode node) {
+        if (node.EmbeddedOwner is IStackContainer)
+            return "in the list";
+
+        return node.IsStackChild && Service.StackIndexOf(node) >= 0 ? "in the column" : null;
+    }
 
     private static bool isAddToCollectionNode(DefaultNode node) =>
         node.GetType().IsGenericType &&

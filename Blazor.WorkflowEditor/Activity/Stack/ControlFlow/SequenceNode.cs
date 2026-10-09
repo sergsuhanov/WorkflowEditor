@@ -1,15 +1,28 @@
 ﻿using System.Activities.Statements;
-using Blazor.Diagrams.Core.Models;
+using Blazor.Diagrams.Core.Geometry;
 
 namespace Blazor.WorkflowEditor.Activity.Stack.ControlFlow;
 
-[Pair(typeof(System.Activities.Statements.Sequence), typeof(DefaultControl))]
-public class SequenceNode : DefaultNode {
+[Pair(typeof(System.Activities.Statements.Sequence), typeof(SequenceControl))]
+public class SequenceNode : DefaultNode, IStackContainer {
+    /// <summary>Vertical room the column leaves between two cards, so a grown card does not touch the next.</summary>
+    public const double CardGap = 28;
+
     private readonly Sequence sequenceActivity;
+
+    /// <summary>
+    /// Place of the column: taken from the viewport when the container is opened and kept afterwards, because
+    /// panning the diagram or resizing a panel must not move the cards of an opened container.
+    /// </summary>
+    private double? columnTop;
+    private double? columnCenterX;
 
     public SequenceNode(Service service, System.Activities.Statements.Sequence sequenceActivity) : base(service, sequenceActivity) {
         this.sequenceActivity = sequenceActivity;
         this.IsContainer = true;
+
+        //The card draws the list of its children unless the user collapses it with the chevron of the card.
+        this.IsExpanded = true;
     }
 
     public override IEnumerable<Variable> GetVariables() {
@@ -20,149 +33,98 @@ public class SequenceNode : DefaultNode {
     public override string? EmptyHint =>
         sequenceActivity.Activities.Count == 0 ? "Drop the first activity here" : null;
 
-    void linkFromTo(ActivityDesignerPair from, ActivityDesignerPair to) {
-        _ = service.LinkFromTo(from, to);
-    }
+    public int Count => sequenceActivity.Activities.Count;
+
+    /// <summary>
+    /// The children of the sequence are drawn inside its card, one under another in model order, so the whole
+    /// sequence is edited in place. Opening the container shows the same children on a surface of their own.
+    /// </summary>
+    public override IReadOnlyList<object> InlineChildren => sequenceActivity.Activities;
+
+    /// <summary>A sequence card holds a list of cards, so it uses the wider card layout.</summary>
+    public override string NodeLayoutClass => "we-node-wide";
 
     public override void LoadChilds(Func<System.Activities.Activity, ActivityDesignerPair> addActivity) {
-        this.service.SelectedOnMove -= onMove;
-        this.service.SelectedOnMove += onMove;
-
-        ActivityDesignerPair? last = default;
         foreach (var activity in this.sequenceActivity.Activities) {
             var result = addActivity(activity);
 
-            //lock ports for manual connect 
-            result.Node.Ports.ToList().ForEach(p => p.Locked = true);
-
-            if (last != null)
-                linkFromTo(last, result);
-
-            last = result;
+            //A child of the column takes its place from its index: it has no ports, no connections and no
+            //position of its own to keep.
+            result.Node.IsStackChild = true;
         }
 
-        placeChildren();
+        LayoutChildren();
     }
 
-    public override void RelayoutChildren() => placeChildren();
+    public override void RelayoutChildren() => LayoutChildren();
 
-    /// <summary>
-    /// Lays the children out in a column, using the height the browser measured for each card so a tall card
-    /// does not overlap the next one. A card that came from a saved position, or that the user moved, keeps its
-    /// position.
-    /// </summary>
-    private void placeChildren() {
-        var view = this.service.VisibleViewport;
-        var horizontal = view.HasValue
-            ? view.Value.Left + view.Value.Width / 2
-            : (this.service.DiagramContainer?.Width ?? 0) / 2;
-        var y = view.HasValue ? view.Value.Top + 60 : 0;
-        const double gap = 24;
-
-        foreach (var activity in this.sequenceActivity.Activities) {
-            var node = this.service.FindPair(activity)?.Node;
-            if (node?.Size is not { } size)
-                continue;
-
-            y += size.Height / 2;
-
-            var place = node.LayoutPosition is null
-                ? !node.HasViewState
-                : node.IsAtLayoutPosition && Math.Abs(node.LayoutHeight - size.Height) > 0.5;
-
-            if (place) {
-                node.CenterPosition = new Diagrams.Core.Geometry.Point(horizontal, y);
-                node.LayoutPosition = node.Position;
-                node.LayoutHeight = size.Height;
-                node.UpdateViewState();
-            }
-
-            y += size.Height / 2 + gap;
+    public int IndexOf(object element) {
+        for (var index = 0; index < sequenceActivity.Activities.Count; index++) {
+            if (ReferenceEquals(sequenceActivity.Activities[index], element))
+                return index;
         }
+
+        return -1;
     }
 
-    public override void AddChild(ActivityDesignerPair child) {
-        //lock ports for manual connect 
-        child.Node.Ports.ToList().ForEach(p => p.Locked = true);
-
-        if (service.SelectedLinks.Count() == 1) {
-            var source = service.SelectedLinks.First().source;
-            var target = service.SelectedLinks.First().target;
-
-            service.RemoveLinkFromTo(source, target);
-
-            linkFromTo(source, child);
-            reconnect(source, child);
-
-            linkFromTo(child, target);
-            reconnect(child, target);
-
-            var index = this.sequenceActivity.Activities.IndexOf(target.Activity);
-            this.sequenceActivity.Activities.Insert(index, child.Activity);
-
-            service.NotifyStateChanged();
-            return;
-        }
-
-        if (this.sequenceActivity.Activities.Count() > 0) {
-            var last = service.GetPair(this.sequenceActivity.Activities.Last());
-            linkFromTo(last, child);
-        }
-
-        this.sequenceActivity.Activities.Add(child.Activity);
+    public void InsertChild(int index, ActivityDesignerPair child) {
+        var position = Math.Clamp(index, 0, sequenceActivity.Activities.Count);
+        child.Node.IsStackChild = true;
+        sequenceActivity.Activities.Insert(position, child.Activity);
+        LayoutChildren();
         service.NotifyStateChanged();
     }
 
-    public override void RemoveChild(System.Activities.Activity child) {
-        var index = sequenceActivity.Activities.IndexOf(child);
-        if (index > 0 && index < sequenceActivity.Activities.Count - 1) {
-            var prevActivity = sequenceActivity.Activities[index - 1];
-            var nextActivity = sequenceActivity.Activities[index + 1];
-            service.LinkFromTo(service.GetPair(prevActivity), service.GetPair(nextActivity));
-        }
-
-        sequenceActivity.Activities.Remove(child);
-    }
-
-    private void onMove() {
-        if (sequenceActivity.Activities.Count < 2)
+    public void MoveChild(int from, int to) {
+        if (from < 0 || from >= sequenceActivity.Activities.Count)
             return;
 
-        foreach (var pair in service.SelectedItems) {
+        var position = Math.Clamp(to, 0, sequenceActivity.Activities.Count - 1);
+        if (from == position)
+            return;
 
-            var index = sequenceActivity.Activities.IndexOf(pair.Activity);
+        var activity = sequenceActivity.Activities[from];
+        sequenceActivity.Activities.RemoveAt(from);
+        sequenceActivity.Activities.Insert(position, activity);
+        LayoutChildren();
+        service.NotifyStateChanged();
+    }
 
-            if (index >= 0 && index < sequenceActivity.Activities.Count - 1) {
-                var source = pair;
-                var dest = service.GetPair(sequenceActivity.Activities[index + 1]);
-                reconnect(source, dest);
-            }
+    /// <summary>
+    /// Lays the children out in a column, in model order, using the height the browser measured for each card
+    /// so a tall card does not overlap the next one. The place of the column is taken once, when the container
+    /// is opened and its cards are measured; a later pan, zoom or resize leaves the column where it is.
+    /// </summary>
+    public void LayoutChildren() {
+        if (service.VisibleViewport is { } viewport) {
+            //The column starts below the start cue an empty container draws at the top of its surface, which is
+            //where its first element has to appear (the cue box sits between 72 and 130 pixels of the surface).
+            columnTop ??= viewport.Top + 72;
+            columnCenterX ??= viewport.Left + viewport.Width / 2;
+        }
 
-            if (index >= 1 && index < sequenceActivity.Activities.Count) {
-                var source = service.GetPair(sequenceActivity.Activities[index - 1]);
-                var dest = pair;
-                reconnect(source, dest);
-            }
+        var centerX = columnCenterX ?? 160;
+        var y = columnTop ?? 0;
 
+        foreach (var activity in this.sequenceActivity.Activities) {
+            if (service.FindPair(activity)?.Node is not { } node)
+                continue;
+
+            var height = node.Size?.Height ?? 0;
+            y += height / 2;
+
+            var center = new Point(centerX, y);
+            if (center.DistanceTo(node.CenterPosition) > 0.5)
+                node.CenterPosition = center;
+
+            y += height / 2 + CardGap;
         }
     }
 
-    private static void reconnect(ActivityDesignerPair source, ActivityDesignerPair dest) {
-        var avalableSourcePorts = source.Node.Ports.ToList();
-        if (source.Node.IncomingPort?.Links.Count > 0)
-            avalableSourcePorts.Remove(source.Node.IncomingPort);
+    public override void AddChild(ActivityDesignerPair child) => InsertChild(Count, child);
 
-        var avalableDestPorts = dest.Node.Ports.ToList();
-        if (dest.Node.OutcomingPort?.Links.Count > 0)
-            avalableDestPorts.Remove(dest.Node.OutcomingPort);
-
-        List<(PortModel sourcePort, PortModel destPort, double Distance)> items =
-                (from fp in avalableSourcePorts
-                 from sp in avalableDestPorts
-                 select (fp, sp, Math.Abs(fp.Position.DistanceTo(sp.Position)))).ToList();
-
-        (var sourcePort, var destPort, var _) = items.OrderBy(p => p.Distance).First();
-        source.Node.SetOutcoming(sourcePort);
-        dest.Node.SetIncoming(destPort);
+    public override void RemoveChild(System.Activities.Activity child) {
+        sequenceActivity.Activities.Remove(child);
+        LayoutChildren();
     }
 }

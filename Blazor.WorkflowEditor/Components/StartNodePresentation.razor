@@ -1,18 +1,14 @@
 @using Blazor.WorkflowEditor
 
-@if (Service.ShowStartPresentation && Service.StartTargetNode is null)
+@*The start cue of a surface: the badge names the place the execution starts, the arrow points at the element it
+  starts with, and the box asks for that element while the surface holds none. Every surface draws the cue at the
+  top, where a container lays out its first element.*@
+@if (Service?.StartHint is { } hint)
 {
-    <div class="we-root-start-presentation" style="left:50%;top:calc(50% - 56px);" aria-hidden="true">
+    <div class="we-root-start-presentation" style="left:50%;top:12px;" aria-hidden="true">
         <div class="we-root-start-badge">START</div>
         <div class="we-root-start-arrow"></div>
-        <div class="we-root-start-drop">@Service.StartHint</div>
-    </div>
-}
-else if (Service.EmptyContainerHint is { } containerHint)
-{
-    @*The container lays its first child out below the top of the visible area, so the hint sits there.*@
-    <div class="we-root-start-presentation" style="left:50%;top:60px;" aria-hidden="true">
-        <div class="we-root-start-drop">@containerHint</div>
+        <div class="we-root-start-drop">@hint</div>
     </div>
 }
 

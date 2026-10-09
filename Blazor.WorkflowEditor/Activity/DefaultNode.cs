@@ -37,6 +37,13 @@ public class DefaultNode : NodeModel {
     public bool IsExpanded { get; set; } = false;
 
     /// <summary>
+    /// True when the node is a child of an ordered container (Sequence). Such a node is laid out by the
+    /// container in a column, so it has no ports or connections and it neither reads nor saves a position of
+    /// its own.
+    /// </summary>
+    public bool IsStackChild { get; set; }
+
+    /// <summary>
     /// Free-form note of this node. It is saved in XAML (attached property) and shown on the card,
     /// like the annotation of the classic Workflow Foundation designer. It is edited in the
     /// properties panel, where the editor accepts line breaks.
@@ -175,19 +182,6 @@ public class DefaultNode : NodeModel {
     public bool HasViewState => State.Designer.HasProperty(activity);
 
     /// <summary>
-    /// Position the container layout assigned to this node. The layout keeps a node where the user moved it, and
-    /// it only re-places a node whose card grew, which is how a re-layout stays out of the way.
-    /// </summary>
-    internal Diagrams.Core.Geometry.Point? LayoutPosition { get; set; }
-
-    /// <summary>Height the layout used when it placed the node, so a grown card can be laid out again.</summary>
-    internal double LayoutHeight { get; set; }
-
-    /// <summary>Whether the node is still where the container layout put it.</summary>
-    internal bool IsAtLayoutPosition => LayoutPosition is not { } auto
-        || (Math.Abs(Position.X - auto.X) < 0.5 && Math.Abs(Position.Y - auto.Y) < 0.5);
-
-    /// <summary>
     /// Re-places the children of an opened container once the browser measured the cards, so a card that grew
     /// (an expanded node, a branch that holds an activity) does not overlap the next one.
     /// </summary>
@@ -269,6 +263,11 @@ public class DefaultNode : NodeModel {
     }
 
     public void UpdateViewState() {
+        //A card of an ordered container is placed by its index, so it has no position worth saving: writing one
+        //would store a value that the next layout ignores.
+        if (IsStackChild)
+            return;
+
 #pragma warning disable CS8321 // The local function 'sizeCompare' is declared but never used
         static bool sizeCompare(Blazor.Diagrams.Core.Geometry.Size sourse, Blazor.Diagrams.Core.Geometry.Size destination) =>
             Math.Abs(sourse.Width - destination.Width) < 1 && Math.Abs(sourse.Height - destination.Height) < 1;
@@ -408,6 +407,14 @@ public class DefaultNode : NodeModel {
         if (child is System.Activities.Activity a)
             RemoveChild(a);
     }
+
+    /// <summary>
+    /// Elements this node renders inside its own card, in order (the children of an ordered container that is
+    /// shown as a card). They are not nodes of the diagram: the card draws their controls itself, so they can be
+    /// edited, added and reordered without opening the container on a surface of its own. Empty for every other
+    /// node.
+    /// </summary>
+    public virtual IReadOnlyList<object> InlineChildren => Array.Empty<object>();
 
     /// <summary>
     /// Single-activity slots of this node (If branches, loop body, catch handlers, switch cases). The card

@@ -127,10 +127,12 @@
     private void resizeVariables(double delta) => variablesHeight = (int)Math.Clamp(variablesHeight - delta, 80, 900);
 
     /// <summary>Over the empty canvas the next drop goes to the opened container, not to a node region.</summary>
-    private void onDragOverDiagram()
+    private void onDragOverDiagram(DragEventArgs e)
     {
         service.DropTarget = null;
         service.DropSlot = null;
+        //The column of an opened Sequence shows where a new element lands; the index comes from the pointer.
+        service.UpdateDropInsertIndex(diagram.GetRelativeMousePoint(e.ClientX, e.ClientY));
     }
 
 
@@ -355,6 +357,7 @@
         //Blazor recycles event arguments: they are only valid until the handler returns, and the generic
         //type dialog below awaits, so the drop position has to be read before that first await.
         var position = diagram.GetRelativeMousePoint(e.ClientX, e.ClientY);
+        service.UpdateDropInsertIndex(position);
         var dropTarget = service.DropTarget;
         var dropSlot = service.DropSlot;
 
@@ -420,6 +423,7 @@
         {
             service.DraggedToolboxItem = null;
             service.DropTarget = null;
+            service.ClearDropInsertIndex();
         }
     }
 

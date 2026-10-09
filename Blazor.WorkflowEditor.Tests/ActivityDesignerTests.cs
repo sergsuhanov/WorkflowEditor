@@ -438,7 +438,8 @@ public class ActivityDesignerTests {
 
         service.Open(chartNode);
 
-        Assert.True(service.ShowStartPresentation);
+        //The chosen start element carries the cue itself, so the surface draws none.
+        Assert.Null(service.StartHint);
         Assert.Same(service.FindPair(firstActivity)!.Node, service.StartTargetNode);
 
         ((FlowchartNode)chartNode).StartIndex = 1;
@@ -455,7 +456,7 @@ public class ActivityDesignerTests {
 
         service.Open(chartNode);
 
-        Assert.True(service.ShowStartPresentation);
+        Assert.False(service.IsRootCanvas);
         Assert.Null(service.StartTargetNode);
         Assert.Equal("Add a node to create the flowchart start", service.StartHint);
     }
@@ -714,9 +715,28 @@ public class ActivityDesignerTests {
     public void StartPresentationIsAvailableBeforeTheEmptyBuilderIsInitialized() {
         using var service = new Service(new BlazorDiagram(), () => { });
 
-        Assert.True(service.ShowStartPresentation);
+        Assert.True(service.IsRootCanvas);
         Assert.Null(service.StartTargetNode);
         Assert.Equal("Drop the first activity here", service.StartHint);
+    }
+
+    [Fact]
+    public void AnOpenedContainerAsksForItsFirstElementWithTheSameStartCue() {
+        using var service = new Service(new BlazorDiagram(), () => { });
+        var sequence = new Sequence();
+        service.SetActivityBuilder(new ActivityBuilder { Implementation = sequence });
+        service.Open(service.Items.First(p => p.Activity == sequence).Node);
+
+        //An empty container asks for its first element the way the empty root does.
+        Assert.False(service.IsRootCanvas);
+        Assert.Null(service.StartTargetNode);
+        Assert.Equal("Drop the first activity here", service.StartHint);
+
+        service.AddActivity(typeof(WriteLine));
+
+        //The element it holds now starts it, so the cue moves onto that card.
+        Assert.Null(service.StartHint);
+        Assert.Same(service.FindPair(sequence.Activities[0])!.Node, service.StartTargetNode);
     }
 
     [Fact]
@@ -738,9 +758,13 @@ public class ActivityDesignerTests {
         var sequence = new Sequence();
         service.SetActivityBuilder(new ActivityBuilder { Implementation = sequence });
 
-        Assert.False(service.CheckAddActivity(typeof(WriteLine)));
+        //The root holds a single activity, so a drop on its surface adds nothing.
         Assert.False(service.AddActivity(typeof(WriteLine)).hasAdded);
         Assert.Empty(sequence.Activities);
+
+        //The card of the sequence is a surface of its own, so the toolbox offers activities for the list it
+        //draws even while the root holds the sequence.
+        Assert.True(service.CheckAddActivity(typeof(WriteLine)));
     }
 
     [Fact]
@@ -803,11 +827,11 @@ public class ActivityDesignerTests {
 
         service.SetActivityBuilder(new ActivityBuilder { Implementation = new Sequence() });
         Assert.Equal(2, service.Items.Count());
-        Assert.False(service.CheckAddActivity(typeof(WriteLine)));
+        Assert.False(service.AddActivity(typeof(WriteLine)).hasAdded);
 
         service.SetActivityBuilder(new ActivityBuilder { Implementation = new Sequence() });
         Assert.Equal(2, service.Items.Count());
-        Assert.False(service.CheckAddActivity(typeof(WriteLine)));
+        Assert.False(service.AddActivity(typeof(WriteLine)).hasAdded);
     }
 
     /// <summary>
@@ -866,13 +890,19 @@ public class ActivityDesignerTests {
 
         service.SetActivityBuilder(new ActivityBuilder { Implementation = outer });
         service.Open(service.Items.First(p => p.Activity == outer).Node);
-        Assert.Equal(4, service.Items.Count());
+
+        //The column of the opened sequence holds its two children, and the card of the inner sequence draws its
+        //own children inside itself, so the whole tree is reachable.
+        Assert.Equal(6, service.Items.Count());
+        Assert.All(inner.Activities, a => Assert.True(service.FindPair(a)!.Node.IsEmbedded));
 
         var innerPair = service.Items.First(p => p.Activity == inner);
         service.Open(innerPair.Node);
 
+        //The children of the opened sequence are nodes of its own surface again.
         Assert.Equal(5, service.Items.Count());
         Assert.DoesNotContain(service.Items, p => p.Activity is Delay);
+        Assert.All(inner.Activities, a => Assert.False(service.FindPair(a)!.Node.IsEmbedded));
     }
 
     [Fact]
@@ -1749,6 +1779,312 @@ public class ActivityDesignerTests {
             Assert.InRange(child.Position.X, view.Left, view.Left + view.Width - size.Width);
             Assert.InRange(child.Position.Y, view.Top, view.Top + view.Height - size.Height);
         }
+    }
+
+    [Fact]
+    public void SequenceChildrenFormOneColumnInModelOrder() {
+        using var service = new Service(new BlazorDiagram(), () => { });
+        var first = new WriteLine { DisplayName = "first" };
+        var second = new Delay { DisplayName = "second" };
+        var third = new WriteLine { DisplayName = "third" };
+        var sequence = new Sequence { Activities = { first, second, third } };
+        service.SetActivityBuilder(new ActivityBuilder { Implementation = sequence });
+        service.Open(service.Items.First(p => p.Activity == sequence).Node);
+
+        var nodes = new System.Activities.Activity[] { first, second, third }
+            .Select(a => service.FindPair(a)!.Node).ToList();
+
+        //The column has one place on the x axis, and the model order decides the y axis.
+        Assert.All(nodes, node => Assert.True(node.IsStackChild));
+        Assert.Equal(nodes[0].CenterPosition.X, nodes[1].CenterPosition.X, 3);
+        Assert.Equal(nodes[1].CenterPosition.X, nodes[2].CenterPosition.X, 3);
+        Assert.True(nodes[0].CenterPosition.Y < nodes[1].CenterPosition.Y);
+        Assert.True(nodes[1].CenterPosition.Y < nodes[2].CenterPosition.Y);
+
+        var step = nodes[0].Size!.Height / 2 + SequenceNode.CardGap + nodes[1].Size!.Height / 2;
+        Assert.Equal(step, nodes[1].CenterPosition.Y - nodes[0].CenterPosition.Y, 3);
+
+        //An ordered container keeps no connections: the order of the model is the only link of its children.
+        Assert.Equal(0, service.LinkCount);
+    }
+
+    [Fact]
+    public void SequenceChildIgnoresAndDoesNotSaveAStoredPosition() {
+        using var service = new Service(new BlazorDiagram(), () => { });
+        var child = new WriteLine();
+        //A file saved by an older version keeps coordinates of the children of a Sequence.
+        Blazor.WorkflowEditor.Activity.State.Designer.SetCenterX(child, 4000);
+        Blazor.WorkflowEditor.Activity.State.Designer.SetCenterY(child, 4000);
+        var sequence = new Sequence { Activities = { child } };
+        service.SetActivityBuilder(new ActivityBuilder { Implementation = sequence });
+        service.Open(service.Items.First(p => p.Activity == sequence).Node);
+
+        var node = service.FindPair(child)!.Node;
+
+        //The column decides where the card is, and moving it does not write a position back.
+        Assert.NotEqual(4000, node.CenterPosition.Y);
+        node.CenterPosition = new Point(node.CenterPosition.X + 500, node.CenterPosition.Y + 500);
+        node.UpdateViewState();
+
+        Assert.Equal(4000, Blazor.WorkflowEditor.Activity.State.Designer.GetCenterX(child));
+        Assert.Equal(4000, Blazor.WorkflowEditor.Activity.State.Designer.GetCenterY(child));
+    }
+
+    [Fact]
+    public void DroppingInTheColumnInsertsTheElementAtThePlaceOfTheDrop() {
+        using var service = new Service(new BlazorDiagram(), () => { });
+        var first = new WriteLine { DisplayName = "first" };
+        var second = new Delay { DisplayName = "second" };
+        var sequence = new Sequence { Activities = { first, second } };
+        service.SetActivityBuilder(new ActivityBuilder { Implementation = sequence });
+        service.Open(service.Items.First(p => p.Activity == sequence).Node);
+
+        var firstNode = service.FindPair(first)!.Node;
+
+        //Dropping above the middle of the first card puts the element at the top of the column.
+        service.UpdateDropInsertIndex(new Point(firstNode.CenterPosition.X, firstNode.CenterPosition.Y - 40));
+        Assert.Equal(0, service.DropInsertIndex);
+
+        var (hasAdded, atTop) = service.AddActivity(typeof(WriteLine));
+
+        Assert.True(hasAdded);
+        Assert.Equal(new System.Activities.Activity[] { atTop.Activity, first, second }, sequence.Activities.ToArray());
+        Assert.Null(service.DropInsertIndex);
+
+        //Dropping below the last card appends the element to the column.
+        service.UpdateDropInsertIndex(new Point(firstNode.CenterPosition.X, firstNode.CenterPosition.Y + 4000));
+        Assert.Equal(3, service.DropInsertIndex);
+
+        var (_, atEnd) = service.AddActivity(typeof(Delay));
+
+        Assert.Equal(new System.Activities.Activity[] { atTop.Activity, first, second, atEnd.Activity }, sequence.Activities.ToArray());
+    }
+
+    [Fact]
+    public void DroppingOutsideAColumnDoesNotTargetAnIndex() {
+        using var service = new Service(new BlazorDiagram(), () => { });
+        var sequence = new Sequence { Activities = { new WriteLine() } };
+        service.SetActivityBuilder(new ActivityBuilder { Implementation = sequence });
+
+        service.UpdateDropInsertIndex(new Point(10, 10));
+
+        Assert.Null(service.DropInsertIndex);
+        Assert.Equal(0, service.StackCount);
+    }
+
+    [Fact]
+    public void MovingACardInTheColumnChangesTheModelOrder() {
+        using var service = new Service(new BlazorDiagram(), () => { });
+        var first = new WriteLine { DisplayName = "first" };
+        var second = new Delay { DisplayName = "second" };
+        var third = new WriteLine { DisplayName = "third" };
+        var sequence = new Sequence { Activities = { first, second, third } };
+        service.SetActivityBuilder(new ActivityBuilder { Implementation = sequence });
+        service.Open(service.Items.First(p => p.Activity == sequence).Node);
+
+        var secondNode = service.FindPair(second)!.Node;
+
+        Assert.True(service.MoveInStack(secondNode, -1));
+        Assert.Equal(new System.Activities.Activity[] { second, first, third }, sequence.Activities.ToArray());
+
+        //The column follows the order, so the moved card took the place of the one it passed.
+        Assert.True(secondNode.CenterPosition.Y < service.FindPair(first)!.Node.CenterPosition.Y);
+
+        //The first card of the column cannot move up, and the last one cannot move down.
+        Assert.False(service.MoveInStack(secondNode, -1));
+        Assert.False(service.MoveInStack(service.FindPair(third)!.Node, 1));
+        Assert.Equal(new System.Activities.Activity[] { second, first, third }, sequence.Activities.ToArray());
+    }
+
+    [Fact]
+    public void MovingACardToItsOwnPlaceKeepsTheOrder() {
+        using var service = new Service(new BlazorDiagram(), () => { });
+        var first = new WriteLine { DisplayName = "first" };
+        var second = new Delay { DisplayName = "second" };
+        var third = new WriteLine { DisplayName = "third" };
+        var sequence = new Sequence { Activities = { first, second, third } };
+        service.SetActivityBuilder(new ActivityBuilder { Implementation = sequence });
+        service.Open(service.Items.First(p => p.Activity == sequence).Node);
+
+        var secondNode = service.FindPair(second)!.Node;
+        var place = secondNode.CenterPosition;
+
+        service.OpenedStack!.MoveChild(1, 1);
+
+        Assert.Equal(new System.Activities.Activity[] { first, second, third }, sequence.Activities.ToArray());
+        Assert.Equal(place.Y, secondNode.CenterPosition.Y, 3);
+    }
+
+    [Fact]
+    public void DraggedCardOfTheColumnTakesThePlaceItWasDroppedOn() {
+        using var service = new Service(new BlazorDiagram(), () => { });
+        var first = new WriteLine { DisplayName = "first" };
+        var second = new Delay { DisplayName = "second" };
+        var third = new WriteLine { DisplayName = "third" };
+        var sequence = new Sequence { Activities = { first, second, third } };
+        service.SetActivityBuilder(new ActivityBuilder { Implementation = sequence });
+        service.Open(service.Items.First(p => p.Activity == sequence).Node);
+
+        var firstNode = service.FindPair(first)!.Node;
+        var secondNode = service.FindPair(second)!.Node;
+        var thirdNode = service.FindPair(third)!.Node;
+
+        //The first card dragged below the last one lands at the end of the column.
+        firstNode.CenterPosition = new Point(firstNode.CenterPosition.X, thirdNode.CenterPosition.Y + 60);
+        Assert.Equal(2, service.StackPlacementFor(firstNode));
+
+        //Dragged below the middle of the second card it lands between the first and the second one.
+        firstNode.CenterPosition = new Point(firstNode.CenterPosition.X, secondNode.CenterPosition.Y + 10);
+        Assert.Equal(1, service.StackPlacementFor(firstNode));
+
+        //A card that is not a child of the column has no place to take.
+        var container = service.Items.First(p => p.Activity == sequence).Node;
+        Assert.Null(service.StackPlacementFor(container));
+    }
+
+    [Fact]
+    public void RemovingACardOfTheColumnClosesTheGap() {
+        using var service = new Service(new BlazorDiagram(), () => { });
+        var first = new WriteLine { DisplayName = "first" };
+        var second = new Delay { DisplayName = "second" };
+        var third = new WriteLine { DisplayName = "third" };
+        var sequence = new Sequence { Activities = { first, second, third } };
+        service.SetActivityBuilder(new ActivityBuilder { Implementation = sequence });
+        service.Open(service.Items.First(p => p.Activity == sequence).Node);
+
+        service.Delete(service.FindPair(second)!.Node);
+
+        Assert.Equal(new System.Activities.Activity[] { first, third }, sequence.Activities.ToArray());
+
+        var firstNode = service.FindPair(first)!.Node;
+        var thirdNode = service.FindPair(third)!.Node;
+        var step = firstNode.Size!.Height / 2 + SequenceNode.CardGap + thirdNode.Size!.Height / 2;
+
+        Assert.Equal(step, thirdNode.CenterPosition.Y - firstNode.CenterPosition.Y, 3);
+    }
+
+    [Fact]
+    public void SequenceCardDrawsItsChildrenInsideItself() {
+        using var service = new Service(new BlazorDiagram(), () => { });
+        var first = new WriteLine { DisplayName = "first" };
+        var second = new Delay { DisplayName = "second" };
+        var sequence = new Sequence { Activities = { first, second } };
+        service.SetActivityBuilder(new ActivityBuilder { Implementation = sequence });
+
+        var sequenceNode = service.Items.First(p => p.Activity == sequence).Node;
+
+        //The card of the sequence is on the surface and draws both children itself, in model order.
+        Assert.True(service.IsDisplayed(sequenceNode));
+        Assert.Equal(new System.Activities.Activity[] { first, second }, sequenceNode.InlineChildren.ToArray());
+
+        var firstNode = service.FindPair(first)!.Node;
+        var secondNode = service.FindPair(second)!.Node;
+        Assert.True(firstNode.IsEmbedded);
+        Assert.Same(sequenceNode, firstNode.EmbeddedOwner);
+        Assert.True(secondNode.IsEmbedded);
+        Assert.Same(sequenceNode, secondNode.EmbeddedOwner);
+        Assert.False(service.IsDisplayed(firstNode));
+
+        //Opening the sequence shows the same children on a surface of their own.
+        service.Open(sequenceNode);
+
+        Assert.False(service.FindPair(first)!.Node.IsEmbedded);
+        Assert.False(service.FindPair(second)!.Node.IsEmbedded);
+        Assert.True(service.IsDisplayed(service.FindPair(first)!.Node));
+    }
+
+    [Fact]
+    public void MovingACardInsideItsSequenceCardReordersTheModel() {
+        using var service = new Service(new BlazorDiagram(), () => { });
+        var first = new WriteLine { DisplayName = "first" };
+        var second = new Delay { DisplayName = "second" };
+        var third = new WriteLine { DisplayName = "third" };
+        var sequence = new Sequence { Activities = { first, second, third } };
+        service.SetActivityBuilder(new ActivityBuilder { Implementation = sequence });
+
+        var secondNode = service.FindPair(second)!.Node;
+
+        //The card of the sequence draws the list, so the owner of a card is the card that shows it.
+        Assert.True(service.MoveInStack(secondNode, -1));
+        Assert.Equal(new System.Activities.Activity[] { second, first, third }, sequence.Activities.ToArray());
+
+        Assert.False(service.MoveInStack(secondNode, -1));
+        Assert.True(service.MoveInStack(secondNode, 1));
+        Assert.Equal(new System.Activities.Activity[] { first, second, third }, sequence.Activities.ToArray());
+    }
+
+    [Fact]
+    public void DraggingACardOfAnInlineListTakesThePlaceOfTheGap() {
+        using var service = new Service(new BlazorDiagram(), () => { });
+        var first = new WriteLine { DisplayName = "first" };
+        var second = new Delay { DisplayName = "second" };
+        var third = new WriteLine { DisplayName = "third" };
+        var sequence = new Sequence { Activities = { first, second, third } };
+        service.SetActivityBuilder(new ActivityBuilder { Implementation = sequence });
+
+        var firstNode = service.FindPair(first)!.Node;
+
+        //The gap counts the children as they are now, so a card dropped below one moves one place down.
+        Assert.True(service.MoveInlineChild(firstNode, 2));
+        Assert.Equal(new System.Activities.Activity[] { second, first, third }, sequence.Activities.ToArray());
+
+        //A card dropped back on the place it holds keeps the order.
+        Assert.False(service.MoveInlineChild(firstNode, 1));
+
+        Assert.True(service.MoveInlineChild(firstNode, 3));
+        Assert.Equal(new System.Activities.Activity[] { second, third, first }, sequence.Activities.ToArray());
+    }
+
+    [Fact]
+    public void DroppingIntoTheListOfASequenceCardInsertsTheElementAtTheDropPoint() {
+        using var service = new Service(new BlazorDiagram(), () => { });
+        var first = new WriteLine { DisplayName = "first" };
+        var second = new Delay { DisplayName = "second" };
+        var sequence = new Sequence { Activities = { first, second } };
+        service.SetActivityBuilder(new ActivityBuilder { Implementation = sequence });
+
+        var sequenceNode = service.Items.First(p => p.Activity == sequence).Node;
+
+        //A drop between the two cards of the list.
+        service.SetInlineDropTarget(sequenceNode, 1);
+        Assert.Equal(1, service.DropInsertIndex);
+
+        var (hasAdded, added) = service.AddActivity(typeof(WriteLine));
+
+        Assert.True(hasAdded);
+        Assert.Equal(new System.Activities.Activity[] { first, added.Activity, second }, sequence.Activities.ToArray());
+
+        //The added element is drawn inside the card, not on the surface, and the drop place is forgotten.
+        Assert.True(added.Node.IsEmbedded);
+        Assert.Same(sequenceNode, added.Node.EmbeddedOwner);
+        Assert.Null(service.DropInsertIndex);
+        Assert.Null(service.DropTarget);
+
+        //A drop at the end of the list appends the element.
+        service.SetInlineDropTarget(sequenceNode, 3);
+        var (_, last) = service.AddActivity(typeof(Delay));
+
+        Assert.Same(last.Activity, sequence.Activities[3]);
+    }
+
+    [Fact]
+    public void OpeningACardOfAnInlineListKeepsTheContainersAroundItInThePath() {
+        using var service = new Service(new BlazorDiagram(), () => { });
+        var body = new Delay { DisplayName = "body" };
+        var inner = new Sequence { DisplayName = "inner", Activities = { body } };
+        var outer = new Sequence { DisplayName = "outer", Activities = { new WriteLine(), inner } };
+        service.SetActivityBuilder(new ActivityBuilder { Implementation = outer });
+
+        //The card of the inner sequence is drawn inside the card of the outer one, without opening anything.
+        var innerNode = service.FindPair(inner)!.Node;
+        Assert.False(service.IsDisplayed(innerNode));
+
+        service.Open(innerNode);
+
+        //The surface of the inner sequence is shown, and the breadcrumb leads back through the outer one.
+        Assert.Equal(new[] { "ActivityBuilder", "outer", "inner" },
+            service.Path.Select(p => p.Name).ToArray());
+        Assert.True(service.IsDisplayed(service.FindPair(body)!.Node));
     }
 
     private sealed class InvalidActivity : CodeActivity {
