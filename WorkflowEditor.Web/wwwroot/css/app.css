@@ -165,12 +165,6 @@ html[data-theme="dark"] .we-unsaved.is-dirty {
     color: #ffec99;
 }
 
-html[data-theme="dark"] .alert-info {
-    background-color: #0c4a6e;
-    border-color: #075985;
-    color: #e0f2fe;
-}
-
 html[data-theme="dark"] .alert-warning {
     background-color: #4d3d00;
     border-color: #665c00;

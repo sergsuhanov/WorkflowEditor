@@ -1,8 +1,12 @@
 ﻿@using System.Diagnostics.CodeAnalysis
 @using Blazor.WorkflowEditor.Activity
+@using Blazor.WorkflowEditor.Activity.Flow
 
-<div class="@nodeClass">
-    @if (ReferenceEquals(Service?.StartTargetNode, Node))
+<div class="@nodeClass" draggable="@(isDraggableCard ? "true" : "false")"
+     @ondragstart:stopPropagation="isDraggableCard" @ondragstart="startCardDrag"
+     @ondragend="endCardDrag" @onpointerdown:stopPropagation="isDraggableCard"
+     @onclick="selectCard" @onclick:stopPropagation="isDraggableCard">
+    @if (isStart)
     {
         <div class="we-node-start-presentation" aria-hidden="true">
             <div class="we-root-start-badge">START</div>
@@ -112,13 +116,14 @@
         }
     </text>;
 
-    private IGraphContainer? openedGraph => Service?.OpenedGraph;
+    private FlowchartNode? startFlowchart => Service?.OpenedGraph as FlowchartNode;
 
-    private bool isStart => openedGraph?.IsStartElement(Node.Element) == true;
+    /// <summary>Whether the card carries the start badge of the opened Flowchart, which only it draws.</summary>
+    private bool isStart => ReferenceEquals(Service?.StartBadgeNode, Node);
 
-    private string startBadgeText => openedGraph?.StartBadgeText ?? "Start";
+    private string startBadgeText => startFlowchart?.StartBadgeText ?? "Start";
 
-    private string startBadgeClass => openedGraph?.StartBadgeClass ?? "oi oi-media-play";
+    private string startBadgeClass => startFlowchart?.StartBadgeClass ?? "oi oi-media-play";
 
     private bool hasErrorsInTree => Service?.HasErrorsInTree(Node.Element) ?? false;
 
@@ -153,6 +158,10 @@
                     result += " we-stack-caret-below";
             }
 
+            //The card the user picked up stays visible while it is dragged to another place.
+            if (ReferenceEquals(Service?.DraggedCard, Node))
+                result += " we-card-dragging";
+
             return result;
         }
     }
@@ -160,9 +169,37 @@
     /// <summary>Index of this card in the column of the opened ordered container, or -1 when it is not one.</summary>
     private int stackIndex => Node.IsStackChild ? Service?.StackIndexOf(Node) ?? -1 : -1;
 
+    /// <summary>
+    /// Whether the card is drawn by the column of the opened ordered container. Such a card is dragged as a
+    /// card of its own — to another place in the column or to another container — so it takes its pointer events
+    /// instead of letting the diagram move the node, and it is selected by its own click.
+    /// </summary>
+    private bool isDraggableCard => stackIndex >= 0;
+
     void open()
     {
         Service.Open(Node);
+    }
+
+    /// <summary>Picks the card up, so the drop moves the activity it shows to the target the drag points at.</summary>
+    void startCardDrag()
+    {
+        if (isDraggableCard)
+            Service?.StartCardDrag(Node);
+    }
+
+    /// <summary>Ends the drag, whether or not the card was dropped on a target.</summary>
+    void endCardDrag()
+    {
+        if (isDraggableCard)
+            Service?.EndCardDrag();
+    }
+
+    /// <summary>Selects the card on click, which the diagram does not do for a card that takes its own pointer events.</summary>
+    void selectCard()
+    {
+        if (isDraggableCard)
+            Service?.Select(Node);
     }
 
     /// <summary>Opens or closes the detail the card holds.</summary>

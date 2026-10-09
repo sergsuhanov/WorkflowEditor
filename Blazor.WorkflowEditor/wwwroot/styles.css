@@ -708,6 +708,11 @@
 
 .we-embedded {
     margin-top: 0.2rem;
+    cursor: grab;
+}
+
+.we-embedded:active {
+    cursor: grabbing;
 }
 
 /*The embedded card follows the width of the branch instead of the fixed diagram card width.*/
@@ -967,6 +972,19 @@
 /* --- Ordered container (Sequence) editing surface --- */
 /*The children of an opened Sequence form a column, so a card shows where a dropped or dragged element lands.
   Cards of the column have no ports: the order of the model is the only connection between them.*/
+.we-stack-child {
+    cursor: grab;
+}
+
+.we-stack-child:active {
+    cursor: grabbing;
+}
+
+/*The card the user picked up stays visible while it is dragged to its new place.*/
+.we-card-dragging {
+    opacity: 0.5;
+}
+
 .we-stack-caret-above::after,
 .we-stack-caret-below::after {
     content: "";

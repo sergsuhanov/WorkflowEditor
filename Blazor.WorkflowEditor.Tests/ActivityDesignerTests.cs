@@ -438,13 +438,13 @@ public class ActivityDesignerTests {
 
         service.Open(chartNode);
 
-        //The chosen start element carries the cue itself, so the surface draws none.
+        //The chosen start element carries the badge itself, so the surface draws no cue.
         Assert.Null(service.StartHint);
-        Assert.Same(service.FindPair(firstActivity)!.Node, service.StartTargetNode);
+        Assert.Same(service.FindPair(firstActivity)!.Node, service.StartBadgeNode);
 
         ((FlowchartNode)chartNode).StartIndex = 1;
 
-        Assert.Same(service.FindPair(secondActivity)!.Node, service.StartTargetNode);
+        Assert.Same(service.FindPair(secondActivity)!.Node, service.StartBadgeNode);
     }
 
     [Fact]
@@ -457,7 +457,7 @@ public class ActivityDesignerTests {
         service.Open(chartNode);
 
         Assert.False(service.IsRootCanvas);
-        Assert.Null(service.StartTargetNode);
+        Assert.Null(service.StartBadgeNode);
         Assert.Equal("Add a node to create the flowchart start", service.StartHint);
     }
 
@@ -716,12 +716,12 @@ public class ActivityDesignerTests {
         using var service = new Service(new BlazorDiagram(), () => { });
 
         Assert.True(service.IsRootCanvas);
-        Assert.Null(service.StartTargetNode);
+        Assert.Null(service.StartBadgeNode);
         Assert.Equal("Drop the first activity here", service.StartHint);
     }
 
     [Fact]
-    public void AnOpenedContainerAsksForItsFirstElementWithTheSameStartCue() {
+    public void AnOpenedContainerAsksForItsFirstElementUntilItHoldsOne() {
         using var service = new Service(new BlazorDiagram(), () => { });
         var sequence = new Sequence();
         service.SetActivityBuilder(new ActivityBuilder { Implementation = sequence });
@@ -729,14 +729,47 @@ public class ActivityDesignerTests {
 
         //An empty container asks for its first element the way the empty root does.
         Assert.False(service.IsRootCanvas);
-        Assert.Null(service.StartTargetNode);
+        Assert.Null(service.StartBadgeNode);
         Assert.Equal("Drop the first activity here", service.StartHint);
 
         service.AddActivity(typeof(WriteLine));
 
-        //The element it holds now starts it, so the cue moves onto that card.
+        //The element it holds now starts it, so the canvas asks for nothing, and a `Sequence` marks no start
+        //element on a card: only a Flowchart does.
         Assert.Null(service.StartHint);
-        Assert.Same(service.FindPair(sequence.Activities[0])!.Node, service.StartTargetNode);
+        Assert.Null(service.StartBadgeNode);
+    }
+
+    /// <summary>
+    /// The start badge belongs to a `Flowchart` alone: every other surface is started by its first element, so
+    /// it asks for that element but marks nothing once it holds one.
+    /// </summary>
+    [Fact]
+    public void OnlyAFlowchartMarksItsStartElementOnACard() {
+        using var service = new Service(new BlazorDiagram(), () => { });
+        var root = new Sequence { Activities = { new WriteLine() } };
+        service.SetActivityBuilder(new ActivityBuilder { Implementation = root });
+
+        //The root canvas holds its implementation, so it asks for nothing — and marks nothing.
+        Assert.Null(service.StartHint);
+        Assert.Null(service.StartBadgeNode);
+
+        //The column of the opened Sequence marks nothing either, although its first element starts it.
+        service.Open(service.Items.First(p => p.Activity == root).Node);
+        Assert.Null(service.StartBadgeNode);
+
+        var firstStep = new FlowStep { Action = new WriteLine() };
+        var chart = new Flowchart { StartNode = firstStep, Nodes = { firstStep } };
+        service.SetActivityBuilder(new ActivityBuilder { Implementation = chart });
+        var chartNode = service.Items.Single(p => ReferenceEquals(p.Activity, chart)).Node;
+
+        //The root canvas only draws the card of the Flowchart, so no start badge shows yet.
+        Assert.Null(service.StartBadgeNode);
+
+        service.Open(chartNode);
+
+        //Inside an opened Flowchart the chosen start node is marked.
+        Assert.NotNull(service.StartBadgeNode);
     }
 
     [Fact]
@@ -2002,7 +2035,7 @@ public class ActivityDesignerTests {
     }
 
     [Fact]
-    public void DraggedCardOfTheColumnTakesThePlaceItWasDroppedOn() {
+    public void DraggingACardOverTheColumnShowsWhereItLands() {
         using var service = new Service(new BlazorDiagram(), () => { });
         var first = new WriteLine { DisplayName = "first" };
         var second = new Delay { DisplayName = "second" };
@@ -2015,17 +2048,110 @@ public class ActivityDesignerTests {
         var secondNode = service.FindPair(second)!.Node;
         var thirdNode = service.FindPair(third)!.Node;
 
+        //A card dragged below the last one lands at the end of the column, and the caret shows that place.
+        service.StartCardDrag(firstNode);
+        service.UpdateDropInsertIndex(new Point(firstNode.CenterPosition.X, thirdNode.CenterPosition.Y + 60));
+        Assert.Equal(3, service.DropInsertIndex);
+        Assert.True(service.StackCaretBelow(thirdNode));
+        Assert.False(service.StackCaretAbove(thirdNode));
+
+        //A card dragged below the middle of the second one lands between the first and the second one.
+        service.UpdateDropInsertIndex(new Point(firstNode.CenterPosition.X, secondNode.CenterPosition.Y + 10));
+        Assert.Equal(2, service.DropInsertIndex);
+        Assert.True(service.StackCaretAbove(thirdNode));
+        Assert.False(service.StackCaretAbove(secondNode));
+
+        //The place belongs to the drag: a card that is not dragged shows no caret, and the end of the drag
+        //forgets the place.
+        service.EndCardDrag();
+        Assert.Null(service.DropInsertIndex);
+        Assert.False(service.StackCaretAbove(thirdNode));
+        Assert.False(service.StackCaretBelow(thirdNode));
+    }
+
+    /// <summary>
+    /// A card of the column is dragged like any other card: the place the drag shows is the place it takes, and
+    /// the card keeps the activity it holds.
+    /// </summary>
+    [Fact]
+    public void ACardDroppedIntoItsColumnTakesThePlaceTheDragShowed() {
+        using var service = new Service(new BlazorDiagram(), () => { });
+        var first = new WriteLine { DisplayName = "first" };
+        var second = new Delay { DisplayName = "second" };
+        var third = new WriteLine { DisplayName = "third" };
+        var sequence = new Sequence { Activities = { first, second, third } };
+        service.SetActivityBuilder(new ActivityBuilder { Implementation = sequence });
+        service.Open(service.Items.First(p => p.Activity == sequence).Node);
+
+        var firstNode = service.FindPair(first)!.Node;
+        var thirdNode = service.FindPair(third)!.Node;
+
         //The first card dragged below the last one lands at the end of the column.
-        firstNode.CenterPosition = new Point(firstNode.CenterPosition.X, thirdNode.CenterPosition.Y + 60);
-        Assert.Equal(2, service.StackPlacementFor(firstNode));
+        service.StartCardDrag(firstNode);
+        service.UpdateDropInsertIndex(new Point(firstNode.CenterPosition.X, thirdNode.CenterPosition.Y + 60));
+        Assert.True(service.MoveDraggedActivity());
 
-        //Dragged below the middle of the second card it lands between the first and the second one.
-        firstNode.CenterPosition = new Point(firstNode.CenterPosition.X, secondNode.CenterPosition.Y + 10);
-        Assert.Equal(1, service.StackPlacementFor(firstNode));
+        Assert.Equal(new System.Activities.Activity[] { second, third, first }, sequence.Activities.ToArray());
+        Assert.Null(service.DraggedCard);
+        Assert.Null(service.DropInsertIndex);
+    }
 
-        //A card that is not a child of the column has no place to take.
-        var container = service.Items.First(p => p.Activity == sequence).Node;
-        Assert.Null(service.StackPlacementFor(container));
+    /// <summary>
+    /// A card of the column can be dragged out of it: the column is only one of the places that draw the
+    /// activity, so a branch region takes the card exactly as it takes one from an inline list.
+    /// </summary>
+    [Fact]
+    public void ACardOfTheColumnDroppedOnABranchLeavesTheColumn() {
+        using var service = new Service(new BlazorDiagram(), () => { });
+        var branch = new If { DisplayName = "if" };
+        var moved = new WriteLine { DisplayName = "moved" };
+        var sequence = new Sequence { Activities = { branch, moved } };
+        service.SetActivityBuilder(new ActivityBuilder { Implementation = sequence });
+        service.Open(service.Items.First(p => p.Activity == sequence).Node);
+
+        var ifNode = (IfNode)service.FindPair(branch)!.Node;
+        var movedNode = service.FindPair(moved)!.Node;
+        Assert.True(movedNode.IsStackChild);
+
+        //The card leaves the column and the branch draws it from then on.
+        service.StartCardDrag(movedNode);
+        service.DropSlot = ifNode.ThenSlot;
+
+        Assert.True(service.MoveDraggedActivity());
+
+        Assert.Equal(new System.Activities.Activity[] { branch }, sequence.Activities.ToArray());
+        Assert.Same(moved, branch.Then);
+        Assert.True(movedNode.IsEmbedded);
+        Assert.Same(ifNode, movedNode.EmbeddedOwner);
+        Assert.False(movedNode.IsStackChild);
+        Assert.False(service.IsDisplayed(movedNode));
+    }
+
+    /// <summary>
+    /// The card of a column is drawn by the opened container, so a drop outside it — on the list of a card of
+    /// the same surface — takes it out of the column and the list draws it from then on.
+    /// </summary>
+    [Fact]
+    public void ACardOfTheColumnDroppedOnACardListLeavesTheColumn() {
+        using var service = new Service(new BlazorDiagram(), () => { });
+        var a1 = new WriteLine { DisplayName = "a1" };
+        var b1 = new Delay { DisplayName = "b1" };
+        var moved = new WriteLine { DisplayName = "moved" };
+        var list = new Sequence { DisplayName = "list", Activities = { a1 } };
+        var root = new Sequence { Activities = { list, moved } };
+        service.SetActivityBuilder(new ActivityBuilder { Implementation = root });
+        service.Open(service.Items.First(p => p.Activity == root).Node);
+
+        var listNode = service.FindPair(list)!.Node;
+        var movedNode = service.FindPair(moved)!.Node;
+
+        Assert.True(service.MoveInlineChild(listNode, movedNode, 0));
+
+        Assert.Equal(new System.Activities.Activity[] { list }, root.Activities.ToArray());
+        Assert.Equal(new System.Activities.Activity[] { moved, a1 }, list.Activities.ToArray());
+        Assert.Same(listNode, movedNode.EmbeddedOwner);
+        Assert.True(movedNode.IsEmbedded);
+        Assert.False(service.IsDisplayed(movedNode));
     }
 
     [Fact]
@@ -2152,12 +2278,19 @@ public class ActivityDesignerTests {
         Assert.Same(targetNode, a2Node.EmbeddedOwner);
         Assert.True(a2Node.IsEmbedded);
 
-        //A card of the column of an opened container keeps a node of the diagram, so it does not move this way.
+        //A card of the column of an opened container is drawn by that container, so it leaves the column and
+        //the list that took the drop draws it from then on.
         service.Open(sourceNode);
         var columnCard = service.FindPair(a1)!.Node;
         Assert.True(columnCard.IsStackChild);
-        Assert.False(service.MoveInlineChild(targetNode, columnCard, 0));
-        Assert.Equal(new System.Activities.Activity[] { a1 }, source.Activities.ToArray());
+
+        Assert.True(service.MoveInlineChild(targetNode, columnCard, 0));
+
+        Assert.Empty(source.Activities);
+        Assert.Equal(new System.Activities.Activity[] { a1, a2, b1 }, target.Activities.ToArray());
+        Assert.Same(targetNode, columnCard.EmbeddedOwner);
+        Assert.True(columnCard.IsEmbedded);
+        Assert.False(service.IsDisplayed(columnCard));
     }
 
     /// <summary>
@@ -2184,7 +2317,7 @@ public class ActivityDesignerTests {
         Assert.Same(bodyNode, movedNode.EmbeddedOwner);
 
         //The drag leaves the list and shows the Then branch of the If card as its target.
-        service.StartInlineDrag(movedNode);
+        service.StartCardDrag(movedNode);
         service.DropSlot = ifNode.ThenSlot;
 
         Assert.True(service.MoveDraggedActivity());
@@ -2198,9 +2331,69 @@ public class ActivityDesignerTests {
         Assert.False(movedNode.IsStackChild);
 
         //The drag is over, so nothing of it is left in the service.
-        Assert.Null(service.DraggedInlineChild);
+        Assert.Null(service.DraggedCard);
         Assert.Null(service.DropSlot);
         Assert.Null(service.DropInsertIndex);
+    }
+
+    /// <summary>
+    /// The activity of a branch is a card of its own, so it can be dragged out of the branch it sits in and the
+    /// branch is left empty. The card that draws the branch takes the activity the target held instead.
+    /// </summary>
+    [Fact]
+    public void ACardDraggedOutOfABranchFillsAnotherBranch() {
+        using var service = new Service(new BlazorDiagram(), () => { });
+        var moved = new WriteLine { DisplayName = "moved" };
+        var replaced = new Delay { DisplayName = "replaced" };
+        var branch = new If { DisplayName = "if", Then = moved, Else = replaced };
+        service.SetActivityBuilder(new ActivityBuilder { Implementation = branch });
+
+        var ifNode = (IfNode)service.FindPair(branch)!.Node;
+        var movedNode = service.FindPair(moved)!.Node;
+        Assert.Same(ifNode, movedNode.EmbeddedOwner);
+
+        //The card leaves Then and the Else branch draws it from then on.
+        service.StartCardDrag(movedNode);
+        service.DropSlot = ifNode.ElseSlot;
+
+        Assert.True(service.MoveDraggedActivity());
+
+        Assert.Null(branch.Then);
+        Assert.Same(moved, branch.Else);
+        Assert.Null(service.FindPair(replaced));
+        Assert.True(movedNode.IsEmbedded);
+        Assert.Same(ifNode, movedNode.EmbeddedOwner);
+    }
+
+    /// <summary>
+    /// The column of an opened ordered container is a target like any other, so a card of a branch can be moved
+    /// into it: the branch is left empty and the column draws the activity from then on.
+    /// </summary>
+    [Fact]
+    public void ACardDraggedOutOfABranchIntoTheColumnBecomesANodeOfIt() {
+        using var service = new Service(new BlazorDiagram(), () => { });
+        var moved = new WriteLine { DisplayName = "moved" };
+        var branch = new If { DisplayName = "if", Then = moved };
+        var sequence = new Sequence { Activities = { branch } };
+        service.SetActivityBuilder(new ActivityBuilder { Implementation = sequence });
+        service.Open(service.Items.First(p => p.Activity == sequence).Node);
+
+        var ifNode = (IfNode)service.FindPair(branch)!.Node;
+        var movedNode = service.FindPair(moved)!.Node;
+        Assert.True(movedNode.IsEmbedded);
+
+        //The drag shows the end of the column as the place the card takes.
+        service.StartCardDrag(movedNode);
+        service.UpdateDropInsertIndex(new Point(ifNode.CenterPosition.X, ifNode.CenterPosition.Y + 100));
+
+        Assert.True(service.MoveDraggedActivity());
+
+        Assert.Equal(new System.Activities.Activity[] { branch, moved }, sequence.Activities.ToArray());
+        Assert.Null(branch.Then);
+        Assert.False(movedNode.IsEmbedded);
+        Assert.Null(movedNode.EmbeddedOwner);
+        Assert.True(movedNode.IsStackChild);
+        Assert.True(service.IsDisplayed(movedNode));
     }
 
     [Fact]
@@ -2215,17 +2408,17 @@ public class ActivityDesignerTests {
         var movedNode = service.FindPair(moved)!.Node;
 
         //A drag that points at no region and no card of a container places the card nowhere.
-        service.StartInlineDrag(movedNode);
+        service.StartCardDrag(movedNode);
         Assert.False(service.MoveDraggedActivity());
 
         //The root already holds the schema, so it refuses a second activity the same way.
-        service.StartInlineDrag(movedNode);
+        service.StartCardDrag(movedNode);
         service.DropTarget = service.Path.First().Node;
         Assert.False(service.MoveDraggedActivity());
 
         Assert.Equal(new System.Activities.Activity[] { moved, kept }, inner.Activities.ToArray());
         Assert.Same(service.FindPair(inner)!.Node, movedNode.EmbeddedOwner);
-        Assert.Null(service.DraggedInlineChild);
+        Assert.Null(service.DraggedCard);
         Assert.Null(service.DropTarget);
     }
 
@@ -2240,7 +2433,7 @@ public class ActivityDesignerTests {
 
         //The card of the If is drawn inside the list of the sequence, so dropping it on its own Then branch
         //would put the If inside itself.
-        service.StartInlineDrag(ifNode);
+        service.StartCardDrag(ifNode);
         service.DropSlot = ifNode.ThenSlot;
 
         Assert.False(service.MoveDraggedActivity());
@@ -2274,16 +2467,16 @@ public class ActivityDesignerTests {
         service.SetActivityBuilder(new ActivityBuilder { Implementation = sequence });
 
         var sequenceNode = service.FindPair(sequence)!.Node;
-        service.StartInlineDrag(service.FindPair(first)!.Node);
+        service.StartCardDrag(service.FindPair(first)!.Node);
         service.SetInlineDropTarget(sequenceNode, 1);
         Assert.Equal(1, service.DropInsertIndex);
 
         //A drag that ends without a drop leaves no caret behind, and the next toolbox drop is not pulled to it.
-        service.EndInlineDrag();
+        service.EndCardDrag();
 
         Assert.Null(service.DropInsertIndex);
         Assert.Null(service.DropTarget);
-        Assert.Null(service.DraggedInlineChild);
+        Assert.Null(service.DraggedCard);
     }
 
     [Fact]

@@ -19,11 +19,10 @@ public class FlowchartNode : DefaultNode, IGraphContainer {
     /// <summary>The flowchart currently opened in the editor, if any.</summary>
     public static FlowchartNode? Of(Service service) => service.Path.LastOrDefault()?.Reference?.Node as FlowchartNode;
 
-    public bool IsStartElement(object element) =>
-        activity.StartNode is FlowStep step ? ReferenceEquals(step.Action, element) : ReferenceEquals(activity.StartNode, element);
-
+    /// <summary>Text of the badge the card of the start node carries.</summary>
     public string StartBadgeText => "Start";
 
+    /// <summary>Open Iconic class of that badge.</summary>
     public string StartBadgeClass => "oi oi-media-play";
 
     /// <summary>The element shown as the flowchart's start target on the diagram.</summary>

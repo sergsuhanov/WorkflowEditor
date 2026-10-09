@@ -22,12 +22,6 @@ public class StateMachineNode : DefaultNode, IGraphContainer {
     public override string? EmptyHint =>
         activity.States.Count == 0 ? "Drop the first state here" : null;
 
-    public bool IsStartElement(object element) => ReferenceEquals(activity.InitialState, element);
-
-    public string StartBadgeText => "Initial";
-
-    public string StartBadgeClass => "oi oi-media-record";
-
     /// <summary>Transition label: the display name of its trigger activity, when there is one.</summary>
     public string? LinkLabel(ActivityDesignerPair from, ActivityDesignerPair to) {
         if (from.Element is not WfState source || to.Element is not WfState target)

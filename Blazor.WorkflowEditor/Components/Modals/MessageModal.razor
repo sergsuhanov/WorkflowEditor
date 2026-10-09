@@ -1,0 +1,44 @@
+@*A dialog that tells the user something and is closed with a single button: a failed save, open or validate,
+  or the outcome of a validation run.*@
+@implements IDisposable
+@implements IModal
+
+<Modal @ref="Modal">
+  <Header>
+    <ModalHeader TitleText="@Title" OnClose="Modal!.Close"></ModalHeader>
+  </Header>
+
+  <Body>
+    <p class="mb-0">@Message</p>
+  </Body>
+
+  <Footer>
+    <ModalFooter OnClose="Modal!.Close" OnApply="Modal!.Apply" ApplyButtonText="@CloseButtonText"
+                 CancelButtonVisible="false"></ModalFooter>
+  </Footer>
+</Modal>
+
+@code {
+  [Parameter]
+  public string? Title { get; set; } = "Workflow editor";
+
+  [Parameter]
+  public string? Message { get; set; } = string.Empty;
+
+  [Parameter]
+  public string? CloseButtonText { get; set; } = "OK";
+
+  private Modal? Modal { get; set; }
+
+  public ModalResult ModalResult { get => Modal!.ModalResult; }
+
+  public Task<ModalResult> Show()
+  {
+    return Modal!.Show();
+  }
+
+  public void Dispose()
+  {
+    Modal!.Hide();
+  }
+}

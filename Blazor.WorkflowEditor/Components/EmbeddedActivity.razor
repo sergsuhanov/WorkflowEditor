@@ -1,4 +1,5 @@
-@*The activity a slot holds, rendered inside the card of its owner. A container child keeps its Open action,
+@*The activity a slot holds, rendered inside the card of its owner. The card is a drag source of its own, so
+  the activity can be moved out of the branch to another target; a container child also keeps its Open action,
   which navigates into it through the path like any other node.*@
 @{
     var held = Slot.Held;
@@ -13,7 +14,13 @@
 }
 else if (child is { } node && controlType is { } type)
 {
-    <div class="we-embedded" @onclick="() => Service.Select(node)" @onclick:stopPropagation="true">
+    @*The card of the branch is a drag source of its own: dragging it moves the activity it holds to another
+      target instead of dragging the card that draws it, so the pointer events never reach its owner.*@
+    <div class="we-embedded" draggable="true"
+         @ondragstart:stopPropagation="true" @ondragstart="() => Service.StartCardDrag(node)"
+         @ondragend="() => Service.EndCardDrag()"
+         @onpointerdown:stopPropagation
+         @onclick="() => Service.Select(node)" @onclick:stopPropagation="true">
         <DynamicComponent Type="@type" Parameters="@parameters(node)" />
     </div>
 }

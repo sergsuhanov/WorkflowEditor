@@ -18,15 +18,6 @@ public interface IGraphContainer {
     /// <summary>Rebuilds the diagram links from the workflow model.</summary>
     void Refresh();
 
-    /// <summary>Whether an element is the start of this container (flowchart start node, initial state).</summary>
-    bool IsStartElement(object element);
-
-    /// <summary>Text of the badge shown on the start element ("Start", "Initial").</summary>
-    string StartBadgeText { get; }
-
-    /// <summary>Open Iconic class of the start badge.</summary>
-    string StartBadgeClass { get; }
-
     /// <summary>Short label of a connection (True/False, switch case, transition trigger) or null.</summary>
     string? LinkLabel(ActivityDesignerPair from, ActivityDesignerPair to);
 }

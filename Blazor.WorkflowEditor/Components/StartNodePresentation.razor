@@ -1,13 +1,17 @@
 @using Blazor.WorkflowEditor
+@using Blazor.WorkflowEditor.Activity.Flow
 
-@*The start cue of a surface: the badge names the place the execution starts, the arrow points at the element it
-  starts with, and the box asks for that element while the surface holds none. Every surface draws the cue at the
-  top, where a container lays out its first element.*@
+@*The cue of the current canvas: the box asks for the element the surface has none of yet. Only a Flowchart
+  carries a badge and an arrow with it, because only there is the start element a choice of the user; every other
+  surface is started by its first element, so its box is a plain request for that element.*@
 @if (Service?.StartHint is { } hint)
 {
     <div class="we-root-start-presentation" style="left:50%;top:12px;" aria-hidden="true">
-        <div class="we-root-start-badge">START</div>
-        <div class="we-root-start-arrow"></div>
+        @if (Service.OpenedGraph is FlowchartNode)
+        {
+            <div class="we-root-start-badge">START</div>
+            <div class="we-root-start-arrow"></div>
+        }
         <div class="we-root-start-drop">@hint</div>
     </div>
 }

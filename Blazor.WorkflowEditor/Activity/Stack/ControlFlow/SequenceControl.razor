@@ -3,8 +3,8 @@
 @*Card of a Sequence: the elements it holds are drawn inside the card, one under another in the order they run,
   so the whole sequence is edited in place. They are the editor block of the card, shown while the card is open,
   and the card keeps its Open action, which shows the same elements on a surface of their own. A card is dragged
-  by its body to another place in the list, or into the list of another card of the same schema; a drop in a gap
-  inserts an element there.*@
+  by its body to another place in the list, or into any other target of the schema — the list of another card, a
+  branch region, the column of an opened container; a drop in a gap inserts an element there.*@
 <ActivityControl Node="Node">
     <Edit>
         <div class="we-inline-list" @ondragover:preventDefault @ondragover:stopPropagation @ondragover="onListDragOver"
@@ -23,10 +23,11 @@
                     var gapIndex = index;
                     <div class="we-inline-gap @(isTarget(gapIndex) ? "is-target" : null)" aria-hidden="true"
                          @ondragover:preventDefault @ondragover:stopPropagation @ondragover="() => hover(gapIndex)"></div>
-                    <div class="we-inline-item @(isTarget(gapIndex) ? "is-target" : null)" draggable="true" @key="child.Element"
+                    <div class="we-inline-item @(isTarget(gapIndex) ? "is-target" : null) @(isDragged(child.Node) ? "we-card-dragging" : null)"
+                         draggable="true" @key="child.Element"
                          title="Drag the card to change its place in the sequence"
-                         @ondragstart:stopPropagation="true" @ondragstart="() => Service.StartInlineDrag(child.Node)"
-                         @ondragend="() => Service.EndInlineDrag()"
+                         @ondragstart:stopPropagation="true" @ondragstart="() => Service.StartCardDrag(child.Node)"
+                         @ondragend="() => Service.EndCardDrag()"
                          @ondragover:preventDefault @ondragover:stopPropagation @ondragover="() => hover(gapIndex)"
                          @onclick="() => Service.Select(child.Node)" @onclick:stopPropagation="true"
                          @onpointerdown:stopPropagation @onmousedown:stopPropagation>
@@ -63,11 +64,14 @@
     /// <summary>Whether the list itself is the drop target, which an empty list shows on its placeholder.</summary>
     private bool isListTarget =>
         ReferenceEquals(Service.DropTarget, Node)
-        && (Service.DraggedToolboxItem != null || Service.DraggedInlineChild != null);
+        && (Service.DraggedToolboxItem != null || Service.DraggedCard != null);
 
     /// <summary>Whether the list points at this place, either for a dropped activity or for a dragged card.</summary>
     private bool isTarget(int index) =>
         Service.DropInsertIndex == index && ReferenceEquals(Service.DropTarget, Node);
+
+    /// <summary>Whether the card is the one the user drags, so it stays visible while it is moved.</summary>
+    private bool isDragged(DefaultNode card) => ReferenceEquals(Service.DraggedCard, card);
 
     /// <summary>Shows where an element dropped here lands and makes this card the drop target.</summary>
     private void hover(int index) => Service.SetInlineDropTarget(Node, index);
@@ -79,14 +83,15 @@
     private void onListDragOver() => Service.SetInlineDropTarget(Node, Service.DropInsertIndex ?? children.Count);
 
     /// <summary>
-    /// A card released over the list takes the place the drag showed: of this list, or of the other list that
-    /// draws the card. A toolbox item is left to the editor, which adds it where the list points.
+    /// A card released over the list takes the place the drag showed, whatever drew it before: this list, another
+    /// list, a branch region or the column of an opened container. A toolbox item is left to the editor, which
+    /// adds it where the list points.
     /// </summary>
     private void onListDrop()
     {
-        if (Service.DraggedInlineChild is { } dragged)
+        if (Service.DraggedCard is { } dragged)
             Service.MoveInlineChild(Node, dragged, Service.DropInsertIndex ?? children.Count);
 
-        Service.EndInlineDrag();
+        Service.EndCardDrag();
     }
 }

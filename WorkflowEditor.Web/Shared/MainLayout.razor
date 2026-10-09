@@ -1,5 +1,6 @@
 ﻿@using System.Activities
 @using System.Text
+@using Blazor.WorkflowEditor.Components.Modals
 @inherits LayoutComponentBase
 @inject IJSRuntime JS
 
@@ -80,17 +81,14 @@
                                           DirtyChanged="onDirtyChanged"
                                           OperationFailed="onEditorOperationFailed" />
 
-            @if (!string.IsNullOrWhiteSpace(statusMessage))
-            {
-                <div class="alert @(isError ? "alert-danger" : "alert-info") m-2" role="status">@statusMessage</div>
-            }
+            @*Every message the page tells the user is a dialog it opens itself, so the page keeps no status line.*@
+            <ModalService @ref="modals"></ModalService>
 
 @code {
     private Blazor.WorkflowEditor.Editor? editor = default!;
     private List<Blazor.WorkflowEditor.ToolBoxGroup> groups { get; set; } = new()!;
     private List<Type> TypeCollection { get; set; } = new()!;
-    private string? statusMessage;
-    private bool isError;
+    private ModalService? modals;
     private bool hasUnsavedChanges;
     private string? openMenu;
 
@@ -119,10 +117,19 @@
         StateHasChanged();
     }
 
-    private void onEditorOperationFailed(string message)
+    private Task onEditorOperationFailed(string message) => showMessage("Workflow editor", message);
+
+    /// <summary>Tells the user something in a dialog: a failed action, or the outcome of a validation run.</summary>
+    private async Task showMessage(string title, string message)
     {
-        statusMessage = message;
-        isError = true;
+        if (modals == null)
+            return;
+
+        await modals.ShowModal<MessageModal>(new()
+        {
+            { "Title", title },
+            { "Message", message }
+        });
     }
 
     /// <summary>Asks the user before a modified schema is replaced by New/Open.</summary>
@@ -218,13 +225,10 @@
             using var streamRef = new DotNetStreamReference(stream: new MemoryStream(Encoding.UTF8.GetBytes(source)));
             await JS.InvokeVoidAsync("downloadFileFromStream", "workflow.xaml", streamRef);
             editor.MarkSaved();
-            statusMessage = "Workflow saved.";
-            isError = false;
         }
         catch (Exception ex)
         {
-            statusMessage = $"Could not save workflow: {ex.Message}";
-            isError = true;
+            await showMessage("Could not save the workflow", ex.Message);
         }
     }
 
@@ -239,30 +243,25 @@
             using var reader = new StreamReader(stream);
             var source = await reader.ReadToEndAsync();
             editor?.Load(source);
-            statusMessage = "Workflow opened.";
-            isError = false;
         }
         catch (Exception ex)
         {
-            statusMessage = $"Could not open workflow: {ex.Message}";
-            isError = true;
+            await showMessage("Could not open the workflow", ex.Message);
         }
     }
 
-    private void Validate()
+    private async Task Validate()
     {
         try
         {
             var messages = editor?.Validate();
-            statusMessage = messages == null || messages.Count == 0
-                ? "Workflow is valid."
-                : $"Validation found {messages.Count} issue(s).";
-            isError = false;
+            await showMessage("Validation", messages == null || messages.Count == 0
+                ? "The workflow is valid."
+                : $"Validation found {messages.Count} issue(s).");
         }
         catch (Exception ex)
         {
-            statusMessage = $"Could not validate workflow: {ex.Message}";
-            isError = true;
+            await showMessage("Could not validate the workflow", ex.Message);
         }
     }
 

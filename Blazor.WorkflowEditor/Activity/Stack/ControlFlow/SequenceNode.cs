@@ -94,8 +94,8 @@ public class SequenceNode : DefaultNode, IStackContainer {
     /// </summary>
     public void LayoutChildren() {
         if (service.VisibleViewport is { } viewport) {
-            //The column starts below the start cue an empty container draws at the top of its surface, which is
-            //where its first element has to appear (the cue box sits between 72 and 130 pixels of the surface).
+            //The column starts below the hint an empty container draws at the top of its surface, so its first
+            //element appears right under that hint (the box ends above 72 pixels of the surface).
             columnTop ??= viewport.Top + 72;
             columnCenterX ??= viewport.Left + viewport.Width / 2;
         }
