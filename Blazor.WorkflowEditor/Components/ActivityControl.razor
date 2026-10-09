@@ -11,9 +11,9 @@
     }
     <div class="card @Node.CssClass">
         <div class="card-header">
-            @*A card that holds detail (a list of children, an inline editor) is opened and closed by the chevron
-              that takes the place of the activity icon.*@
-            @if (hasDetail)
+            @*A card that holds an editor block is opened and closed by the chevron that takes the place of the
+              activity icon; a card that only carries the compact fields has no closed state of its own.*@
+            @if (hasEditor)
             {
                 <a href="" class="we-node-toggle" title="@(Node.IsExpanded ? "Collapse" : "Expand")"
                    aria-label="@(Node.IsExpanded ? "Collapse" : "Expand")"
@@ -40,38 +40,31 @@
                 </a>
             </div>
         </div>
-        @*The name lives in the header and the note is edited in the properties panel, so the body carries the
-          note preview, the preview of the activity and, while the card is expanded, the detail it holds.*@
-        @if (Node.HasNote || Preview != null || (Node.IsExpanded && hasDetail))
+        @*The name lives in the header and the note is edited in the properties panel, so the body carries the note
+          preview and one of the two blocks of the card: the compact fields while it is closed, and the editor the
+          chevron opens.*@
+        @if (Node.HasNote || (Node.IsExpanded ? hasEditor : Preview != null))
         {
             <div class="card-body">
                 @if (Node.HasNote)
                 {
                     <div class="we-note-preview" title="@Node.Note">@Node.Note</div>
                 }
-                @Preview
                 @if (Node.IsExpanded)
                 {
-                    @Content
-                    @if (Edit != null)
-                    {
-                        <form>
-                            <div class="mb-3">
-                                <label for="@displayNameId" class="form-label">Display name</label>
-                                <input type="text" class="form-control" id="@displayNameId" @bind-value="Node.DisplayName"
-                                       placeholder="Input activity display name" @onmousedown:stopPropagation
-                                       @onmouseup:stopPropagation @onmousemove:stopPropagation />
-                            </div>
-                            @Edit
-                        </form>
-                    }
+                    @Edit
+                }
+                else
+                {
+                    @Preview
                 }
             </div>
         }
 
-        @*A branch child rendered inside another card, and a card of an ordered container, have no connections
-          of their own, so they show no ports.*@
-        @if (!Node.IsEmbedded && !Node.IsStackChild)
+        @*Only the children of a graph container (Flowchart, StateMachine) are connected to each other, so only
+          they offer connection points. A card of an ordered container, a branch child and a card of any other
+          surface are placed by their container and get no ports at all.*@
+        @if (Node.ShowsPorts)
         {
             foreach (var port in Node.Ports)
             {
@@ -90,27 +83,23 @@
     [Parameter]
     public Activity.DefaultNode Node { get; set; } = default!;
 
-    /// <summary>Inline editor of the activity, shown while the card is expanded. A control that does not
-    /// provide one (the fallback control does not) has no detail of its own.</summary>
-    [Parameter, AllowNull]
-    public RenderFragment? Edit { get; set; }
-
-    /// <summary>Optional compact preview shown on the collapsed node card.</summary>
+    /// <summary>Compact fields of the card, shown while it is closed. They are editable, so the card is edited
+    /// in place without opening anything.</summary>
     [Parameter, AllowNull]
     public RenderFragment? Preview { get; set; }
 
-    /// <summary>Editable content of the card, shown under the note preview: the children of an ordered
-    /// container, which are edited and reordered inside the card itself.</summary>
+    /// <summary>
+    /// Editor of the card, shown while it is open: the fields that do not fit the compact block, the children of
+    /// an ordered container, or the branch regions of an activity. The chevron of the card switches the body
+    /// between this block and <see cref="Preview"/>, so a card that passes no editor has no chevron.
+    /// </summary>
     [Parameter, AllowNull]
-    public RenderFragment? Content { get; set; }
+    public RenderFragment? Edit { get; set; }
 
     private string? iconClass => ActivityIcon.CssClass(Node.Element);
 
-    /// <summary>Whether the card holds detail that the chevron opens and closes.</summary>
-    private bool hasDetail => Edit != null || Content != null;
-
-    /// <summary>Unique id of the display name field of the expanded card.</summary>
-    private string displayNameId => $"we-activity-display-name-{Node.Id}";
+    /// <summary>Whether the card holds an editor the chevron opens and closes.</summary>
+    private bool hasEditor => Edit != null;
 
     /// <summary>Badges shown in the card header: the start element marker. Errors are shown by the card
     /// outline and by the properties panel, so they need no badge here.</summary>
@@ -188,13 +177,13 @@
     }
 
     /// <summary>
-    /// A card without an inline editor has nothing to expand, even when the loaded view state says it was
-    /// expanded before, so the flag is dropped instead of rendering a form with only the display name.
+    /// A card without an editor has nothing to open, even when the loaded view state says it was expanded
+    /// before, so the flag is dropped instead of rendering an empty body.
     /// </summary>
     protected override void OnParametersSet()
     {
-        //A card without detail has nothing to open, even when the node it shows was expanded before.
-        if (!hasDetail)
+        //A card without an editor has nothing to open, even when the node it shows was expanded before.
+        if (!hasEditor)
             Node.IsExpanded = false;
     }
 }

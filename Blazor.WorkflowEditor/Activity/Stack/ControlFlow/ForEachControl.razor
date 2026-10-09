@@ -2,9 +2,32 @@
 @typeparam T
 
 <ActivityControl Node="@Node">
-    <Preview>
-        @*Both fields of the loop are edited right on the card. The card is not expandable: the display name
-          and the remaining properties live in the properties panel.*@
+    <Preview>@fields</Preview>
+    <Edit>
+        @fields
+        @*The body holds a single activity, rendered inside the card through its own control.*@
+        <div class="we-branches we-branches-stacked">
+            <ActivityRegion Node="Node" Slot="@Node.BodySlot" Label="Body">
+                <EmbeddedActivity Slot="@Node.BodySlot" />
+            </ActivityRegion>
+        </div>
+    </Edit>
+</ActivityControl>
+
+@code {
+    [Parameter]
+    public ForEachNode<T> Node { get; set; } = default!;
+
+    /// <summary>Several cards can be on the diagram at once, so the inputs need ids of their own.</summary>
+    private string valuesId => $"we-foreach-values-{Node.Id}";
+
+    private string itemId => $"we-foreach-item-{Node.Id}";
+
+    /// <summary>
+    /// Both fields of the loop are the card while it is closed and stay above the body while it is open: they are
+    /// rendered in both blocks.
+    /// </summary>
+    private RenderFragment fields => @<text>
         <div class="we-field-columns">
             <div class="we-field-column">
                 <label class="we-field-label" for="@valuesId">Values</label>
@@ -19,21 +42,5 @@
                        @onmouseup:stopPropagation @onmousemove:stopPropagation />
             </div>
         </div>
-        @*The body holds a single activity, rendered inside the card through its own control.*@
-        <div class="we-branches we-branches-stacked">
-            <ActivityRegion Node="Node" Slot="@Node.BodySlot" Label="Body">
-                <EmbeddedActivity Slot="@Node.BodySlot" />
-            </ActivityRegion>
-        </div>
-    </Preview>
-</ActivityControl>
-
-@code {
-    [Parameter]
-    public ForEachNode<T> Node { get; set; } = default!;
-
-    /// <summary>Several cards can be on the diagram at once, so the inputs need ids of their own.</summary>
-    private string valuesId => $"we-foreach-values-{Node.Id}";
-
-    private string itemId => $"we-foreach-item-{Node.Id}";
+    </text>;
 }

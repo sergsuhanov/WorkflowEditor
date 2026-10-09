@@ -350,13 +350,24 @@
 
     private async Task OnDrop(DragEventArgs e)
     {
+        //Blazor recycles event arguments: they are only valid until the handler returns, and the generic
+        //type dialog below awaits, so the drop position has to be read before that first await.
+        var position = diagram.GetRelativeMousePoint(e.ClientX, e.ClientY);
+
+        //A card dragged out of the list of a card keeps the activity it shows: the drop moves it to the target
+        //the drag pointed at (a branch region, a container, the surface of the opened container) instead of
+        //creating a new one. A drop on the list of a card is handled by that list itself.
+        if (service.DraggedInlineChild != null)
+        {
+            service.MoveDraggedActivity(position);
+            StateHasChanged();
+            return;
+        }
+
         var draggedItem = service.DraggedToolboxItem;
         if (draggedItem == null)
             return;
 
-        //Blazor recycles event arguments: they are only valid until the handler returns, and the generic
-        //type dialog below awaits, so the drop position has to be read before that first await.
-        var position = diagram.GetRelativeMousePoint(e.ClientX, e.ClientY);
         service.UpdateDropInsertIndex(position);
         var dropTarget = service.DropTarget;
         var dropSlot = service.DropSlot;

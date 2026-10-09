@@ -1,20 +1,9 @@
 @using Blazor.WorkflowEditor.Components
 
 <ActivityControl Node="@Node">
-    <Preview>
-        @*The exception the catch section handles belongs on the card: it decides what the section means. The
-          card is not expandable, the display name lives in the properties panel.*@
-        <div class="we-field-row">
-            <label class="we-field-label" for="@exceptionTypeId">Catch</label>
-            <select class="form-select we-field-input" id="@exceptionTypeId" aria-label="Catch exception type"
-                    @bind="Node.SelectedExceptionTypeName" @onmousedown:stopPropagation @onmouseup:stopPropagation
-                    @onmousemove:stopPropagation>
-                @foreach (var type in TryCatchNode.CatchExceptionTypes)
-                {
-                    <option value="@type.FullName">@type.Name</option>
-                }
-            </select>
-        </div>
+    <Preview>@fields</Preview>
+    <Edit>
+        @fields
         @*Try, Catch and Finally hold a single activity each, rendered inside the card.*@
         <div class="we-branches we-branches-stacked">
             <ActivityRegion Node="Node" Slot="@Node.TrySlot" Label="Try">
@@ -28,7 +17,7 @@
                 <EmbeddedActivity Slot="@Node.FinallySlot" />
             </ActivityRegion>
         </div>
-    </Preview>
+    </Edit>
 </ActivityControl>
 
 @code {
@@ -37,4 +26,22 @@
 
     /// <summary>Several cards can be on the diagram at once, so the select needs an id of its own.</summary>
     private string exceptionTypeId => $"we-catch-type-{Node.Id}";
+
+    /// <summary>
+    /// The exception the catch section handles decides what that section means, so it is the card while it is
+    /// closed and stays above the sections while it is open: the field is rendered in both blocks.
+    /// </summary>
+    private RenderFragment fields => @<text>
+        <div class="we-field-row">
+            <label class="we-field-label" for="@exceptionTypeId">Catch</label>
+            <select class="form-select we-field-input" id="@exceptionTypeId" aria-label="Catch exception type"
+                    @bind="Node.SelectedExceptionTypeName" @onmousedown:stopPropagation @onmouseup:stopPropagation
+                    @onmousemove:stopPropagation>
+                @foreach (var type in TryCatchNode.CatchExceptionTypes)
+                {
+                    <option value="@type.FullName">@type.Name</option>
+                }
+            </select>
+        </div>
+    </text>;
 }

@@ -2,15 +2,9 @@
 @typeparam T
 
 <ActivityControl Node="@Node">
-    <Preview>
-        @*The expression and the cases of the switch belong on the card; the display name lives in the
-          properties panel.*@
-        <div class="we-field-row">
-            <label class="we-field-label" for="@expressionId">Switch</label>
-            <input type="text" class="form-control we-field-input" id="@expressionId" aria-label="Expression"
-                   @bind-value="Node.Expression" @onmousedown:stopPropagation @onmouseup:stopPropagation
-                   @onmousemove:stopPropagation />
-        </div>
+    <Preview>@fields</Preview>
+    <Edit>
+        @fields
         @*Default and every case hold a single activity each, rendered inside the card.*@
         <div class="we-branches we-branches-stacked">
             <ActivityRegion Node="Node" Slot="@Node.DefaultSlot" Label="Default">
@@ -37,7 +31,7 @@
                 <div class="text-danger" role="alert">@caseError</div>
             }
         </div>
-    </Preview>
+    </Edit>
 </ActivityControl>
 
 @code {
@@ -49,6 +43,19 @@
 
     /// <summary>Several cards can be on the diagram at once, so the input needs an id of its own.</summary>
     private string expressionId => $"we-switch-expression-{Node.Id}";
+
+    /// <summary>
+    /// The expression the cases are compared with is the card while it is closed and stays above the cases while
+    /// they are open: the field is rendered in both blocks.
+    /// </summary>
+    private RenderFragment fields => @<text>
+        <div class="we-field-row">
+            <label class="we-field-label" for="@expressionId">Switch</label>
+            <input type="text" class="form-control we-field-input" id="@expressionId" aria-label="Expression"
+                   @bind-value="Node.Expression" @onmousedown:stopPropagation @onmouseup:stopPropagation
+                   @onmousemove:stopPropagation />
+        </div>
+    </text>;
 
     private void addCase()
     {

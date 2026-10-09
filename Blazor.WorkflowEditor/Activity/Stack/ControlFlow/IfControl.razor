@@ -1,15 +1,9 @@
 ﻿@using Blazor.WorkflowEditor.Components
 
 <ActivityControl Node="@Node">
-    <Preview>
-        @*The condition decides which branch runs, so it is edited right on the card. The card is not
-          expandable: the display name and the remaining properties live in the properties panel.*@
-        <div class="we-field-row">
-            <label class="we-field-label" for="@conditionId">If</label>
-            <input type="text" class="form-control we-field-input" id="@conditionId" placeholder="True"
-                   aria-label="If condition" @bind-value="Node.Condition" @onmousedown:stopPropagation
-                   @onmouseup:stopPropagation @onmousemove:stopPropagation />
-        </div>
+    <Preview>@fields</Preview>
+    <Edit>
+        @fields
         @*Both branches sit next to each other: Then on the left, Else on the right.*@
         <div class="we-branches">
             @foreach (var slot in Node.Slots)
@@ -20,7 +14,7 @@
                 </ActivityRegion>
             }
         </div>
-    </Preview>
+    </Edit>
 </ActivityControl>
 
 @code {
@@ -29,4 +23,17 @@
 
     /// <summary>Several cards can be on the diagram at once, so the input needs an id of its own.</summary>
     private string conditionId => $"we-if-condition-{Node.Id}";
+
+    /// <summary>
+    /// The condition decides which branch runs, so it is the card while it is closed and stays above the branches
+    /// while it is open: the field is rendered in both blocks.
+    /// </summary>
+    private RenderFragment fields => @<text>
+        <div class="we-field-row">
+            <label class="we-field-label" for="@conditionId">If</label>
+            <input type="text" class="form-control we-field-input" id="@conditionId" placeholder="True"
+                   aria-label="If condition" @bind-value="Node.Condition" @onmousedown:stopPropagation
+                   @onmouseup:stopPropagation @onmousemove:stopPropagation />
+        </div>
+    </text>;
 }

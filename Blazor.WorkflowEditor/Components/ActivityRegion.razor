@@ -5,6 +5,7 @@
     <div class="we-branch we-branch-filled" title="@regionTitle"
          @ondragover:preventDefault @ondragover:stopPropagation @ondragover="onDragOver"
          @ondragenter:preventDefault @ondragenter:stopPropagation @ondragenter="onDragOver"
+         @ondrop="onDrop"
          @onmousedown:stopPropagation @onmouseup:stopPropagation @onmousemove:stopPropagation>
         <span class="we-caption">
             <span class="we-branch-label">@Label</span>
@@ -19,11 +20,12 @@
         @ChildContent
     </div>
 }
-else if (DropEnabled && !Node.IsEmbedded)
+else if (acceptsDrop)
 {
     <div class="we-branch @(Active ? "active" : null)" role="button" tabindex="0" title="@regionTitle"
          @onclick="() => OnActivate.InvokeAsync()" @ondragover:preventDefault @ondragover:stopPropagation
          @ondragover="onDragOver" @ondragenter:preventDefault @ondragenter:stopPropagation @ondragenter="onDragOver"
+         @ondrop="onDrop"
          @onmousedown:stopPropagation @onmouseup:stopPropagation @onmousemove:stopPropagation>
         @Body
     </div>
@@ -91,6 +93,13 @@ else
         ? $"Drop an activity here to replace {Label}"
         : $"Drop an activity here to fill {Label}");
 
+    /// <summary>
+    /// Whether the region takes a drop. A card drawn inside the branch of another card is opened first, because a
+    /// drop on it would be ambiguous; a card that an inline list draws is a drop target like a card of the
+    /// surface, because the list it is drawn in takes drops already.
+    /// </summary>
+    private bool acceptsDrop => DropEnabled && (!Node.IsEmbedded || Node.EmbeddedOwner is Activity.IStackContainer);
+
     private RenderFragment Body => @<text>
         <span class="we-branch-label">@Label</span>
         <span class="we-branch-value">@(Value ?? Placeholder)</span>
@@ -105,7 +114,7 @@ else
 
     private void onDragOver()
     {
-        if (!DropEnabled || Node.IsEmbedded)
+        if (!acceptsDrop)
             return;
 
         //A slot region fills that single branch; a container region makes the node the drop target instead
@@ -120,5 +129,18 @@ else
         _ = OnActivate.InvokeAsync();
         if (!ReferenceEquals(Service.DropTarget, Node))
             Service.DropTarget = Node;
+    }
+
+    /// <summary>
+    /// A card dragged out of an inline list lands in the region the drag pointed at. The region took the target
+    /// while the drag passed over it, so the drop is handled here and not by the list the card came from; a
+    /// toolbox item is left to the editor, which adds it where the region points.
+    /// </summary>
+    private void onDrop()
+    {
+        if (!acceptsDrop)
+            return;
+
+        Service.MoveDraggedActivity();
     }
 }

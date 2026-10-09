@@ -45,6 +45,17 @@ public static class Designer {
     public static void SetNote(object target, string? value) => setValue(target, NoteProperty, value);
     #endregion
 
+    #region IsExpanded
+    /// <summary>
+    /// Whether the card of the activity shows the editor it holds instead of its compact fields. Stored with the
+    /// activity, so the card keeps its state while the user moves between the container and its surface, and
+    /// across save and reopen. A collapsed card keeps no value.
+    /// </summary>
+    public static readonly AttachableMemberIdentifier IsExpandedProperty = new(typeof(Designer), "IsExpanded");
+    public static bool? GetIsExpanded(object target) => getValue<bool?>(target, IsExpandedProperty);
+    public static void SetIsExpanded(object target, bool? value) => setValue(target, IsExpandedProperty, value);
+    #endregion
+
 }
 
 public enum PortAlignment {

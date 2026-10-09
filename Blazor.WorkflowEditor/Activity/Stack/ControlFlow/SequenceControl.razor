@@ -1,11 +1,12 @@
 @using Blazor.WorkflowEditor.Components
 
 @*Card of a Sequence: the elements it holds are drawn inside the card, one under another in the order they run,
-  so the whole sequence is edited in place. The card keeps its Open action, which shows the same elements on a
-  surface of their own. A card is dragged by its body to another place in the list; a drop in a gap inserts an
-  element there.*@
+  so the whole sequence is edited in place. They are the editor block of the card, shown while the card is open,
+  and the card keeps its Open action, which shows the same elements on a surface of their own. A card is dragged
+  by its body to another place in the list, or into the list of another card of the same schema; a drop in a gap
+  inserts an element there.*@
 <ActivityControl Node="Node">
-    <Content>
+    <Edit>
         <div class="we-inline-list" @ondragover:preventDefault @ondragover:stopPropagation @ondragover="onListDragOver"
              @ondrop="onListDrop">
             @if (children.Count == 0)
@@ -17,13 +18,16 @@
                 @for (var index = 0; index < children.Count; index++)
                 {
                     var child = children[index];
-                    <div class="we-inline-gap @(isTarget(index) ? "is-target" : null)" aria-hidden="true"
-                         @ondragover:preventDefault @ondragover:stopPropagation @ondragover="() => hover(index)"></div>
-                    <div class="we-inline-item @(isTarget(index) ? "is-target" : null)" draggable="true" @key="child.Element"
+                    @*The handlers run after the render, so every gap and card needs its own copy of the index: the
+                      loop variable is a single variable, and each handler would read its last value.*@
+                    var gapIndex = index;
+                    <div class="we-inline-gap @(isTarget(gapIndex) ? "is-target" : null)" aria-hidden="true"
+                         @ondragover:preventDefault @ondragover:stopPropagation @ondragover="() => hover(gapIndex)"></div>
+                    <div class="we-inline-item @(isTarget(gapIndex) ? "is-target" : null)" draggable="true" @key="child.Element"
                          title="Drag the card to change its place in the sequence"
                          @ondragstart:stopPropagation="true" @ondragstart="() => Service.StartInlineDrag(child.Node)"
                          @ondragend="() => Service.EndInlineDrag()"
-                         @ondragover:preventDefault @ondragover:stopPropagation @ondragover="() => hover(index)"
+                         @ondragover:preventDefault @ondragover:stopPropagation @ondragover="() => hover(gapIndex)"
                          @onclick="() => Service.Select(child.Node)" @onclick:stopPropagation="true"
                          @onpointerdown:stopPropagation @onmousedown:stopPropagation>
                         <DynamicComponent Type="@Service.GetControlType(child.Node)" Parameters="@cardParameters(child.Node)" />
@@ -33,7 +37,7 @@
                      @ondragover:preventDefault @ondragover:stopPropagation @ondragover="() => hover(children.Count)"></div>
             }
         </div>
-    </Content>
+    </Edit>
 </ActivityControl>
 
 @code {
@@ -63,9 +67,7 @@
 
     /// <summary>Whether the list points at this place, either for a dropped activity or for a dragged card.</summary>
     private bool isTarget(int index) =>
-        Service.DropInsertIndex == index
-        && (ReferenceEquals(Service.DropTarget, Node)
-            || ReferenceEquals(Service.DraggedInlineChild?.EmbeddedOwner, Node));
+        Service.DropInsertIndex == index && ReferenceEquals(Service.DropTarget, Node);
 
     /// <summary>Shows where an element dropped here lands and makes this card the drop target.</summary>
     private void hover(int index) => Service.SetInlineDropTarget(Node, index);
@@ -77,13 +79,13 @@
     private void onListDragOver() => Service.SetInlineDropTarget(Node, Service.DropInsertIndex ?? children.Count);
 
     /// <summary>
-    /// A card released over the list takes the place the drag showed. A toolbox item is left to the editor, which
-    /// adds it where the list points.
+    /// A card released over the list takes the place the drag showed: of this list, or of the other list that
+    /// draws the card. A toolbox item is left to the editor, which adds it where the list points.
     /// </summary>
     private void onListDrop()
     {
-        if (Service.DraggedInlineChild is { } dragged && ReferenceEquals(dragged.EmbeddedOwner, Node))
-            Service.MoveInlineChild(dragged, Service.DropInsertIndex ?? children.Count);
+        if (Service.DraggedInlineChild is { } dragged)
+            Service.MoveInlineChild(Node, dragged, Service.DropInsertIndex ?? children.Count);
 
         Service.EndInlineDrag();
     }

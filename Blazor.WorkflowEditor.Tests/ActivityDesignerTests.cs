@@ -906,6 +906,63 @@ public class ActivityDesignerTests {
     }
 
     [Fact]
+    public void NewSequenceCardStartsCollapsed() {
+        using var service = new Service(new BlazorDiagram(), () => { });
+        var sequence = new Sequence { Activities = { new WriteLine() } };
+        service.SetActivityBuilder(new ActivityBuilder { Implementation = sequence });
+
+        Assert.False(service.Items.First(p => p.Activity == sequence).Node.IsExpanded);
+
+        //A card that is added to a surface is closed the same way, so nothing opens itself while the user works.
+        service.Open(service.Items.First(p => p.Activity == sequence).Node);
+        var added = service.AddActivity(typeof(Sequence)).result;
+
+        Assert.False(added.Node.IsExpanded);
+    }
+
+    /// <summary>
+    /// The cards of a surface are rebuilt every time the user opens or closes a container, so the state of the
+    /// chevron has to live with the activity; otherwise a collapsed Sequence opens itself again on the way back.
+    /// </summary>
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void SequenceCardKeepsItsExpandedStateWhileTheContainerIsOpenedAndLeft(bool expanded) {
+        using var service = new Service(new BlazorDiagram(), () => { });
+        var sequence = new Sequence { Activities = { new WriteLine() } };
+        service.SetActivityBuilder(new ActivityBuilder { Implementation = sequence });
+
+        var card = service.Items.First(p => p.Activity == sequence).Node;
+        card.IsExpanded = expanded;
+
+        var root = service.Path.First();
+        service.Open(card);
+        service.OpenPath(root);
+
+        var reopened = service.Items.First(p => p.Activity == sequence).Node;
+        Assert.NotSame(card, reopened);
+        Assert.Equal(expanded, reopened.IsExpanded);
+    }
+
+    [Fact]
+    public void ExpandedSequenceCardSurvivesXamlRoundTrip() {
+        var inner = new Sequence { Activities = { new WriteLine() } };
+        Blazor.WorkflowEditor.Activity.State.Designer.SetIsExpanded(inner, true);
+        var xaml = WorkflowXamlSerializer.SaveBuilder(new ActivityBuilder {
+            Implementation = new Sequence { Activities = { inner } }
+        });
+
+        var loaded = (Sequence)WorkflowXamlSerializer.LoadBuilder(xaml).Implementation;
+
+        Assert.True(Blazor.WorkflowEditor.Activity.State.Designer.GetIsExpanded(loaded.Activities[0]));
+
+        //A collapsed card keeps no value, so a schema that never opened a card stays free of the property.
+        var collapsed = new Sequence();
+        WorkflowXamlSerializer.SaveBuilder(new ActivityBuilder { Implementation = collapsed });
+        Assert.Null(Blazor.WorkflowEditor.Activity.State.Designer.GetIsExpanded(collapsed));
+    }
+
+    [Fact]
     public void SequenceDesignerAddsRemovesAndLoadsChildrenInOrder() {
         using var service = new Service(new BlazorDiagram(), () => { });
         var sequence = new Sequence { Activities = { new WriteLine(), new Delay(), new WriteLine() } };
@@ -1461,6 +1518,35 @@ public class ActivityDesignerTests {
         Assert.All(node.Ports, port => Assert.False(port.Locked));
         //Corner alignments are avoided on purpose: the orthogonal router cannot route them.
         Assert.All(node.Ports, port => Assert.True(port.Alignment is Blazor.Diagrams.Core.Models.PortAlignment.Left or Blazor.Diagrams.Core.Models.PortAlignment.Top or Blazor.Diagrams.Core.Models.PortAlignment.Right or Blazor.Diagrams.Core.Models.PortAlignment.Bottom));
+    }
+
+    [Fact]
+    public void PortsAreOfferedOnlyByGraphChildren() {
+        using var service = new Service(new BlazorDiagram(), () => { });
+        var step = new WriteLine { DisplayName = "step" };
+        var chart = new Flowchart();
+        chart.Nodes.Add(new FlowStep { Action = step });
+        chart.StartNode = chart.Nodes[0];
+        service.SetActivityBuilder(new ActivityBuilder { Implementation = chart });
+
+        //The root card and the card of the flowchart itself are placed by their container: they offer no ports.
+        Assert.All(service.Items, item => Assert.False(item.Node.ShowsPorts));
+
+        service.Open(service.Items.First(p => p.Activity == chart).Node);
+
+        //Only an element a graph container lays out can be connected to another one.
+        Assert.True(service.Items.First(p => ReferenceEquals(p.Element, step)).Node.ShowsPorts);
+
+        //A card inside a Sequence - on its own surface and in the list its card draws - offers none either.
+        var sequence = new Sequence { Activities = { new WriteLine(), new Delay() } };
+        service.SetActivityBuilder(new ActivityBuilder { Implementation = sequence });
+        var card = service.Items.First(p => p.Activity == sequence).Node;
+
+        Assert.False(card.ShowsPorts);
+        Assert.All(service.Items, item => Assert.False(item.Node.ShowsPorts));
+
+        service.Open(card);
+        Assert.All(service.Items, item => Assert.False(item.Node.ShowsPorts));
     }
 
     [Fact]
@@ -2022,17 +2108,182 @@ public class ActivityDesignerTests {
         var sequence = new Sequence { Activities = { first, second, third } };
         service.SetActivityBuilder(new ActivityBuilder { Implementation = sequence });
 
+        var sequenceNode = service.FindPair(sequence)!.Node;
         var firstNode = service.FindPair(first)!.Node;
 
         //The gap counts the children as they are now, so a card dropped below one moves one place down.
-        Assert.True(service.MoveInlineChild(firstNode, 2));
+        Assert.True(service.MoveInlineChild(sequenceNode, firstNode, 2));
         Assert.Equal(new System.Activities.Activity[] { second, first, third }, sequence.Activities.ToArray());
 
         //A card dropped back on the place it holds keeps the order.
-        Assert.False(service.MoveInlineChild(firstNode, 1));
+        Assert.False(service.MoveInlineChild(sequenceNode, firstNode, 1));
 
-        Assert.True(service.MoveInlineChild(firstNode, 3));
+        Assert.True(service.MoveInlineChild(sequenceNode, firstNode, 3));
         Assert.Equal(new System.Activities.Activity[] { second, third, first }, sequence.Activities.ToArray());
+
+        //The gap before the first card moves the last one to the top, which is the place the list shows there.
+        Assert.True(service.MoveInlineChild(sequenceNode, firstNode, 0));
+        Assert.Equal(new System.Activities.Activity[] { first, second, third }, sequence.Activities.ToArray());
+    }
+
+    /// <summary>
+    /// Both lists are drawn inside their own card on the same surface, so a card dragged out of one of them
+    /// lands in the other one.
+    /// </summary>
+    [Fact]
+    public void DraggingACardOfOneInlineListIntoAnotherListMovesIt() {
+        using var service = new Service(new BlazorDiagram(), () => { });
+        var a1 = new WriteLine { DisplayName = "a1" };
+        var a2 = new WriteLine { DisplayName = "a2" };
+        var b1 = new Delay { DisplayName = "b1" };
+        var source = new Sequence { DisplayName = "A", Activities = { a1, a2 } };
+        var target = new Sequence { DisplayName = "B", Activities = { b1 } };
+        service.SetActivityBuilder(new ActivityBuilder { Implementation = new Sequence { Activities = { source, target } } });
+
+        var sourceNode = service.FindPair(source)!.Node;
+        var targetNode = service.FindPair(target)!.Node;
+        var a2Node = service.FindPair(a2)!.Node;
+
+        //The card takes the gap of the list that took the drop and is drawn by that list from then on.
+        Assert.True(service.MoveInlineChild(targetNode, a2Node, 0));
+
+        Assert.Equal(new System.Activities.Activity[] { a1 }, source.Activities.ToArray());
+        Assert.Equal(new System.Activities.Activity[] { a2, b1 }, target.Activities.ToArray());
+        Assert.Same(targetNode, a2Node.EmbeddedOwner);
+        Assert.True(a2Node.IsEmbedded);
+
+        //A card of the column of an opened container keeps a node of the diagram, so it does not move this way.
+        service.Open(sourceNode);
+        var columnCard = service.FindPair(a1)!.Node;
+        Assert.True(columnCard.IsStackChild);
+        Assert.False(service.MoveInlineChild(targetNode, columnCard, 0));
+        Assert.Equal(new System.Activities.Activity[] { a1 }, source.Activities.ToArray());
+    }
+
+    /// <summary>
+    /// A Sequence card is drawn inside the list of the container that holds it, so it can be dragged like any
+    /// other card, but never into a list it carries itself: that would close a cycle in the model.
+    /// </summary>
+    /// <summary>
+    /// The card the user drags is only a different source of the activity: any target that takes an activity
+    /// from the toolbox takes it as well, and the activity it holds is moved instead of copied.
+    /// </summary>
+    [Fact]
+    public void ACardDraggedFromAnInlineListFillsTheBranchOfAnotherCard() {
+        using var service = new Service(new BlazorDiagram(), () => { });
+        var moved = new WriteLine { DisplayName = "moved" };
+        var kept = new WriteLine { DisplayName = "kept" };
+        var replaced = new Delay { DisplayName = "replaced" };
+        var body = new Sequence { DisplayName = "body", Activities = { moved, kept } };
+        var branch = new If { DisplayName = "if", Then = replaced };
+        service.SetActivityBuilder(new ActivityBuilder { Implementation = new Sequence { Activities = { body, branch } } });
+
+        var bodyNode = service.FindPair(body)!.Node;
+        var ifNode = (IfNode)service.FindPair(branch)!.Node;
+        var movedNode = service.FindPair(moved)!.Node;
+        Assert.Same(bodyNode, movedNode.EmbeddedOwner);
+
+        //The drag leaves the list and shows the Then branch of the If card as its target.
+        service.StartInlineDrag(movedNode);
+        service.DropSlot = ifNode.ThenSlot;
+
+        Assert.True(service.MoveDraggedActivity());
+
+        //The card moved into the branch, and the activity that was there is gone with its node.
+        Assert.Equal(new System.Activities.Activity[] { kept }, body.Activities.ToArray());
+        Assert.Same(moved, branch.Then);
+        Assert.Null(service.FindPair(replaced));
+        Assert.True(movedNode.IsEmbedded);
+        Assert.Same(ifNode, movedNode.EmbeddedOwner);
+        Assert.False(movedNode.IsStackChild);
+
+        //The drag is over, so nothing of it is left in the service.
+        Assert.Null(service.DraggedInlineChild);
+        Assert.Null(service.DropSlot);
+        Assert.Null(service.DropInsertIndex);
+    }
+
+    [Fact]
+    public void ACardDroppedOnATargetThatRefusesItStaysWhereItIs() {
+        using var service = new Service(new BlazorDiagram(), () => { });
+        var moved = new WriteLine { DisplayName = "moved" };
+        var kept = new Delay { DisplayName = "kept" };
+        var inner = new Sequence { DisplayName = "inner", Activities = { moved, kept } };
+        var outer = new Sequence { DisplayName = "outer", Activities = { inner } };
+        service.SetActivityBuilder(new ActivityBuilder { Implementation = outer });
+
+        var movedNode = service.FindPair(moved)!.Node;
+
+        //A drag that points at no region and no card of a container places the card nowhere.
+        service.StartInlineDrag(movedNode);
+        Assert.False(service.MoveDraggedActivity());
+
+        //The root already holds the schema, so it refuses a second activity the same way.
+        service.StartInlineDrag(movedNode);
+        service.DropTarget = service.Path.First().Node;
+        Assert.False(service.MoveDraggedActivity());
+
+        Assert.Equal(new System.Activities.Activity[] { moved, kept }, inner.Activities.ToArray());
+        Assert.Same(service.FindPair(inner)!.Node, movedNode.EmbeddedOwner);
+        Assert.Null(service.DraggedInlineChild);
+        Assert.Null(service.DropTarget);
+    }
+
+    [Fact]
+    public void ACardIsNotDroppedOnARegionOfTheContainerThatCarriesIt() {
+        using var service = new Service(new BlazorDiagram(), () => { });
+        var branch = new If { DisplayName = "if" };
+        var outer = new Sequence { DisplayName = "outer", Activities = { branch } };
+        service.SetActivityBuilder(new ActivityBuilder { Implementation = outer });
+
+        var ifNode = (IfNode)service.FindPair(branch)!.Node;
+
+        //The card of the If is drawn inside the list of the sequence, so dropping it on its own Then branch
+        //would put the If inside itself.
+        service.StartInlineDrag(ifNode);
+        service.DropSlot = ifNode.ThenSlot;
+
+        Assert.False(service.MoveDraggedActivity());
+        Assert.Null(branch.Then);
+        Assert.Same(branch, Assert.Single(outer.Activities));
+        Assert.Same(service.FindPair(outer)!.Node, ifNode.EmbeddedOwner);
+    }
+
+    [Fact]
+    public void ACardCannotBeDroppedIntoAListItCarries() {
+        using var service = new Service(new BlazorDiagram(), () => { });
+        var inner = new Sequence { DisplayName = "inner", Activities = { new WriteLine() } };
+        var outer = new Sequence { DisplayName = "outer", Activities = { inner, new Delay() } };
+        service.SetActivityBuilder(new ActivityBuilder { Implementation = outer });
+
+        var outerNode = service.FindPair(outer)!.Node;
+        var innerNode = service.FindPair(inner)!.Node;
+
+        Assert.False(service.MoveInlineChild(innerNode, innerNode, 0));
+        Assert.False(service.MoveInlineChild(outerNode, innerNode, 0));
+        Assert.False(service.MoveInlineChild(innerNode, outerNode, 0));
+        Assert.Same(inner, Assert.Single(outer.Activities.OfType<Sequence>()));
+        Assert.Single(inner.Activities);
+    }
+
+    [Fact]
+    public void EndingAnInlineDragForgetsThePlaceTheListShowed() {
+        using var service = new Service(new BlazorDiagram(), () => { });
+        var first = new WriteLine { DisplayName = "first" };
+        var sequence = new Sequence { Activities = { first } };
+        service.SetActivityBuilder(new ActivityBuilder { Implementation = sequence });
+
+        var sequenceNode = service.FindPair(sequence)!.Node;
+        service.StartInlineDrag(service.FindPair(first)!.Node);
+        service.SetInlineDropTarget(sequenceNode, 1);
+        Assert.Equal(1, service.DropInsertIndex);
+
+        //A drag that ends without a drop leaves no caret behind, and the next toolbox drop is not pulled to it.
+        service.EndInlineDrag();
+
+        Assert.Null(service.DropInsertIndex);
+        Assert.Null(service.DropTarget);
+        Assert.Null(service.DraggedInlineChild);
     }
 
     [Fact]

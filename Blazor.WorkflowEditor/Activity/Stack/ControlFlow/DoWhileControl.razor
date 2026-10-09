@@ -1,22 +1,16 @@
 ﻿@using Blazor.WorkflowEditor.Components
 
 <ActivityControl Node="@Node">
-    <Preview>
-        @*The condition ends the loop, so it is edited right on the card. The card is not expandable: the
-          display name and the remaining properties live in the properties panel.*@
-        <div class="we-field-row">
-            <label class="we-field-label" for="@conditionId">Do while</label>
-            <input type="text" class="form-control we-field-input" id="@conditionId" placeholder="True"
-                   aria-label="DoWhile condition" @bind-value="Node.Condition" @onmousedown:stopPropagation
-                   @onmouseup:stopPropagation @onmousemove:stopPropagation />
-        </div>
+    <Preview>@fields</Preview>
+    <Edit>
+        @fields
         @*The body holds a single activity, rendered inside the card through its own control.*@
         <div class="we-branches we-branches-stacked">
             <ActivityRegion Node="Node" Slot="@Node.BodySlot" Label="Body">
                 <EmbeddedActivity Slot="@Node.BodySlot" />
             </ActivityRegion>
         </div>
-    </Preview>
+    </Edit>
 </ActivityControl>
 
 @code {
@@ -25,4 +19,17 @@
 
     /// <summary>Several cards can be on the diagram at once, so the input needs an id of its own.</summary>
     private string conditionId => $"we-dowhile-condition-{Node.Id}";
+
+    /// <summary>
+    /// The condition ends the loop, so it is the card while it is closed and stays above the body while it is
+    /// open: the field is rendered in both blocks.
+    /// </summary>
+    private RenderFragment fields => @<text>
+        <div class="we-field-row">
+            <label class="we-field-label" for="@conditionId">Do while</label>
+            <input type="text" class="form-control we-field-input" id="@conditionId" placeholder="True"
+                   aria-label="DoWhile condition" @bind-value="Node.Condition" @onmousedown:stopPropagation
+                   @onmouseup:stopPropagation @onmousemove:stopPropagation />
+        </div>
+    </text>;
 }

@@ -34,7 +34,23 @@ public class DefaultNode : NodeModel {
     public string? Comment { get; set; }
     public bool IsContainer { get; init; } = false;
     public bool IsGeneric { get; set; } = false;
-    public bool IsExpanded { get; set; } = false;
+
+    /// <summary>
+    /// Whether the card shows the editor it holds instead of its compact fields. It starts closed, and the value
+    /// is kept with the activity, so a card stays as the user left it when the container is opened and left, or
+    /// when the schema is saved and reopened.
+    /// </summary>
+    private bool isExpanded;
+    public bool IsExpanded {
+        get => isExpanded;
+        set {
+            if (isExpanded == value)
+                return;
+
+            isExpanded = value;
+            State.Designer.SetIsExpanded(activity, value ? true : null);
+        }
+    }
 
     /// <summary>
     /// True when the node is a child of an ordered container (Sequence). Such a node is laid out by the
@@ -104,6 +120,13 @@ public class DefaultNode : NodeModel {
     public PortModel IncomingPort { get; private set; }
     public PortModel OutcomingPort { get; private set; }
 
+    /// <summary>
+    /// Whether the card offers its connection points. Only the children of a graph container (Flowchart,
+    /// StateMachine) are connected to each other, so only they show ports; a card anywhere else is placed by
+    /// its container — the order of a Sequence, a branch of another activity — and has nothing to connect to.
+    /// </summary>
+    public bool ShowsPorts { get; private set; }
+
     private readonly PortModel leftPort = default!;
     private readonly PortModel topPort = default!;
     private readonly PortModel rightPort = default!;
@@ -113,6 +136,10 @@ public class DefaultNode : NodeModel {
         this.service = service;
         this.activity = activity;
         this.displayNameProperty = activity.GetType().GetProperty("DisplayName");
+
+        //A card that is recreated (leaving an opened container rebuilds the cards of its surface) takes back the
+        //state the user left it in.
+        this.isExpanded = State.Designer.GetIsExpanded(activity) == true;
 
         this.Size = defaultSize;
 
@@ -448,9 +475,12 @@ public class DefaultNode : NodeModel {
     /// Replaces the four default ports with the directional set used by graph containers: incoming ports on
     /// the left and top edges, outgoing ports on the right and bottom edges. One anchor per side gives a
     /// choice of connection point while drawing without using the corner alignments, which the orthogonal
-    /// router cannot handle.
+    /// router cannot handle. A node that is laid out by a graph container is the only one that shows ports:
+    /// the mode where the user connects elements to each other exists only there.
     /// </summary>
     public void UseGraphPorts() {
+        ShowsPorts = true;
+
         if (Ports.Count == 4 && Ports.All(p => p is GraphInPort or GraphOutPort))
             return;
 

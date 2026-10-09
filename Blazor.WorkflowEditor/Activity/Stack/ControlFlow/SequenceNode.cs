@@ -20,9 +20,6 @@ public class SequenceNode : DefaultNode, IStackContainer {
     public SequenceNode(Service service, System.Activities.Statements.Sequence sequenceActivity) : base(service, sequenceActivity) {
         this.sequenceActivity = sequenceActivity;
         this.IsContainer = true;
-
-        //The card draws the list of its children unless the user collapses it with the chevron of the card.
-        this.IsExpanded = true;
     }
 
     public override IEnumerable<Variable> GetVariables() {

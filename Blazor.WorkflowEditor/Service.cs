@@ -371,11 +371,26 @@ namespace Blazor.WorkflowEditor {
                 activityObject = Activator.CreateInstance(activityType);
             }
 
-            if (activityObject == null)
-                return (false, default!);
+            //A new activity has no node yet, so it gets one where it is placed.
+            return activityObject == null
+                ? (false, default!)
+                : placeActivity(activityObject, existing: null, existingOwner: null, initialPosition);
+        }
 
-            var entry = Path.LastOrDefault();
-            var openContainer = entry?.Reference?.Node;
+        /// <summary>
+        /// Places an activity where the drop pointed: the branch region of a card, the list of an ordered
+        /// container, or the container that takes it. A new activity gets a node of its own, while a card the user
+        /// dragged inside an inline list keeps the node it is drawn with (<paramref name="existing"/> is that
+        /// card's pair and <paramref name="existingOwner"/> the card that draws it): it leaves the container that
+        /// drew it and only changes the one that owns it. A target that does not take the activity leaves the
+        /// schema as it is.
+        /// </summary>
+        private (bool hasAdded, ActivityDesignerPair result) placeActivity(
+            object activityObject,
+            ActivityDesignerPair? existing,
+            DefaultNode? existingOwner,
+            Diagrams.Core.Geometry.Point? initialPosition) {
+            var openContainer = Path.LastOrDefault()?.Reference?.Node;
             var elementType = activityObject.GetType();
 
             //A slot (a branch region of a card) holds a single activity, so the drop goes straight into it
@@ -386,11 +401,15 @@ namespace Blazor.WorkflowEditor {
                 if (activityObject is not System.Activities.Activity activity)
                     return (false, default!);
 
+                //A card dropped on a region of the container it carries would close a cycle in the model.
+                if (existing != null && wouldCarryItself(slot.Owner, existing.Node))
+                    return (false, default!);
+
                 //The child is rendered by the card that holds the branch, not as a node of the diagram.
-                var attached = addElement(activity, addNode: false, initialPosition);
+                detachFromOwner(existing, existingOwner);
+                var attached = existing ?? addElement(activity, addNode: false, initialPosition);
                 slot.Attach(attached);
-                attached.Node.IsEmbedded = true;
-                attached.Node.EmbeddedOwner = slot.Owner;
+                adoptEmbedded(attached.Node, slot.Owner);
                 createEmbeddedChildren(attached.Node, new HashSet<DefaultNode>());
 
                 notifyModelChanged();
@@ -404,18 +423,22 @@ namespace Blazor.WorkflowEditor {
             if (target == null || !target.CanAdd(elementType.IsGenericType ? elementType.GetGenericTypeDefinition() : elementType))
                 return (false, default!);
 
+            //A card dropped on a container it carries would close a cycle in the model.
+            if (existing != null && wouldCarryItself(target, existing.Node))
+                return (false, default!);
+
             // A drop target that is not the opened container adds the child inline (the branch region
             // shows the child, so no separate node is placed on the diagram).
             var inline = DropTarget != null && !ReferenceEquals(DropTarget, openContainer);
             DropTarget = null;
 
-            var result = addElement(activityObject, addNode: !inline, initialPosition);
+            detachFromOwner(existing, existingOwner);
+            var result = existing ?? addElement(activityObject, addNode: !inline, initialPosition);
 
-            //A child of a card that is not the opened container is drawn inside that card, exactly like a branch
-            //child, so it gets no node on the surface.
             if (inline) {
-                result.Node.IsEmbedded = true;
-                result.Node.EmbeddedOwner = target;
+                //A child of a card that is not the opened container is drawn inside that card, exactly like a
+                //branch child, so it gets no node on the surface.
+                adoptEmbedded(result.Node, target);
                 createEmbeddedChildren(result.Node, new HashSet<DefaultNode>());
             }
 
@@ -433,6 +456,23 @@ namespace Blazor.WorkflowEditor {
 
             return (true, result);
         }
+
+        /// <summary>Marks a card as drawn inside the card of <paramref name="owner"/>.</summary>
+        private static void adoptEmbedded(DefaultNode node, DefaultNode owner) {
+            node.IsEmbedded = true;
+            node.EmbeddedOwner = owner;
+            node.IsStackChild = false;
+        }
+
+        /// <summary>Takes a card out of the container that drew it, so that the target can take it.</summary>
+        private static void detachFromOwner(ActivityDesignerPair? card, DefaultNode? owner) {
+            if (card != null && owner != null)
+                owner.RemoveElement(card.Element);
+        }
+
+        /// <summary>Whether a card is the target itself, or one the target draws, which would close a cycle.</summary>
+        private static bool wouldCarryItself(DefaultNode target, DefaultNode card) =>
+            ReferenceEquals(target, card) || isCarriedBy(target, card);
 
         public ActivityBuilder GetActivityBuilder() {
             return this.activityBuilder;
@@ -1057,11 +1097,24 @@ namespace Blazor.WorkflowEditor {
             return node.IsStackChild ? Path.LastOrDefault()?.Reference?.Node as IStackContainer : null;
         }
 
+        /// <summary>Whether a card is drawn inside the card of another one, anywhere below it.</summary>
+        private static bool isCarriedBy(DefaultNode node, DefaultNode ancestor) {
+            for (var owner = node.EmbeddedOwner; owner != null; owner = owner.EmbeddedOwner) {
+                if (ReferenceEquals(owner, ancestor))
+                    return true;
+            }
+
+            return false;
+        }
+
         /// <summary>Starts dragging a card inside the inline list of a card.</summary>
         public void StartInlineDrag(DefaultNode node) {
             DraggedInlineChild = node;
             DropTarget = null;
             DropSlot = null;
+
+            //A new drag shows a place of its own, so the one the last interaction left is forgotten.
+            ClearDropInsertIndex();
         }
 
         /// <summary>Ends a drag inside an inline list, whether or not the card was dropped on a place.</summary>
@@ -1069,9 +1122,54 @@ namespace Blazor.WorkflowEditor {
             if (DraggedInlineChild is null)
                 return;
 
-            //The place a *dropped* element takes is kept: an activity dragged from the toolbox still lands where
-            //the list pointed when its drop runs after this.
             DraggedInlineChild = null;
+
+            //An inline drag has no toolbox item behind it, so nothing else needs the place the drag showed:
+            //forgetting it here keeps the caret of a finished drag from staying on a target.
+            DropTarget = null;
+            DropSlot = null;
+            ClearDropInsertIndex();
+        }
+
+        /// <summary>
+        /// Moves the card the user drags inside an inline list to the place the drag showed, and ends the drag: a
+        /// branch region or a container that takes the activity, or the list of another card (which the card
+        /// drawn by that list handles itself, <see cref="MoveInlineChild"/>). The card leaves the list that drew
+        /// it, and the target draws it from then on. A drop that no card claims leaves the schema as it is.
+        /// </summary>
+        public bool MoveDraggedActivity(Diagrams.Core.Geometry.Point? initialPosition = null) {
+            if (DraggedInlineChild is null)
+                return false;
+
+            var moved = moveDraggedInlineChild(initialPosition);
+
+            //The drag is over either way, so the place it showed is forgotten.
+            DraggedInlineChild = null;
+            DropTarget = null;
+            DropSlot = null;
+            ClearDropInsertIndex();
+
+            return moved;
+        }
+
+        private bool moveDraggedInlineChild(Diagrams.Core.Geometry.Point? initialPosition) {
+            if (DraggedInlineChild is not { } dragged)
+                return false;
+
+            //Only a card that a list draws inside itself can change the container that shows it: a card of the
+            //column of an opened container has a node of the diagram, which stays where the surface put it.
+            if (dragged.EmbeddedOwner is not DefaultNode owner || owner is not IStackContainer)
+                return false;
+
+            //The drag has to point at a card that takes the activity: a drop anywhere else leaves the card where
+            //it is instead of placing it in the opened container by accident.
+            if (DropTarget is null && DropSlot is null)
+                return false;
+
+            if (FindPair(dragged.Element) is not { } card)
+                return false;
+
+            return placeActivity(dragged.Element, card, owner, initialPosition).hasAdded;
         }
 
         /// <summary>
@@ -1085,22 +1183,46 @@ namespace Blazor.WorkflowEditor {
         }
 
         /// <summary>
-        /// Moves a card of an inline list to the place a drop showed. The gap index counts the children of the
-        /// list as they are now, so the card is taken out of the list first.
+        /// Moves a card of an inline list to the place a drop showed on the list of <paramref name="owner"/>:
+        /// the gap before the child at the given index. The gap counts the children of the list that took the
+        /// drop as they are now, so a card of that same list is taken out of it first, while a card dragged out
+        /// of another list leaves that list and is inserted at the gap.
         /// </summary>
-        public bool MoveInlineChild(DefaultNode dragged, int gapIndex) {
-            if (stackOf(dragged) is not { } stack)
+        public bool MoveInlineChild(DefaultNode owner, DefaultNode dragged, int gapIndex) {
+            if (owner is not IStackContainer target)
                 return false;
 
-            var from = stack.IndexOf(dragged.Element);
+            //Only a card that a list draws inside itself can change the list that shows it: a card of the column
+            //of an opened container has a node of the diagram behind it, which this path does not move.
+            if (dragged.EmbeddedOwner is not DefaultNode sourceOwner || sourceOwner is not IStackContainer source)
+                return false;
+
+            //A container cannot hold itself: a card dropped on its own list, or on the list of a container it
+            //carries, would close a cycle in the model.
+            if (ReferenceEquals(owner, dragged) || isCarriedBy(owner, dragged))
+                return false;
+
+            var from = source.IndexOf(dragged.Element);
             if (from < 0)
                 return false;
 
-            var target = gapIndex > from ? gapIndex - 1 : gapIndex;
-            if (target == from)
+            if (ReferenceEquals(source, target)) {
+                var to = gapIndex > from ? gapIndex - 1 : gapIndex;
+                if (to == from)
+                    return false;
+
+                target.MoveChild(from, to);
+                updateState();
+                return true;
+            }
+
+            if (FindPair(dragged.Element) is not { } pair)
                 return false;
 
-            stack.MoveChild(from, target);
+            //The card leaves the list that drew it, and the list that took the drop draws it from then on.
+            sourceOwner.RemoveElement(dragged.Element);
+            dragged.EmbeddedOwner = owner;
+            target.InsertChild(gapIndex, pair);
             updateState();
             return true;
         }
