@@ -6,12 +6,17 @@
   @if (Value.Value != null)
   {
     <div class="col">
-      <div class="">
+      @if (ChooseAgain)
+      {
+        <button type="button" class="we-vtc-type link-primary" @onclick="chooseAgain">@Value.Value?.ToString()</button>
+      }
+      else
+      {
         <label class="col-form-label">@Value.Value?.ToString()</label>
-        <button type="button" class="btn" @onclick="() => Value.Value = null">
-          <span class="oi oi-x text-primary" aria-hidden="true"></span>
-        </button>
-      </div>
+      }
+      <button type="button" class="btn" @onclick="clearType">
+        <span class="oi oi-x text-primary" aria-hidden="true"></span>
+      </button>
 
       @if (Value.Childs.Count > 0)
       {
@@ -31,7 +36,9 @@
   @if (Value.Value == null)
   {
     <div class="@(Value.Value != null ? "col-8" : "")">
-      <TypeSelectComponent TypeCollection="TypeCollection" @bind-Value="Value.Value"></TypeSelectComponent>
+      <TypeSelectComponent TypeCollection="TypeCollection" Value="Value.Value" ValueChanged="onTypeSelected"
+                           StartOpen="ChooseAgain">
+      </TypeSelectComponent>
     </div>
   }
 </div>
@@ -111,13 +118,25 @@
     base.OnParametersSet();
   }
 
-  public Type? BuildedType { get => Value.BuildType(); }
+  /// <summary>A listener that edits the type of a value it already has lets the user choose it again, so the
+  /// chosen type becomes the control that opens the picker; a choice left half made survives until the
+  /// listener applies the dialog, because only a complete type is read then.</summary>
+  [Parameter]
+  public bool ChooseAgain { get; set; }
 
   [Parameter]
   public TypeItem Value { get; set; } = new();
 
   [Parameter, EditorRequired]
   public List<Type>? TypeCollection { get; set; }
+
+  public Type? BuildedType { get => Value.BuildType(); }
+
+  private void onTypeSelected(Type? type) => Value.Value = type;
+
+  private void clearType() => Value.Value = null;
+
+  private void chooseAgain() => Value.Value = null;
 
   public void Dispose()
   {

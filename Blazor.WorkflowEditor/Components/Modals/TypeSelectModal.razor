@@ -3,19 +3,31 @@
 
 <Modal @ref="Modal">
   <Header>
-    <ModalHeader TitleText="Select generic type " OnClose="Modal!.Close"></ModalHeader>
+    <ModalHeader TitleText="Select a type" OnClose="Modal!.Close"></ModalHeader>
   </Header>
 
   <Body>
 
-      @foreach (var item in GenericTypes)
-      {
-        <VariableTypeConstructorComponent @key="item" @ref="item.ObjRef" TypeCollection="TypeCollection" VariableType="item.Value">
-        </VariableTypeConstructorComponent>
-      }
+      @*The one form that asks for a type, whether it completes the generic parameters of an activity that is
+        dropped or changes the type of a variable: one control per field, named where a name says something
+        (a generic parameter), because a chosen type can need parameters of its own (`List<T>`).*@
+      <div class="we-generic-form">
+        @foreach (var item in Fields)
+        {
+          <div class="we-generic-field">
+            @if (!string.IsNullOrEmpty(item.Label))
+            {
+              <span class="we-generic-key">@item.Label</span>
+            }
+            <VariableTypeConstructorComponent @key="item" @ref="item.ObjRef" TypeCollection="TypeCollection"
+                                              VariableType="item.Value" ChooseAgain="true">
+            </VariableTypeConstructorComponent>
+          </div>
+        }
+      </div>
       @if (!string.IsNullOrWhiteSpace(typeError))
       {
-        <div class="alert alert-danger mt-2" role="alert">@typeError</div>
+        <div class="alert alert-danger mt-2 mb-0" role="alert">@typeError</div>
       }
 
   </Body>
@@ -27,9 +39,11 @@
 
 
 @code {
-    public class GenericTypeDescription
+    /// <summary>One type the user chooses: the label it is shown under, where one says something, and the
+    /// type it starts from — a field of a dialog that asks for a type starts empty.</summary>
+    public class TypeField
     {
-        public string Key { get; set; } = string.Empty;
+        public string Label { get; set; } = string.Empty;
         public Type? Value { get; set; } = null;
         public object? ObjRef { get; set; } = null;
     }
@@ -40,9 +54,9 @@
     public List<Type?> TypeCollection { get; set; } = new();
 
     [Parameter]
-    public List<GenericTypeDescription> GenericTypes { get; set; } = new();
+    public List<TypeField> Fields { get; set; } = new();
 
-    public List<Type?> BuildedTypes => GenericTypes.Select(p => p.ObjRef)
+    public List<Type?> BuildedTypes => Fields.Select(p => p.ObjRef)
       .OfType<VariableTypeConstructorComponent>()
       .Where(p => p != null)
       .Select(p => p.BuildedType).ToList();
@@ -54,9 +68,9 @@
     private void apply()
     {
       var types = BuildedTypes;
-      if (types.Count != GenericTypes.Count || types.Any(type => type == null))
+      if (types.Count != Fields.Count || types.Any(type => type == null))
       {
-        typeError = "Select a type for every generic parameter.";
+        typeError = "Select a type.";
         return;
       }
 

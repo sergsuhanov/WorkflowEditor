@@ -3,7 +3,7 @@
 
 <SelectComponent T=Type Label="@Label" @bind-SelectedValue="BoundValue" SelectCollection="TypeCollection"
   FilteringCollection="FilteringCollection" ConvertValueToString="ConvertValueToString"
-  ConvertValueToListItemString="ConvertValueToListItemString">
+  ConvertValueToListItemString="ConvertValueToListItemString" StartOpen="StartOpen">
 </SelectComponent>
 
 @code {
@@ -27,6 +27,10 @@
 
   [Parameter]
   public Type? Value { get; set; }
+
+  /// <summary>Opens the list as soon as the picker is shown (see <c>SelectComponent.StartOpen</c>).</summary>
+  [Parameter]
+  public bool StartOpen { get; set; }
 
   [Parameter]
   public EventCallback<Type> ValueChanged { get; set; }

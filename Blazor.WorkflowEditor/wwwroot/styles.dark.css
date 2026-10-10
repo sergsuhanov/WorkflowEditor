@@ -123,14 +123,24 @@
         linear-gradient(90deg, rgb(255 255 255 / 5%) 1px, transparent 1px) !important;
 }
 
-.we-navigator,
-.we-zoom-controls {
+/*The tools panel of the canvas carries the map and the zoom commands in both themes.*/
+.we-diagram-tools {
     background-color: #2b2b2b;
     border-color: #6c757d;
 }
 
-.we-navigator .diagram-node,
-.we-navigator rect {
+.we-navigator {
+    background-color: #2b2b2b;
+    border-color: #495057;
+}
+
+.we-minimap-toggle {
+    color: #ced4da;
+}
+
+/*The nodes of the map take the light blue of the dark theme. The rectangle of the visible area must not be
+  matched here: a CSS fill wins over its inline "none" and the map would turn into a solid block.*/
+.we-navigator .navigator-node {
     fill: #4dabf7;
 }
 

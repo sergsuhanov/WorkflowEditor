@@ -2,7 +2,11 @@
 @typeparam T
 
 <div class="mb-3 row" @onmousedown:stopPropagation @onmouseup:stopPropagation @onmousemove:stopPropagation>
-  <label class="col-form-label">@Label</label>
+  @*An empty label would still take a line and the gutters of a row, so it is left out.*@
+  @if (!string.IsNullOrEmpty(Label))
+  {
+    <label class="col-form-label">@Label</label>
+  }
   <div class="we-autocomplete">
     <div class="col-auto">
       <div class="input-group">
@@ -65,8 +69,20 @@
   [Parameter]
   public List<T>? SelectCollection { get; set; } = default!;
 
+  /// <summary>Opens the list as soon as the field is shown: a field the user reached by asking to change a
+  /// value it already has is there to be changed.</summary>
+  [Parameter]
+  public bool StartOpen { get; set; }
+
   [Parameter]
   public EventCallback<T> SelectedValueChanged { get; set; }
+
+  protected override void OnInitialized()
+  {
+    _collapsed = !StartOpen;
+
+    base.OnInitialized();
+  }
 
   protected override void OnParametersSet()
   {

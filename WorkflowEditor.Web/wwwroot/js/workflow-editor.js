@@ -32,6 +32,10 @@ window.enableTheme = (theme) => {
     }
 };
 
+// The toolbar reads the theme that is in effect: its button switches to the other one, and a reload
+// restores the theme before the editor is rendered.
+window.currentTheme = () => document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
+
 // Restore the saved theme as early as possible to avoid a flash of the light theme.
 (() => {
     try {

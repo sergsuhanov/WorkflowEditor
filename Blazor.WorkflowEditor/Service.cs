@@ -1370,8 +1370,30 @@ namespace Blazor.WorkflowEditor {
         }
 
         public virtual void UpdateVariable<TActivity>(TActivity activity, string oldName, string name, Type type, string defaultValue) where TActivity : class {
+            var collection = getVariableCollection(activity);
+            var index = indexOf(collection, oldName);
             RemoveVariable(activity, oldName);
             AddVariable(activity, name, type, defaultValue);
+            //A variable is replaced rather than changed, and the collection takes the new one at its end: the
+            //panel draws the variables in that order, so the place of the edited one is restored.
+            if (collection is IList<System.Activities.Variable> list && index >= 0 && index < list.Count - 1) {
+                var moved = list[list.Count - 1];
+                list.RemoveAt(list.Count - 1);
+                list.Insert(index, moved);
+            }
+        }
+
+        private static int indexOf(ICollection<System.Activities.Variable>? collection, string name) {
+            if (collection == null)
+                return -1;
+
+            var index = 0;
+            foreach (var item in collection) {
+                if (item.Name == name)
+                    return index;
+                index++;
+            }
+            return -1;
         }
     }
 }

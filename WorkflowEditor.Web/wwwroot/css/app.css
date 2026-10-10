@@ -112,6 +112,39 @@ a,
     content: var(--blazor-load-percentage-text, "Loading");
 }
 
+/* The toolbar commands are icons: a fixed square keeps them in one row, and the title says what each one
+   does. The hidden file input behind the open command keeps its own focus ring. */
+.we-commands {
+    align-items: center;
+}
+
+.we-command {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    border-radius: 4px;
+    background-color: transparent;
+    color: #495057;
+    font-size: 1rem;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.we-command:hover {
+    background-color: rgb(0 0 0 / 8%);
+    color: #212529;
+}
+
+.we-command:focus-visible {
+    outline: 2px solid #258cfb;
+    outline-offset: 1px;
+}
+
 /* Unsaved changes indicator in the toolbar. */
 .we-unsaved {
     display: inline-flex;
@@ -155,6 +188,15 @@ html[data-theme="dark"] .navbar .nav-link:hover {
     color: #fff;
 }
 
+html[data-theme="dark"] .we-command {
+    color: #ced4da;
+}
+
+html[data-theme="dark"] .we-command:hover {
+    background-color: rgb(255 255 255 / 12%);
+    color: #fff;
+}
+
 html[data-theme="dark"] .we-unsaved {
     background-color: #343a40;
     color: #ced4da;
@@ -194,30 +236,4 @@ html[data-theme="dark"] .alert-danger {
         flex-wrap: wrap;
         align-items: center;
     }
-}
-/* Dropdown menus are toggled by Blazor (Bootstrap JS is not loaded). */
-.we-menu-backdrop {
-    position: fixed;
-    inset: 0;
-    z-index: 990;
-    background: transparent;
-}
-
-.navbar .dropdown-menu.show {
-    z-index: 1000;
-}
-
-html[data-theme="dark"] .navbar .dropdown-menu {
-    background-color: #343a40;
-    border-color: #6c757d;
-}
-
-html[data-theme="dark"] .navbar .dropdown-item {
-    color: #ced4da;
-}
-
-html[data-theme="dark"] .navbar .dropdown-item:hover,
-html[data-theme="dark"] .navbar .dropdown-item:focus {
-    background-color: #3d444b;
-    color: #fff;
 }

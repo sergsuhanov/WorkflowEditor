@@ -42,10 +42,10 @@
                         <CascadingValue Value="service">
                             <DiagramCanvas>
                                 <Widgets>
-                                    @*Background grid, rubber band selection and a minimap for large schemas.*@
+                                    @*Background grid and rubber band selection. The minimap is not a widget of the
+                                      canvas: it lives in the tools panel below, so it can be switched off.*@
                                     <GridWidget Size="20" BackgroundColor="transparent" />
                                     <SelectionBoxWidget />
-                                    <NavigatorWidget Width="180" Height="120" Class="we-navigator" />
                                 </Widgets>
                             </DiagramCanvas>
                         </CascadingValue>
@@ -54,19 +54,34 @@
 
                 <StartNodePresentation Service="service"></StartNodePresentation>
 
-                <div class="we-zoom-controls" role="group" aria-label="Diagram zoom">
-                    <button type="button" class="btn" title="Zoom out" aria-label="Zoom out" @onclick="zoomOut">
-                        <span class="oi oi-minus" aria-hidden="true"></span>
-                    </button>
-                    <button type="button" class="btn we-zoom-value" title="Reset zoom to 100 %"
-                            aria-label="Reset zoom to 100 %" @onclick="resetZoom">@zoomPercent</button>
-                    <button type="button" class="btn" title="Zoom in" aria-label="Zoom in" @onclick="zoomIn">
-                        <span class="oi oi-plus" aria-hidden="true"></span>
-                    </button>
-                    <button type="button" class="btn" title="Fit the whole schema" aria-label="Fit the whole schema"
-                            @onclick="fitDiagram">
-                        <span class="oi oi-fullscreen-enter" aria-hidden="true"></span>
-                    </button>
+                @*The tools of the canvas in one panel at the bottom right: the map (switched by the checkbox of
+                  the commands row) and the zoom commands. The map is kept rendered while it is hidden, because
+                  it measures itself from the diagram changes and would come back empty otherwise.*@
+                <div class="we-diagram-tools">
+                    <div class="we-minimap @(showMinimap ? null : "is-hidden")">
+                        <CascadingValue Value="diagram">
+                            <NavigatorWidget Width="180" Height="120" Class="we-navigator" />
+                        </CascadingValue>
+                    </div>
+                    <div class="we-zoom-controls" role="group" aria-label="Diagram tools">
+                        <button type="button" class="btn" title="Zoom out" aria-label="Zoom out" @onclick="zoomOut">
+                            <span class="oi oi-minus" aria-hidden="true"></span>
+                        </button>
+                        <button type="button" class="btn we-zoom-value" title="Reset zoom to 100 %"
+                                aria-label="Reset zoom to 100 %" @onclick="resetZoom">@zoomPercent</button>
+                        <button type="button" class="btn" title="Zoom in" aria-label="Zoom in" @onclick="zoomIn">
+                            <span class="oi oi-plus" aria-hidden="true"></span>
+                        </button>
+                        <button type="button" class="btn" title="Fit the whole schema"
+                                aria-label="Fit the whole schema" @onclick="fitDiagram">
+                            <span class="oi oi-fullscreen-enter" aria-hidden="true"></span>
+                        </button>
+                        <label class="we-minimap-toggle">
+                            <input type="checkbox" class="form-check-input" checked="@showMinimap"
+                                   @onchange="e => showMinimap = (bool)(e.Value ?? false)" />
+                            <span>Minimap</span>
+                        </label>
+                    </div>
                 </div>
             </div>
 
@@ -114,6 +129,8 @@
 
     private bool toolboxCollapsed;
     private bool propertiesCollapsed;
+    /// <summary>Whether the tools panel shows the minimap above the zoom commands.</summary>
+    private bool showMinimap;
     private bool isCompact;
     private bool isNarrow;
     private bool disposed;
@@ -379,14 +396,14 @@
                 var genericTypes = draggedItem.TypeOfActivity
                     .GetGenericArguments()
                     .Where(t => t.IsGenericParameter)
-                    .Select(s => new GenericTypeSelectModal.GenericTypeDescription { Key = s.ToString() })
+                    .Select(s => new TypeSelectModal.TypeField { Label = s.ToString() })
                     .ToList();
 
                 if (modalService == null)
                     throw new NotSupportedException();
 
-                var modal = await modalService.ShowModal<GenericTypeSelectModal>(new(){
-                    {"GenericTypes",genericTypes},
+                var modal = await modalService.ShowModal<TypeSelectModal>(new(){
+                    {"Fields",genericTypes},
                     {"TypeCollection",TypeCollection??new List<Type>()}
                 });
 

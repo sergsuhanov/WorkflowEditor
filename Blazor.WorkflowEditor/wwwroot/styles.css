@@ -115,6 +115,11 @@
     height: 24px;
 }
 
+/*The path names the containers the user opened, so it stays short and quiet next to the schema.*/
+.we-activity-path .breadcrumb {
+    font-size: 0.85rem;
+}
+
 .we-diagram {
     flex: auto;
     min-height: 0;
@@ -454,10 +459,13 @@
     background-color: #e9ecef;
 }
 
+/*The activities of a group are denser than the group heading above them: the toolbox lists many of them, so
+  they use a smaller size than the group name keeps.*/
 .we-toolbox .groupItem .activityItem {
     cursor: grab;
     padding: 0.15rem 0.35rem 0.15rem 0.9rem;
     border-radius: 4px;
+    font-size: 0.85rem;
 }
 
 .we-toolbox .groupItem .activityItem:hover {
@@ -472,6 +480,7 @@
     cursor: grab;
     padding: 0.15rem 0.35rem 0.15rem 1.9rem;
     border-radius: 4px;
+    font-size: 0.85rem;
 }
 
 .we-toolbox .groupItem .activityItemWithoutIcon:hover {
@@ -513,6 +522,40 @@
 
 .we-variable-group-header .we-panel-title {
     font-weight: 600;
+}
+
+/*A row of the variables table carries the fields of the variable it shows instead of its text, so the table
+  needs no header row and no edit command: the name and the default value are edited in the cells and the
+  type is the command that opens the dialog which chooses it.*/
+.we-variables-table td {
+    vertical-align: middle;
+}
+
+.we-variables-table .we-variable-name,
+.we-variables-table .we-variable-value {
+    width: 32%;
+}
+
+.we-variables-table .we-variable-type {
+    width: 24%;
+}
+
+.we-variables-table .we-variable-actions {
+    width: 1%;
+    text-align: right;
+    white-space: nowrap;
+}
+
+/*The type a picker shows is the command that opens the picker again — in the variables table, and in the
+  dialog that chooses a type for a value which already has one — so it keeps the look of the name it shows.*/
+.we-vtc-type {
+    padding: 0;
+    border: 0;
+    background: none;
+    font-size: inherit;
+    text-decoration: underline;
+    vertical-align: baseline;
+    cursor: pointer;
 }
 
 .we-options {
@@ -764,31 +807,43 @@
         linear-gradient(90deg, rgb(0 0 0 / 4%) 1px, transparent 1px) !important;
 }
 
-.we-navigator {
+/*The tools of the canvas in one panel at the bottom right: the minimap (switched by the checkbox that sits
+  with the commands) above the zoom commands.*/
+.we-diagram-tools {
     position: absolute;
     right: 10px;
     bottom: 10px;
-    z-index: 4;
-    background-color: #fff;
+    z-index: 5;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 5px;
     border: 1px solid #ced4da;
     border-radius: 6px;
+    background-color: #fff;
     box-shadow: 0 2px 8px rgb(0 0 0 / 15%);
+}
+
+/*The map is a plain view of the canvas under it, so it takes no pointer events: a drop on it reaches the
+  canvas, exactly like a drop next to the panel.*/
+.we-navigator {
+    display: block;
+    background-color: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 4px;
     pointer-events: none;
 }
 
+/*Hidden, the map keeps its place in the panel but takes no room, so the commands stay where they are.*/
+.we-minimap.is-hidden {
+    display: none;
+}
+
 .we-zoom-controls {
-    position: absolute;
-    left: 10px;
-    bottom: 10px;
-    z-index: 5;
     display: flex;
     align-items: stretch;
     gap: 2px;
-    padding: 2px;
-    border: 1px solid #ced4da;
-    border-radius: 6px;
-    background-color: #fff;
-    box-shadow: 0 2px 8px rgb(0 0 0 / 15%);
 }
 
 .we-zoom-controls .btn {
@@ -802,6 +857,23 @@
     font-variant-numeric: tabular-nums;
 }
 
+.we-minimap-toggle {
+    display: flex;
+    align-items: center;
+    align-self: center;
+    gap: 0.3rem;
+    padding: 0 0.35rem;
+    color: #495057;
+    font-size: 0.8rem;
+    white-space: nowrap;
+    cursor: pointer;
+}
+
+.we-minimap-toggle .form-check-input {
+    margin: 0;
+    cursor: pointer;
+}
+
 /*A drop-down inside a dialog takes part in the layout instead of floating over it: a floating list grows
   past the body and is painted under the footer, which hides its own first entries.*/
 .modal-body .we-autocomplete .options {
@@ -809,6 +881,59 @@
     max-height: 45vh;
     margin-top: 0.25rem;
     box-shadow: none;
+}
+
+/*A dialog is as narrow as the content it holds: a message, or one field per line. Bootstrap's large size is
+  twice that and left every dialog looking empty, so the width is set here instead; a long word of a message
+  or of a type name is broken rather than pushed out of the box.*/
+.modal-dialog {
+    width: min(26rem, 92vw);
+    overflow-wrap: break-word;
+}
+
+/*A dialog that holds one line per field takes the spacing of a full form page down to what those lines need:
+  the gutters and the margins of a row go. The field is a row of its own, because the label of a generic
+  parameter is left out where a field has no name to show (the type of a variable).*/
+.we-generic-form .we-generic-field {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.we-generic-form .we-generic-key {
+    flex: none;
+    font-weight: 600;
+}
+
+.we-generic-form .row {
+    margin-right: 0;
+    margin-left: 0;
+}
+
+.we-generic-form .mb-3 {
+    /*Bootstrap gives every spacing utility `!important`, so a row cannot be tightened without it.*/
+    margin-bottom: 0 !important;
+}
+
+.we-generic-form .col-form-label {
+    padding: 0;
+}
+
+.we-generic-form .we-autocomplete {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.we-generic-form .we-vtc-options {
+    margin-bottom: 0;
+    padding-left: 1rem;
+}
+
+/*The commands inside that form — the clear button of a chosen type and the one of the filter — carry an
+  icon, so they lose the padding of a button and take the height of the line they sit in.*/
+.we-generic-form .btn {
+    padding: 0 0.25rem;
+    line-height: 1.5;
 }
 
 /* --- Node badges, families and validation state (step 8) --- */

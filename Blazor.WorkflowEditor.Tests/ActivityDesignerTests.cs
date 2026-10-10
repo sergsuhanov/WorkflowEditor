@@ -897,6 +897,30 @@ public class ActivityDesignerTests {
         Assert.Equal("count", Assert.Single(sequence.Variables).Name);
     }
 
+    /// <summary>
+    /// A variable is replaced when it is edited (see <see cref="Service.UpdateVariable{TActivity}"/>), and the
+    /// panel draws the variables in the order the collection has, so an edit must not move the row: the
+    /// variables the user is not editing stay where they were.
+    /// </summary>
+    [Fact]
+    public void EditingAVariableKeepsItsPlaceAmongTheOthers() {
+        using var service = new Service(new BlazorDiagram(), () => { });
+        var sequence = new Sequence();
+        service.SetActivityBuilder(new ActivityBuilder { Implementation = sequence });
+
+        var root = service.Path.Last().Activity;
+        service.AddVariable(root, "first", typeof(int), "1");
+        service.AddVariable(root, "second", typeof(int), "2");
+        service.AddVariable(root, "third", typeof(int), "3");
+        service.RefreshVariables();
+
+        service.UpdateVariable(root, "second", "renamed", typeof(int), "2");
+        service.RefreshVariables();
+
+        Assert.Equal(new[] { "first", "renamed", "third" }, service.Variables.Select(p => p.Name));
+        Assert.Equal(new[] { "first", "renamed", "third" }, sequence.Variables.Select(p => p.Name));
+    }
+
     [Fact]
     public void DoWhileDesignerEditsConditionBodyAndVariables() {
         using var service = new Service(new BlazorDiagram(), () => { });

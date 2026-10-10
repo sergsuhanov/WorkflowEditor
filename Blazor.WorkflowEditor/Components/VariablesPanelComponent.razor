@@ -25,7 +25,10 @@
     <div class="we-panel-body">
       @foreach (var item in _groupedVariables)
       {
-        <div class="we-variable-group" @key="item">
+        @*The group is keyed by its activity, which is the object that stays the same between renders: the
+          group itself is built again on every render, and a key that changed with it would discard the state
+          of the fields the user is editing (a type that is half chosen, for instance).*@
+        <div class="we-variable-group" @key="item.Activity">
           <div class="we-variable-group-header" role="button" tabindex="0"
                aria-expanded="@(getCollapsedGroup(item) ? "false" : "true")"
                title="@(getCollapsedGroup(item) ? "Show variables of this activity" : "Hide variables of this activity")"
@@ -37,35 +40,36 @@
 
           @if (!getCollapsedGroup(item))
           {
-            <table class="table table-sm mb-2">
-              <thead>
-                <tr>
-                  <th scope="col"></th>
-                  <th scope="col">Name</th>
-                  <th scope="col">Type</th>
-                  <th scope="col">Default value</th>
-                  <th scope="col"></th>
-                </tr>
-              </thead>
+            @*The variables are edited in place: a row carries the fields of the variable it shows, so the
+              table needs no header and no edit command — the several shapes of a type are chosen in the
+              dialog the type opens, and the delete command is the only action left.*@
+            <table @key="_tableRevision" class="table table-sm mb-2 we-variables-table">
               <tbody>
                 @foreach (var variable in item.Variables)
                 {
-                  <tr>
-                    <td style="width: 20px;"></td>
-                    <td>@variable.Name</td>
-                    <td>@variable.Type</td>
-                    <td>@variable.DefaultValue</td>
-                    <td>
-                      <div class="float-end">
-                        <button type="button" class="btn we-panel-action" title="Edit the variable"
-                                aria-label="@($"Edit variable {variable.Name}")" @onclick="@(() => editVariable(variable))">
-                          <span class="oi oi-pencil text-primary" aria-hidden="true"></span>
-                        </button>
-                        <button type="button" class="btn we-panel-action" title="Delete the variable"
-                                aria-label="@($"Delete variable {variable.Name}")" @onclick="() => removeVariable(variable)">
-                          <span class="oi oi-x text-danger" aria-hidden="true"></span>
-                        </button>
-                      </div>
+                  <tr @key="variable">
+                    <td class="we-variable-name">
+                      <input type="text" class="form-control form-control-sm"
+                             aria-label="@($"Name of the variable {variable.Name}")" value="@variable.Name"
+                             @onchange="e => renameVariable(variable, e.Value?.ToString())" />
+                    </td>
+                    <td class="we-variable-type">
+                      <button type="button" class="we-vtc-type link-primary"
+                              title="Change the type of this variable"
+                              aria-label="@($"Type of the variable {variable.Name}: {typeName(variable.Type)}")"
+                              @onclick="() => changeType(variable)">@typeName(variable.Type)</button>
+                    </td>
+                    <td class="we-variable-value">
+                      <input type="text" class="form-control form-control-sm"
+                             aria-label="@($"Default value of the variable {variable.Name}")"
+                             value="@variable.DefaultValue"
+                             @onchange="e => setDefaultValue(variable, e.Value?.ToString())" />
+                    </td>
+                    <td class="we-variable-actions">
+                      <button type="button" class="btn we-panel-action" title="Delete the variable"
+                              aria-label="@($"Delete variable {variable.Name}")" @onclick="() => removeVariable(variable)">
+                        <span class="oi oi-x text-danger" aria-hidden="true"></span>
+                      </button>
                     </td>
                   </tr>
                 }
@@ -89,6 +93,9 @@
 
   private Dictionary<string, bool> _collapsedGroup = new();
   private bool _collapsed { get; set; } = false;
+
+  /// <summary>Bumped when a change was refused: the table is built again so its fields show the model.</summary>
+  private int _tableRevision;
 
   private List<GroupedActivityVariable> _groupedVariables
   {
@@ -178,68 +185,102 @@
     StateHasChanged();
   }
 
-  private async void editVariable(Blazor.WorkflowEditor.Variable variable)
+  /// <summary>Renames the variable of a row. A variable without a name cannot be referenced, so an empty
+  /// name is refused and the field is redrawn with the name the variable has.</summary>
+  private void renameVariable(Blazor.WorkflowEditor.Variable variable, string? typed)
+  {
+    var name = (typed ?? string.Empty).Trim();
+
+    if (name.Length == 0 || name == variable.Name)
+    {
+      //The browser keeps what the user typed, so the table is built again to show the model value.
+      _tableRevision++;
+      return;
+    }
+
+    updateVariable(variable, name, variable.Type, defaultValueOf(variable));
+  }
+
+  /// <summary>Asks for the type of a variable in the one dialog that asks for a type, which is where a type
+  /// that needs parameters of its own (`List<Int32>`) can be put together.</summary>
+  private async void changeType(Blazor.WorkflowEditor.Variable variable)
   {
     if (_modalService == null)
       return;
-        
-    var defaultValue = variable.DefaultValue?.ToString() ?? "";
-    var oldName = variable.Name;
-    var modal = await _modalService.ShowModal<VariableCreateModal>(new(){
-          {"Title","Edit variable"},
-          {"ApplyButtonText","Apply"},
+
+    var modal = await _modalService.ShowModal<TypeSelectModal>(new(){
+          {"Fields",new List<TypeSelectModal.TypeField>{ new() }},
           {"TypeCollection",TypeCollection??new List<Type>()},
-          {"VariableName",variable.Name},
-          {"DefaultValue",defaultValue},
-          {"VariableType",variable.Type},
         });
 
     if (modal.ModalResult == ModalResult.Applied)
     {
-
-      Service.UpdateVariable(
-          variable.Activity,
-          oldName,
-          modal?.VariableName ?? string.Empty,
-          modal?.BuildedType ?? typeof(object),
-          modal?.DefaultValue ?? string.Empty);
-
-      //The panel shows a snapshot of the variables, so the table has to be rebuilt after the rename.
-      Service.RefreshVariables();
+      var type = modal.BuildedTypes.OfType<Type>().FirstOrDefault();
+      if (type != null)
+        updateVariable(variable, variable.Name, type, defaultValueOf(variable));
     }
 
     StateHasChanged();
   }
 
-  private async void addVariable()
+  private void setDefaultValue(Blazor.WorkflowEditor.Variable variable, string? value)
   {
-    Blazor.WorkflowEditor.Variable variable = new();
-    if (_modalService == null)
+    var defaultValue = value ?? string.Empty;
+
+    if (defaultValue == defaultValueOf(variable))
       return;
-        
-    var modal = await _modalService.ShowModal<VariableCreateModal>(new(){
-            {"Title","Add variable"},
-            {"ApplyButtonText","Apply"},
-            {"TypeCollection",TypeCollection??new List<Type>()},
-            {"VariableName",variable.Name},
-            {"DefaultValue",variable.DefaultValue},
-            {"VariableType",variable.Type},
-        });
 
-    if (modal.ModalResult == ModalResult.Applied)
+    updateVariable(variable, variable.Name, variable.Type, defaultValue);
+  }
+
+  private void updateVariable(Blazor.WorkflowEditor.Variable variable, string name, Type type, string defaultValue)
+  {
+    if (variable.Activity == null)
+      return;
+
+    Service.UpdateVariable(variable.Activity, variable.Name, name, type, defaultValue);
+
+    //The panel shows a snapshot of the variables, so the table has to be rebuilt after every change.
+    Service.RefreshVariables();
+  }
+
+  /// <summary>The default value as the field carries it.</summary>
+  private static string defaultValueOf(Blazor.WorkflowEditor.Variable variable)
+    => variable.DefaultValue?.ToString() ?? string.Empty;
+
+  /// <summary>The type as the row shows it: a type that takes parameters reads as `List<Int32>` instead of
+  /// the CLR name of its definition, which is long enough to wrap a cell of the table.</summary>
+  private static string typeName(Type? type)
+  {
+    if (type == null)
+      return string.Empty;
+
+    if (!type.IsGenericType)
+      return type.Name;
+
+    var name = type.Name;
+    var arguments = string.Join(", ", type.GenericTypeArguments.Select(typeName));
+    return $"{name[..name.IndexOf('`')]}<{arguments}>";
+  }
+
+  /// <summary>Adds a variable of a fresh name: its row is the form, so the name it starts with only has to
+  /// be one nothing else uses, and the user renames it in place.</summary>
+  private void addVariable()
+  {
+    var activity = Service.Path.LastOrDefault()?.Activity;
+    if (activity == null)
+      return;
+
+    string name;
+    for (var index = 1; ; index++)
     {
-
-      Service.AddVariable(
-          Service.Path.Last().Activity!,
-          modal?.VariableName ?? string.Empty,
-          modal?.BuildedType ?? typeof(object),
-          modal?.DefaultValue ?? string.Empty);
-
-      Service.RefreshVariables();
-
+      name = $"variable{index}";
+      if (Service.Variables.All(p => p.Name != name))
+        break;
     }
-        
-    StateHasChanged();
+
+    Service.AddVariable(activity, name, typeof(object), string.Empty);
+    Service.RefreshVariables();
   }
 
   protected override void OnInitialized()
