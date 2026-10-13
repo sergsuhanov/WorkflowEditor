@@ -876,33 +876,48 @@ namespace Blazor.WorkflowEditor {
         }
 
         /// <summary>
-        /// Takes the end of the connection that arrives at a connection point, so a drag started on that point
+        /// Takes the end of the connection that belongs to a connection point, so a drag started on that point
         /// detaches the connection from the card instead of drawing one more: the point is what the user grabs to
-        /// put the connection somewhere else. Returns false when no connection ends there, which leaves the press
-        /// to the library, that draws a new one.
+        /// put the connection somewhere else. Returns false when no connection belongs there or when the point
+        /// adds connections instead of replacing one, which leaves the press to the library, that draws a new one.
         /// </summary>
         public bool StartLinkEndDragFromPort(PortModel port, double clientX, double clientY) {
             pendingLinkEnd = null;
-            if (incomingLinkOf(port) is not { } attached)
+            if (attachedLinkOf(port) is not { } attached)
                 return false;
 
-            if (!beginLinkEndDrag(attached, sourceEnd: false, clientX, clientY))
+            if (!beginLinkEndDrag(attached.Link, attached.SourceEnd, clientX, clientY))
                 return false;
 
             //The library would start a new link from the pressed point; it is locked for this gesture, which is
-            //what makes the press take the connection that ends there instead.
+            //what makes the press take the connection that belongs there instead.
             port.Locked = true;
             pressedPort = port;
             return true;
         }
 
-        /// <summary>Connection that ends on the given connection point, if any.</summary>
-        private LinkModel? incomingLinkOf(PortModel port) {
-            foreach (var link in designer.Links.OfType<LinkModel>())
-                if (link.Target is SinglePortAnchor anchor && ReferenceEquals(anchor.Port, port))
-                    return link;
+        /// <summary>
+        /// Connection a press on a connection point takes, with the end of it that is moved. A connection that
+        /// ends at the point is taken first, because the point is the handle of the connection that arrives
+        /// there; a point nothing arrives at hands over the connection that leaves from it instead, so the
+        /// connection is grabbed by its beginning as well as by its end — the beginning of a line sits on the
+        /// point of the card it leaves from, where the line itself cannot be reached. A point that adds
+        /// connections next to the ones it carries is never full, so it takes none and keeps drawing a new one.
+        /// </summary>
+        private (LinkModel Link, bool SourceEnd)? attachedLinkOf(PortModel port) {
+            LinkModel? outgoing = null;
+            foreach (var link in designer.Links.OfType<LinkModel>()) {
+                if (link.Target is SinglePortAnchor target && ReferenceEquals(target.Port, port))
+                    return (link, false);
 
-            return null;
+                if (outgoing == null && link.Source is SinglePortAnchor source && ReferenceEquals(source.Port, port))
+                    outgoing = link;
+            }
+
+            if (outgoing == null || port.Parent is not DefaultNode node || !node.PortReplacesConnection(port))
+                return null;
+
+            return (outgoing, true);
         }
 
         /// <summary>Frees the connection point a gesture locked, if any.</summary>

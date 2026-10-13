@@ -23,6 +23,12 @@ public class FlowSwitchNode<T> : DefaultNode {
 
     public IGraphContainer? Container => FlowchartNode.Of(service);
 
+    /// <summary>
+    /// Only the bottom edge sets or moves the default branch, which the press takes to move it; the other edges
+    /// add a case, so they carry a connection that is never the last one and keep drawing a new one.
+    /// </summary>
+    public override bool PortReplacesConnection(PortModel port) => port.Alignment == PortAlignment.Bottom;
+
     public string Expression {
         get => ActivityArguments.GetText(flowSwitch.Expression);
         set => flowSwitch.Expression = new VisualBasicValue<T> { ExpressionText = value };

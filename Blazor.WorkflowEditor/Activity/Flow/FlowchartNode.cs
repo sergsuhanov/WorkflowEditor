@@ -161,16 +161,20 @@ public class FlowchartNode : DefaultNode, IGraphContainer {
     }
 
     /// <summary>
-    /// Edge a connection leaves its source card from. A decision keeps its `False` branch and a switch its
-    /// `default` branch on the bottom edge, so that is the edge that branch is drawn from: the line then leaves
-    /// the card at the point the name next to it belongs to, and the commands of that line re-point that very
-    /// branch. Every other connection leaves on the right edge.
+    /// Edge a connection leaves its source card from. A decision draws its `True` branch on the left edge and its
+    /// `False` branch on the right one, and a switch its `default` branch on the bottom edge, so a connection
+    /// leaves the card at the point the name next to it belongs to, and a line drawn by the user from that very
+    /// point re-points that branch. Every other connection leaves on the right edge.
     /// </summary>
     public PortAlignment SourceEdge(ActivityDesignerPair from, ActivityDesignerPair to) {
         var fromNode = flowNodeOf(from);
         var toNode = flowNodeOf(to);
-        if (fromNode is FlowDecision decision && toNode != null && ReferenceEquals(decision.False, toNode))
-            return PortAlignment.Bottom;
+        if (fromNode is FlowDecision decision && toNode != null) {
+            if (ReferenceEquals(decision.True, toNode))
+                return PortAlignment.Left;
+            if (ReferenceEquals(decision.False, toNode))
+                return PortAlignment.Right;
+        }
 
         return fromNode != null && isSwitch(fromNode) && invokeSwitch(nameof(isDefaultTarget), fromNode, toNode) is true
             ? PortAlignment.Bottom
@@ -187,7 +191,7 @@ public class FlowchartNode : DefaultNode, IGraphContainer {
 
     /// <summary>
     /// Connects two nodes drawn by the user. The edge the connection was drawn from names the branch it
-    /// replaces: a decision keeps True on the right edge and False on the bottom one, so re-drawing a branch
+    /// replaces: a decision keeps True on the left edge and False on the right one, so re-drawing a branch
     /// moves it instead of filling the next free one.
     /// </summary>
     public bool TryConnect(ActivityDesignerPair from, ActivityDesignerPair to, PortAlignment source) {
@@ -203,9 +207,9 @@ public class FlowchartNode : DefaultNode, IGraphContainer {
                 step.Next = toNode;
                 return true;
             case FlowDecision decision:
-                //The right edge is the True branch, the bottom one the False branch, so a connection drawn a
+                //The left edge is the True branch, the right one the False branch, so a connection drawn a
                 //second time takes the place of the branch it names instead of guessing which one is free.
-                if (source == PortAlignment.Bottom)
+                if (source == PortAlignment.Right)
                     decision.False = toNode;
                 else
                     decision.True = toNode;

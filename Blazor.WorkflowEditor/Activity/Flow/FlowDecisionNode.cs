@@ -11,10 +11,22 @@ public class FlowDecisionNode : DefaultNode {
         this.decision = decision;
     }
 
-    /// <summary>The right edge draws the True branch, the bottom one the False branch.</summary>
+    /// <summary>
+    /// A decision has one entry and two branches: the entry is its top edge, the True branch leaves from the
+    /// left one and the False branch from the right one, so the bottom edge carries nothing.
+    /// </summary>
+    protected override IReadOnlyList<PortAlignment> GraphPortEdges => new[] {
+        PortAlignment.Top, PortAlignment.Left, PortAlignment.Right
+    };
+
+    protected override PortAlignment GraphIncomingEdge => PortAlignment.Top;
+
+    protected override PortAlignment GraphOutcomingEdge => PortAlignment.Right;
+
+    /// <summary>The left edge draws the True branch, the right one the False branch.</summary>
     public override string? PortCaption(PortModel port) => port.Alignment switch {
-        PortAlignment.Right => "True",
-        PortAlignment.Bottom => "False",
+        PortAlignment.Left => "True",
+        PortAlignment.Right => "False",
         _ => null
     };
 

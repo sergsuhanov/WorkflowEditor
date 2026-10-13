@@ -2,21 +2,14 @@
 
 <ActivityControl Node="@Node">
     <Preview>
-        @*The decision belongs on the card; the display name lives in the properties panel. Its targets can
-          also be drawn as links between the steps.*@
+        @*The decision belongs on the card; the display name lives in the properties panel. Its branches are
+          drawn as links between the steps, so the card carries no target of its own: the True branch leaves the
+          left edge of the card and the False one its right edge.*@
         <div class="we-field-row">
             <label class="we-field-label" for="@conditionId">If</label>
             <input type="text" class="form-control we-field-input" id="@conditionId" aria-label="Condition"
                    placeholder="True" @bind-value="Node.Condition" @onmousedown:stopPropagation
                    @onmouseup:stopPropagation @onmousemove:stopPropagation />
-        </div>
-        <div class="we-field-columns">
-            <div class="we-field-column">
-                <FlowTargetSelect Label="True target" Container="Node.Container" @bind-Value="Node.TrueTarget" />
-            </div>
-            <div class="we-field-column">
-                <FlowTargetSelect Label="False target" Container="Node.Container" @bind-Value="Node.FalseTarget" />
-            </div>
         </div>
     </Preview>
 </ActivityControl>

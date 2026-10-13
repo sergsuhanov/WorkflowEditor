@@ -427,6 +427,13 @@
     pointer-events: none;
 }
 
+/*A caption is drawn outside the card, on the side of the port: a name put on the other side would cover the
+  fields of the card itself (a decision keeps its True branch on the left edge, beside its condition).*/
+.we-custom-node .diagram-port.left .we-port-caption {
+    left: auto;
+    right: 22px;
+}
+
 .we-custom-node .isSelected .diagram-port {
     z-index: 2147483647;
 }

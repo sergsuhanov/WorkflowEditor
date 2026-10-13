@@ -490,28 +490,45 @@ public class DefaultNode : NodeModel {
     public virtual string? EmptyHint => null;
 
     /// <summary>
-    /// Replaces the four default ports with the connection points of a graph node. Every edge of the card carries
-    /// one and each of them takes a link in both directions: a connection is started from the point the user
-    /// drags and dropped on the point it points at, so the user picks the edge of a card that gives the neatest
-    /// route instead of remembering which edge means what. The right edge stays the point a link drawn from the
-    /// model starts at, and the left edge the one it ends at. A node that is laid out by a graph container is the
-    /// only one that shows ports: the mode where the user connects elements to each other exists only there.
+    /// Edges of the card that carry a connection point, in the order the points are created. A card whose
+    /// branches leave from edges of their own names them here: the entry of a decision is its top edge and its
+    /// branches the two sides, so its bottom edge carries no point at all.
+    /// </summary>
+    protected virtual IReadOnlyList<PortAlignment> GraphPortEdges => new[] {
+        PortAlignment.Right, PortAlignment.Bottom, PortAlignment.Left, PortAlignment.Top
+    };
+
+    /// <summary>Edge a link drawn from the model leaves from, when the connection names no edge of its own.</summary>
+    protected virtual PortAlignment GraphOutcomingEdge => PortAlignment.Right;
+
+    /// <summary>Edge a link drawn from the model arrives at, when the connection names no edge of its own.</summary>
+    protected virtual PortAlignment GraphIncomingEdge => PortAlignment.Left;
+
+    /// <summary>
+    /// Replaces the default ports with the connection points of a graph node. Every edge of the card carries one
+    /// and each of them takes a link in both directions: a connection is started from the point the user drags
+    /// and dropped on the point it points at, so the user picks the edge of a card that gives the neatest route
+    /// instead of remembering which edge means what. A node that is laid out by a graph container is the only one
+    /// that shows ports: the mode where the user connects elements to each other exists only there.
     /// </summary>
     public void UseGraphPorts() {
         ShowsPorts = true;
 
-        if (Ports.Count == 4 && Ports.All(p => p is GraphPort))
+        var edges = GraphPortEdges;
+        if (Ports.Count == edges.Count && Ports.All(p => p is GraphPort)
+            && edges.All(edge => Ports.Any(p => p.Alignment == edge)))
             return;
 
         foreach (var port in Ports.ToList())
             RemovePort(port);
 
-        //Every edge is a connection point; the canonical anchors of a link the model draws are the right edge
-        //(its start) and the left one (its end), which are unlocked like the other two for the user.
-        SetOutcoming(AddPort(new GraphPort(this, PortAlignment.Right)));
-        AddPort(new GraphPort(this, PortAlignment.Bottom));
-        SetIncoming(AddPort(new GraphPort(this, PortAlignment.Left)));
-        AddPort(new GraphPort(this, PortAlignment.Top));
+        foreach (var edge in edges)
+            AddPort(new GraphPort(this, edge));
+
+        //The canonical anchors of a link the model draws are the edge it leaves from and the one it arrives at;
+        //that edge is unlocked like the others, so the user may draw from and drop on any of them.
+        SetOutcoming(Ports.First(p => p.Alignment == GraphOutcomingEdge));
+        SetIncoming(Ports.First(p => p.Alignment == GraphIncomingEdge));
 
         UpdatePortGeometry();
     }
@@ -522,6 +539,14 @@ public class DefaultNode : NodeModel {
     /// name next to the port, so the edge a connection is drawn from states which branch it moves.
     /// </summary>
     public virtual string? PortCaption(PortModel port) => null;
+
+    /// <summary>
+    /// Whether a connection drawn from the given connection point takes the place of the connection the point
+    /// already carries. A point that replaces holds one connection at most, so pressing it takes that connection
+    /// to move it, like pressing the line near its end; a point that adds connections next to the ones it
+    /// carries is never full, so pressing it keeps drawing a new connection.
+    /// </summary>
+    public virtual bool PortReplacesConnection(PortModel port) => true;
 
     /// <summary>Deletes a child activity, removing its diagram node when it is currently shown.</summary>
     public void RemoveChildEverywhere(System.Activities.Activity child) {

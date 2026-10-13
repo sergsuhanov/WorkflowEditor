@@ -1,4 +1,5 @@
-﻿using WfState = System.Activities.Statements.State;
+﻿using Blazor.Diagrams.Core.Models;
+using WfState = System.Activities.Statements.State;
 using System.Activities.Statements;
 
 namespace Blazor.WorkflowEditor.Activity.StateMachine;
@@ -12,6 +13,12 @@ public class StateNode : DefaultNode {
     }
 
     public IGraphContainer? Container => StateMachineNode.Of(service);
+
+    /// <summary>
+    /// A state keeps a list of transitions, so a connection drawn from any of its points adds one instead of
+    /// replacing one, and the point keeps drawing a new transition when it is pressed.
+    /// </summary>
+    public override bool PortReplacesConnection(PortModel port) => false;
 
     /// <summary>Editable child slot of a state. Trigger and Action belong to a transition.</summary>
     public enum Slot { Entry, Exit, Trigger, Action }
