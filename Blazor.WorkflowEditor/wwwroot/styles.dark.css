@@ -271,6 +271,13 @@
     border-color: #4dabf7;
 }
 
+/*The caption of a branch port sits over the diagram, so the dark theme gives it the surface color it is drawn
+  on and a text color that reads on it.*/
+.we-custom-node .diagram-port .we-port-caption {
+    background: #494949;
+    color: #ced4da;
+}
+
 .we-custom-node .we-branch .we-branch-label,
 .we-custom-node .we-branch .we-branch-value {
     color: #ced4da;

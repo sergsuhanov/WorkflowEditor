@@ -2,7 +2,11 @@
 using System.Activities.Expressions;
 using System.Activities.Statements;
 using Blazor.Diagrams;
+using Blazor.Diagrams.Core.Anchors;
+using Blazor.Diagrams.Core.Controls;
+using Blazor.Diagrams.Core.Controls.Default;
 using Blazor.Diagrams.Core.Geometry;
+using Blazor.Diagrams.Core.Models;
 using Blazor.WorkflowEditor;
 using Blazor.WorkflowEditor.Activity;
 using Blazor.WorkflowEditor.Activity.Stack.ControlFlow;
@@ -402,7 +406,7 @@ public class ActivityDesignerTests {
     }
 
     [Fact]
-    public void FlowchartDesignerAddsStepOnDropTargetAndTracksStart() {
+    public void FlowchartDesignerAddsAStepWithoutChoosingTheStart() {
         using var service = new Service(new BlazorDiagram(), () => { });
         var sequence = new Sequence();
         service.SetActivityBuilder(new ActivityBuilder { Implementation = sequence });
@@ -415,9 +419,10 @@ public class ActivityDesignerTests {
         var (hasAdded, _) = service.AddActivity(typeof(WriteLine));
 
         Assert.True(hasAdded);
-        var step = Assert.IsType<FlowStep>(Assert.Single(chart.Nodes));
-        Assert.Same(step, chart.StartNode);
-        Assert.Equal(0, node.StartIndex);
+        Assert.IsType<FlowStep>(Assert.Single(chart.Nodes));
+        //The drop adds the step and nothing else: the node that starts the flowchart is the user's choice, made
+        //with the START badge of the surface.
+        Assert.Null(chart.StartNode);
         Assert.Empty(sequence.Activities);
         Assert.Null(service.DropTarget);
     }
@@ -442,7 +447,7 @@ public class ActivityDesignerTests {
         Assert.Null(service.StartHint);
         Assert.Same(service.FindPair(firstActivity)!.Node, service.StartBadgeNode);
 
-        ((FlowchartNode)chartNode).StartIndex = 1;
+        ((FlowchartNode)chartNode).SetStartElement(secondActivity);
 
         Assert.Same(service.FindPair(secondActivity)!.Node, service.StartBadgeNode);
     }
@@ -462,6 +467,110 @@ public class ActivityDesignerTests {
     }
 
     [Fact]
+    public void FlowchartStartCueAsksForTheBadgeToBeDroppedWhileNoStartIsChosen() {
+        using var service = new Service(new BlazorDiagram(), () => { });
+        var chart = new Flowchart();
+        var activity = new WriteLine();
+        var step = new FlowStep { Action = activity };
+        //A flowchart that holds a node but no start is invalid, so the surface asks for the choice the badge
+        //makes.
+        chart.Nodes.Add(step);
+        service.SetActivityBuilder(new ActivityBuilder { Implementation = chart });
+        var chartNode = service.Items.Single(p => ReferenceEquals(p.Activity, chart)).Node;
+
+        service.Open(chartNode);
+
+        Assert.Null(service.StartBadgeNode);
+        Assert.Equal("Drag START onto the node that runs first", service.StartHint);
+    }
+
+    [Fact]
+    public void DraggingTheStartBadgeOntoACardMakesItTheStartNode() {
+        using var service = new Service(new BlazorDiagram(), () => { });
+        var firstActivity = new WriteLine();
+        var secondActivity = new Delay();
+        var firstStep = new FlowStep { Action = firstActivity };
+        var secondStep = new FlowStep { Action = secondActivity };
+        var chart = new Flowchart {
+            StartNode = firstStep,
+            Nodes = { firstStep, secondStep }
+        };
+        service.SetActivityBuilder(new ActivityBuilder { Implementation = chart });
+        service.Open(service.Items.Single(p => ReferenceEquals(p.Activity, chart)).Node);
+
+        var firstCard = service.FindPair(firstActivity)!.Node;
+        var secondCard = service.FindPair(secondActivity)!.Node;
+
+        service.BeginStartRebind();
+        Assert.True(service.IsRebindingStart);
+
+        service.HoverStartTarget(secondCard);
+        Assert.Same(secondCard, service.StartDropTarget);
+
+        Assert.True(service.RebindStart(secondCard));
+
+        //The start moves to the card the badge was dropped on, and the drag is over.
+        Assert.Same(secondStep, chart.StartNode);
+        Assert.Same(secondCard, service.StartBadgeNode);
+        Assert.False(service.IsRebindingStart);
+        Assert.Null(service.StartDropTarget);
+        Assert.True(service.IsDirty);
+
+        //Dropping the badge on the node that already starts the flowchart changes nothing.
+        service.BeginStartRebind();
+        Assert.False(service.RebindStart(secondCard));
+        Assert.Same(secondStep, chart.StartNode);
+        Assert.False(service.IsRebindingStart);
+
+        //A card outside the opened flowchart is never a start target: the root canvas has no Flowchart open.
+        service.OpenPath(service.Path[0]);
+        Assert.False(service.RebindStart(firstCard));
+        Assert.Same(secondStep, chart.StartNode);
+    }
+
+    [Fact]
+    public void DeletingTheStartNodeHandsTheStartToTheNodeThatRunsNext() {
+        using var service = new Service(new BlazorDiagram(), () => { });
+        var firstActivity = new WriteLine();
+        var secondActivity = new Delay();
+        var secondStep = new FlowStep { Action = secondActivity };
+        var firstStep = new FlowStep { Action = firstActivity, Next = secondStep };
+        var chart = new Flowchart {
+            StartNode = firstStep,
+            Nodes = { firstStep, secondStep }
+        };
+        service.SetActivityBuilder(new ActivityBuilder { Implementation = chart });
+        service.Open(service.Items.Single(p => ReferenceEquals(p.Activity, chart)).Node);
+
+        service.Delete(service.FindPair(firstActivity)!.Node);
+
+        Assert.Same(secondStep, chart.StartNode);
+        Assert.Same(service.FindPair(secondActivity)!.Node, service.StartBadgeNode);
+        Assert.Null(service.StartHint);
+    }
+
+    [Fact]
+    public void DeletingAStartDecisionHandsTheStartToItsFirstBranch() {
+        using var service = new Service(new BlazorDiagram(), () => { });
+        var decision = new FlowDecision();
+        var yesActivity = new WriteLine();
+        var yesStep = new FlowStep { Action = yesActivity };
+        var chart = new Flowchart {
+            StartNode = decision,
+            Nodes = { decision, yesStep }
+        };
+        decision.True = yesStep;
+        service.SetActivityBuilder(new ActivityBuilder { Implementation = chart });
+        service.Open(service.Items.Single(p => ReferenceEquals(p.Activity, chart)).Node);
+
+        service.Delete(service.FindPair(decision)!.Node);
+
+        //A decision hides its branches behind itself, so the first of them keeps the flowchart started.
+        Assert.Same(yesStep, chart.StartNode);
+        Assert.Null(service.StartHint);
+    }
+
+    [Fact]
     public void StateMachineDesignerAddsStateOnDropTargetAndTracksInitial() {
         using var service = new Service(new BlazorDiagram(), () => { });
         var sequence = new Sequence();
@@ -476,8 +585,10 @@ public class ActivityDesignerTests {
 
         Assert.True(hasAdded);
         var state = Assert.Single(machine.States);
-        Assert.Same(state, machine.InitialState);
-        Assert.Equal(0, node.InitialIndex);
+        //The drop adds the state and nothing else: the state that starts the machine is the user's choice, made
+        //in the card of the container.
+        Assert.Null(machine.InitialState);
+        Assert.Equal(-1, node.InitialIndex);
     }
 
     [Fact]
@@ -490,7 +601,7 @@ public class ActivityDesignerTests {
         node.AddChild(new ActivityDesignerPair { Element = new State(), Activity = null! });
 
         Assert.Equal(new[] { "State1", "State2" }, machine.States.Select(s => s.DisplayName));
-        Assert.Equal(0, node.InitialIndex);
+        Assert.Null(machine.InitialState);
         Assert.Equal(new[] { "State1", "State2" }, new[] { node.LabelAt(0), node.LabelAt(1) });
     }
 
@@ -510,7 +621,7 @@ public class ActivityDesignerTests {
         var from = service.Items.First(p => ReferenceEquals(p.Element, one));
         var to = service.Items.First(p => ReferenceEquals(p.Element, two));
 
-        Assert.True(node.TryConnect(from, to));
+        Assert.True(node.TryConnect(from, to, PortAlignment.Right));
         Assert.Same(chart.Nodes[1], ((FlowStep)chart.Nodes[0]).Next);
 
         Assert.True(node.TryDisconnect(from, to));
@@ -518,7 +629,7 @@ public class ActivityDesignerTests {
     }
 
     [Fact]
-    public void FlowchartDecisionConnectionsFillTrueThenFalse() {
+    public void FlowchartDecisionBranchesAreNamedByTheDrawnEdge() {
         using var service = new Service(new BlazorDiagram(), () => { });
         var yes = new WriteLine { DisplayName = "yes" };
         var no = new Delay { DisplayName = "no" };
@@ -536,8 +647,10 @@ public class ActivityDesignerTests {
         var yesPair = service.Items.First(p => ReferenceEquals(p.Element, yes));
         var noPair = service.Items.First(p => ReferenceEquals(p.Element, no));
 
-        Assert.True(node.TryConnect(decisionPair, yesPair));
-        Assert.True(node.TryConnect(decisionPair, noPair));
+        //The right edge is the True branch and the bottom edge the False one, so the edge a connection is
+        //drawn from says which branch it is.
+        Assert.True(node.TryConnect(decisionPair, yesPair, PortAlignment.Right));
+        Assert.True(node.TryConnect(decisionPair, noPair, PortAlignment.Bottom));
 
         Assert.Same(chart.Nodes[1], decision.True);
         Assert.Same(chart.Nodes[2], decision.False);
@@ -558,7 +671,7 @@ public class ActivityDesignerTests {
         var aPair = service.Items.First(p => ReferenceEquals(p.Element, a));
         var bPair = service.Items.First(p => ReferenceEquals(p.Element, b));
 
-        Assert.True(node.TryConnect(aPair, bPair));
+        Assert.True(node.TryConnect(aPair, bPair, PortAlignment.Right));
         Assert.Same(b, Assert.Single(a.Transitions).To);
 
         Assert.True(node.TryDisconnect(aPair, bPair));
@@ -584,8 +697,8 @@ public class ActivityDesignerTests {
         var s1Pair = service.Items.First(p => ReferenceEquals(p.Element, s1));
         var s2Pair = service.Items.First(p => ReferenceEquals(p.Element, s2));
 
-        Assert.True(node.TryConnect(swPair, s1Pair));
-        Assert.True(node.TryConnect(swPair, s2Pair));
+        Assert.True(node.TryConnect(swPair, s1Pair, PortAlignment.Right));
+        Assert.True(node.TryConnect(swPair, s2Pair, PortAlignment.Right));
 
         Assert.Equal(2, sw.Cases.Count);
         Assert.Contains("1", sw.Cases.Keys);
@@ -611,7 +724,7 @@ public class ActivityDesignerTests {
         var swPair = service.Items.First(p => ReferenceEquals(p.Element, sw));
         var s1Pair = service.Items.First(p => ReferenceEquals(p.Element, s1));
 
-        Assert.True(node.TryConnect(swPair, s1Pair));
+        Assert.True(node.TryConnect(swPair, s1Pair, PortAlignment.Right));
 
         Assert.True(sw.Cases.ContainsKey(1));
     }
@@ -1325,7 +1438,7 @@ public class ActivityDesignerTests {
     }
 
     [Fact]
-    public void FlowchartDesignerChainsStepsAndRoundTripsThroughXaml() {
+    public void FlowchartDesignerLeavesDroppedStepsUnconnectedAndRoundTripsThemThroughXaml() {
         using var service = new Service(new BlazorDiagram(), () => { });
         var chart = new Flowchart();
         var node = new FlowchartNode(service, chart);
@@ -1333,13 +1446,31 @@ public class ActivityDesignerTests {
         var b = new WriteLine { Text = "b" };
         var c = new WriteLine { Text = "c" };
 
-        foreach (var x in new[] { a, b, c })
-            node.AddChild(new ActivityDesignerPair { Activity = x, Node = new DefaultNode(service, x) });
+        ActivityDesignerPair add(System.Activities.Activity element) {
+            var pair = new ActivityDesignerPair { Activity = element, Node = new DefaultNode(service, element) };
+            node.AddChild(pair);
+            return pair;
+        }
 
+        var first = add(a);
+        var second = add(b);
+        var third = add(c);
+
+        //A drop adds the step and nothing else: no start node is chosen for the user and no step runs after
+        //another one until a connection is drawn between them.
         var steps = chart.Nodes.Cast<FlowStep>().ToList();
-        Assert.Same(steps[0], chart.StartNode);
+        Assert.Equal(3, steps.Count);
+        Assert.Null(chart.StartNode);
+        Assert.All(steps, step => Assert.Null(step.Next));
+
+        //Drawing the connections is what gives the steps their order.
+        Assert.True(node.TryConnect(first, second, PortAlignment.Right));
+        Assert.True(node.TryConnect(second, third, PortAlignment.Right));
         Assert.Same(steps[1], steps[0].Next);
         Assert.Same(steps[2], steps[1].Next);
+
+        //The node that runs first is chosen on the surface as well, and it is part of the saved schema.
+        chart.StartNode = steps[0];
 
         node.RemoveChild(b);
         Assert.Same(steps[2], steps[0].Next);
@@ -1607,7 +1738,7 @@ public class ActivityDesignerTests {
     }
 
     [Fact]
-    public void GraphContainersUseDirectionalPorts() {
+    public void GraphContainersUseConnectionPointsOnEveryEdge() {
         using var service = new Service(new BlazorDiagram(), () => { });
         var one = new WriteLine { DisplayName = "one" };
         var chart = new Flowchart();
@@ -1618,14 +1749,14 @@ public class ActivityDesignerTests {
 
         var node = service.Items.First(p => ReferenceEquals(p.Element, one)).Node;
 
-        //Graph nodes offer several anchors: incoming on the left/top, outgoing on the right/bottom edges.
+        //Graph nodes offer one point per edge, and every point joins a link the same way: the card the drag
+        //starts from is the source of the connection.
         Assert.Equal(4, node.Ports.Count);
-        Assert.Equal(2, node.Ports.OfType<GraphInPort>().Count());
-        Assert.Equal(2, node.Ports.OfType<GraphOutPort>().Count());
-        Assert.IsType<GraphInPort>(node.IncomingPort);
-        Assert.IsType<GraphOutPort>(node.OutcomingPort);
-        Assert.Same(node.Ports[0], node.IncomingPort);
-        Assert.Same(node.Ports[2], node.OutcomingPort);
+        Assert.All(node.Ports, port => Assert.IsType<GraphPort>(port));
+        Assert.IsType<GraphPort>(node.IncomingPort);
+        Assert.IsType<GraphPort>(node.OutcomingPort);
+        Assert.Same(node.Ports[0], node.OutcomingPort);
+        Assert.Same(node.Ports[2], node.IncomingPort);
         Assert.All(node.Ports, port => Assert.False(port.Locked));
         //Corner alignments are avoided on purpose: the orthogonal router cannot route them.
         Assert.All(node.Ports, port => Assert.True(port.Alignment is Blazor.Diagrams.Core.Models.PortAlignment.Left or Blazor.Diagrams.Core.Models.PortAlignment.Top or Blazor.Diagrams.Core.Models.PortAlignment.Right or Blazor.Diagrams.Core.Models.PortAlignment.Bottom));
@@ -1661,7 +1792,7 @@ public class ActivityDesignerTests {
     }
 
     [Fact]
-    public void GraphPortsValidateConnectionDirection() {
+    public void GraphPortsJoinALinkInBothDirections() {
         using var service = new Service(new BlazorDiagram(), () => { });
         var one = new WriteLine { DisplayName = "one" };
         var two = new Delay { DisplayName = "two" };
@@ -1674,25 +1805,26 @@ public class ActivityDesignerTests {
 
         var nodeOne = service.Items.First(p => ReferenceEquals(p.Element, one)).Node;
         var nodeTwo = service.Items.First(p => ReferenceEquals(p.Element, two)).Node;
-        var outOne = nodeOne.Ports.OfType<GraphOutPort>().First();
-        var inOne = nodeOne.Ports.OfType<GraphInPort>().First();
-        var outTwo = nodeTwo.Ports.OfType<GraphOutPort>().First();
-        var inTwo = nodeTwo.Ports.OfType<GraphInPort>().First();
+        var rightOne = nodeOne.Ports.First(p => p.Alignment == PortAlignment.Right);
+        var leftOne = nodeOne.Ports.First(p => p.Alignment == PortAlignment.Left);
+        var bottomTwo = nodeTwo.Ports.First(p => p.Alignment == PortAlignment.Bottom);
 
-        //Only output -> input is accepted; the reverse and output -> output are rejected.
-        Assert.True(outOne.CanAttachTo(inTwo));
-        Assert.False(inOne.CanAttachTo(outTwo));
-        Assert.False(outOne.CanAttachTo(outTwo));
-        Assert.False(inOne.CanAttachTo(inTwo));
+        //Any point of a card is taken by a link started at any point of another card: the direction of the
+        //connection is the one the drag went, not the edge it started from.
+        Assert.True(rightOne.CanAttachTo(bottomTwo));
+        Assert.True(bottomTwo.CanAttachTo(rightOne));
+        Assert.True(leftOne.CanAttachTo(bottomTwo));
+        Assert.All(nodeOne.Ports, port => Assert.True(port.CanAttachTo(bottomTwo)));
+        Assert.All(nodeTwo.Ports, port => Assert.True(port.CanAttachTo(rightOne)));
 
-        //Every anchor of the node follows the same rule, so any of them can be picked while drawing.
-        Assert.All(nodeOne.Ports.OfType<GraphOutPort>(), port => Assert.True(port.CanAttachTo(inTwo)));
-        Assert.All(nodeTwo.Ports.OfType<GraphInPort>(), port => Assert.True(outOne.CanAttachTo(port)));
-        Assert.All(nodeOne.Ports.OfType<GraphInPort>(), port => Assert.False(port.CanAttachTo(outTwo)));
+        //A card is never connected to itself, and a point is never connected to itself.
+        Assert.All(nodeOne.Ports, port => Assert.False(rightOne.CanAttachTo(port)));
+        Assert.False(rightOne.CanAttachTo(rightOne));
+        Assert.False(rightOne.CanAttachTo(leftOne));
     }
 
     [Fact]
-    public void StateMachineStatesUseDirectionalPorts() {
+    public void StateMachineStatesUseConnectionPoints() {
         using var service = new Service(new BlazorDiagram(), () => { });
         var machine = new System.Activities.Statements.StateMachine();
         machine.States.Add(new State { DisplayName = "A" });
@@ -1705,8 +1837,7 @@ public class ActivityDesignerTests {
             var node = service.FindPair(state)!.Node;
 
             Assert.Equal(4, node.Ports.Count);
-            Assert.Equal(2, node.Ports.OfType<GraphInPort>().Count());
-            Assert.Equal(2, node.Ports.OfType<GraphOutPort>().Count());
+            Assert.All(node.Ports, port => Assert.IsType<GraphPort>(port));
         }
     }
 
@@ -1727,8 +1858,8 @@ public class ActivityDesignerTests {
         var from = service.Items.First(p => ReferenceEquals(p.Element, one));
         var to = service.Items.First(p => ReferenceEquals(p.Element, two));
 
-        Assert.True(node.TryConnect(from, to));
-        Assert.True(node.TryConnect(from, to));
+        Assert.True(node.TryConnect(from, to, PortAlignment.Right));
+        Assert.True(node.TryConnect(from, to, PortAlignment.Right));
 
         //Rebuilding the diagram links from the model yields a single connection.
         node.RebuildLinks();
@@ -1754,15 +1885,15 @@ public class ActivityDesignerTests {
 
         var node = (FlowchartNode)service.Items.First(p => p.Activity == chart).Node;
         Assert.True(node.TryConnect(service.Items.First(p => ReferenceEquals(p.Element, one)),
-            service.Items.First(p => ReferenceEquals(p.Element, two))));
+            service.Items.First(p => ReferenceEquals(p.Element, two)), PortAlignment.Right));
 
         //The diagram links mirror the model connection.
         node.RebuildLinks();
         var link = Assert.Single(diagram.Links.OfType<Blazor.Diagrams.Core.Models.LinkModel>());
         Assert.IsType<Blazor.Diagrams.Core.Anchors.SinglePortAnchor>(link.Source);
         Assert.IsType<Blazor.Diagrams.Core.Anchors.SinglePortAnchor>(link.Target);
-        Assert.IsType<GraphOutPort>(link.Source.Model);
-        Assert.IsType<GraphInPort>(link.Target.Model);
+        Assert.IsType<GraphPort>(link.Source.Model);
+        Assert.IsType<GraphPort>(link.Target.Model);
     }
 
     [Fact]
@@ -1788,6 +1919,318 @@ public class ActivityDesignerTests {
         measurePorts(nodes[0], nodes[1]);
         link.Refresh();
         Assert.NotNull(link.PathGeneratorResult);
+    }
+
+    /// <summary>
+    /// Rebuilds the port rectangles of the given nodes from their box, which is what the browser does after
+    /// the layout changed.
+    /// </summary>
+    [Fact]
+    public void ALinkCarriesItsCommandOnItsRouteAndItsNameAboveIt() {
+        var diagram = new BlazorDiagram();
+        using var service = new Service(diagram, () => { });
+        var yes = new WriteLine { DisplayName = "yes" };
+        var chart = new Flowchart();
+        var decision = new FlowDecision { DisplayName = "check" };
+        chart.Nodes.Add(decision);
+        chart.Nodes.Add(new FlowStep { Action = yes });
+        chart.StartNode = decision;
+        decision.True = chart.Nodes[1];
+        service.SetActivityBuilder(new ActivityBuilder { Implementation = chart });
+        service.Open(service.Items.First(p => p.Activity == chart).Node);
+
+        var link = Assert.Single(diagram.Links.OfType<LinkModel>());
+
+        //A picked connection offers one command, removing it, which is what the card of a selected activity does
+        //as well; moving the connection needs no command, because its ends are taken on the line itself.
+        var commands = diagram.Controls.GetFor(link);
+        Assert.NotNull(commands);
+        Assert.Equal(ControlsType.OnSelection, commands!.Type);
+        var remove = Assert.Single(commands.OfType<RemoveLinkControl>());
+
+        //The command is drawn on the line itself, at the middle of its route: a command drawn beside the line is
+        //gone by the time the pointer reaches it, because it is not part of the link. The name of the branch is
+        //lifted off the line so the two do not cover each other.
+        measurePorts(service.Items.Select(i => i.Node).ToArray());
+        link.Refresh();
+        var routeLength = link.PathGeneratorResult!.FullPath.Length;
+        Assert.True(routeLength > 0);
+
+        var placed = remove.GetPosition(link);
+        Assert.NotNull(placed);
+        Assert.True(IsOnRouteAt(link, placed!, routeLength / 2));
+
+        var label = Assert.Single(link.Labels);
+        Assert.Equal("True", label.Content);
+        Assert.Equal(-24, label.Offset!.Y, 3);
+    }
+
+    /// <summary>Whether a point sits on the route of its link, at the given distance from its start.</summary>
+    private static bool IsOnRouteAt(LinkModel link, Point point, double distance) {
+        var path = link.PathGeneratorResult!.FullPath;
+        var onRoute = path.GetPointAtLength(Math.Clamp(distance, 0, path.Length));
+        return Math.Abs(onRoute.X - point.X) < 0.5 && Math.Abs(onRoute.Y - point.Y) < 0.5;
+    }
+
+    /// <summary>
+    /// The end of a link the way the canvas hands it to a press: the ends of a link are the ends of its route, so
+    /// a press there is what takes one.
+    /// </summary>
+    private static Point EndOf(LinkModel link, bool sourceEnd) {
+        var path = link.PathGeneratorResult!.FullPath;
+        var point = path.GetPointAtLength(sourceEnd ? 0 : path.Length);
+        return new Point(point.X, point.Y);
+    }
+
+    /// <summary>Point of the canvas a connection point of a card sits at.</summary>
+    private static Point PointOf(DefaultNode node, PortAlignment alignment) =>
+        node.Ports.First(p => p.Alignment == alignment).MiddlePosition;
+
+    private static (Service service, BlazorDiagram diagram, Flowchart chart, FlowStep first, FlowStep second,
+        ActivityDesignerPair third, LinkModel link) chainedFlowchart() {
+        var diagram = new BlazorDiagram();
+        diagram.SetContainer(new Rectangle(new Point(0, 0), new Size(1200, 800)));
+        var service = new Service(diagram, () => { });
+        var one = new WriteLine { DisplayName = "one" };
+        var two = new Delay { DisplayName = "two" };
+        var three = new WriteLine { DisplayName = "three" };
+        var chart = new Flowchart();
+        var firstStep = new FlowStep { Action = one };
+        var secondStep = new FlowStep { Action = two };
+        chart.Nodes.Add(firstStep);
+        chart.Nodes.Add(secondStep);
+        chart.Nodes.Add(new FlowStep { Action = three });
+        chart.StartNode = firstStep;
+        firstStep.Next = secondStep;
+        service.SetActivityBuilder(new ActivityBuilder { Implementation = chart });
+        service.Open(service.Items.First(p => p.Activity == chart).Node);
+        measurePorts(service.Items.Select(i => i.Node).ToArray());
+
+        var link = diagram.Links.OfType<LinkModel>().Single();
+        link.Refresh();
+        return (service, diagram, chart, firstStep, secondStep,
+            service.Items.First(p => ReferenceEquals(p.Element, three)), link);
+    }
+
+    [Fact]
+    public void MovingTheEndOfAConnectionPointsItAtAnotherCard() {
+        var (service, diagram, chart, firstStep, secondStep, third, link) = chainedFlowchart();
+        using var _ = service;
+
+        //The press takes the end the pointer is nearest to, and that end only follows once the pointer has moved.
+        var end = EndOf(link, sourceEnd: false);
+        Assert.True(service.StartLinkEndDrag(link, end.X, end.Y));
+        var stop = PointOf(third.Node, PortAlignment.Top);
+        Assert.True(service.DragLinkEnd(stop.X, stop.Y));
+        service.DropLinkEnd(stop.X, stop.Y);
+
+        //The connection runs into the card the end was dropped on, and the one it ran into before is free again.
+        Assert.Same(chart.Nodes[2], firstStep.Next);
+        Assert.Null(secondStep.Next);
+        Assert.True(service.IsDirty);
+    }
+
+    [Fact]
+    public void MovingTheBeginningOfAConnectionMovesWhereItComesFrom() {
+        var (service, diagram, chart, firstStep, secondStep, third, link) = chainedFlowchart();
+        using var _ = service;
+
+        var end = EndOf(link, sourceEnd: true);
+        Assert.True(service.StartLinkEndDrag(link, end.X, end.Y));
+        var stop = PointOf(third.Node, PortAlignment.Bottom);
+        Assert.True(service.DragLinkEnd(stop.X, stop.Y));
+        service.DropLinkEnd(stop.X, stop.Y);
+
+        //The connection leaves the card the beginning was dropped on and still runs into the one it ran into.
+        Assert.Null(firstStep.Next);
+        Assert.Same(secondStep, ((FlowStep)chart.Nodes[2]).Next);
+    }
+
+    [Fact]
+    public void MovingTheEndOfADecisionBranchMovesThatBranch() {
+        var diagram = new BlazorDiagram();
+        diagram.SetContainer(new Rectangle(new Point(0, 0), new Size(1200, 800)));
+        using var service = new Service(diagram, () => { });
+        var yes = new WriteLine { DisplayName = "yes" };
+        var no = new Delay { DisplayName = "no" };
+        var maybe = new WriteLine { DisplayName = "maybe" };
+        var chart = new Flowchart();
+        var decision = new FlowDecision { DisplayName = "check" };
+        var yesStep = new FlowStep { Action = yes };
+        var noStep = new FlowStep { Action = no };
+        chart.Nodes.Add(decision);
+        chart.Nodes.Add(yesStep);
+        chart.Nodes.Add(noStep);
+        chart.Nodes.Add(new FlowStep { Action = maybe });
+        chart.StartNode = decision;
+        decision.True = yesStep;
+        decision.False = noStep;
+        service.SetActivityBuilder(new ActivityBuilder { Implementation = chart });
+        service.Open(service.Items.First(p => p.Activity == chart).Node);
+        measurePorts(service.Items.Select(i => i.Node).ToArray());
+
+        //The False branch leaves the bottom edge of the decision, so the line says which branch it is and the
+        //end that is moved is the end of that branch.
+        var falseLink = diagram.Links.OfType<LinkModel>().Single(l =>
+            ((SinglePortAnchor)l.Source).Port.Alignment == PortAlignment.Bottom);
+        Assert.Equal("False", Assert.Single(falseLink.Labels).Content);
+        falseLink.Refresh();
+
+        var maybePair = service.Items.First(p => ReferenceEquals(p.Element, maybe));
+        var end = EndOf(falseLink, sourceEnd: false);
+        Assert.True(service.StartLinkEndDrag(falseLink, end.X, end.Y));
+        var stop = PointOf(maybePair.Node, PortAlignment.Left);
+        Assert.True(service.DragLinkEnd(stop.X, stop.Y));
+        service.DropLinkEnd(stop.X, stop.Y);
+
+        Assert.Same(chart.Nodes[3], decision.False);
+        Assert.Same(chart.Nodes[1], decision.True);
+    }
+
+    [Fact]
+    public void AnEndDroppedAwayFromEveryPointLeavesTheConnectionAlone() {
+        var (service, diagram, chart, firstStep, secondStep, third, link) = chainedFlowchart();
+        using var _ = service;
+
+        var end = EndOf(link, sourceEnd: false);
+        Assert.True(service.StartLinkEndDrag(link, end.X, end.Y));
+        Assert.True(service.DragLinkEnd(end.X + 800, end.Y + 600));
+        service.DropLinkEnd(end.X + 800, end.Y + 600);
+
+        //Moving a connection is not the way to remove it: an end left away from every point leaves the
+        //connection where it was, and nothing is reported as changed.
+        Assert.Same(secondStep, firstStep.Next);
+        Assert.Single(diagram.Links.OfType<LinkModel>());
+        Assert.False(service.IsDirty);
+
+        //The same holds for an end dropped back on the point it already came from.
+        var again = Assert.Single(diagram.Links.OfType<LinkModel>());
+        again.Refresh();
+        var endAgain = EndOf(again, sourceEnd: false);
+        Assert.True(service.StartLinkEndDrag(again, endAgain.X, endAgain.Y));
+        var own = PointOf(service.Items.First(p => p.Element is Delay).Node, PortAlignment.Left);
+        Assert.True(service.DragLinkEnd(own.X, own.Y));
+        service.DropLinkEnd(own.X, own.Y);
+
+        Assert.Same(secondStep, firstStep.Next);
+        Assert.False(service.IsDirty);
+    }
+
+    [Fact]
+    public void APressOnAConnectionThatNeverMovedTakesNoEnd() {
+        var (service, diagram, chart, firstStep, secondStep, third, link) = chainedFlowchart();
+        using var _ = service;
+
+        var end = EndOf(link, sourceEnd: false);
+        Assert.True(service.StartLinkEndDrag(link, end.X, end.Y));
+
+        //A press that stays where it was is a click on the line, which picks the link and leaves its ends alone.
+        Assert.False(service.DragLinkEnd(end.X + 1, end.Y + 1));
+        service.DropLinkEnd(end.X + 1, end.Y + 1);
+        Assert.Same(secondStep, firstStep.Next);
+        Assert.False(service.IsDirty);
+
+        //Once the pointer has moved, the end follows it.
+        Assert.True(service.DragLinkEnd(end.X + 80, end.Y + 60));
+    }
+
+    [Fact]
+    public void APressOnTheMiddleOfALongConnectionTakesNoEnd() {        var (service, diagram, chart, firstStep, secondStep, third, link) = chainedFlowchart();
+        using var _ = service;
+
+        //A long connection is taken by its ends alone: the middle of the line is farther from both of them than
+        //the reach of an end is, so a press there picks the link instead of taking an end away.
+        var from = service.Items.First(p => ReferenceEquals(p.Element, firstStep.Action)).Node;
+        var to = service.Items.First(p => ReferenceEquals(p.Element, secondStep.Action)).Node;
+        from.CenterPosition = new Point(200, 200);
+        to.CenterPosition = new Point(1000, 200);
+        measurePorts(from, to);
+        link.Refresh();
+
+        var route = link.PathGeneratorResult!.FullPath;
+        //The route is far longer than the reach of an end, which puts the middle of it out of that reach.
+        Assert.True(route.Length > 200);
+        var middle = route.GetPointAtLength(route.Length / 2);
+        Assert.False(service.StartLinkEndDrag(link, middle.X, middle.Y));
+        Assert.False(service.DragLinkEnd(middle.X + 60, middle.Y + 60));
+        service.DropLinkEnd(middle.X + 60, middle.Y + 60);
+
+        Assert.Same(secondStep, firstStep.Next);
+        Assert.False(service.IsDirty);
+    }
+
+    [Fact]
+    public void AReleaseTheCanvasNeverSawDoesNotLeaveAnEndMoving() {
+        var (service, diagram, chart, firstStep, secondStep, third, link) = chainedFlowchart();
+        using var _ = service;
+
+        var end = EndOf(link, sourceEnd: false);
+        Assert.True(service.StartLinkEndDrag(link, end.X, end.Y));
+        Assert.True(service.DragLinkEnd(end.X + 120, end.Y + 90));
+
+        //The end that follows the pointer belongs to no connection point while it is moving.
+        Assert.IsType<PositionAnchor>(link.Target);
+
+        //A release outside the canvas is never delivered, so the next move with no button down puts the end back
+        //on the connection the model keeps and leaves the connection as it was.
+        service.CancelLinkEndDrag();
+
+        var again = Assert.Single(diagram.Links.OfType<LinkModel>());
+        Assert.IsType<SinglePortAnchor>(again.Target);
+        Assert.Same(secondStep, firstStep.Next);
+        Assert.False(service.IsDirty);
+    }
+
+    [Fact]
+    public void DroppingAnotherActivityIntoAFlowchartDrawsNoConnection() {
+        var diagram = new BlazorDiagram();
+        using var service = new Service(diagram, () => { });
+        var first = new WriteLine { DisplayName = "one" };
+        var firstStep = new FlowStep { Action = first };
+        var chart = new Flowchart { StartNode = firstStep, Nodes = { firstStep } };
+        service.SetActivityBuilder(new ActivityBuilder { Implementation = chart });
+        var chartNode = (FlowchartNode)service.Items.Single(p => ReferenceEquals(p.Activity, chart)).Node;
+        service.Open(chartNode);
+        service.DropTarget = chartNode;
+
+        var (hasAdded, _) = service.AddActivity(typeof(Delay));
+
+        //The card that was dropped is a node of the flowchart on its own: the step that runs after another one
+        //is a connection the user draws, so nothing is connected here and no start is chosen.
+        Assert.True(hasAdded);
+        Assert.Equal(2, chart.Nodes.Count);
+        Assert.Null(firstStep.Next);
+        Assert.Empty(diagram.Links);
+        Assert.Same(firstStep, chart.StartNode);
+    }
+
+    [Fact]
+    public void APressOnAConnectionPointTakesTheConnectionThatEndsThere() {
+        var (service, diagram, chart, firstStep, secondStep, third, link) = chainedFlowchart();
+        using var _ = service;
+
+        //A point nothing arrives at keeps drawing a new connection, which the library does.
+        var free = service.Items.First(p => ReferenceEquals(p.Element, third.Element)).Node.IncomingPort;
+        Assert.False(service.StartLinkEndDragFromPort(free, free.MiddlePosition.X, free.MiddlePosition.Y));
+        Assert.False(free.Locked);
+
+        //A point a connection arrives at is the handle of that connection: pressing it takes the end that ends
+        //there, so the connection is detached from the card and dropped somewhere else.
+        var port = ((SinglePortAnchor)link.Target).Port;
+        var at = port.MiddlePosition;
+        Assert.True(service.StartLinkEndDragFromPort(port, at.X, at.Y));
+        //The point stays locked while the gesture lasts, which is what keeps the library from drawing another
+        //connection from it.
+        Assert.True(port.Locked);
+
+        var stop = PointOf(third.Node, PortAlignment.Top);
+        Assert.True(service.DragLinkEnd(stop.X, stop.Y));
+        service.DropLinkEnd(stop.X, stop.Y);
+
+        Assert.Same(chart.Nodes[2], firstStep.Next);
+        Assert.Null(secondStep.Next);
+        Assert.False(port.Locked);
+        Assert.True(service.IsDirty);
     }
 
     /// <summary>
@@ -1876,15 +2319,17 @@ public class ActivityDesignerTests {
     }
 
     [Fact]
-    public void RedrawingADecisionConnectionDoesNotConsumeTheOtherBranch() {
+    public void RedrawingADecisionBranchMovesItAndLeavesTheOtherBranch() {
         using var service = new Service(new BlazorDiagram(), () => { });
         var decisionActivity = new FlowDecision();
         var yes = new WriteLine { DisplayName = "yes" };
         var no = new WriteLine { DisplayName = "no" };
+        var maybe = new WriteLine { DisplayName = "maybe" };
         var chart = new Flowchart();
         chart.Nodes.Add(decisionActivity);
         chart.Nodes.Add(new FlowStep { Action = yes });
         chart.Nodes.Add(new FlowStep { Action = no });
+        chart.Nodes.Add(new FlowStep { Action = maybe });
         chart.StartNode = decisionActivity;
         service.SetActivityBuilder(new ActivityBuilder { Implementation = chart });
         service.Open(service.Items.First(p => p.Activity == chart).Node);
@@ -1893,15 +2338,51 @@ public class ActivityDesignerTests {
         var from = service.Items.First(p => ReferenceEquals(p.Element, decisionActivity));
         var yesPair = service.Items.First(p => ReferenceEquals(p.Element, yes));
         var noPair = service.Items.First(p => ReferenceEquals(p.Element, no));
+        var maybePair = service.Items.First(p => ReferenceEquals(p.Element, maybe));
 
-        Assert.True(node.TryConnect(from, yesPair));
-        Assert.True(node.TryConnect(from, yesPair));
-
+        Assert.True(node.TryConnect(from, yesPair, PortAlignment.Right));
+        Assert.True(node.TryConnect(from, noPair, PortAlignment.Bottom));
         Assert.Same(chart.Nodes[1], decisionActivity.True);
-        Assert.Null(decisionActivity.False);
-
-        Assert.True(node.TryConnect(from, noPair));
         Assert.Same(chart.Nodes[2], decisionActivity.False);
+
+        //Drawing the True branch again moves it to the node the connection points at, and the False branch
+        //stays where it was: a connection is changed by drawing it over, not by deleting it first.
+        Assert.True(node.TryConnect(from, maybePair, PortAlignment.Right));
+        Assert.Same(chart.Nodes[3], decisionActivity.True);
+        Assert.Same(chart.Nodes[2], decisionActivity.False);
+    }
+
+    [Fact]
+    public void FlowchartSwitchDefaultBranchIsDrawnFromTheBottomEdge() {
+        using var service = new Service(new BlazorDiagram(), () => { });
+        var sw = new FlowSwitch<string>();
+        var s1 = new WriteLine { DisplayName = "one" };
+        var s2 = new Delay { DisplayName = "two" };
+        var chart = new Flowchart();
+        chart.Nodes.Add(sw);
+        chart.Nodes.Add(new FlowStep { Action = s1 });
+        chart.Nodes.Add(new FlowStep { Action = s2 });
+        chart.StartNode = sw;
+        service.SetActivityBuilder(new ActivityBuilder { Implementation = chart });
+        service.Open(service.Items.First(p => p.Activity == chart).Node);
+
+        var node = (FlowchartNode)service.Items.First(p => p.Activity == chart).Node;
+        var swPair = service.Items.First(p => ReferenceEquals(p.Element, sw));
+        var s1Pair = service.Items.First(p => ReferenceEquals(p.Element, s1));
+        var s2Pair = service.Items.First(p => ReferenceEquals(p.Element, s2));
+
+        //The right edge adds a case, the bottom edge sets or moves the default branch, which has no case of
+        //its own.
+        Assert.True(node.TryConnect(swPair, s1Pair, PortAlignment.Right));
+        Assert.True(node.TryConnect(swPair, s2Pair, PortAlignment.Bottom));
+
+        Assert.Same(chart.Nodes[2], sw.Default);
+        Assert.Equal("1", Assert.Single(sw.Cases).Key);
+        Assert.Same(chart.Nodes[1], sw.Cases["1"]);
+
+        Assert.True(node.TryConnect(swPair, s1Pair, PortAlignment.Bottom));
+        Assert.Same(chart.Nodes[1], sw.Default);
+        Assert.Equal("1", Assert.Single(sw.Cases).Key);
     }
 
     [Fact]
@@ -1920,10 +2401,10 @@ public class ActivityDesignerTests {
         var from = service.Items.First(p => ReferenceEquals(p.Element, sw));
         var to = service.Items.First(p => ReferenceEquals(p.Element, one));
 
-        Assert.True(node.TryConnect(from, to));
+        Assert.True(node.TryConnect(from, to, PortAlignment.Right));
         Assert.Equal("1", Assert.Single(sw.Cases).Key);
 
-        Assert.True(node.TryConnect(from, to));
+        Assert.True(node.TryConnect(from, to, PortAlignment.Right));
         Assert.Equal("1", Assert.Single(sw.Cases).Key);
     }
 

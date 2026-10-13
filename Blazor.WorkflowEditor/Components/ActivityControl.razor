@@ -5,11 +5,19 @@
 <div class="@nodeClass" draggable="@(isDraggableCard ? "true" : "false")"
      @ondragstart:stopPropagation="isDraggableCard" @ondragstart="startCardDrag"
      @ondragend="endCardDrag" @onpointerdown:stopPropagation="isDraggableCard"
+     @ondragover:preventDefault="acceptsStartRebind" @ondragover="hoverStartTarget"
+     @ondrop:preventDefault="acceptsStartRebind" @ondrop="dropStart"
      @onclick="selectCard" @onclick:stopPropagation="isDraggableCard">
     @if (isStart)
     {
+        @*The badge of the chosen start node is the handle that re-binds it: it is dragged onto the card that
+          should run first.*@
         <div class="we-node-start-presentation" aria-hidden="true">
-            <div class="we-root-start-badge">START</div>
+            <div class="we-root-start-badge" draggable="true" title="Drag onto the node that runs first"
+                 @ondragstart="startRebind" @ondragend="endRebind"
+                 @onpointerdown:stopPropagation @onmousedown:stopPropagation>
+                START
+            </div>
             <div class="we-root-start-arrow"></div>
         </div>
     }
@@ -30,24 +38,23 @@
             {
                 <span class="@iconClass we-node-icon" aria-hidden="true"></span>
             }
+            @*Open sits at the left with the leading slot: it follows the chevron of a card that has one, and it is
+              the only command of a container card that has none, such as a Flowchart.*@
+            @if (Node.IsContainer)
+            {
+                <a href="" class="card-link we-node-open" title="Open" @onclick="@open" @onclick:preventDefault>
+                    <span class="oi oi-fullscreen-enter" aria-hidden="true"></span>
+                </a>
+            }
             <span class="we-node-title" title="@Node.DisplayName">@Node.DisplayName</span>
-            @Badges
-            <div class="float-end">
-                @if (Node.IsContainer)
-                {
-                    <a href="" class="card-link" title="Open" @onclick="@open" @onclick:preventDefault>
-                        <span class="oi oi-fullscreen-enter" aria-hidden="true"></span>
-                    </a>
-                }
-                @*The remove command is shown only on the selected card, so a surface of many cards is not covered
-                  with red circles; the Delete key removes the selected card as well.*@
-                @if (Node.Selected)
-                {
-                    <a href="" class="card-link link-danger" title="Delete" @onclick="@delete" @onclick:preventDefault>
-                        <span class="oi oi-circle-x" aria-hidden="true"></span>
-                    </a>
-                }
-            </div>
+            @*The remove command is shown only on the selected card, so a surface of many cards is not covered
+              with red circles; the Delete key removes the selected card as well.*@
+            @if (Node.Selected)
+            {
+                <a href="" class="card-link link-danger" title="Delete" @onclick="@delete" @onclick:preventDefault>
+                    <span class="oi oi-circle-x" aria-hidden="true"></span>
+                </a>
+            }
         </div>
         @*The name lives in the header and the note is edited in the properties panel, so the body carries the note
           preview and one of the two blocks of the card: the compact fields while it is closed, and the editor the
@@ -78,7 +85,16 @@
             foreach (var port in Node.Ports)
             {
                 var portClass = port.Locked ? "locked" : "unlocked";
-                <PortRenderer Port="port" Class="@portClass"></PortRenderer>
+                var caption = port.Locked ? null : Node.PortCaption(port);
+                <PortRenderer Port="port" Class="@portClass">
+                    @*A port that stands for a named branch of the activity (True/False of a decision, the
+                      default branch of a switch) carries its name, so the edge a connection is drawn from says
+                      which branch the connection replaces.*@
+                    @if (caption != null)
+                    {
+                        <span class="we-port-caption">@caption</span>
+                    }
+                </PortRenderer>
             }
         }
     </div>
@@ -110,25 +126,9 @@
     /// <summary>Whether the card holds an editor the chevron opens and closes.</summary>
     private bool hasEditor => Edit != null;
 
-    /// <summary>Badges shown in the card header: the start element marker. Errors are shown by the card
-    /// outline and by the properties panel, so they need no badge here.</summary>
-    private RenderFragment Badges => @<text>
-        @if (isStart)
-        {
-            <span class="we-node-badge" title="This element is the start of the opened container">
-                <span class="@startBadgeClass" aria-hidden="true"></span>@startBadgeText
-            </span>
-        }
-    </text>;
-
-    private FlowchartNode? startFlowchart => Service?.OpenedGraph as FlowchartNode;
-
-    /// <summary>Whether the card carries the start badge of the opened Flowchart, which only it draws.</summary>
+    /// <summary>Whether the card shows the element that starts the opened Flowchart. The cue of that element is
+    /// the START marker drawn above the card, so the card itself carries no label for it.</summary>
     private bool isStart => ReferenceEquals(Service?.StartBadgeNode, Node);
-
-    private string startBadgeText => startFlowchart?.StartBadgeText ?? "Start";
-
-    private string startBadgeClass => startFlowchart?.StartBadgeClass ?? "oi oi-media-play";
 
     private bool hasErrorsInTree => Service?.HasErrorsInTree(Node.Element) ?? false;
 
@@ -166,6 +166,11 @@
             //The card the user picked up stays visible while it is dragged to another place.
             if (ReferenceEquals(Service?.DraggedCard, Node))
                 result += " we-card-dragging";
+
+            //The card the START badge of the opened Flowchart is dragged onto, which shows the place the start
+            //node lands.
+            if (ReferenceEquals(Service?.StartDropTarget, Node))
+                result += " we-node-start-target";
 
             return result;
         }
@@ -217,6 +222,30 @@
     {
         Service.Delete(Node);
     }
+
+    /// <summary>
+    /// Whether the card can take the START badge of the opened Flowchart: only the elements a graph container
+    /// lays out can be its start, and the one that already starts it has nothing to change.
+    /// </summary>
+    private bool acceptsStartRebind =>
+        !isStart && Node.ShowsPorts && Service?.OpenedGraph is FlowchartNode;
+
+    /// <summary>Shows the card as the place the dragged START badge points at.</summary>
+    void hoverStartTarget() =>
+        Service?.HoverStartTarget(acceptsStartRebind ? Node : null);
+
+    /// <summary>Makes this card the node the opened Flowchart runs first.</summary>
+    void dropStart()
+    {
+        if (acceptsStartRebind && Service != null)
+            Service.RebindStart(Node);
+    }
+
+    /// <summary>Takes the START badge, so the next card the drag points at becomes the start node.</summary>
+    void startRebind() => Service?.BeginStartRebind();
+
+    /// <summary>Ends the START drag, whether or not the badge was dropped on a card.</summary>
+    void endRebind() => Service?.EndStartRebind();
 
     /// <summary>
     /// A card without an editor has nothing to open, even when the loaded view state says it was expanded

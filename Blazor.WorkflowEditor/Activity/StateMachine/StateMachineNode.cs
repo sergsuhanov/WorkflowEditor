@@ -1,4 +1,5 @@
-﻿using WfState = System.Activities.Statements.State;
+﻿using Blazor.Diagrams.Core.Models;
+using WfState = System.Activities.Statements.State;
 using WfStateMachine = System.Activities.Statements.StateMachine;
 using System.Activities.Statements;
 
@@ -100,16 +101,19 @@ public class StateMachineNode : DefaultNode, IGraphContainer {
         RebuildLinks();
     }
 
-    /// <summary>Adds a transition between two states drawn by the user.</summary>
-    public bool TryConnect(ActivityDesignerPair from, ActivityDesignerPair to) {
-        if (from.Element is not WfState source || to.Element is not WfState target || ReferenceEquals(source, target))
+    /// <summary>
+    /// Adds a transition between two states drawn by the user. A state machine keeps a list of transitions, so
+    /// the edge the connection was drawn from names no branch and is not used.
+    /// </summary>
+    public bool TryConnect(ActivityDesignerPair from, ActivityDesignerPair to, PortAlignment source) {
+        if (from.Element is not WfState state || to.Element is not WfState target || ReferenceEquals(state, target))
             return false;
 
-        if (source.Transitions.Any(transition => ReferenceEquals(transition.To, target)))
+        if (state.Transitions.Any(transition => ReferenceEquals(transition.To, target)))
             return true;
 
-        source.Transitions.Add(new Transition {
-            DisplayName = $"Transition {source.Transitions.Count + 1}",
+        state.Transitions.Add(new Transition {
+            DisplayName = $"Transition {state.Transitions.Count + 1}",
             To = target
         });
         return true;
@@ -149,8 +153,9 @@ public class StateMachineNode : DefaultNode, IGraphContainer {
         child.Node?.Ports.ToList().ForEach(port => port.Locked = false);
         if (string.IsNullOrWhiteSpace(state.DisplayName))
             state.DisplayName = $"State{activity.States.Count + 1}";
+        //The state that starts the machine is chosen by the user, in the card of the container: a drop adds the
+        //state and nothing else.
         activity.States.Add(state);
-        activity.InitialState ??= state;
         service.NotifyStateChanged();
     }
 

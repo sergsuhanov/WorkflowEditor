@@ -184,6 +184,19 @@
     letter-spacing: 0.04em;
 }
 
+/*The badge is the handle that re-binds the start node of a Flowchart: it takes the pointer although the cue it
+  sits in does not, and it says with its cursor that it can be dragged.*/
+.we-root-start-presentation .we-root-start-badge,
+.we-node-start-presentation .we-root-start-badge {
+    pointer-events: auto;
+    cursor: grab;
+}
+
+.we-root-start-presentation .we-root-start-badge:active,
+.we-node-start-presentation .we-root-start-badge:active {
+    cursor: grabbing;
+}
+
 .we-root-start-arrow {
     position: relative;
     width: 2px;
@@ -257,6 +270,25 @@
     font-size: 0.8rem;
 }
 
+/*A command in the header — the Open action of a container and the remove action of the selected card — sits on the
+  line of the name, so each takes the metrics of the chevron and not the ones of a link: the header keeps its height
+  when the selection brings out the remove command, so neither the name nor the leading commands move.*/
+.we-custom-node .card-header .card-link {
+    padding: 0 0.1rem;
+    text-decoration: none;
+    line-height: 1;
+}
+
+.we-custom-node .card-header .card-link .oi {
+    font-size: 0.8rem;
+}
+
+/*The Open command of a container sits in that leading place as well — after the chevron of a card that has one, and
+  alone on a card that has none, such as a Flowchart — so it keeps the spacing of the command next to it.*/
+.we-node-open {
+    margin-right: 0.4rem;
+}
+
 /*A container card hides a whole surface behind its header, so it keeps a body-sized shape: the empty body is
   what tells the user that there is more inside than the name.*/
 .we-custom-node.we-node-container .card {
@@ -295,6 +327,19 @@
     /*A picked card is outlined by that border alone, so the neutral ring steps aside for it.*/
     box-shadow: none;
     z-index: 2147483646;
+}
+
+/*The ports of a card, the commands of a connection and the connections themselves belong to the diagram, whose
+  markup the library draws; these rules give them the look of the editor.*/
+/*A connection is picked before it offers its commands, and a picked connection is the one the Delete key
+  removes, so it says with a thicker line that the pointer is on it and says with the cursor that it is a
+  control of its own.*/
+.we-diagram .diagram-link {
+    cursor: pointer;
+}
+
+.we-diagram .diagram-link:hover > path:first-of-type {
+    stroke-width: 3.5;
 }
 
 /*The library scopes its port styles to .default-node; our nodes use .we-custom-node,
@@ -361,6 +406,25 @@
 .we-custom-node .diagram-port.right {
     right: 0;
     top: 50%;
+}
+
+/*The name of the branch a port stands for (True/False of a decision, the default branch of a switch) is drawn
+  beside it, so the edge a connection is drawn from says which branch the connection replaces. The caption
+  follows the visibility of the port it belongs to, because it is drawn inside it.*/
+.we-custom-node .diagram-port .we-port-caption {
+    position: absolute;
+    top: 50%;
+    left: 22px;
+    padding: 0 0.25rem;
+    border-radius: 0.25rem;
+    background: #f5f5f5;
+    color: #495057;
+    font-size: 0.6rem;
+    font-weight: 600;
+    line-height: 1rem;
+    white-space: nowrap;
+    transform: translateY(-50%);
+    pointer-events: none;
 }
 
 .we-custom-node .isSelected .diagram-port {
@@ -973,6 +1037,12 @@
 
 .we-custom-node.we-node-has-errors > .card {
     box-shadow: 0 0 0 2px rgb(220 53 69 / 70%);
+}
+
+/*The card the START badge is dragged onto: a green ring in the color of the badge marks the place the start node
+  lands, exactly like the outline of a card an activity is dropped on.*/
+.we-custom-node.we-node-start-target > .card {
+    box-shadow: 0 0 0 3px rgb(25 135 84 / 75%);
 }
 
 /* --- Compact forms: node cards and panels use denser fields (step 10) --- */

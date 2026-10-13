@@ -1,4 +1,5 @@
-﻿using System.Activities.Statements;
+﻿using Blazor.Diagrams.Core.Models;
+using System.Activities.Statements;
 
 namespace Blazor.WorkflowEditor.Activity.Flow;
 
@@ -18,12 +19,6 @@ public class FlowchartNode : DefaultNode, IGraphContainer {
 
     /// <summary>The flowchart currently opened in the editor, if any.</summary>
     public static FlowchartNode? Of(Service service) => service.Path.LastOrDefault()?.Reference?.Node as FlowchartNode;
-
-    /// <summary>Text of the badge the card of the start node carries.</summary>
-    public string StartBadgeText => "Start";
-
-    /// <summary>Open Iconic class of that badge.</summary>
-    public string StartBadgeClass => "oi oi-media-play";
 
     /// <summary>The element shown as the flowchart's start target on the diagram.</summary>
     public object? StartElement => activity.StartNode switch {
@@ -67,15 +62,19 @@ public class FlowchartNode : DefaultNode, IGraphContainer {
 
     public FlowNode? At(int index) => index >= 0 && index < activity.Nodes.Count ? activity.Nodes[index] : null;
 
-    /// <summary>Index of the start node, used by the start node selector.</summary>
-    public int StartIndex {
-        get => IndexOf(activity.StartNode);
-        set => SetStart(value);
-    }
+    /// <summary>
+    /// Makes the element shown by a card the start of the flowchart. Returns false when the element is not a
+    /// node of this flowchart, or when it already starts it.
+    /// </summary>
+    public bool SetStartElement(object element) {
+        var node = activity.Nodes.FirstOrDefault(n =>
+            ReferenceEquals(n is FlowStep step ? step.Action : n, element));
+        if (node == null || ReferenceEquals(node, activity.StartNode))
+            return false;
 
-    public void SetStart(int index) {
-        activity.StartNode = At(index);
+        activity.StartNode = node;
         service.NotifyStateChanged();
+        return true;
     }
 
     public static string Label(FlowNode node) => node switch {
@@ -156,18 +155,42 @@ public class FlowchartNode : DefaultNode, IGraphContainer {
             foreach (var target in Successors(node)) {
                 var to = pairOf(target);
                 if (to != null && service.IsDisplayed(to.Node) && done.Add((from, to)))
-                    service.LinkFromTo(from, to, LinkLabel(from, to));
+                    service.LinkFromTo(from, to, LinkLabel(from, to), SourceEdge(from, to));
             }
         }
     }
+
+    /// <summary>
+    /// Edge a connection leaves its source card from. A decision keeps its `False` branch and a switch its
+    /// `default` branch on the bottom edge, so that is the edge that branch is drawn from: the line then leaves
+    /// the card at the point the name next to it belongs to, and the commands of that line re-point that very
+    /// branch. Every other connection leaves on the right edge.
+    /// </summary>
+    public PortAlignment SourceEdge(ActivityDesignerPair from, ActivityDesignerPair to) {
+        var fromNode = flowNodeOf(from);
+        var toNode = flowNodeOf(to);
+        if (fromNode is FlowDecision decision && toNode != null && ReferenceEquals(decision.False, toNode))
+            return PortAlignment.Bottom;
+
+        return fromNode != null && isSwitch(fromNode) && invokeSwitch(nameof(isDefaultTarget), fromNode, toNode) is true
+            ? PortAlignment.Bottom
+            : PortAlignment.Right;
+    }
+
+    private static object? isDefaultTarget<T>(FlowSwitch<T> node, FlowNode? to) =>
+        to != null && ReferenceEquals(node.Default, to);
 
     /// <summary>Model element shown by a diagram node (a FlowStep is shown through its action).</summary>
     private FlowNode? flowNodeOf(ActivityDesignerPair? pair) =>
         pair == null ? null : activity.Nodes.FirstOrDefault(n =>
             n is FlowStep step ? ReferenceEquals(step.Action, pair.Element) : ReferenceEquals(n, pair.Element));
 
-    /// <summary>Connects two nodes drawn by the user. Decisions fill True then False.</summary>
-    public bool TryConnect(ActivityDesignerPair from, ActivityDesignerPair to) {
+    /// <summary>
+    /// Connects two nodes drawn by the user. The edge the connection was drawn from names the branch it
+    /// replaces: a decision keeps True on the right edge and False on the bottom one, so re-drawing a branch
+    /// moves it instead of filling the next free one.
+    /// </summary>
+    public bool TryConnect(ActivityDesignerPair from, ActivityDesignerPair to, PortAlignment source) {
         var fromNode = flowNodeOf(from);
         var toNode = flowNodeOf(to);
         if (fromNode == null || toNode == null || ReferenceEquals(fromNode, toNode))
@@ -180,19 +203,19 @@ public class FlowchartNode : DefaultNode, IGraphContainer {
                 step.Next = toNode;
                 return true;
             case FlowDecision decision:
-                //Re-drawing the same connection must not move it to the other branch.
-                if (ReferenceEquals(decision.True, toNode) || ReferenceEquals(decision.False, toNode))
-                    return true;
-                if (decision.True == null)
-                    decision.True = toNode;
-                else if (decision.False == null)
+                //The right edge is the True branch, the bottom one the False branch, so a connection drawn a
+                //second time takes the place of the branch it names instead of guessing which one is free.
+                if (source == PortAlignment.Bottom)
                     decision.False = toNode;
                 else
                     decision.True = toNode;
                 return true;
             default:
-                //A FlowSwitch case is created with a generated key; the key can be renamed in the node form.
-                return isSwitch(fromNode) && invokeSwitch(nameof(connectSwitch), fromNode, toNode) is true;
+                //A switch takes the drawn connection as a new case, or as its default branch when the
+                //connection was drawn from the bottom edge; the key of a new case can be renamed in the node
+                //form.
+                return isSwitch(fromNode)
+                    && invokeSwitch(nameof(connectSwitch), fromNode, toNode, source == PortAlignment.Bottom) is true;
         }
     }
 
@@ -224,10 +247,16 @@ public class FlowchartNode : DefaultNode, IGraphContainer {
         }
     }
 
-    /// <summary>Adds a switch case for the drawn connection, generating a key that converts to T.</summary>
-    private static object connectSwitch<T>(FlowSwitch<T> node, FlowNode? to) {
+    /// <summary>Connects a drawn connection to a switch, as its default branch or as a new case.</summary>
+    private static object connectSwitch<T>(FlowSwitch<T> node, FlowNode? to, bool asDefault) {
         if (to == null)
             return false;
+
+        //The bottom edge of a switch names its default branch, so it is set or moved by drawing like a case.
+        if (asDefault) {
+            node.Default = to;
+            return true;
+        }
 
         //Already connected (as a case or as the default): keep it as is.
         if (node.Cases.Values.Any(c => ReferenceEquals(c, to)) || ReferenceEquals(node.Default, to))
@@ -291,6 +320,11 @@ public class FlowchartNode : DefaultNode, IGraphContainer {
         service.NotifyStateChanged();
     }
 
+    /// <summary>
+    /// Releases a node that is removed: every connection that pointed at it is moved to the node that took its
+    /// place — the next one for a step, the first branch for a decision or a switch — so the ones that ran
+    /// after it keep running, and the flowchart keeps a start node when the start node itself is removed.
+    /// </summary>
     private void redirect(FlowNode from, FlowNode? to) {
         if (activity.StartNode == from)
             activity.StartNode = to;
@@ -336,23 +370,13 @@ public class FlowchartNode : DefaultNode, IGraphContainer {
         child.Node?.UseGraphPorts();
         child.Node?.Ports.ToList().ForEach(p => p.Locked = false);
 
-        if (child.Element is FlowNode flowNode) {
+        //A dropped element becomes a node of the flowchart and nothing more: the step that runs after another
+        //one and the node that starts the flowchart are both chosen by the user, by drawing the connection and
+        //by dragging the START badge, so a drop never decides either of them.
+        if (child.Element is FlowNode flowNode)
             activity.Nodes.Add(flowNode);
-            if (activity.StartNode == null)
-                activity.StartNode = flowNode;
-            RebuildLinks();
-            service.NotifyStateChanged();
-            return;
-        }
-
-        var step = new FlowStep { Action = child.Activity };
-        var last = activity.Nodes.OfType<FlowStep>().LastOrDefault(s => s.Next == null);
-        activity.Nodes.Add(step);
-
-        if (activity.StartNode == null)
-            activity.StartNode = step;
-        else if (last != null)
-            last.Next = step;
+        else
+            activity.Nodes.Add(new FlowStep { Action = child.Activity });
 
         RebuildLinks();
         service.NotifyStateChanged();
@@ -363,7 +387,9 @@ public class FlowchartNode : DefaultNode, IGraphContainer {
         if (node == null)
             return;
 
-        redirect(node, node is FlowStep step ? step.Next : null);
+        //A step hands its place to the node that ran after it; a decision or a switch hides its branches behind
+        //itself, so the first one of them takes that place instead and the flowchart keeps its start node.
+        redirect(node, Successors(node).FirstOrDefault());
         activity.Nodes.Remove(node);
         RebuildLinks();
     }

@@ -1,5 +1,6 @@
 ﻿using System.Activities;
 using System.Activities.Statements;
+using Blazor.Diagrams.Core.Models;
 using Microsoft.VisualBasic.Activities;
 
 namespace Blazor.WorkflowEditor.Activity.Flow;
@@ -12,6 +13,13 @@ public class FlowSwitchNode<T> : DefaultNode {
         this.flowSwitch = flowSwitch;
         IsGeneric = true;
     }
+
+    /// <summary>
+    /// The right edge adds a case of a generated key; the bottom one sets or moves the default branch, which
+    /// has no case of its own and would otherwise be reachable only from the fields of the card.
+    /// </summary>
+    public override string? PortCaption(PortModel port) =>
+        port.Alignment == PortAlignment.Bottom ? "default" : null;
 
     public IGraphContainer? Container => FlowchartNode.Of(service);
 

@@ -1,12 +1,9 @@
 @using Blazor.WorkflowEditor.Components
 
-<ActivityControl Node="@Node">
-    <Preview>
-        @*A flowchart is filled and connected inside the opened container, so the card only carries the one
-          choice that is not made there: which step starts it.*@
-        <FlowTargetSelect Label="Start node" Container="Node" @bind-Value="Node.StartIndex" />
-    </Preview>
-</ActivityControl>
+@*Card of a Flowchart: the nodes it holds are laid out and connected on the surface of the opened container, so
+  the card carries nothing but its name and its `Open` action, exactly like the card of a Sequence. The one choice
+  the container keeps outside its canvas, the node that runs first, is made on that surface with the START badge.*@
+<ActivityControl Node="@Node"></ActivityControl>
 
 @code {
     [Parameter]

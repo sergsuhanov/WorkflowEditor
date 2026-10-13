@@ -1,4 +1,5 @@
 ﻿using System.Activities.Statements;
+using Blazor.Diagrams.Core.Models;
 
 namespace Blazor.WorkflowEditor.Activity.Flow;
 
@@ -9,6 +10,13 @@ public class FlowDecisionNode : DefaultNode {
     public FlowDecisionNode(Service service, FlowDecision decision) : base(service, decision) {
         this.decision = decision;
     }
+
+    /// <summary>The right edge draws the True branch, the bottom one the False branch.</summary>
+    public override string? PortCaption(PortModel port) => port.Alignment switch {
+        PortAlignment.Right => "True",
+        PortAlignment.Bottom => "False",
+        _ => null
+    };
 
     public IGraphContainer? Container => FlowchartNode.Of(service);
 

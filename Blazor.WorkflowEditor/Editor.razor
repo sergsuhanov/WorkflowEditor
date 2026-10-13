@@ -50,9 +50,11 @@
                             </DiagramCanvas>
                         </CascadingValue>
                     </CascadingValue>
-                </div>
 
-                <StartNodePresentation Service="service"></StartNodePresentation>
+                    @*The cue sits in the surface that takes the drops: its START badge is a drag handle, and an
+                      activity dropped on the badge has to reach the same handler as one dropped beside it.*@
+                    <StartNodePresentation Service="service"></StartNodePresentation>
+                </div>
 
                 @*The tools of the canvas in one panel at the bottom right: the map (switched by the checkbox of
                   the commands row) and the zoom commands. The map is kept rendered while it is hidden, because
@@ -158,6 +160,9 @@
         base.OnInitialized();
 
         this.diagram = new();
+        //The command of a connection is drawn by the library, so the component that draws it has to be
+        //registered with it.
+        diagram.RegisterComponent(typeof(Activity.RemoveLinkControl), typeof(Components.RemoveLinkControlWidget));
         diagram.Options.AllowMultiSelection = true;
         diagram.Options.Zoom.Minimum = 0.1;
         diagram.Options.Zoom.Inverse = true;

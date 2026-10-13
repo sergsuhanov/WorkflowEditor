@@ -490,31 +490,38 @@ public class DefaultNode : NodeModel {
     public virtual string? EmptyHint => null;
 
     /// <summary>
-    /// Replaces the four default ports with the directional set used by graph containers: incoming ports on
-    /// the left and top edges, outgoing ports on the right and bottom edges. One anchor per side gives a
-    /// choice of connection point while drawing without using the corner alignments, which the orthogonal
-    /// router cannot handle. A node that is laid out by a graph container is the only one that shows ports:
-    /// the mode where the user connects elements to each other exists only there.
+    /// Replaces the four default ports with the connection points of a graph node. Every edge of the card carries
+    /// one and each of them takes a link in both directions: a connection is started from the point the user
+    /// drags and dropped on the point it points at, so the user picks the edge of a card that gives the neatest
+    /// route instead of remembering which edge means what. The right edge stays the point a link drawn from the
+    /// model starts at, and the left edge the one it ends at. A node that is laid out by a graph container is the
+    /// only one that shows ports: the mode where the user connects elements to each other exists only there.
     /// </summary>
     public void UseGraphPorts() {
         ShowsPorts = true;
 
-        if (Ports.Count == 4 && Ports.All(p => p is GraphInPort or GraphOutPort))
+        if (Ports.Count == 4 && Ports.All(p => p is GraphPort))
             return;
 
         foreach (var port in Ports.ToList())
             RemovePort(port);
 
-        //Incoming: the left edge is the canonical anchor, the top edge takes vertical neighbours.
-        SetIncoming(AddPort(new GraphInPort(this, PortAlignment.Left)));
-        AddPort(new GraphInPort(this, PortAlignment.Top));
-
-        //Outgoing: the right edge is the canonical anchor, the bottom edge is the second choice.
-        SetOutcoming(AddPort(new GraphOutPort(this, PortAlignment.Right)));
-        AddPort(new GraphOutPort(this, PortAlignment.Bottom));
+        //Every edge is a connection point; the canonical anchors of a link the model draws are the right edge
+        //(its start) and the left one (its end), which are unlocked like the other two for the user.
+        SetOutcoming(AddPort(new GraphPort(this, PortAlignment.Right)));
+        AddPort(new GraphPort(this, PortAlignment.Bottom));
+        SetIncoming(AddPort(new GraphPort(this, PortAlignment.Left)));
+        AddPort(new GraphPort(this, PortAlignment.Top));
 
         UpdatePortGeometry();
     }
+
+    /// <summary>
+    /// Name of the branch a port of this card stands for — the `True` and `False` branches of a decision, the
+    /// default branch of a switch — or null for a port that carries no branch of its own. The card draws the
+    /// name next to the port, so the edge a connection is drawn from states which branch it moves.
+    /// </summary>
+    public virtual string? PortCaption(PortModel port) => null;
 
     /// <summary>Deletes a child activity, removing its diagram node when it is currently shown.</summary>
     public void RemoveChildEverywhere(System.Activities.Activity child) {

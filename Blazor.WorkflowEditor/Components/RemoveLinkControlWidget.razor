@@ -1,0 +1,17 @@
+@using Blazor.Diagrams.Core.Controls
+@using Blazor.Diagrams.Core.Models.Base
+
+@*The command of a connection that removes it. It is centred on the point it is placed at, so the pointer finds
+  it where it is drawn, and its tooltip says what it does.*@
+<title>Remove the connection</title>
+<circle r="7" fill="#dc3545"></circle>
+<path d="M -3 -3 L 3 3 M -3 3 L 3 -3" stroke="#fff" stroke-width="1.6" fill="none"
+      stroke-linecap="round"></path>
+
+@code {
+    [Parameter]
+    public Control Control { get; set; } = default!;
+
+    [Parameter]
+    public Model Model { get; set; } = default!;
+}

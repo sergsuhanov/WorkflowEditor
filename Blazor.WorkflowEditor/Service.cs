@@ -3,8 +3,10 @@ using System.Collections.ObjectModel;
 using Blazor.Diagrams;
 using Blazor.Diagrams.Core;
 using Blazor.Diagrams.Core.Anchors;
+using Blazor.Diagrams.Core.Behaviors;
 using Blazor.Diagrams.Core.Controls;
 using Blazor.Diagrams.Core.Controls.Default;
+using Blazor.Diagrams.Core.Geometry;
 using Blazor.Diagrams.Core.Models;
 using Blazor.Diagrams.Core.Models.Base;
 using Blazor.Diagrams.Core.Positions;
@@ -42,6 +44,36 @@ namespace Blazor.WorkflowEditor {
         /// would jump back to the default left/right ports.
         /// </summary>
         private readonly Dictionary<(ActivityDesignerPair from, ActivityDesignerPair to), (PortAlignment source, PortAlignment target)> linkPorts = new();
+
+        /// <summary>Distance the name of a branch keeps from the line it belongs to.</summary>
+        private const double LinkLabelOffset = 24;
+
+        /// <summary>
+        /// End of a connection the pointer was pressed on, with the place of the press: the end is only taken
+        /// away from the link once the pointer has moved, so that a press that stays where it was (a click that
+        /// picks the link) leaves the connection alone.
+        /// </summary>
+        private (LinkModel Link, ActivityDesignerPair From, ActivityDesignerPair To, bool SourceEnd,
+                 PortAlignment SourceEdge, double ClientX, double ClientY)? pendingLinkEnd;
+
+        /// <summary>End of a connection that follows the pointer while the user moves it, or null.</summary>
+        private (LinkModel Link, ActivityDesignerPair From, ActivityDesignerPair To, bool SourceEnd,
+                 PortAlignment SourceEdge, PositionAnchor Floating)? movingLinkEnd;
+
+        /// <summary>
+        /// Connection point locked for the gesture that took the connection ending there, or null. The lock keeps
+        /// the library from drawing a new link from that point while the user moves the connection instead.
+        /// </summary>
+        private PortModel? pressedPort;
+
+        /// <summary>How far from an end of a connection the pointer has to be pressed to take that end.</summary>
+        private const double LinkEndGrabRadius = 26;
+
+        /// <summary>Distance within which a moving end of a connection takes a connection point of a card.</summary>
+        private const double LinkEndSnapRadius = 60;
+
+        /// <summary>How far the pointer moves before a press on a connection counts as a drag of its end.</summary>
+        private const double LinkEndDragThreshold = 4;
 
         /// <summary>Validation messages per activity (key = the model object that produced the error).</summary>
         private readonly Dictionary<object, List<string>> validationErrors = new();
@@ -150,10 +182,11 @@ namespace Blazor.WorkflowEditor {
                     return "Drop the first activity here";
 
                 //A container that holds nothing asks for its first element exactly like the empty root does; a
-                //Flowchart also asks for the start node while it is not chosen yet.
+                //Flowchart also asks for the start node while it is not chosen yet, and the START badge of the
+                //canvas is what re-binds it.
                 return container switch {
                     FlowchartNode { Count: 0 } => "Add a node to create the flowchart start",
-                    FlowchartNode flowchart => flowchart.StartElement == null ? "Choose the start node in Flowchart properties" : null,
+                    FlowchartNode flowchart => flowchart.StartElement == null ? "Drag START onto the node that runs first" : null,
                     _ => container.EmptyHint
                 };
             }
@@ -174,11 +207,77 @@ namespace Blazor.WorkflowEditor {
             }
         }
 
+        /// <summary>
+        /// Card the START drag of the opened Flowchart points at, or null. It is highlighted as the place the
+        /// start node lands, exactly like a drop target of an activity.
+        /// </summary>
+        public DefaultNode? StartDropTarget { get; private set; }
+
+        /// <summary>True while the user points the START badge of the opened Flowchart at another card.</summary>
+        public bool IsRebindingStart { get; private set; }
+
+        /// <summary>
+        /// Takes the START badge of the opened Flowchart: the next card the drag points at becomes the start
+        /// node, so the first activity of the flowchart is re-bound without leaving the canvas.
+        /// </summary>
+        public void BeginStartRebind() {
+            if (OpenedGraph is not FlowchartNode)
+                return;
+
+            IsRebindingStart = true;
+            StartDropTarget = null;
+            updateState();
+        }
+
+        /// <summary>Card the START drag currently points at; null clears the highlight.</summary>
+        public void HoverStartTarget(DefaultNode? node) {
+            if (!IsRebindingStart || ReferenceEquals(StartDropTarget, node))
+                return;
+
+            StartDropTarget = node;
+            updateState();
+        }
+
+        /// <summary>Ends the START drag, whether or not the badge was dropped on a card.</summary>
+        public void EndStartRebind() {
+            if (!IsRebindingStart && StartDropTarget == null)
+                return;
+
+            IsRebindingStart = false;
+            StartDropTarget = null;
+            updateState();
+        }
+
+        /// <summary>
+        /// Makes the card the START badge was dropped on the start of the opened Flowchart. Returns false when
+        /// no drag was running or the card is not a node of that flowchart (or already starts it).
+        /// </summary>
+        public bool RebindStart(DefaultNode node) {
+            var flowchart = IsRebindingStart ? OpenedGraph as FlowchartNode : null;
+            if (flowchart == null) {
+                EndStartRebind();
+                return false;
+            }
+
+            IsRebindingStart = false;
+            StartDropTarget = null;
+
+            //Setting the start notifies the view, which also drops the highlight; the same card leaves it to a
+            //plain refresh.
+            var changed = flowchart.SetStartElement(node.Element);
+            if (!changed)
+                updateState();
+
+            return changed;
+        }
+
         public Service(BlazorDiagram designer, Action updateState) {
             this.designer = designer;
 
             this.designer.SelectionChanged += selectionChanged;
             this.designer.PointerDoubleClick += pointerDoubleClick;
+            this.designer.PointerDown += pointerDown;
+            this.designer.PointerMove += pointerMove;
             this.designer.PointerUp += pointerUp;
             this.designer.PanChanged += panChanged;
             this.designer.ZoomChanged += zoomChanged;
@@ -187,6 +286,13 @@ namespace Blazor.WorkflowEditor {
             this.designer.Links.Added += linksAdded;
             this.designer.Links.Removed += linksRemoved;
 
+            //The library starts a new link on every press on a connection point. A press on a point that already
+            //receives a connection takes that connection's end instead, which this service decides on the same
+            //event, and the point is locked for the gesture so the library leaves it alone. The behavior is
+            //registered again here, after this service, so it reads that decision instead of making its own first.
+            this.designer.UnregisterBehavior<Blazor.Diagrams.Core.Behaviors.DragNewLinkBehavior>();
+            this.designer.RegisterBehavior(new Blazor.Diagrams.Core.Behaviors.DragNewLinkBehavior(this.designer));
+
             this.updateState = updateState;
         }
 
@@ -194,6 +300,10 @@ namespace Blazor.WorkflowEditor {
         public void Dispose() {
             this.designer.SelectionChanged -= selectionChanged;
             this.designer.PointerDoubleClick -= pointerDoubleClick;
+
+            this.designer.PointerDown -= pointerDown;
+
+            this.designer.PointerMove -= pointerMove;
 
             this.designer.PointerUp -= pointerUp;
 
@@ -307,6 +417,10 @@ namespace Blazor.WorkflowEditor {
 
             RemoveAllLinks(node);
             selectedLinks.RemoveAll(l => l.Item1 == item || l.Item2 == item);
+            //The port a connection was drawn from is remembered per pair of cards; a card that is gone keeps
+            //no such choice.
+            foreach (var key in linkPorts.Keys.Where(k => k.from == item || k.to == item).ToList())
+                linkPorts.Remove(key);
 
             designer.Nodes.Remove(node);
 
@@ -689,15 +803,19 @@ namespace Blazor.WorkflowEditor {
                 removeLink(link);
         }
 
-        internal LinkModel LinkFromTo(ActivityDesignerPair from, ActivityDesignerPair to, string? label = null) {
+        internal LinkModel LinkFromTo(ActivityDesignerPair from, ActivityDesignerPair to, string? label = null,
+            PortAlignment? sourceEdge = null) {
             //Port anchors: the ports are placed on the node border and the library rebuilds the link geometry
             //afterwards, so the line follows the node. They are also what OrthogonalRouter needs in order to
             //build right-angled (Workflow Foundation style) routes.
             var sourcePort = from.Node.OutcomingPort;
             var targetPort = to.Node.IncomingPort;
             if (linkPorts.TryGetValue((from, to), out var chosen)) {
-                sourcePort = PortOf(from.Node, chosen.source, expectedOutgoing: true);
-                targetPort = PortOf(to.Node, chosen.target, expectedOutgoing: false);
+                //The edge the user drew the connection from wins over the canonical one of the branch it is.
+                sourcePort = PortOf(from.Node, chosen.source, sourcePort);
+                targetPort = PortOf(to.Node, chosen.target, targetPort);
+            } else if (sourceEdge is { } edge) {
+                sourcePort = PortOf(from.Node, edge, sourcePort);
             }
 
             var linkModel = new LinkModel(
@@ -707,14 +825,17 @@ namespace Blazor.WorkflowEditor {
             };
 
             if (!string.IsNullOrWhiteSpace(label))
-                linkModel.AddLabel(label);
+                //The name of the branch sits above the line instead of on it, because the commands of the link
+                //are drawn on the line, at the middle of its route.
+                linkModel.AddLabel(label, offset: new Point(0, -LinkLabelOffset));
 
             addLink(linkModel);
 
-            //A small × next to the hovered link removes the connection: removing the link raises
-            //Links.Removed, which translates it into TryDisconnect of the open container.
-            designer.Controls.AddFor(linkModel, ControlsType.OnHover)
-                .Add(new RemoveControl(new LinkPathPositionProvider(0.6, 0, -16)));
+            //A picked link offers its one command, exactly like a picked card: removing it. Removing the link
+            //raises Links.Removed, which translates it into TryDisconnect of the open container; the connection
+            //itself is moved by taking one of its ends on the line, which needs no command of its own.
+            designer.Controls.AddFor(linkModel, ControlsType.OnSelection)
+                .Add(new RemoveLinkControl(new LinkCommandPositionProvider(0)));
 
             return linkModel;
         }
@@ -729,6 +850,279 @@ namespace Blazor.WorkflowEditor {
         private void removeLink(LinkModel link) {
             suppressLinkSync = true;
             try { designer.Links.Remove(link); } finally { suppressLinkSync = false; }
+        }
+
+        /// <summary>
+        /// A press on a connection takes the end of it the pointer is nearest to, so that end can be dragged onto
+        /// another connection point; a press that does not move only picks the link, which the library does on
+        /// its own. A press on a connection point that already receives a connection takes the end that arrives
+        /// there, and a press anywhere else on a point starts a new connection, which the library draws.
+        /// </summary>
+        private void pointerDown(Model? model, Diagrams.Core.Events.PointerEventArgs e) {
+            //A press starts a gesture of its own: an end left following the pointer by a release the canvas never
+            //saw goes back to the connection the model keeps, and a point locked for the previous gesture is free
+            //again before this press takes one.
+            releasePressedPort();
+            if (movingLinkEnd != null)
+                CancelLinkEndDrag();
+
+            if (model is PortModel port) {
+                StartLinkEndDragFromPort(port, e.ClientX, e.ClientY);
+                return;
+            }
+
+            if (model is LinkModel link)
+                StartLinkEndDrag(link, e.ClientX, e.ClientY);
+        }
+
+        /// <summary>
+        /// Takes the end of the connection that arrives at a connection point, so a drag started on that point
+        /// detaches the connection from the card instead of drawing one more: the point is what the user grabs to
+        /// put the connection somewhere else. Returns false when no connection ends there, which leaves the press
+        /// to the library, that draws a new one.
+        /// </summary>
+        public bool StartLinkEndDragFromPort(PortModel port, double clientX, double clientY) {
+            pendingLinkEnd = null;
+            if (incomingLinkOf(port) is not { } attached)
+                return false;
+
+            if (!beginLinkEndDrag(attached, sourceEnd: false, clientX, clientY))
+                return false;
+
+            //The library would start a new link from the pressed point; it is locked for this gesture, which is
+            //what makes the press take the connection that ends there instead.
+            port.Locked = true;
+            pressedPort = port;
+            return true;
+        }
+
+        /// <summary>Connection that ends on the given connection point, if any.</summary>
+        private LinkModel? incomingLinkOf(PortModel port) {
+            foreach (var link in designer.Links.OfType<LinkModel>())
+                if (link.Target is SinglePortAnchor anchor && ReferenceEquals(anchor.Port, port))
+                    return link;
+
+            return null;
+        }
+
+        /// <summary>Frees the connection point a gesture locked, if any.</summary>
+        private void releasePressedPort() {
+            if (pressedPort == null)
+                return;
+
+            pressedPort.Locked = false;
+            pressedPort = null;
+        }
+
+        /// <summary>
+        /// Takes the end of a connection the pointer was pressed on: a press on the line near one of its ends
+        /// starts with that end, which is what lets the user move a connection by its beginning or by its end
+        /// instead of drawing it again. Returns false when the link does not belong to the container that is open
+        /// or the press is not near an end of it.
+        /// </summary>
+        public bool StartLinkEndDrag(LinkModel link, double clientX, double clientY) {
+            pendingLinkEnd = null;
+            //The end of the link follows the pointer in canvas coordinates, so the canvas has to be measured
+            //before it can be taken.
+            if (designer.Container is null)
+                return false;
+
+            return linkEndAt(link, designer.GetRelativeMousePoint(clientX, clientY)) is { } sourceEnd
+                && beginLinkEndDrag(link, sourceEnd, clientX, clientY);
+        }
+
+        /// <summary>
+        /// Takes one end of a connection, so that end follows the pointer once the press turns into a drag.
+        /// Returns false when the link does not belong to the container that is open.
+        /// </summary>
+        private bool beginLinkEndDrag(LinkModel link, bool sourceEnd, double clientX, double clientY) {
+            pendingLinkEnd = null;
+            var from = findPair(nodeOf(link.Source));
+            var to = findPair(nodeOf(link.Target));
+            if (from == null || to == null || currentGraphContainer == null || designer.Container is null)
+                return false;
+
+            pendingLinkEnd = (link, from, to, sourceEnd,
+                PortAlignmentOf(link.Source, from.Node.OutcomingPort.Alignment), clientX, clientY);
+            return true;
+        }
+
+        /// <summary>
+        /// Lets the end of the pressed connection follow the pointer, once the press has turned into a drag.
+        /// Returns false while nothing is pending or the pointer has not moved far enough, so a click on the line
+        /// picks it instead of moving it.
+        /// </summary>
+        public bool DragLinkEnd(double clientX, double clientY) {
+            if (pendingLinkEnd is not { } pending)
+                return false;
+
+            if (Math.Abs(clientX - pending.ClientX) < LinkEndDragThreshold
+                && Math.Abs(clientY - pending.ClientY) < LinkEndDragThreshold)
+                return false;
+
+            pendingLinkEnd = null;
+            var floating = new PositionAnchor(designer.GetRelativeMousePoint(clientX, clientY));
+            moveLinkEnd(pending.Link, pending.SourceEnd, floating);
+            movingLinkEnd = (pending.Link, pending.From, pending.To, pending.SourceEnd, pending.SourceEdge, floating);
+            return true;
+        }
+
+        /// <summary>
+        /// Puts an end of a connection that is following the pointer back on the connection the model keeps,
+        /// which is where it was before the drag: a release the canvas never saw (the pointer left it while the
+        /// end was moving) leaves the end with nothing holding it, and the line is drawn from the model again.
+        /// </summary>
+        public void CancelLinkEndDrag() {
+            if (movingLinkEnd == null && pendingLinkEnd == null)
+                return;
+
+            movingLinkEnd = null;
+            pendingLinkEnd = null;
+            releasePressedPort();
+            currentGraphContainer?.RebuildLinks();
+            updateState();
+        }
+
+        /// <summary>
+        /// Leaves the end of the moving connection on the connection point the pointer was released on: the connection keeps the
+        /// end that did not move and takes that point, and the line is drawn from the model afterwards, so it
+        /// arrives and leaves on the points the user put it between. A drop away from every point, or on a point
+        /// the container refuses (a card into itself), leaves the connection as it was — moving a connection is
+        /// not the way to remove it.
+        /// </summary>
+        public void DropLinkEnd(double clientX, double clientY) {
+            if (movingLinkEnd is not { } moving)
+                return;
+
+            movingLinkEnd = null;
+            //The gesture that took the end of the connection is over, so the point it was taken from is free
+            //again for the next press.
+            releasePressedPort();
+            if (currentGraphContainer is not { } container || designer.Container is null)
+                return;
+
+            //The point the pointer was released on is what counts, and not the place the end was last put: a move
+            //that never reached the handler would otherwise leave the end somewhere the user did not point at.
+            var at = designer.GetRelativeMousePoint(clientX, clientY);
+            var port = findPortNear(at);
+            var pair = port == null ? null : findPair(port.Parent);
+
+            //The end that did not move stays where it is; the other one takes the point it was dropped on, and
+            //the point it leaves from on its own card names the branch when it is the start of the connection.
+            var source = moving.SourceEnd ? pair : moving.From;
+            var end = moving.SourceEnd ? moving.To : pair;
+            var edge = moving.SourceEnd ? port?.Alignment ?? moving.SourceEdge : moving.SourceEdge;
+            if (source == null || end == null) {
+                container.RebuildLinks();
+                updateState();
+                return;
+            }
+
+            var moved = !ReferenceEquals(source, moving.From) || !ReferenceEquals(end, moving.To);
+            container.TryDisconnect(moving.From, moving.To);
+            if (!container.TryConnect(source, end, edge)) {
+                container.TryConnect(moving.From, moving.To, moving.SourceEdge);
+                container.Refresh();
+                updateState();
+                return;
+            }
+
+            //The end that moved keeps the point it was dropped on, so drawing the line again does not send it
+            //back to the canonical edge of the connection.
+            var kept = moving.SourceEnd
+                ? PortAlignmentOf(moving.Link.Target, moving.To.Node.IncomingPort.Alignment)
+                : PortAlignmentOf(moving.Link.Source, moving.From.Node.OutcomingPort.Alignment);
+            linkPorts.Remove((moving.From, moving.To));
+            linkPorts[(source, end)] = moving.SourceEnd
+                ? (port!.Alignment, kept)
+                : (kept, port!.Alignment);
+
+            if (moved) {
+                container.Refresh();
+                notifyModelChanged();
+            } else {
+                //The same connection, arriving where the user put the end: nothing changed to report.
+                container.RebuildLinks();
+                updateState();
+            }
+        }
+
+        /// <summary>
+        /// Puts one end of a link on the given anchor, redrawing the line: the library only redraws a link whose
+        /// own port changed, and an end that follows the pointer belongs to no port.
+        /// </summary>
+        private static void moveLinkEnd(LinkModel link, bool sourceEnd, Anchor anchor) {
+            if (sourceEnd)
+                link.SetSource(anchor);
+            else
+                link.SetTarget(anchor);
+
+            link.Refresh();
+            link.RefreshLinks();
+        }
+
+        /// <summary>
+        /// Which end of a link a point of the canvas takes: the source end, the target end, or null when the
+        /// point is not near either of them. The line runs from one end of its route to the other, so the nearer
+        /// end is the one the user reached for.
+        /// </summary>
+        private static bool? linkEndAt(LinkModel link, Point point) {
+            var path = link.PathGeneratorResult?.FullPath;
+            if (path == null || path.Length <= 0)
+                return null;
+
+            var source = path.GetPointAtLength(0);
+            var target = path.GetPointAtLength(path.Length);
+            var toSource = distance(point, source.X, source.Y);
+            var toTarget = distance(point, target.X, target.Y);
+            if (Math.Min(toSource, toTarget) > LinkEndGrabRadius)
+                return null;
+
+            return toSource <= toTarget;
+        }
+
+        /// <summary>Connection point nearest to a point of the canvas, within the radius a moving end snaps in.</summary>
+        private PortModel? findPortNear(Point point) {
+            PortModel? nearest = null;
+            var nearestDistance = LinkEndSnapRadius;
+            foreach (var port in designer.Nodes.SelectMany(node => node.Ports)) {
+                if (port.Locked)
+                    continue;
+
+                var middle = port.MiddlePosition;
+                var away = distance(point, middle.X, middle.Y);
+                if (away <= nearestDistance) {
+                    nearest = port;
+                    nearestDistance = away;
+                }
+            }
+
+            return nearest;
+        }
+
+        private static double distance(Point one, double x, double y) =>
+            Math.Sqrt(Math.Pow(one.X - x, 2) + Math.Pow(one.Y - y, 2));
+
+        /// <summary>
+        /// Follows the pointer with the moving end: the end takes the connection point it points at, and lets go
+        /// of it when the pointer moves away from every point.
+        /// </summary>
+        private void pointerMove(Model? model, Diagrams.Core.Events.PointerEventArgs e) {
+            //An end that follows the pointer belongs to a press: a pointer that moves with no button down has lost
+            //its release, so the end goes back where the model has it instead of following the pointer on its own.
+            if (movingLinkEnd != null && e.Buttons == 0) {
+                CancelLinkEndDrag();
+                return;
+            }
+
+            if (DragLinkEnd(e.ClientX, e.ClientY) || movingLinkEnd is not { } moving)
+                return;
+
+            var point = designer.GetRelativeMousePoint(e.ClientX, e.ClientY);
+            moving.Floating.SetPosition(point);
+            var port = findPortNear(point);
+            moveLinkEnd(moving.Link, moving.SourceEnd,
+                port == null ? moving.Floating : new SinglePortAnchor(port));
         }
 
         /// <summary>A link added to the diagram: either an ongoing drag link or a completed one.</summary>
@@ -757,16 +1151,28 @@ namespace Blazor.WorkflowEditor {
 
             var from = findPair(nodeOf(link.Source));
             var to = findPair(nodeOf(link.Target));
-            if (from != null && to != null && currentGraphContainer is { } graph && graph.TryConnect(from, to)) {
+            if (from == null || to == null) {
+                //Not a valid connection for the current container: drop the drawn link.
+                removeLink(link);
+                updateState();
+                return;
+            }
+
+            //The edge the link was drawn from names the branch the connection replaces (True/False of a
+            //decision, the default branch of a switch), so a branch is moved by drawing it again instead of
+            //one more branch being added next to it.
+            var sourcePort = PortAlignmentOf(link.Source, from.Node.OutcomingPort.Alignment);
+            if (currentGraphContainer is { } graph && graph.TryConnect(from, to, sourcePort)) {
                 //Keep the anchors the user dropped on: the link is rebuilt from the model afterwards.
-                linkPorts[(from, to)] = (PortAlignmentOf(link.Source, from.Node.OutcomingPort.Alignment),
+                linkPorts[(from, to)] = (sourcePort,
                     PortAlignmentOf(link.Target, to.Node.IncomingPort.Alignment));
                 graph.Refresh();
                 notifyModelChanged();
                 return;
             }
 
-            //Not a valid connection for the current container: drop the drawn link.
+            //Not a valid connection for the current container: drop the drawn link, and put back the connection
+            //the drag took the end of.
             removeLink(link);
             updateState();
         }
@@ -790,18 +1196,17 @@ namespace Blazor.WorkflowEditor {
             anchor is SinglePortAnchor { Port: { } port } ? port.Alignment : fallback;
 
         /// <summary>
-        /// Port to anchor a link end on: the one the user picked while drawing, when it still exists and still
-        /// has the right direction, otherwise the default incoming/outgoing port of the node.
+        /// Port to anchor a link end on: the one the user picked while drawing, when it still exists, otherwise
+        /// the default port of that end of a link (the right edge for its start, the left one for its end).
         /// </summary>
-        private static PortModel PortOf(DefaultNode node, PortAlignment? preferred, bool expectedOutgoing) {
+        private static PortModel PortOf(DefaultNode node, PortAlignment? preferred, PortModel fallback) {
             if (preferred is { } alignment) {
-                var chosen = node.Ports.FirstOrDefault(p => p.Alignment == alignment
-                    && (expectedOutgoing ? p is GraphOutPort : p is GraphInPort));
+                var chosen = node.Ports.FirstOrDefault(p => p.Alignment == alignment);
                 if (chosen != null)
                     return chosen;
             }
 
-            return expectedOutgoing ? node.OutcomingPort : node.IncomingPort;
+            return fallback;
         }
 
         public ActivityDesignerPair? FindPair(object element) => this.items.FirstOrDefault(p => ReferenceEquals(p.Element, element));
@@ -891,6 +1296,12 @@ namespace Blazor.WorkflowEditor {
         }
 
         private void pointerUp(Model? model, Diagrams.Core.Events.PointerEventArgs arg) {
+            //A press on a connection that never moved is a click that picks the link; the end of a connection
+            //that did move is left on the point the pointer points at.
+            pendingLinkEnd = null;
+            DropLinkEnd(arg.ClientX, arg.ClientY);
+            releasePressedPort();
+
             //A click anywhere else takes the selection over from a branch child rendered inside a card. The
             //click that selects such a child runs after this handler, so the order is not a problem.
             clearEmbeddedSelection();
