@@ -152,7 +152,6 @@ public class DefaultNode : NodeModel {
         leftPort.Locked = true;
         rightPort = this.AddPort(PortAlignment.Right);
         rightPort.Locked = true;
-
         IncomingPort = topPort;
         OutcomingPort = bottomPort;
 
@@ -185,7 +184,7 @@ public class DefaultNode : NodeModel {
     }
 
     /// <summary>Radius of the round port marker. The port rectangle is a square of <c>2 * PortRadius</c>.</summary>
-    private const double PortRadius = 10;
+    public const double PortRadius = 6;
 
     /// <summary>
     /// Places every port so that its circle sits exactly on the node border: the link anchors of the library
@@ -196,24 +195,8 @@ public class DefaultNode : NodeModel {
         if (Size is not { } size)
             return;
 
-        var right = Position.X + size.Width;
-        var bottom = Position.Y + size.Height;
-        var middleX = Position.X + size.Width / 2.0;
-        var middleY = Position.Y + size.Height / 2.0;
-
         foreach (var port in Ports) {
-            var center = port.Alignment switch {
-                PortAlignment.Top => new Point(middleX, Position.Y),
-                PortAlignment.TopRight => new Point(right, Position.Y),
-                PortAlignment.Right => new Point(right, middleY),
-                PortAlignment.BottomRight => new Point(right, bottom),
-                PortAlignment.Bottom => new Point(middleX, bottom),
-                PortAlignment.BottomLeft => new Point(Position.X, bottom),
-                PortAlignment.Left => new Point(Position.X, middleY),
-                PortAlignment.TopLeft => new Point(Position.X, Position.Y),
-                _ => new Point(right, middleY)
-            };
-
+            var center = portCenter(port.Alignment, slotOf(port), size);
             port.Size = new Size(PortRadius * 2, PortRadius * 2);
             port.Position = new Point(center.X - PortRadius, center.Y - PortRadius);
             //Keep the port initialized: while it is false the library re-measures it in the DOM and would
@@ -225,6 +208,47 @@ public class DefaultNode : NodeModel {
         //a port-anchored link to the port, so the routes have to be rebuilt through the ports.
         foreach (var port in Ports)
             port.RefreshLinks();
+    }
+
+    private static double slotOf(PortModel port) => PortPlace.Of(port).Slot;
+
+    /// <summary>Point on the border of the card a point of an edge sits at: its place along that edge decides.</summary>
+    private Point portCenter(PortAlignment alignment, double slot, Size size) {
+        var left = Position.X;
+        var top = Position.Y;
+        var right = left + size.Width;
+        var bottom = top + size.Height;
+        var alongX = left + size.Width * slot;
+        var alongY = top + size.Height * slot;
+
+        return alignment switch {
+            PortAlignment.Top => new Point(alongX, top),
+            PortAlignment.Right => new Point(right, alongY),
+            PortAlignment.Bottom => new Point(alongX, bottom),
+            PortAlignment.Left => new Point(left, alongY),
+            PortAlignment.TopRight => new Point(right, top),
+            PortAlignment.BottomRight => new Point(right, bottom),
+            PortAlignment.BottomLeft => new Point(left, bottom),
+            PortAlignment.TopLeft => new Point(left, top),
+            _ => new Point(right, alongY)
+        };
+    }
+
+    /// <summary>
+    /// Style that moves the marker of a port along its edge. The library pins a marker to the middle of its edge
+    /// with a class of its own, so only the points beside the middle need this.
+    /// </summary>
+    public string? PortSlotStyle(PortModel port) {
+        if (Math.Abs(slotOf(port) - PortPlace.Middle) < 0.001)
+            return null;
+
+        var percent = Math.Round(slotOf(port) * 100, 1)
+            .ToString(System.Globalization.CultureInfo.InvariantCulture);
+        return port.Alignment switch {
+            PortAlignment.Top or PortAlignment.Bottom => $"left: {percent}%",
+            PortAlignment.Left or PortAlignment.Right => $"top: {percent}%",
+            _ => null
+        };
     }
 
     public bool HasViewState => State.Designer.HasProperty(activity);
@@ -505,32 +529,76 @@ public class DefaultNode : NodeModel {
     protected virtual PortAlignment GraphIncomingEdge => PortAlignment.Left;
 
     /// <summary>
-    /// Replaces the default ports with the connection points of a graph node. Every edge of the card carries one
-    /// and each of them takes a link in both directions: a connection is started from the point the user drags
-    /// and dropped on the point it points at, so the user picks the edge of a card that gives the neatest route
-    /// instead of remembering which edge means what. A node that is laid out by a graph container is the only one
-    /// that shows ports: the mode where the user connects elements to each other exists only there.
+    /// Places the connection points of a graph node: every edge of the card carries them and each of them takes
+    /// a link in both directions, so a connection is started from the point the user drags and dropped on the
+    /// point it points at. A node that is laid out by a graph container is the only one that shows points: the
+    /// mode where the user connects elements to each other exists only there.
     /// </summary>
     public void UseGraphPorts() {
         ShowsPorts = true;
 
         var edges = GraphPortEdges;
-        if (Ports.Count == edges.Count && Ports.All(p => p is GraphPort)
-            && edges.All(edge => Ports.Any(p => p.Alignment == edge)))
+        if (portsMatch(edges))
             return;
 
         foreach (var port in Ports.ToList())
             RemovePort(port);
 
         foreach (var edge in edges)
-            AddPort(new GraphPort(this, edge));
+            foreach (var slot in GraphPortSlots(edge))
+                AddPort(new GraphPort(this, edge, slot));
 
         //The canonical anchors of a link the model draws are the edge it leaves from and the one it arrives at;
         //that edge is unlocked like the others, so the user may draw from and drop on any of them.
-        SetOutcoming(Ports.First(p => p.Alignment == GraphOutcomingEdge));
-        SetIncoming(Ports.First(p => p.Alignment == GraphIncomingEdge));
+        SetOutcoming(PortOn(GraphOutcomingEdge, 0));
+        SetIncoming(PortOn(GraphIncomingEdge, 0));
 
         UpdatePortGeometry();
+    }
+
+    /// <summary>Whether the card already offers the points its edges and their places call for.</summary>
+    private bool portsMatch(IReadOnlyList<PortAlignment> edges) =>
+        Ports.Count == edges.Sum(edge => GraphPortSlots(edge).Count)
+        && Ports.All(p => p is GraphPort port && edges.Contains(port.Alignment));
+
+    /// <summary>
+    /// Places of the points an edge offers, as fractions of its length. An edge that sets a branch of its own
+    /// (the sides of a decision, the default branch of a switch) keeps a single point at the middle, because
+    /// the name of that branch is drawn beside it; every other edge spreads its points, so the connections that
+    /// leave through one side do not cover each other.
+    /// </summary>
+    protected virtual IReadOnlyList<double> GraphPortSlots(PortAlignment edge) =>
+        BranchName(edge) is null ? new[] { 0.25, PortPlace.Middle, 0.75 } : new[] { PortPlace.Middle };
+
+    /// <summary>
+    /// Point of an edge a link end takes. The ends of an edge share its points in order, and the middle point
+    /// comes first, so the first connection of an edge leaves exactly where a card with a single point per edge
+    /// left it, and the next ones take the points beside it.
+    /// </summary>
+    public PortModel PortOn(PortAlignment edge, int endsOnEdge) {
+        var ports = Ports.Where(p => p.Alignment == edge).ToList();
+        if (ports.Count == 0)
+            return IncomingPort;
+
+        if (ports.Count == 1)
+            return ports[0];
+
+        var order = new[] { ports.Count / 2, 0, ports.Count - 1 };
+        return ports[order[endsOnEdge % ports.Count]];
+    }
+
+    /// <summary>
+    /// Point of the card a connection end was put on: the point of that edge at the place the user dropped it,
+    /// or, when the card offers no point there (a card whose edges changed since the schema was saved), the
+    /// point of that edge nearest to the place.
+    /// </summary>
+    public PortModel? PortAt(PortPlace place) {
+        var onEdge = Ports.Where(p => p.Alignment == place.Edge).ToList();
+        if (onEdge.Count == 0)
+            return null;
+
+        return onEdge.FirstOrDefault(place.IsOn)
+            ?? onEdge.OrderBy(port => Math.Abs(PortPlace.Of(port).Slot - place.Slot)).First();
     }
 
     /// <summary>
@@ -538,7 +606,77 @@ public class DefaultNode : NodeModel {
     /// default branch of a switch — or null for a port that carries no branch of its own. The card draws the
     /// name next to the port, so the edge a connection is drawn from states which branch it moves.
     /// </summary>
-    public virtual string? PortCaption(PortModel port) => null;
+    public virtual string? PortCaption(PortModel port) => BranchName(port.Alignment);
+
+    /// <summary>Name of the branch an edge of the card sets, or null for an edge that sets none.</summary>
+    protected virtual string? BranchName(PortAlignment edge) => null;
+
+    /// <summary>
+    /// Whether the edges of this card are pinned by the meaning of its branches, so a connection leaves and
+    /// arrives exactly where the model of the activity says. A decision keeps its entry on the top edge and its
+    /// branches on the sides whatever stands around it, because the name of a branch belongs to the edge it
+    /// leaves from; a card that carries no such meaning is laid out by the surface instead.
+    /// </summary>
+    protected virtual bool EdgesAreFixed => false;
+
+    /// <summary>Whether an edge of the card has to keep the place it has: it sets a named branch, or the card pins its edges.</summary>
+    public bool EdgeIsPinned(PortAlignment edge) => EdgesAreFixed || BranchName(edge) != null;
+
+    /// <summary>Direction an edge of a card faces, or null for a place on the card that faces no direction.</summary>
+    public static Point? OutwardDirection(PortAlignment edge) => edge switch {
+        PortAlignment.Top => new Point(0, -1),
+        PortAlignment.Right => new Point(1, 0),
+        PortAlignment.Bottom => new Point(0, 1),
+        PortAlignment.Left => new Point(-1, 0),
+        _ => null
+    };
+
+    /// <summary>
+    /// Edge of this card a connection to the given card leaves from or arrives at: the one that faces it, so the
+    /// route between the two cards is as short as the surface allows. An edge that stands for a named branch is
+    /// never taken, because a connection drawn there would move that branch instead.
+    /// </summary>
+    public PortAlignment FacingEdge(DefaultNode other, PortAlignment fallback) {
+        var dx = other.CenterPosition.X - CenterPosition.X;
+        var dy = other.CenterPosition.Y - CenterPosition.Y;
+        var length = Math.Sqrt(dx * dx + dy * dy);
+        if (length < 0.001)
+            return fallback;
+
+        dx /= length;
+        dy /= length;
+
+        var facing = fallback;
+        var best = double.NegativeInfinity;
+        foreach (var edge in new[] { PortAlignment.Right, PortAlignment.Left, PortAlignment.Bottom, PortAlignment.Top }) {
+            if (!Ports.Any(port => port.Alignment == edge) || EdgeIsPinned(edge))
+                continue;
+
+            var direction = OutwardDirection(edge)!;
+            var score = direction.X * dx + direction.Y * dy;
+            if (score > best) {
+                best = score;
+                facing = edge;
+            }
+        }
+
+        return facing;
+    }
+
+    /// <summary>
+    /// Edge a connection between this card and another one leaves from or arrives at, given the edge the model of
+    /// the activity asks for: the asked one while it is pinned, and the edge that faces the other card otherwise.
+    /// </summary>
+    public PortAlignment EdgeTowards(DefaultNode other, PortAlignment canonical) =>
+        EdgeIsPinned(canonical) ? canonical : FacingEdge(other, canonical);
+
+    /// <summary>
+    /// Edges a connection from this card to another one leaves and arrives at: the edge the model of the activity
+    /// asks for while that edge is pinned, and the edges that face the two cards otherwise, so a plain step of a
+    /// flowchart or a case of a switch is drawn the way the cards stand on the surface.
+    /// </summary>
+    public (PortAlignment Source, PortAlignment Target) ConnectionEdges(DefaultNode to, PortAlignment canonicalSource) =>
+        (EdgeTowards(to, canonicalSource), to.EdgeTowards(this, to.IncomingPort.Alignment));
 
     /// <summary>
     /// Whether a connection drawn from the given connection point takes the place of the connection the point

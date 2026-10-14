@@ -18,8 +18,8 @@ public class FlowSwitchNode<T> : DefaultNode {
     /// The right edge adds a case of a generated key; the bottom one sets or moves the default branch, which
     /// has no case of its own and would otherwise be reachable only from the fields of the card.
     /// </summary>
-    public override string? PortCaption(PortModel port) =>
-        port.Alignment == PortAlignment.Bottom ? "default" : null;
+    protected override string? BranchName(PortAlignment edge) =>
+        edge == PortAlignment.Bottom ? "default" : null;
 
     public IGraphContainer? Container => FlowchartNode.Of(service);
 

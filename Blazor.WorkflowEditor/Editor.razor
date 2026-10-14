@@ -175,8 +175,9 @@
         //Snapping makes drawing connections forgiving: releasing near a port attaches to it.
         diagram.Options.Links.EnableSnapping = true;
         diagram.Options.Links.SnappingRadius = 60;
-        //Right-angled connectors with a small radius, like the classic Workflow Foundation designer.
-        diagram.Options.Links.DefaultRouter = new Activity.SafeOrthogonalRouter();
+        //Right-angled connectors with a small radius, like the classic Workflow Foundation designer, that go
+        //around every card of the surface.
+        diagram.Options.Links.DefaultRouter = new Activity.WorkflowRouter();
         diagram.Options.Links.DefaultPathGenerator = new StraightPathGenerator(8);
         // DeleteKey = "Delete"
         

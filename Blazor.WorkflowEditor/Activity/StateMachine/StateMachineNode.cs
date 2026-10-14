@@ -37,6 +37,18 @@ public class StateMachineNode : DefaultNode, IGraphContainer {
             : transition.Trigger.DisplayName;
     }
 
+    /// <summary>
+    /// Key of a transition: the state it arrives at, which is what tells the transitions of a state apart, since
+    /// a state keeps one transition per target.
+    /// </summary>
+    public string? BranchKey(ActivityDesignerPair from, ActivityDesignerPair to) {
+        if (from.Element is not WfState || to.Element is not WfState target)
+            return null;
+
+        var index = activity.States.IndexOf(target);
+        return index < 0 ? null : "to:" + index.ToString(System.Globalization.CultureInfo.InvariantCulture);
+    }
+
     public int Count => activity.States.Count;
 
     public string LabelAt(int index) => stateName(activity.States[index]);
@@ -82,8 +94,12 @@ public class StateMachineNode : DefaultNode, IGraphContainer {
                 continue;
             foreach (var transition in state.Transitions) {
                 var to = transition.To == null ? null : service.FindPair(transition.To);
-                if (to != null && service.IsDisplayed(to.Node) && done.Add((from, to)))
-                    service.LinkFromTo(from, to, LinkLabel(from, to));
+                if (to != null && service.IsDisplayed(to.Node) && done.Add((from, to))) {
+                    //A transition carries no branch of its own, so both of its ends take the edge that faces the
+                    //card at the other end of it.
+                    var edges = from.Node.ConnectionEdges(to.Node, from.Node.OutcomingPort.Alignment);
+                    service.LinkFromTo(from, to, LinkLabel(from, to), edges.Source, edges.Target);
+                }
             }
         }
     }

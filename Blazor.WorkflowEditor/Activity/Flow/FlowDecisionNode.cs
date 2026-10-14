@@ -19,12 +19,19 @@ public class FlowDecisionNode : DefaultNode {
         PortAlignment.Top, PortAlignment.Left, PortAlignment.Right
     };
 
+    /// <summary>
+    /// The entry of a decision is its top edge and its branches leave from the sides, so its edges are pinned:
+    /// the name of a branch belongs to the edge it leaves from, and a card drawn around a decision may not move
+    /// them. Only the entry edge offers more than one point, because a decision can be entered more than once.
+    /// </summary>
+    protected override bool EdgesAreFixed => true;
+
     protected override PortAlignment GraphIncomingEdge => PortAlignment.Top;
 
     protected override PortAlignment GraphOutcomingEdge => PortAlignment.Right;
 
     /// <summary>The left edge draws the True branch, the right one the False branch.</summary>
-    public override string? PortCaption(PortModel port) => port.Alignment switch {
+    protected override string? BranchName(PortAlignment edge) => edge switch {
         PortAlignment.Left => "True",
         PortAlignment.Right => "False",
         _ => null

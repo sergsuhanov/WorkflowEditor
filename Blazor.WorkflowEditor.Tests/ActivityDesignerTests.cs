@@ -1749,14 +1749,25 @@ public class ActivityDesignerTests {
 
         var node = service.Items.First(p => ReferenceEquals(p.Element, one)).Node;
 
-        //Graph nodes offer one point per edge, and every point joins a link the same way: the card the drag
-        //starts from is the source of the connection.
-        Assert.Equal(4, node.Ports.Count);
+        //Graph nodes offer three points per edge, and every point joins a link the same way: the card the drag
+        //starts from is the source of the connection. The points of an edge are spread along it, so several
+        //connections leave through the same side without covering each other.
+        Assert.Equal(12, node.Ports.Count);
         Assert.All(node.Ports, port => Assert.IsType<GraphPort>(port));
         Assert.IsType<GraphPort>(node.IncomingPort);
         Assert.IsType<GraphPort>(node.OutcomingPort);
-        Assert.Same(node.Ports[0], node.OutcomingPort);
-        Assert.Same(node.Ports[2], node.IncomingPort);
+        foreach (var edge in new[] { PortAlignment.Top, PortAlignment.Right, PortAlignment.Bottom, PortAlignment.Left }) {
+            var points = node.Ports.OfType<GraphPort>().Where(p => p.Alignment == edge).ToList();
+            Assert.Equal(new[] { 0.25, 0.5, 0.75 }, points.Select(p => p.Slot).ToArray());
+        }
+
+        //The middle point of an edge is the one a link takes first, so a single connection leaves exactly where
+        //a card with one point per edge left it.
+        Assert.Equal(PortAlignment.Right, node.OutcomingPort.Alignment);
+        Assert.Equal(0.5, ((GraphPort)node.OutcomingPort).Slot);
+        Assert.Equal(PortAlignment.Left, node.IncomingPort.Alignment);
+        Assert.Equal(0.5, ((GraphPort)node.IncomingPort).Slot);
+
         Assert.All(node.Ports, port => Assert.False(port.Locked));
         //Corner alignments are avoided on purpose: the orthogonal router cannot route them.
         Assert.All(node.Ports, port => Assert.True(port.Alignment is Blazor.Diagrams.Core.Models.PortAlignment.Left or Blazor.Diagrams.Core.Models.PortAlignment.Top or Blazor.Diagrams.Core.Models.PortAlignment.Right or Blazor.Diagrams.Core.Models.PortAlignment.Bottom));
@@ -1836,7 +1847,9 @@ public class ActivityDesignerTests {
         foreach (var state in machine.States) {
             var node = service.FindPair(state)!.Node;
 
-            Assert.Equal(4, node.Ports.Count);
+            //A transition carries no branch, so every edge of a state offers its points, and a state can gather
+            //several transitions on one side.
+            Assert.Equal(12, node.Ports.Count);
             Assert.All(node.Ports, port => Assert.IsType<GraphPort>(port));
         }
     }
@@ -2109,14 +2122,18 @@ public class ActivityDesignerTests {
         var decisionNode = service.FindPair(decision)!.Node;
 
         //The entry is the top edge alone; the branches leave from the sides and the bottom edge carries no
-        //point at all, so nothing is drawn under the card.
+        //point at all, so nothing is drawn under the card. The sides set a named branch, so they carry a single
+        //point each, while the entry edge spreads its points: a decision can be entered more than once.
         Assert.Equal(
-            new[] { "Left", "Right", "Top" },
+            new[] { "Left", "Right", "Top", "Top", "Top" },
             decisionNode.Ports.Select(p => p.Alignment.ToString()).OrderBy(a => a, StringComparer.Ordinal).ToArray());
-        Assert.Same(decisionNode.Ports.Single(p => p.Alignment == PortAlignment.Top), decisionNode.IncomingPort);
+        Assert.Same(decisionNode.Ports.Single(p => p.Alignment == PortAlignment.Top && ((GraphPort)p).Slot == 0.5), decisionNode.IncomingPort);
         Assert.Equal("True", decisionNode.PortCaption(decisionNode.Ports.Single(p => p.Alignment == PortAlignment.Left)));
         Assert.Equal("False", decisionNode.PortCaption(decisionNode.Ports.Single(p => p.Alignment == PortAlignment.Right)));
-        Assert.Null(decisionNode.PortCaption(decisionNode.Ports.Single(p => p.Alignment == PortAlignment.Top)));
+        Assert.All(decisionNode.Ports.Where(p => p.Alignment == PortAlignment.Top), port => Assert.Null(decisionNode.PortCaption(port)));
+        //Whatever stands around it, a decision keeps its branches where their names are drawn.
+        var neighbour = service.FindPair(yes)!.Node;
+        Assert.Equal(PortAlignment.Left, decisionNode.EdgeTowards(neighbour, PortAlignment.Left));
 
         //The line of a branch leaves the card at the point its name belongs to.
         var trueLink = diagram.Links.OfType<LinkModel>().Single(l => Assert.Single(l.Labels).Content == "True");
@@ -2313,8 +2330,8 @@ public class ActivityDesignerTests {
         measurePorts(service.Items.Select(i => i.Node).ToArray());
 
         var switchNode = service.FindPair(sw)!.Node;
-        var right = switchNode.Ports.Single(p => p.Alignment == PortAlignment.Right);
-        var bottom = switchNode.Ports.Single(p => p.Alignment == PortAlignment.Bottom);
+        var right = switchNode.PortOn(PortAlignment.Right, 0);
+        var bottom = switchNode.PortOn(PortAlignment.Bottom, 0);
 
         //A case is added from the right edge, so the point carries a connection that is never the last one and
         //keeps drawing a new one; the bottom edge holds the default branch alone, which the press takes.
@@ -2381,12 +2398,19 @@ public class ActivityDesignerTests {
         Assert.Equal(node.Position.X, node.IncomingPort.MiddlePosition.X, 3);
         Assert.Equal(node.Position.Y + size.Height / 2, node.IncomingPort.MiddlePosition.Y, 3);
         //And the anchors used by the links are on the outer edge of that circle.
-        Assert.Equal(node.Position.X + size.Width + 10, node.OutcomingPort.GetShape().GetPointAtAngle(0)!.X, 3);
-        Assert.Equal(node.Position.X - 10, node.IncomingPort.GetShape().GetPointAtAngle(180)!.X, 3);
-        //The top and bottom anchors are the second choice offered by the node.
-        Assert.Equal(node.Position.Y, node.Ports.Single(p => p.Alignment == Blazor.Diagrams.Core.Models.PortAlignment.Top).MiddlePosition.Y, 3);
-        Assert.Equal(node.Position.Y + size.Height, node.Ports.Single(p => p.Alignment == Blazor.Diagrams.Core.Models.PortAlignment.Bottom).MiddlePosition.Y, 3);
+        Assert.Equal(node.Position.X + size.Width + DefaultNode.PortRadius, node.OutcomingPort.GetShape().GetPointAtAngle(0)!.X, 3);
+        Assert.Equal(node.Position.X - DefaultNode.PortRadius, node.IncomingPort.GetShape().GetPointAtAngle(180)!.X, 3);
+        //The points beside the middle of an edge sit on it as well, so the whole side is reachable.
+        Assert.Equal(node.Position.Y, node.PortOn(PortAlignment.Top, 0).MiddlePosition.Y, 3);
+        Assert.Equal(node.Position.Y + size.Height, node.PortOn(PortAlignment.Bottom, 0).MiddlePosition.Y, 3);
+        Assert.Equal(node.Position.Y + size.Height * 0.25, node.Ports.OfType<GraphPort>().Single(p => p.Alignment == PortAlignment.Right && p.Slot == 0.25).MiddlePosition.Y, 3);
         Assert.True(node.OutcomingPort.Initialized);
+
+        //The marker of a point beside the middle of an edge is moved along that edge by its own style; the middle
+        //one keeps the place the class of the library gives it.
+        Assert.Equal("top: 25%", node.PortSlotStyle(node.Ports.OfType<GraphPort>().Single(p => p.Alignment == PortAlignment.Right && p.Slot == 0.25)));
+        Assert.Equal("left: 75%", node.PortSlotStyle(node.Ports.OfType<GraphPort>().Single(p => p.Alignment == PortAlignment.Top && p.Slot == 0.75)));
+        Assert.Null(node.PortSlotStyle(node.OutcomingPort));
     }
 
     /// <summary>
@@ -2422,9 +2446,9 @@ public class ActivityDesignerTests {
         var target = link.Target.GetPosition(link, route);
         Assert.NotNull(source);
         Assert.NotNull(target);
-        Assert.Equal(from.Position.X + from.Size!.Width + 10, source!.X, 3);
+        Assert.Equal(from.Position.X + from.Size!.Width + DefaultNode.PortRadius, source!.X, 3);
         Assert.Equal(from.Position.Y + from.Size.Height / 2, source.Y, 3);
-        Assert.Equal(to.Position.X - 10, target!.X, 3);
+        Assert.Equal(to.Position.X - DefaultNode.PortRadius, target!.X, 3);
         Assert.Equal(to.Position.Y + to.Size!.Height / 2, target.Y, 3);
     }
 
@@ -3198,6 +3222,234 @@ public class ActivityDesignerTests {
         Assert.Equal(new[] { "ActivityBuilder", "outer", "inner" },
             service.Path.Select(p => p.Name).ToArray());
         Assert.True(service.IsDisplayed(service.FindPair(body)!.Node));
+    }
+
+    /// <summary>
+    /// A route keeps clear of every card of the surface, not only of the two cards it joins: the stock router of
+    /// the library only knows the cards of the connection it draws, so a connection spanning a third card used
+    /// to run straight over it.
+    /// </summary>
+    [Fact]
+    public void AConnectionGoesAroundTheCardsThatStandInItsWay() {
+        var diagram = new BlazorDiagram();
+        diagram.SetContainer(new Rectangle(new Point(0, 0), new Size(1600, 900)));
+        diagram.Options.Links.DefaultRouter = new WorkflowRouter();
+        using var service = new Service(diagram, () => { });
+        var one = new WriteLine { DisplayName = "one" };
+        var two = new Delay { DisplayName = "two" };
+        var three = new WriteLine { DisplayName = "three" };
+        var chart = new Flowchart();
+        var firstStep = new FlowStep { Action = one };
+        chart.Nodes.Add(firstStep);
+        chart.Nodes.Add(new FlowStep { Action = two });
+        chart.Nodes.Add(new FlowStep { Action = three });
+        chart.StartNode = firstStep;
+        //The connection spans the card in the middle: it runs from the first card to the last one.
+        firstStep.Next = chart.Nodes[2];
+        service.SetActivityBuilder(new ActivityBuilder { Implementation = chart });
+        service.Open(service.Items.First(p => p.Activity == chart).Node);
+        measurePorts(service.Items.Select(i => i.Node).ToArray());
+
+        var first = service.FindPair(one)!.Node;
+        var middle = service.FindPair(two)!.Node;
+        var last = service.FindPair(three)!.Node;
+
+        //The three cards stand in a row, so the straight run from the right edge of the first card to the left
+        //edge of the last one crosses the card that stands between them.
+        first.CenterPosition = new Point(150, 300);
+        middle.CenterPosition = new Point(600, 300);
+        last.CenterPosition = new Point(1050, 300);
+
+        var link = diagram.Links.OfType<LinkModel>().Single();
+        link.Refresh();
+
+        //The route turns around that card: its corners are all outside it, and so is every point of the line the
+        //bends of it are drawn from.
+        var route = link.Route!;
+        Assert.True(route.Length > 0, "the route of the connection has no corner at all");
+        Assert.All(route, point => Assert.False(IsInside(middle, point.X, point.Y), $"corner {point} lies in the card"));
+
+        var path = link.PathGeneratorResult!.FullPath;
+        for (var distance = 0.0; distance <= path.Length; distance += 5) {
+            var point = path.GetPointAtLength(distance);
+            Assert.False(IsInside(middle, point.X, point.Y), $"the line at {distance} lies in the card");
+        }
+
+        //Going around costs more than the run the two cards are apart by.
+        var straight = PointOf(last, PortAlignment.Left).X - PointOf(first, PortAlignment.Right).X;
+        Assert.True(path.Length > straight, "the route is not longer than the run it replaces");
+
+        //The line keeps off the card it passes, so it reads as a line of its own instead of lying against its
+        //border: the whole run of it stands at the clearance of the router, which the ends of the line do not
+        //reach (those two stand on the anchor of their own card).
+        var nearest = double.MaxValue;
+        for (var distance = 0.0; distance <= path.Length; distance += 5) {
+            var point = path.GetPointAtLength(distance);
+            nearest = Math.Min(nearest, DistanceToCard(middle, new Point(point.X, point.Y)));
+        }
+
+        Assert.True(nearest > 15, $"the line lies {nearest} away from the card it goes around");
+    }
+
+    /// <summary>Whether a point lies inside the box of a card.</summary>
+    private static bool IsInside(DefaultNode node, double x, double y) {
+        var size = node.Size!;
+        return x > node.Position.X && x < node.Position.X + size.Width
+            && y > node.Position.Y && y < node.Position.Y + size.Height;
+    }
+
+    /// <summary>
+    /// A connection between two cards that name no branch leaves and arrives at the edges that face the cards it
+    /// joins, so a step that runs into the step below it is drawn straight down instead of being wrapped around
+    /// the two cards.
+    /// </summary>
+    [Fact]
+    public void AConnectionTakesTheEdgesThatFaceTheCardsItJoins() {
+        var diagram = new BlazorDiagram();
+        diagram.SetContainer(new Rectangle(new Point(0, 0), new Size(1200, 800)));
+        using var service = new Service(diagram, () => { });
+        var one = new WriteLine { DisplayName = "one" };
+        var two = new Delay { DisplayName = "two" };
+        var chart = new Flowchart();
+        var secondStep = new FlowStep { Action = two };
+        chart.Nodes.Add(new FlowStep { Action = one, Next = secondStep });
+        chart.Nodes.Add(secondStep);
+        chart.StartNode = chart.Nodes[0];
+        service.SetActivityBuilder(new ActivityBuilder { Implementation = chart });
+        var chartNode = (FlowchartNode)service.Items.First(p => p.Activity == chart).Node;
+        service.Open(chartNode);
+        measurePorts(service.Items.Select(i => i.Node).ToArray());
+
+        //The cards are laid out in a row, so the connection leaves the first one on the right and arrives at the
+        //second one on its left.
+        Assert.Equal(PortAlignment.Right,
+            ((SinglePortAnchor)Assert.Single(diagram.Links.OfType<LinkModel>()).Source).Port.Alignment);
+
+        //The second card is dropped under the first one, and the connection is drawn again: both of its ends take
+        //the edge that faces the other card.
+        service.FindPair(one)!.Node.CenterPosition = new Point(300, 150);
+        service.FindPair(two)!.Node.CenterPosition = new Point(320, 600);
+        chartNode.RebuildLinks();
+
+        var link = Assert.Single(diagram.Links.OfType<LinkModel>());
+        Assert.Equal(PortAlignment.Bottom, ((SinglePortAnchor)link.Source).Port.Alignment);
+        Assert.Equal(PortAlignment.Top, ((SinglePortAnchor)link.Target).Port.Alignment);
+    }
+
+    /// <summary>
+    /// Connections that leave a card through the same edge take different points of it, so they do not leave on
+    /// top of each other, while an edge that stands for a named branch keeps its single point.
+    /// </summary>
+    [Fact]
+    public void ConnectionsThatShareAnEdgeTakeDifferentPoints() {
+        var diagram = new BlazorDiagram();
+        diagram.SetContainer(new Rectangle(new Point(0, 0), new Size(1600, 800)));
+        using var service = new Service(diagram, () => { });
+        var chart = new Flowchart();
+        var sw = new FlowSwitch<string> { DisplayName = "mode" };
+        var a = new FlowStep { Action = new WriteLine { DisplayName = "a" } };
+        var b = new FlowStep { Action = new Delay { DisplayName = "b" } };
+        var fallback = new FlowStep { Action = new WriteLine { DisplayName = "fallback" } };
+        foreach (FlowNode node in new FlowNode[] { sw, a, b, fallback })
+            chart.Nodes.Add(node);
+        chart.StartNode = sw;
+        sw.Cases["a"] = a;
+        sw.Cases["b"] = b;
+        sw.Default = fallback;
+        service.SetActivityBuilder(new ActivityBuilder { Implementation = chart });
+        var chartNode = (FlowchartNode)service.Items.First(p => p.Activity == chart).Node;
+        service.Open(chartNode);
+        measurePorts(service.Items.Select(i => i.Node).ToArray());
+
+        //Two cases stand to the right of the switch and the default branch under it.
+        service.FindPair(sw)!.Node.CenterPosition = new Point(200, 300);
+        service.FindPair(a.Action)!.Node.CenterPosition = new Point(800, 150);
+        service.FindPair(b.Action)!.Node.CenterPosition = new Point(800, 450);
+        service.FindPair(fallback.Action)!.Node.CenterPosition = new Point(200, 700);
+        chartNode.RebuildLinks();
+
+        //Both cases leave through the right edge, at different points of it: the middle one first, then the one
+        //above it.
+        var casePorts = diagram.Links.OfType<LinkModel>()
+            .Where(l => l.Labels.Count == 1 && l.Labels[0].Content is "a" or "b")
+            .Select(l => ((SinglePortAnchor)l.Source).Port)
+            .ToList();
+        Assert.Equal(2, casePorts.Count);
+        Assert.All(casePorts, port => Assert.Equal(PortAlignment.Right, port.Alignment));
+        Assert.Equal(new[] { 0.5, 0.25 }, casePorts.Select(port => ((GraphPort)port).Slot).OrderByDescending(slot => slot).ToArray());
+
+        //The default branch is named by its edge, so it stays on the bottom one, on its single point.
+        var defaultLink = diagram.Links.OfType<LinkModel>().Single(l => Assert.Single(l.Labels).Content == "default");
+        var defaultPort = ((SinglePortAnchor)defaultLink.Source).Port;
+        Assert.Equal(PortAlignment.Bottom, defaultPort.Alignment);
+        Assert.Equal(0.5, ((GraphPort)defaultPort).Slot);
+    }
+
+    /// <summary>
+    /// A connection whose end the user dragged onto another point of a card keeps that point — the edge and the
+    /// place on it — with the activity that owns the connection, so a schema that is saved and opened again
+    /// draws the line on the very point it was left on.
+    /// </summary>
+    [Fact]
+    public void AConnectionKeepsThePortTheUserMovedItsEndTo() {
+        var diagram = new BlazorDiagram();
+        diagram.SetContainer(new Rectangle(new Point(0, 0), new Size(1200, 800)));
+        using var service = new Service(diagram, () => { });
+        var one = new WriteLine { DisplayName = "one" };
+        var two = new Delay { DisplayName = "two" };
+        var chart = new Flowchart();
+        var secondStep = new FlowStep { Action = two };
+        chart.Nodes.Add(new FlowStep { Action = one, Next = secondStep });
+        chart.Nodes.Add(secondStep);
+        chart.StartNode = chart.Nodes[0];
+        service.SetActivityBuilder(new ActivityBuilder { Implementation = chart });
+        service.Open(service.Items.First(p => p.Activity == chart).Node);
+        measurePorts(service.Items.Select(i => i.Node).ToArray());
+
+        var link = Assert.Single(diagram.Links.OfType<LinkModel>());
+        var end = EndOf(link, sourceEnd: false);
+        Assert.True(service.StartLinkEndDrag(link, end.X, end.Y));
+
+        //The end is dropped on the upper point of the bottom edge, which is neither the edge nor the place the
+        //model of the activity asks for.
+        var under = service.FindPair(two)!.Node.PortOn(PortAlignment.Bottom, 1).MiddlePosition;
+        Assert.True(service.DragLinkEnd(under.X, under.Y));
+        service.DropLinkEnd(under.X, under.Y);
+
+        var dropped = ((SinglePortAnchor)Assert.Single(diagram.Links.OfType<LinkModel>()).Target).Port;
+        Assert.Equal(PortAlignment.Bottom, dropped.Alignment);
+        Assert.Equal(0.25, ((GraphPort)dropped).Slot, 3);
+
+        //The choice is written with the activity the connection leaves from, and the schema carries it.
+        var saved = Blazor.WorkflowEditor.Activity.State.BranchPorts.Get(one, "next");
+        Assert.NotNull(saved);
+        Assert.Equal(PortAlignment.Right, saved!.Value.Source.Edge);
+        Assert.Equal(PortAlignment.Bottom, saved.Value.Target.Edge);
+        Assert.Equal(0.25, saved.Value.Target.Slot, 3);
+
+        //Opening the saved schema draws the connection on those points again.
+        var xaml = WorkflowXamlSerializer.SaveBuilder(new ActivityBuilder { Implementation = chart });
+        var loaded = Assert.IsType<Flowchart>(WorkflowXamlSerializer.LoadBuilder(xaml).Implementation);
+        var reloadedDiagram = new BlazorDiagram();
+        using var reloaded = new Service(reloadedDiagram, () => { });
+        reloaded.SetActivityBuilder(new ActivityBuilder { Implementation = loaded });
+        reloaded.Open(reloaded.Items.First(p => p.Activity == loaded).Node);
+        measurePorts(reloaded.Items.Select(i => i.Node).ToArray());
+
+        var reloadedLink = Assert.Single(reloadedDiagram.Links.OfType<LinkModel>());
+        var reloadedSource = ((SinglePortAnchor)reloadedLink.Source).Port;
+        var reloadedTarget = ((SinglePortAnchor)reloadedLink.Target).Port;
+        Assert.Equal(PortAlignment.Right, reloadedSource.Alignment);
+        Assert.Equal(PortAlignment.Bottom, reloadedTarget.Alignment);
+        Assert.Equal(0.25, ((GraphPort)reloadedTarget).Slot, 3);
+    }
+
+    /// <summary>Euclidean distance from a point to the box of a card, zero when the point lies inside it.</summary>
+    private static double DistanceToCard(DefaultNode node, Point point) {
+        var size = node.Size!;
+        var dx = Math.Max(Math.Max(node.Position.X - point.X, point.X - (node.Position.X + size.Width)), 0);
+        var dy = Math.Max(Math.Max(node.Position.Y - point.Y, point.Y - (node.Position.Y + size.Height)), 0);
+        return Math.Sqrt(dx * dx + dy * dy);
     }
 
     private sealed class InvalidActivity : CodeActivity {

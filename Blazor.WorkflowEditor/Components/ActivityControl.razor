@@ -86,7 +86,7 @@
             {
                 var portClass = port.Locked ? "locked" : "unlocked";
                 var caption = port.Locked ? null : Node.PortCaption(port);
-                <PortRenderer Port="port" Class="@portClass">
+                <PortRenderer Port="port" Class="@portClass" Style="@Node.PortSlotStyle(port)">
                     @*A port that stands for a named branch of the activity (True/False of a decision, the
                       default branch of a switch) carries its name, so the edge a connection is drawn from says
                       which branch the connection replaces.*@

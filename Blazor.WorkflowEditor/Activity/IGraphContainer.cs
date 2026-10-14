@@ -33,4 +33,12 @@ public interface IGraphContainer {
 
     /// <summary>Short label of a connection (True/False, switch case, transition trigger) or null.</summary>
     string? LinkLabel(ActivityDesignerPair from, ActivityDesignerPair to);
+
+    /// <summary>
+    /// Key of the connection between two child elements, under which the edges a user picked for it are kept
+    /// with the source element, or null when the container does not tell its connections apart. The key names the
+    /// connection itself (`next`, `True`, `False`, `default`, a case) and not the cards it joins, so a
+    /// connection that is re-pointed at another card keeps the key of the branch it belongs to.
+    /// </summary>
+    string? BranchKey(ActivityDesignerPair from, ActivityDesignerPair to);
 }

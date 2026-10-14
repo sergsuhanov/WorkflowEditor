@@ -56,6 +56,70 @@ public static class Designer {
     public static void SetIsExpanded(object target, bool? value) => setValue(target, IsExpandedProperty, value);
     #endregion
 
+    #region BranchEdges
+    /// <summary>
+    /// Places a connection of a graph surface leaves and arrives at, keyed by the connection itself (`next`,
+    /// `True`, `False`, `default`, a switch case). A connection is drawn from the point of the edge its branch
+    /// belongs to and to the point that faces the card it joins, and a user who drags one of its ends onto
+    /// another point of a card keeps that choice here, so a schema that is saved and opened again draws the line
+    /// exactly where it was left.
+    /// <para>The value is a compact list, `True=Left@0.5>Top@0.25;False=Right@0.5`, so it stays readable in the
+    /// file; it is read and written through <see cref="BranchPorts"/>.</para>
+    /// </summary>
+    public static readonly AttachableMemberIdentifier BranchPortsProperty = new(typeof(Designer), "BranchPorts");
+    public static string? GetBranchPorts(object target) => getValue<string>(target, BranchPortsProperty);
+    public static void SetBranchPorts(object target, string? value) => setValue(target, BranchPortsProperty, value);
+    #endregion
+
+}
+
+/// <summary>
+/// The points a user picked for the connections of a graph surface, kept on the element each connection leaves
+/// from: a connection is otherwise drawn from the edge its branch belongs to and to the edge that faces the card
+/// it joins, and this is what makes a hand-picked point outlive a save and a reload.
+/// </summary>
+public static class BranchPorts {
+    /// <summary>Points the user picked for a connection, or null when it keeps the points the model asks for.</summary>
+    public static (PortPlace Source, PortPlace Target)? Get(object activity, string key) {
+        var places = parse(Designer.GetBranchPorts(activity));
+        return places.TryGetValue(key, out var found) ? found : null;
+    }
+
+    /// <summary>Keeps the points the user picked for a connection with the element that owns the connection.</summary>
+    public static void Set(object activity, string key, PortPlace source, PortPlace target) {
+        var places = parse(Designer.GetBranchPorts(activity));
+        places[key] = (source, target);
+        Designer.SetBranchPorts(activity, string.Join(';', places.Select(place =>
+            $"{escape(place.Key)}={place.Value.Source}>{place.Value.Target}")));
+    }
+
+    private static Dictionary<string, (PortPlace Source, PortPlace Target)> parse(string? value) {
+        var result = new Dictionary<string, (PortPlace Source, PortPlace Target)>();
+        if (string.IsNullOrWhiteSpace(value))
+            return result;
+
+        foreach (var entry in value.Split(';', StringSplitOptions.RemoveEmptyEntries)) {
+            var separator = entry.IndexOf('=');
+            if (separator <= 0)
+                continue;
+
+            var ends = entry[(separator + 1)..].Split('>');
+            if (PortPlace.Parse(ends[0]) is not { } source)
+                continue;
+
+            var target = ends.Length > 1 && PortPlace.Parse(ends[1]) is { } parsed ? parsed : source;
+            result[unescape(entry[..separator])] = (source, target);
+        }
+
+        return result;
+    }
+
+    /// <summary>Escapes the separators of a key, so a key that carries one stays a single key.</summary>
+    private static string escape(string key) => key
+        .Replace("%", "%25").Replace(";", "%3B").Replace("=", "%3D").Replace(">", "%3E");
+
+    private static string unescape(string key) => key
+        .Replace("%3E", ">").Replace("%3D", "=").Replace("%3B", ";").Replace("%25", "%");
 }
 
 public enum PortAlignment {

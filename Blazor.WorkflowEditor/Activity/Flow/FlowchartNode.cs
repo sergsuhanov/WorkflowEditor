@@ -54,6 +54,44 @@ public class FlowchartNode : DefaultNode, IGraphContainer {
         return ReferenceEquals(node.Default, to) ? "default" : null;
     }
 
+    /// <summary>
+    /// Key of a connection of the flowchart: the branch it sets. It is what the edges a user picked for the
+    /// connection are remembered under, so it names the branch and not the card the connection points at.
+    /// </summary>
+    public string? BranchKey(ActivityDesignerPair from, ActivityDesignerPair to) {
+        var fromNode = flowNodeOf(from);
+        var toNode = flowNodeOf(to);
+        if (fromNode == null || toNode == null)
+            return null;
+
+        if (fromNode is FlowStep)
+            return "next";
+
+        if (fromNode is FlowDecision decision)
+            return ReferenceEquals(decision.True, toNode) ? "True"
+                : ReferenceEquals(decision.False, toNode) ? "False" : null;
+
+        if (isSwitch(fromNode) && invokeSwitch(nameof(isDefaultTarget), fromNode, toNode) is true)
+            return "default";
+
+        return isSwitch(fromNode) ? invokeSwitch(nameof(caseIndexOf), fromNode, toNode) as string : null;
+    }
+
+    private static string? caseIndexOf<T>(FlowSwitch<T> node, FlowNode? to) {
+        if (to == null)
+            return null;
+
+        var index = 0;
+        foreach (var pair in node.Cases) {
+            if (ReferenceEquals(pair.Value, to))
+                return "case:" + index.ToString(System.Globalization.CultureInfo.InvariantCulture);
+
+            index++;
+        }
+
+        return null;
+    }
+
     public int Count => activity.Nodes.Count;
 
     public string LabelAt(int index) => Label(activity.Nodes[index]);
@@ -154,8 +192,10 @@ public class FlowchartNode : DefaultNode, IGraphContainer {
                 continue;
             foreach (var target in Successors(node)) {
                 var to = pairOf(target);
-                if (to != null && service.IsDisplayed(to.Node) && done.Add((from, to)))
-                    service.LinkFromTo(from, to, LinkLabel(from, to), SourceEdge(from, to));
+                if (to != null && service.IsDisplayed(to.Node) && done.Add((from, to))) {
+                    var edges = from.Node.ConnectionEdges(to.Node, SourceEdge(from, to));
+                    service.LinkFromTo(from, to, LinkLabel(from, to), edges.Source, edges.Target);
+                }
             }
         }
     }

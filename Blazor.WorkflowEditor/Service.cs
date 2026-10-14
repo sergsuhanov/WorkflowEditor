@@ -39,11 +39,11 @@ namespace Blazor.WorkflowEditor {
         private bool suppressLinkSync;
 
         /// <summary>
-        /// Ports the user picked while drawing a connection. A graph link is rebuilt from the workflow model
-        /// on every change, so the choice of anchor has to be remembered here, otherwise the rebuilt link
-        /// would jump back to the default left/right ports.
+        /// Points of the cards the user picked while drawing a connection. A graph link is rebuilt from the
+        /// workflow model on every change, so the choice of anchor has to be remembered here, otherwise the
+        /// rebuilt link would jump back to the points the model alone would pick.
         /// </summary>
-        private readonly Dictionary<(ActivityDesignerPair from, ActivityDesignerPair to), (PortAlignment source, PortAlignment target)> linkPorts = new();
+        private readonly Dictionary<(ActivityDesignerPair from, ActivityDesignerPair to), (PortPlace source, PortPlace target)> linkPlaces = new();
 
         /// <summary>Distance the name of a branch keeps from the line it belongs to.</summary>
         private const double LinkLabelOffset = 24;
@@ -419,8 +419,8 @@ namespace Blazor.WorkflowEditor {
             selectedLinks.RemoveAll(l => l.Item1 == item || l.Item2 == item);
             //The port a connection was drawn from is remembered per pair of cards; a card that is gone keeps
             //no such choice.
-            foreach (var key in linkPorts.Keys.Where(k => k.from == item || k.to == item).ToList())
-                linkPorts.Remove(key);
+            foreach (var key in linkPlaces.Keys.Where(k => k.from == item || k.to == item).ToList())
+                linkPlaces.Remove(key);
 
             designer.Nodes.Remove(node);
 
@@ -804,18 +804,23 @@ namespace Blazor.WorkflowEditor {
         }
 
         internal LinkModel LinkFromTo(ActivityDesignerPair from, ActivityDesignerPair to, string? label = null,
-            PortAlignment? sourceEdge = null) {
+            PortAlignment? sourceEdge = null, PortAlignment? targetEdge = null) {
             //Port anchors: the ports are placed on the node border and the library rebuilds the link geometry
-            //afterwards, so the line follows the node. They are also what OrthogonalRouter needs in order to
-            //build right-angled (Workflow Foundation style) routes.
+            //afterwards, so the line follows the node. They are also what the router of the editor needs in order
+            //to build right-angled (Workflow Foundation style) routes.
             var sourcePort = from.Node.OutcomingPort;
             var targetPort = to.Node.IncomingPort;
-            if (linkPorts.TryGetValue((from, to), out var chosen)) {
-                //The edge the user drew the connection from wins over the canonical one of the branch it is.
-                sourcePort = PortOf(from.Node, chosen.source, sourcePort);
-                targetPort = PortOf(to.Node, chosen.target, targetPort);
-            } else if (sourceEdge is { } edge) {
-                sourcePort = PortOf(from.Node, edge, sourcePort);
+            var chosen = linkPlaces.TryGetValue((from, to), out var picked) ? picked : savedPlaces(from, to);
+            if (chosen is { } places) {
+                //The points the user dropped the ends on win over the ones the model of the activity asks for.
+                sourcePort = PortOf(from.Node, places.source, sourcePort, source: true);
+                targetPort = PortOf(to.Node, places.target, targetPort, source: false);
+            } else {
+                if (sourceEdge is { } edge)
+                    sourcePort = PortOnEdge(from.Node, edge, sourcePort, source: true);
+
+                if (targetEdge is { } end)
+                    targetPort = PortOnEdge(to.Node, end, targetPort, source: false);
             }
 
             var linkModel = new LinkModel(
@@ -958,7 +963,7 @@ namespace Blazor.WorkflowEditor {
                 return false;
 
             pendingLinkEnd = (link, from, to, sourceEnd,
-                PortAlignmentOf(link.Source, from.Node.OutcomingPort.Alignment), clientX, clientY);
+                PortPlaceOf(link.Source, PortPlace.Of(from.Node.OutcomingPort)).Edge, clientX, clientY);
             return true;
         }
 
@@ -1043,14 +1048,14 @@ namespace Blazor.WorkflowEditor {
             }
 
             //The end that moved keeps the point it was dropped on, so drawing the line again does not send it
-            //back to the canonical edge of the connection.
+            //back to the point the model of the activity would pick.
+            var dropped = PortPlace.Of(port!);
             var kept = moving.SourceEnd
-                ? PortAlignmentOf(moving.Link.Target, moving.To.Node.IncomingPort.Alignment)
-                : PortAlignmentOf(moving.Link.Source, moving.From.Node.OutcomingPort.Alignment);
-            linkPorts.Remove((moving.From, moving.To));
-            linkPorts[(source, end)] = moving.SourceEnd
-                ? (port!.Alignment, kept)
-                : (kept, port!.Alignment);
+                ? PortPlaceOf(moving.Link.Target, PortPlace.Of(moving.To.Node.IncomingPort))
+                : PortPlaceOf(moving.Link.Source, PortPlace.Of(moving.From.Node.OutcomingPort));
+            linkPlaces.Remove((moving.From, moving.To));
+            linkPlaces[(source, end)] = moving.SourceEnd ? (dropped, kept) : (kept, dropped);
+            savePlaces(source, end);
 
             if (moved) {
                 container.Refresh();
@@ -1176,11 +1181,11 @@ namespace Blazor.WorkflowEditor {
             //The edge the link was drawn from names the branch the connection replaces (True/False of a
             //decision, the default branch of a switch), so a branch is moved by drawing it again instead of
             //one more branch being added next to it.
-            var sourcePort = PortAlignmentOf(link.Source, from.Node.OutcomingPort.Alignment);
-            if (currentGraphContainer is { } graph && graph.TryConnect(from, to, sourcePort)) {
-                //Keep the anchors the user dropped on: the link is rebuilt from the model afterwards.
-                linkPorts[(from, to)] = (sourcePort,
-                    PortAlignmentOf(link.Target, to.Node.IncomingPort.Alignment));
+            var sourcePort = PortPlaceOf(link.Source, PortPlace.Of(from.Node.OutcomingPort));
+            if (currentGraphContainer is { } graph && graph.TryConnect(from, to, sourcePort.Edge)) {
+                //Keep the points the user dropped the ends on: the link is rebuilt from the model afterwards.
+                linkPlaces[(from, to)] = (sourcePort, PortPlaceOf(link.Target, PortPlace.Of(to.Node.IncomingPort)));
+                savePlaces(from, to);
                 graph.Refresh();
                 notifyModelChanged();
                 return;
@@ -1200,28 +1205,59 @@ namespace Blazor.WorkflowEditor {
             var from = findPair(nodeOf(link.Source));
             var to = findPair(nodeOf(link.Target));
             if (from != null && to != null && currentGraphContainer is { } graph && graph.TryDisconnect(from, to)) {
-                linkPorts.Remove((from, to));
+                linkPlaces.Remove((from, to));
                 graph.Refresh();
                 notifyModelChanged();
             }
         }
 
-        /// <summary>Alignment of the port a link end is anchored on, or the fallback one.</summary>
-        private static PortAlignment PortAlignmentOf(Anchor? anchor, PortAlignment fallback) =>
-            anchor is SinglePortAnchor { Port: { } port } ? port.Alignment : fallback;
+        /// <summary>Place of the point a link end is anchored on, or the fallback one.</summary>
+        private static PortPlace PortPlaceOf(Anchor? anchor, PortPlace fallback) =>
+            anchor is SinglePortAnchor { Port: { } port } ? PortPlace.Of(port) : fallback;
 
         /// <summary>
-        /// Port to anchor a link end on: the one the user picked while drawing, when it still exists, otherwise
-        /// the default port of that end of a link (the right edge for its start, the left one for its end).
+        /// Port to anchor a link end on: the point of the card the connection was put on, when the card still
+        /// offers it. A card whose edges changed since the schema was saved takes the point of that edge that
+        /// lies nearest to it instead.
         /// </summary>
-        private static PortModel PortOf(DefaultNode node, PortAlignment? preferred, PortModel fallback) {
-            if (preferred is { } alignment) {
-                var chosen = node.Ports.FirstOrDefault(p => p.Alignment == alignment);
-                if (chosen != null)
-                    return chosen;
-            }
+        private PortModel PortOf(DefaultNode node, PortPlace place, PortModel fallback, bool source) =>
+            node.PortAt(place) ?? PortOnEdge(node, place.Edge, fallback, source);
 
-            return fallback;
+        /// <summary>
+        /// Port of an edge a link end takes when the model of the activity asks for that edge: the ends that
+        /// share one take its points in order, so two connections leaving through the same side do not cover
+        /// each other. A card that offers no such edge keeps the canonical port of that end of a link (the right
+        /// edge for its start, the left one for its end).
+        /// </summary>
+        private PortModel PortOnEdge(DefaultNode node, PortAlignment edge, PortModel fallback, bool source) =>
+            node.Ports.Any(p => p.Alignment == edge)
+                ? node.PortOn(edge, endsOn(node, edge, source))
+                : fallback;
+
+        /// <summary>Connections already anchored on an end of the card, which is how the points of an edge are shared out.</summary>
+        private int endsOn(DefaultNode node, PortAlignment edge, bool source) =>
+            designer.Links.OfType<LinkModel>().Count(link => portOf(link, source) is { } port
+                && ReferenceEquals(port.Parent, node) && port.Alignment == edge);
+
+        private static PortModel? portOf(LinkModel link, bool source) => source ? link.SourcePort() : link.TargetPort();
+
+        /// <summary>
+        /// Edges a user picked for a connection of the open container, kept with the element the connection
+        /// leaves from so that they outlive the schema: a line that was dragged onto another edge of a card is
+        /// drawn there again after the workflow was saved and opened.
+        /// </summary>
+        private (PortPlace source, PortPlace target)? savedPlaces(ActivityDesignerPair from, ActivityDesignerPair to) =>
+            currentGraphContainer is { } graph && graph.BranchKey(from, to) is { } key
+                ? Blazor.WorkflowEditor.Activity.State.BranchPorts.Get(from.Element, key)
+                : null;
+
+        /// <summary>Keeps the points of a connection the user moved with the element the connection leaves from.</summary>
+        private void savePlaces(ActivityDesignerPair from, ActivityDesignerPair to) {
+            if (currentGraphContainer is not { } graph || graph.BranchKey(from, to) is not { } key)
+                return;
+
+            if (linkPlaces.TryGetValue((from, to), out var places))
+                Blazor.WorkflowEditor.Activity.State.BranchPorts.Set(from.Element, key, places.source, places.target);
         }
 
         public ActivityDesignerPair? FindPair(object element) => this.items.FirstOrDefault(p => ReferenceEquals(p.Element, element));
@@ -1328,6 +1364,12 @@ namespace Blazor.WorkflowEditor {
             if (arg.ClientX > 50 || arg.ClientY > 50) {
                 if (model is DefaultNode node) {
                     node.UpdateViewState();
+
+                    //A card that was dropped draws the connections of its surface again: the edges a connection
+                    //uses follow the cards they join, while the edges the user picked stay where they were put.
+                    if (node.ShowsPorts && currentGraphContainer is { } graph)
+                        graph.RebuildLinks();
+
                     updateState();
                 }
             }
