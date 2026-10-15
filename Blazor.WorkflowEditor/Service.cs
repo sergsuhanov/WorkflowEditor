@@ -1598,8 +1598,14 @@ namespace Blazor.WorkflowEditor {
         /// the ends of its connections with it, so the lines keep leaving and arriving on the edges that face the
         /// cards they join, with as few bends as the two cards allow. A connection that already holds the point it
         /// calls for is left untouched.
+        /// <para>
+        /// <paramref name="movedCard"/> is the card the surface moved, when the pass follows a card. Only the
+        /// connections whose band a route between their cards is searched in can meet it: every cost of the rest
+        /// is what it was when their ends were picked, so they are left alone instead of being measured again —
+        /// a surface of many cards would otherwise pay for every connection on each frame of the drag.
+        /// </para>
         /// </summary>
-        private void followCards() {
+        internal void FollowCards(DefaultNode? movedCard = null) {
             if (!DynamicLinks || currentGraphContainer is not { } graph || designer.Container == null)
                 return;
 
@@ -1607,8 +1613,13 @@ namespace Blazor.WorkflowEditor {
             if (movingLinkEnd != null || pendingLinkEnd != null || pressedPort != null)
                 return;
 
+            var movedBounds = movedCard?.GetBounds();
+
             foreach (var link in designer.Links.OfType<LinkModel>().ToList()) {
                 if (nodeOf(link.Source) is not DefaultNode source || nodeOf(link.Target) is not DefaultNode target)
+                    continue;
+
+                if (movedBounds is { } bounds && !WorkflowRouter.MeetsCorridor(source, target, bounds))
                     continue;
 
                 if (findPair(source) is not { } from || findPair(target) is not { } to)
@@ -1632,8 +1643,8 @@ namespace Blazor.WorkflowEditor {
 
         /// <summary>A card was moved: the connections that follow the cards take the points the cards now ask for.</summary>
         private void onNodeMoved(NodeModel model) {
-            if (model is DefaultNode)
-                followCards();
+            if (model is DefaultNode card)
+                FollowCards(card);
         }
 
         /// <summary>

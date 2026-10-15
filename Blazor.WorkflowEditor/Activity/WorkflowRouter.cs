@@ -91,6 +91,33 @@ public class WorkflowRouter : Router {
         return new Measure(bends, length);
     }
 
+    /// <summary>
+    /// Whether a card can take part in the routes laid out between two other cards at all: a route stays inside
+    /// the band built around those two, so a card outside that band changes no cost of the connection. The editor
+    /// uses it to leave a connection alone while a card far from it is moved, which is what keeps the frames of a
+    /// drag affordable on a surface of many cards.
+    /// </summary>
+    public static bool MeetsCorridor(DefaultNode from, DefaultNode to, Rectangle card) {
+        if (from.GetBounds() is not { } fromBox || to.GetBounds() is not { } toBox)
+            return true;
+
+        //A card whose bounds are unknown is measured against rather than skipped: the answer is only a guess then.
+        return meets(fromBox, toBox, card, Clearance) || meets(fromBox, toBox, card, DefaultNode.PortRadius);
+    }
+
+    /// <summary>Whether a card stands in the band a route between two cards is searched in at one clearance.</summary>
+    private static bool meets(Rectangle fromBox, Rectangle toBox, Rectangle card, double clearance) =>
+        corridor(fromBox, toBox, clearance).Intersects(card.Inflate(clearance, clearance));
+
+    /// <summary>
+    /// Band a route between two cards is searched in: the two cards with their clearance, which is what a route
+    /// keeps from them, and the margin a route may reach into to go around what stands between them.
+    /// </summary>
+    private static Rectangle corridor(Rectangle fromBox, Rectangle toBox, double clearance) =>
+        fromBox.Inflate(clearance, clearance)
+            .Union(toBox.Inflate(clearance, clearance))
+            .Inflate(CorridorMargin, CorridorMargin);
+
     private static Point[]? route(Diagram diagram, Anchor source, Anchor target) {
         if (source is not SinglePortAnchor sourceAnchor || target is not SinglePortAnchor targetAnchor)
             return null;
@@ -117,7 +144,7 @@ public class WorkflowRouter : Router {
 
             var sourceArea = sourceBox.Inflate(clearance, clearance);
             var targetArea = targetBox.Inflate(clearance, clearance);
-            var corridor = sourceArea.Union(targetArea).Inflate(CorridorMargin, CorridorMargin);
+            var band = corridor(sourceBox, targetBox, clearance);
 
             var obstacles = new List<Rectangle> { sourceArea, targetArea };
             foreach (var node in diagram.Nodes) {
@@ -126,14 +153,14 @@ public class WorkflowRouter : Router {
 
                 //A card outside the band cannot be met by a route that stays inside it, so it is left out of the
                 //search; that is what keeps the grid small on a large diagram.
-                if (node.GetBounds()?.Inflate(clearance, clearance) is { } area && area.Intersects(corridor))
+                if (node.GetBounds()?.Inflate(clearance, clearance) is { } area && area.Intersects(band))
                     obstacles.Add(area);
             }
 
             //Corridors run along the borders of the cards and along the lines the two ends leave on, so every
             //route of the grid is a sequence of right angles that keeps its clearance from the cards.
-            var xs = new SortedSet<double> { start.X, goal.X, corridor.Left, corridor.Right };
-            var ys = new SortedSet<double> { start.Y, goal.Y, corridor.Top, corridor.Bottom };
+            var xs = new SortedSet<double> { start.X, goal.X, band.Left, band.Right };
+            var ys = new SortedSet<double> { start.Y, goal.Y, band.Top, band.Bottom };
             foreach (var obstacle in obstacles) {
                 xs.Add(obstacle.Left);
                 xs.Add(obstacle.Right);

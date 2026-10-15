@@ -4028,6 +4028,97 @@ public class ActivityDesignerTests {
         Assert.Equal(2, chart.Nodes.Count);
     }
 
+    /// <summary>
+    /// A pass that follows a moved card leaves every connection the card cannot meet alone: it stands outside the
+    /// band a route between the two cards of that connection is searched in, so no cost of the connection changed
+    /// and the ends that were picked stay the ones to pick.
+    /// </summary>
+    [Fact]
+    public void MovingACardLeavesTheConnectionsItCannotMeetAlone() {
+        var (service, diagram, chart, firstStep, secondStep, third, link) = chainedFlowchart();
+        using var _ = service;
+
+        var from = service.Items.First(p => ReferenceEquals(p.Element, firstStep.Action)).Node;
+        var to = service.Items.First(p => ReferenceEquals(p.Element, secondStep.Action)).Node;
+        var other = third.Node;
+
+        from.CenterPosition = new Point(200, 200);
+        to.CenterPosition = new Point(900, 200);
+        other.CenterPosition = new Point(200, 700);
+        measurePorts(from, to, other);
+
+        //The pass follows one of the cards of the connection, which picks its ends.
+        service.FollowCards(to);
+        var sourceEnd = ((SinglePortAnchor)link.Source).Port;
+        var targetEnd = ((SinglePortAnchor)link.Target).Port;
+
+        //The card that is dragged next stands far from the connection: it is not measured at all, so its ends are
+        //the very points the pass left behind.
+        other.CenterPosition = new Point(1100, 700);
+        service.FollowCards(other);
+
+        Assert.Same(sourceEnd, ((SinglePortAnchor)link.Source).Port);
+        Assert.Same(targetEnd, ((SinglePortAnchor)link.Target).Port);
+    }
+
+    /// <summary>A card that comes to stand in that band is what the ends of a connection do follow.</summary>
+    [Fact]
+    public void MovingACardIntoTheBandOfAConnectionPicksItsEndsAgain() {
+        var (service, diagram, chart, firstStep, secondStep, third, link) = chainedFlowchart();
+        using var _ = service;
+
+        var from = service.Items.First(p => ReferenceEquals(p.Element, firstStep.Action)).Node;
+        var to = service.Items.First(p => ReferenceEquals(p.Element, secondStep.Action)).Node;
+
+        from.CenterPosition = new Point(200, 200);
+        to.CenterPosition = new Point(900, 200);
+        measurePorts(from, to);
+        service.FollowCards(to);
+
+        var sideways = ((SinglePortAnchor)link.Source).Port.Alignment;
+
+        //The card the connection runs to is put under the other one, which asks the connection to leave downwards.
+        to.CenterPosition = new Point(240, 700);
+        measurePorts(from, to);
+        service.FollowCards(to);
+
+        var downwards = ((SinglePortAnchor)link.Source).Port.Alignment;
+
+        Assert.Equal(PortAlignment.Right, sideways);
+        Assert.NotEqual(sideways, downwards);
+    }
+
+    /// <summary>
+    /// The ends of a connection are picked again when a card that can meet it moves, not on every frame of every
+    /// drag: a connection the router would point elsewhere keeps the points it has while a card far from it is
+    /// dragged, which is what makes a surface of many cards affordable to drag. The pass is what picks them again
+    /// as soon as a card near the connection moves — see
+    /// <see cref="MovingACardIntoTheBandOfAConnectionPicksItsEndsAgain"/>.
+    /// </summary>
+    [Fact]
+    public void AConnectionKeepsThePointsItHasWhileACardFarFromItMoves() {
+        var (service, diagram, chart, firstStep, secondStep, third, link) = chainedFlowchart();
+        using var _ = service;
+
+        var from = service.Items.First(p => ReferenceEquals(p.Element, firstStep.Action)).Node;
+        var to = service.Items.First(p => ReferenceEquals(p.Element, secondStep.Action)).Node;
+        var other = third.Node;
+
+        from.CenterPosition = new Point(200, 200);
+        to.CenterPosition = new Point(900, 200);
+        other.CenterPosition = new Point(200, 700);
+        measurePorts(from, to, other);
+
+        //The end is put on the lower edge of the card, which is not the edge this layout asks for.
+        link.SetSource(new SinglePortAnchor(from.PortOn(PortAlignment.Bottom, 0)));
+        var chosen = ((SinglePortAnchor)link.Source).Port;
+
+        other.CenterPosition = new Point(1100, 700);
+        service.FollowCards(other);
+
+        Assert.Same(chosen, ((SinglePortAnchor)link.Source).Port);
+    }
+
     private sealed class InvalidActivity : CodeActivity {
         protected override void Execute(CodeActivityContext context) { }
 
