@@ -1,5 +1,6 @@
 ﻿@using System.Activities
 @using System.Text
+@using Blazor.WorkflowEditor
 @using Blazor.WorkflowEditor.Components.Modals
 @inherits LayoutComponentBase
 @inject IJSRuntime JS
@@ -36,6 +37,18 @@
                     </button>
                 </li>
                 <li class="nav-item">
+                    <button type="button" class="we-command" title="Undo (Ctrl+Z)" aria-label="Undo"
+                            disabled="@(!canUndo)" @onclick="Undo">
+                        <span class="oi oi-action-undo" aria-hidden="true"></span>
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button type="button" class="we-command" title="Redo (Ctrl+Y)" aria-label="Redo"
+                            disabled="@(!canRedo)" @onclick="Redo">
+                        <span class="oi oi-action-redo" aria-hidden="true"></span>
+                    </button>
+                </li>
+                <li class="nav-item">
                     <button type="button" class="we-command" title="Validate" aria-label="Validate"
                             @onclick="Validate">
                         <span class="oi oi-check" aria-hidden="true"></span>
@@ -61,6 +74,8 @@
 
             <Blazor.WorkflowEditor.Editor @ref="editor" ToolBoxGroups="groups" TypeCollection="TypeCollection"
                                           DirtyChanged="onDirtyChanged"
+                                          ContentChanged="onContentChanged"
+                                          HistoryChanged="onHistoryChanged"
                                           OperationFailed="onEditorOperationFailed" />
 
             @*Every message the page tells the user is a dialog it opens itself, so the page keeps no status line.*@
@@ -73,6 +88,13 @@
     private ModalService? modals;
     private bool hasUnsavedChanges;
     private bool isDarkTheme;
+    private bool canUndo;
+    private bool canRedo;
+
+    /// <summary>Writes the draft of the schema this long after the last edit, so a burst of edits writes one draft.</summary>
+    private const int DraftDelay = 1500;
+
+    private CancellationTokenSource? draftWrite;
 
     /// <summary>The theme button shows the theme it switches to, so the tooltip says which one that is.</summary>
     private string themeTitle => isDarkTheme ? "Switch to the light theme" : "Switch to the dark theme";
@@ -86,7 +108,98 @@
     private void onDirtyChanged(bool dirty)
     {
         hasUnsavedChanges = dirty;
+        _ = guardUnsavedWork(dirty);
         StateHasChanged();
+    }
+
+    /// <summary>The undo and redo commands are shown as unavailable while the history has nothing to offer.</summary>
+    private void onHistoryChanged()
+    {
+        canUndo = editor?.CanUndo == true;
+        canRedo = editor?.CanRedo == true;
+        StateHasChanged();
+    }
+
+    private void Undo()
+    {
+        editor?.Undo();
+        onHistoryChanged();
+    }
+
+    private void Redo()
+    {
+        editor?.Redo();
+        onHistoryChanged();
+    }
+
+    /// <summary>
+    /// Keeps a draft of the schema in the browser shortly after the last edit, so that a reload of the page
+    /// cannot lose the work. Only a schema with unsaved changes is kept: an untouched or freshly opened one has
+    /// nothing to restore.
+    /// </summary>
+    private void onContentChanged()
+    {
+        var previous = draftWrite;
+        draftWrite = new CancellationTokenSource();
+
+        //The write of the previous burst is replaced by this one, so it is cancelled and released here rather
+        //than by the write itself, which cannot know whether a newer edit still holds it.
+        previous?.Cancel();
+        previous?.Dispose();
+
+        _ = writeDraftAfterDelay(draftWrite);
+    }
+
+    private async Task writeDraftAfterDelay(CancellationTokenSource write)
+    {
+        try
+        {
+            await Task.Delay(DraftDelay, write.Token);
+        }
+        catch (TaskCanceledException)
+        {
+            //A newer edit replaced this draft write; the last edit of the burst writes the schema.
+            return;
+        }
+
+        if (editor == null || !hasUnsavedChanges)
+            return;
+
+        try
+        {
+            await JS.InvokeVoidAsync("saveDraft", editor.Save());
+        }
+        catch (Exception)
+        {
+            //A draft is a convenience: whatever goes wrong while writing one (storage that refuses to take it,
+            //the page being gone) leaves the editor working.
+        }
+    }
+
+    /// <summary>Lets the browser ask before a reload or a close that would drop unsaved work.</summary>
+    private async Task guardUnsavedWork(bool dirty)
+    {
+        try
+        {
+            await JS.InvokeVoidAsync("setDirtyGuard", dirty);
+        }
+        catch (JSException)
+        {
+            //The question is a convenience: a page that cannot register it still works.
+        }
+    }
+
+    /// <summary>Drops the draft: the schema of this session is the one a reload should open.</summary>
+    private async Task clearDraft()
+    {
+        try
+        {
+            await JS.InvokeVoidAsync("clearDraft");
+        }
+        catch (JSException)
+        {
+            //Storage that cannot be written cannot be cleared either.
+        }
     }
 
     private Task onEditorOperationFailed(string message) => showMessage("Workflow editor", message);
@@ -101,6 +214,20 @@
         {
             { "Title", title },
             { "Message", message }
+        });
+    }
+
+    /// <summary>The same dialog, with one line per message under the line that introduces them.</summary>
+    private async Task showIssues(string title, string message, IReadOnlyList<string> issues)
+    {
+        if (modals == null)
+            return;
+
+        await modals.ShowModal<MessageModal>(new()
+        {
+            { "Title", title },
+            { "Message", message },
+            { "Issues", issues }
         });
     }
 
@@ -172,19 +299,72 @@
         //The theme is restored by the script before the editor is rendered, so the button reads what is in
         //effect instead of assuming the light theme.
         isDarkTheme = await JS.InvokeAsync<string>("currentTheme") == "dark";
-        New();
+        await New();
+        await offerDraftRestore();
         StateHasChanged();
     }
 
-    private async void New()
+    /// <summary>
+    /// Offers the draft a previous session left behind. A reload of the page therefore starts with the work the
+    /// editor kept instead of an empty workflow.
+    /// </summary>
+    private async Task offerDraftRestore()
+    {
+        if (editor == null || modals == null)
+            return;
+
+        string? draft;
+        try
+        {
+            draft = await JS.InvokeAsync<string?>("loadDraft");
+        }
+        catch (JSException)
+        {
+            //A browser that refuses storage has no draft to offer.
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(draft))
+            return;
+
+        var modal = await modals.ShowModal<ConfirmationModal>(new()
+        {
+            { "Title", "Restore unsaved workflow" },
+            { "Message", "The editor kept the workflow of the previous session, which was not saved. Restore it?" },
+            { "ApplyButtonText", "Restore" }
+        });
+
+        if (modal.ModalResult != ModalResult.Applied)
+        {
+            await clearDraft();
+            return;
+        }
+
+        try
+        {
+            editor.Load(draft, markAsChanged: true);
+        }
+        catch (Exception ex)
+        {
+            await clearDraft();
+            await showMessage("Could not restore the workflow", ex.Message);
+        }
+    }
+
+    private async Task New()
     {
         if (editor == null)
             return;
 
+        var discarding = hasUnsavedChanges;
         if (!await confirmDiscardChanges())
             return;
 
         editor.New();
+
+        //A schema the user threw away must not come back as the draft of a reloaded page.
+        if (discarding)
+            await clearDraft();
     }
 
     private async Task Save()
@@ -198,6 +378,7 @@
             using var streamRef = new DotNetStreamReference(stream: new MemoryStream(Encoding.UTF8.GetBytes(source)));
             await JS.InvokeVoidAsync("downloadFileFromStream", "workflow.xaml", streamRef);
             editor.MarkSaved();
+            await clearDraft();
         }
         catch (Exception ex)
         {
@@ -216,6 +397,8 @@
             using var reader = new StreamReader(stream);
             var source = await reader.ReadToEndAsync();
             editor?.Load(source);
+            //The schema the user opened replaces the one the editor kept: a reload should offer what is open now.
+            await clearDraft();
         }
         catch (Exception ex)
         {
@@ -227,14 +410,32 @@
     {
         try
         {
-            var messages = editor?.Validate();
-            await showMessage("Validation", messages == null || messages.Count == 0
-                ? "The workflow is valid."
-                : $"Validation found {messages.Count} issue(s).");
+            var report = editor?.Validate();
+            if (report == null || !report.HasIssues)
+            {
+                await showMessage("Validation", "The workflow is valid.");
+                return;
+            }
+
+            await showIssues("Validation", issueSummary(report), issueMessages(report));
         }
         catch (Exception ex)
         {
             await showMessage("Could not validate the workflow", ex.Message);
         }
     }
+
+    /// <summary>How many messages the run reported, errors and warnings apart.</summary>
+    private static string issueSummary(ValidationReport report)
+    {
+        var errors = report.Errors.Count == 1 ? "1 error" : $"{report.Errors.Count} errors";
+        var warnings = report.Warnings.Count == 1 ? "1 warning" : $"{report.Warnings.Count} warnings";
+        return $"Validation found {errors} and {warnings}.";
+    }
+
+    /// <summary>One line per message, the errors before the warnings.</summary>
+    private static List<string> issueMessages(ValidationReport report) =>
+        report.Errors.Select(message => $"Error: {message}")
+            .Concat(report.Warnings.Select(message => $"Warning: {message}"))
+            .ToList();
 }

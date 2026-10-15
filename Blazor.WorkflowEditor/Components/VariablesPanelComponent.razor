@@ -163,7 +163,7 @@
     }
   }
 
-  private async void removeVariable(Blazor.WorkflowEditor.Variable variable)
+  private async Task removeVariable(Blazor.WorkflowEditor.Variable variable)
   {
     if (_modalService == null) return;
 
@@ -203,7 +203,7 @@
 
   /// <summary>Asks for the type of a variable in the one dialog that asks for a type, which is where a type
   /// that needs parameters of its own (`List<Int32>`) can be put together.</summary>
-  private async void changeType(Blazor.WorkflowEditor.Variable variable)
+  private async Task changeType(Blazor.WorkflowEditor.Variable variable)
   {
     if (_modalService == null)
       return;

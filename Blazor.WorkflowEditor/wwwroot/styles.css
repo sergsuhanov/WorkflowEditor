@@ -954,6 +954,16 @@
     box-shadow: none;
 }
 
+/*The lines a dialog lists under its message: a long validation run keeps the button of the dialog reachable
+  because the list scrolls instead of growing past the window.*/
+.we-message-list {
+    max-height: 45vh;
+    margin-bottom: 0;
+    padding-left: 1.25rem;
+    overflow-y: auto;
+    text-align: left;
+}
+
 /*A dialog is as narrow as the content it holds: a message, or one field per line. Bootstrap's large size is
   twice that and left every dialog looking empty, so the width is set here instead; a long word of a message
   or of a type name is broken rather than pushed out of the box.*/

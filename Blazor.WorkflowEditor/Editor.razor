@@ -119,11 +119,27 @@
     [Parameter]
     public EventCallback<string> OperationFailed { get; set; }
 
+    /// <summary>
+    /// Raised after every change of the schema, so the hosting page can keep a draft of it. The page decides how
+    /// often that draft is written.
+    /// </summary>
+    [Parameter]
+    public EventCallback ContentChanged { get; set; }
+
+    /// <summary>Raised when an undo or a redo becomes available or unavailable, so the page can reflect it.</summary>
+    [Parameter]
+    public EventCallback HistoryChanged { get; set; }
+
     /// <summary>True when the schema contains changes that are not saved yet.</summary>
     public bool HasUnsavedChanges => service?.IsDirty == true;
 
-    /// <summary>Clears the unsaved-changes flag after the schema was saved.</summary>
-    public void MarkSaved() => service?.MarkSaved();
+    /// <summary>Clears the unsaved-changes flag after the schema was saved, and remembers what was saved, so that
+    /// the history can tell a saved state from an edited one.</summary>
+    public void MarkSaved()
+    {
+        service?.CaptureSavedState();
+        service?.MarkSaved();
+    }
 
     private int toolboxWidth = 320;
     private int propertiesWidth = 280;
@@ -140,6 +156,12 @@
     private IJSObjectReference? viewportObserver;
     private DotNetObjectReference<Editor>? selfReference;
     private bool validationScheduled;
+
+    /// <summary>How long a burst of edits settles before the schema is validated again.</summary>
+    private const int ValidationDelay = 250;
+
+    /// <summary>Cancels the validation run of a burst of edits when the editor is disposed.</summary>
+    private readonly CancellationTokenSource validationCancellation = new();
 
     private void resizeToolbox(double delta) => toolboxWidth = (int)Math.Clamp(toolboxWidth + delta, 140, 800);
     private void resizeProperties(double delta) => propertiesWidth = (int)Math.Clamp(propertiesWidth + delta, 180, 800);
@@ -184,6 +206,8 @@
         this.service = new Service(this.diagram, this.StateHasChanged);
         this.service.DirtyChanged += onDirtyChanged;
         this.service.ModelChanged += onModelChanged;
+        this.service.ModelChanged += onContentChanged;
+        this.service.HistoryChanged += onHistoryChanged;
         diagram.ZoomChanged += onZoomChanged;
     }
 
@@ -191,8 +215,13 @@
 
     private void onDirtyChanged() => _ = InvokeAsync(() => DirtyChanged.InvokeAsync(service.IsDirty));
 
+    private void onContentChanged() => _ = InvokeAsync(() => ContentChanged.InvokeAsync());
+
+    private void onHistoryChanged() => _ = InvokeAsync(() => HistoryChanged.InvokeAsync());
+
     /// <summary>
-    /// Re-runs validation shortly after a model change (coalesces bursts of edits).
+    /// Re-runs validation shortly after a model change (coalesces bursts of edits) and records the schema as one
+    /// step of the history.
     /// </summary>
     private async void onModelChanged()
     {
@@ -202,18 +231,35 @@
         validationScheduled = true;
         try
         {
-            await Task.Delay(250);
+            await Task.Delay(ValidationDelay, validationCancellation.Token);
+        }
+        catch (TaskCanceledException)
+        {
+            //The editor was closed while the burst of edits was still settling.
+            return;
         }
         finally
         {
             validationScheduled = false;
         }
 
-        await InvokeAsync(() =>
+        //The validation of a run that outlived its component would reach a service that is disposed already.
+        if (disposed)
+            return;
+
+        try
         {
-            Validate();
-            StateHasChanged();
-        });
+            await InvokeAsync(() =>
+            {
+                service.CaptureHistory();
+                Validate();
+                StateHasChanged();
+            });
+        }
+        catch (Exception ex) when (ex is ObjectDisposedException or JSDisconnectedException)
+        {
+            //The browser connection was gone before the queued validation could be rendered.
+        }
     }
 
     private string zoomPercent => $"{Math.Round(diagram.Zoom * 100)} %";
@@ -232,14 +278,19 @@
             return;
         disposed = true;
 
+        validationCancellation.Cancel();
+
         if (service != null)
         {
             service.DirtyChanged -= onDirtyChanged;
             service.ModelChanged -= onModelChanged;
+            service.ModelChanged -= onContentChanged;
+            service.HistoryChanged -= onHistoryChanged;
         }
         diagram.ZoomChanged -= onZoomChanged;
         service?.Dispose();
         selfReference?.Dispose();
+        validationCancellation.Dispose();
     }
 
     public async ValueTask DisposeAsync()
@@ -322,6 +373,7 @@
     {
         var ab = new ActivityBuilder() { Implementation = source };
         service.SetActivityBuilder(ab);
+        service.ResetHistory();
         Validate();
     }
 
@@ -329,13 +381,20 @@
     {
         ActivityBuilder? ab = new();
         service.SetActivityBuilder(ab);
+        service.ResetHistory();
         Validate();
     }
 
-    public void Load(string source)
+    /// <summary>Loads a schema. A draft restored from the browser is loaded as changed, so the page keeps
+    /// offering to save it.</summary>
+    public void Load(string source, bool markAsChanged = false)
     {
         var ab = WorkflowXamlSerializer.LoadBuilder(source);
         service.SetActivityBuilder(ab);
+        service.ResetHistory(saved: !markAsChanged);
+        if (markAsChanged)
+            service.MarkDirty();
+
         Validate();
     }
 
@@ -344,26 +403,42 @@
         return WorkflowXamlSerializer.SaveBuilder(service.GetActivityBuilder());
     }
 
+    /// <summary>Whether an edit can be taken back.</summary>
+    public bool CanUndo => service?.CanUndo == true;
+
+    /// <summary>Whether the edit an undo took back can be applied again.</summary>
+    public bool CanRedo => service?.CanRedo == true;
+
+    /// <summary>Takes the last step of the history back.</summary>
+    public void Undo()
+    {
+        service?.Undo();
+        StateHasChanged();
+    }
+
+    /// <summary>Applies the step an undo took back.</summary>
+    public void Redo()
+    {
+        service?.Redo();
+        StateHasChanged();
+    }
+
     /// <summary>
-    /// Re-runs validation and returns the messages. The errors are pushed to the service at the same time,
-    /// so every card and the properties panel can show them.
+    /// Re-runs validation and returns the messages of the run, errors and warnings apart. The errors are pushed to
+    /// the service at the same time, so every card and the properties panel can show them.
     /// </summary>
-    public IReadOnlyList<string> Validate()
+    public ValidationReport Validate()
     {
         var implementation = service.GetActivityBuilder()?.Implementation;
-        var messages = new List<string>();
         if (implementation == null)
         {
             service.SetValidationErrors(null, Array.Empty<System.Activities.Validation.ValidationError>());
-            return messages;
+            return ValidationReport.Empty;
         }
 
         var results = System.Activities.Validation.ActivityValidationServices.Validate(implementation);
-        foreach (var result in results.Errors)
-            messages.Add(result.Message);
-
         service.SetValidationErrors(implementation, results.Errors);
-        return messages;
+        return ValidationReport.From(results);
     }
 
     public void OpenPath(PathItem pathItem)

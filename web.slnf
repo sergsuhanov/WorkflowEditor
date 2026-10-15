@@ -1,0 +1,10 @@
+{
+  "solution": {
+    "path": "trunk.sln",
+    "projects": [
+      "Blazor.WorkflowEditor\\Blazor.WorkflowEditor.csproj",
+      "Blazor.WorkflowEditor.Tests\\Blazor.WorkflowEditor.Tests.csproj",
+      "WorkflowEditor.Web\\WorkflowEditor.Web.csproj"
+    ]
+  }
+}

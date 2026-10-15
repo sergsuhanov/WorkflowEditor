@@ -12,7 +12,9 @@ jobs:
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 10.0.x
+          cache: true
+          cache-dependency-path: '**/*.csproj'
       - name: Test
-        run: dotnet test Blazor.WorkflowEditor.Tests/Blazor.WorkflowEditor.Tests.csproj -c Release
+        run: dotnet test Blazor.WorkflowEditor.Tests/Blazor.WorkflowEditor.Tests.csproj -c Release -warnaserror
       - name: Build Web
-        run: dotnet build WorkflowEditor.Web/WorkflowEditor.Web.csproj -c Release
+        run: dotnet build web.slnf -c Release -warnaserror

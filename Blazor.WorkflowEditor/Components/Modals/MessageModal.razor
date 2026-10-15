@@ -9,7 +9,16 @@
   </Header>
 
   <Body>
-    <p class="mb-0">@Message</p>
+    <p class="@(issues.Count > 0 ? "mb-2" : "mb-0")">@Message</p>
+    @if (issues.Count > 0)
+    {
+      <ul class="we-message-list">
+        @foreach (var issue in issues)
+        {
+          <li>@issue</li>
+        }
+      </ul>
+    }
   </Body>
 
   <Footer>
@@ -25,10 +34,17 @@
   [Parameter]
   public string? Message { get; set; } = string.Empty;
 
+  /// <summary>Lines the dialog lists under its message, one per line: the errors and warnings of a
+  /// validation run, in full.</summary>
+  [Parameter]
+  public IReadOnlyList<string>? Issues { get; set; }
+
   [Parameter]
   public string? CloseButtonText { get; set; } = "OK";
 
   private Modal? Modal { get; set; }
+
+  private IReadOnlyList<string> issues => Issues ?? Array.Empty<string>();
 
   public ModalResult ModalResult { get => Modal!.ModalResult; }
 

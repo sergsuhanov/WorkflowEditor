@@ -115,6 +115,9 @@ namespace Blazor.WorkflowEditor {
 
         private bool isDirty;
 
+        /// <summary>Steps the user can go back and forward through with the undo and redo commands.</summary>
+        private readonly WorkflowHistory history = new();
+
         /// <summary>Set when the ports have to be measured again after the next render.</summary>
         private bool portGeometryDirty;
 
@@ -182,8 +185,17 @@ namespace Blazor.WorkflowEditor {
         /// <summary>Raised when the unsaved-changes flag changes.</summary>
         public event Action? DirtyChanged;
 
+        /// <summary>Raised when an undo or a redo becomes available or unavailable.</summary>
+        public event Action? HistoryChanged;
+
         /// <summary>True when the schema contains changes that are not saved to XAML yet.</summary>
         public bool IsDirty => isDirty;
+
+        /// <summary>Whether an edit can be taken back.</summary>
+        public bool CanUndo => history.CanUndo;
+
+        /// <summary>Whether the edit an undo took back can be applied again.</summary>
+        public bool CanRedo => history.CanRedo;
 
         /// <summary>The graph container currently opened in the editor, if any (Flowchart, StateMachine).</summary>
         public IGraphContainer? OpenedGraph => currentGraphContainer;
@@ -411,6 +423,24 @@ namespace Blazor.WorkflowEditor {
 
         /// <summary>Delete removes the selected connections or the selected nodes.</summary>
         private void keyDown(Blazor.Diagrams.Core.Events.KeyboardEventArgs e) {
+            //Ctrl+Z takes the last step back and Ctrl+Y (or Ctrl+Shift+Z) applies it again. The commands take the
+            //place of the ones the browser would use on a page of its own.
+            if (e.CtrlKey) {
+                if (e.Key is "z" or "Z") {
+                    if (e.ShiftKey)
+                        Redo();
+                    else
+                        Undo();
+
+                    return;
+                }
+
+                if (e.Key is "y" or "Y") {
+                    Redo();
+                    return;
+                }
+            }
+
             //Alt with the arrows moves the selected card inside the column of an opened ordered container.
             if (e.AltKey && e.Key is "ArrowUp" or "ArrowDown") {
                 if (selectedItems.Count == 1
@@ -655,6 +685,85 @@ namespace Blazor.WorkflowEditor {
 
             isDirty = false;
             DirtyChanged?.Invoke();
+        }
+
+        /// <summary>
+        /// Remembers the schema that was just saved as the state the history compares against, so that undoing
+        /// back to it clears the unsaved-changes flag again instead of asking for a save that was made.
+        /// </summary>
+        public void CaptureSavedState() {
+            if (activityBuilder == null)
+                return;
+
+            var state = WorkflowXamlSerializer.SaveBuilder(activityBuilder);
+            history.Push(state);
+            history.MarkSaved(state);
+            HistoryChanged?.Invoke();
+        }
+
+        /// <summary>
+        /// Sets the unsaved-changes flag without editing the schema: a draft the page restored after a reload was
+        /// never saved, so the editor keeps offering to save it.
+        /// </summary>
+        public void MarkDirty() {
+            if (isDirty)
+                return;
+
+            isDirty = true;
+            DirtyChanged?.Invoke();
+        }
+
+        /// <summary>
+        /// Records the schema as a step of the history. The editor calls it once a burst of edits has settled, so
+        /// a burst is one step instead of one step per keystroke.
+        /// </summary>
+        public void CaptureHistory() {
+            if (activityBuilder == null)
+                return;
+
+            if (history.Push(WorkflowXamlSerializer.SaveBuilder(activityBuilder)))
+                HistoryChanged?.Invoke();
+        }
+
+        /// <summary>
+        /// Starts a new history. A schema that is restored as a draft was never saved, so the history is told that
+        /// it has no saved state to compare against.
+        /// </summary>
+        public void ResetHistory(bool saved = true) {
+            if (activityBuilder == null)
+                return;
+
+            history.Reset(WorkflowXamlSerializer.SaveBuilder(activityBuilder));
+            if (!saved)
+                history.MarkUnsaved();
+
+            HistoryChanged?.Invoke();
+        }
+
+        /// <summary>Takes the last step of the history back, when there is one.</summary>
+        public void Undo() => restoreHistory(history.Undo());
+
+        /// <summary>Applies the step an undo took back, when there is one.</summary>
+        public void Redo() => restoreHistory(history.Redo());
+
+        /// <summary>
+        /// Puts the schema of a step back in place. The step carries the view properties, so cards return to the
+        /// places and notes they had, while the surface goes back to the root of the workflow: the step is opened
+        /// as a schema of its own, and the path belonged to the schema that was left.
+        /// </summary>
+        private void restoreHistory(string? state) {
+            if (state == null)
+                return;
+
+            SetActivityBuilder(WorkflowXamlSerializer.LoadBuilder(state));
+
+            //A step is not necessarily the state the schema was saved in, so the flag follows the history.
+            if (history.IsAtSavedState)
+                MarkSaved();
+            else
+                MarkDirty();
+
+            HistoryChanged?.Invoke();
         }
 
         /// <summary>Replaces the per-activity validation messages with the last validation results.</summary>

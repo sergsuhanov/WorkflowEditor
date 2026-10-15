@@ -47,3 +47,47 @@ window.currentTheme = () => document.documentElement.getAttribute('data-theme') 
         // Ignore unavailable storage.
     }
 })();
+
+// The unsaved schema is kept in the browser, so a reload of the page cannot lose the work: the page writes the
+// draft shortly after the last edit, offers it back when the editor starts, and drops it once the workflow is
+// saved or another one is opened.
+const draftKey = 'workflow-editor-draft';
+
+const warnBeforeUnload = (event) => {
+    // The browser writes the question itself; returning a value is what older browsers need to show it.
+    event.preventDefault();
+    event.returnValue = '';
+    return '';
+};
+
+window.saveDraft = (source) => {
+    try {
+        localStorage.setItem(draftKey, source);
+    } catch {
+        // Private browsing modes may not allow storage; the editor keeps working without a draft.
+    }
+};
+
+window.loadDraft = () => {
+    try {
+        return localStorage.getItem(draftKey) ?? '';
+    } catch {
+        return '';
+    }
+};
+
+window.clearDraft = () => {
+    try {
+        localStorage.removeItem(draftKey);
+    } catch {
+        // Nothing to drop when storage is not available.
+    }
+};
+
+// The browser asks before a reload or a close only while the schema has unsaved changes.
+window.setDirtyGuard = (dirty) => {
+    window.removeEventListener('beforeunload', warnBeforeUnload);
+    if (dirty) {
+        window.addEventListener('beforeunload', warnBeforeUnload);
+    }
+};

@@ -140,6 +140,17 @@ a,
     color: #212529;
 }
 
+/* A command with nothing to offer (undo without an edit to take back) stays visible where it belongs, but says
+   that it does nothing right now. */
+.we-command:disabled {
+    color: #adb5bd;
+    cursor: default;
+}
+
+.we-command:disabled:hover {
+    background-color: transparent;
+}
+
 .we-command:focus-visible {
     outline: 2px solid #258cfb;
     outline-offset: 1px;
@@ -195,6 +206,14 @@ html[data-theme="dark"] .we-command {
 html[data-theme="dark"] .we-command:hover {
     background-color: rgb(255 255 255 / 12%);
     color: #fff;
+}
+
+html[data-theme="dark"] .we-command:disabled {
+    color: #6c757d;
+}
+
+html[data-theme="dark"] .we-command:disabled:hover {
+    background-color: transparent;
 }
 
 html[data-theme="dark"] .we-unsaved {

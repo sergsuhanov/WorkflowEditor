@@ -3678,10 +3678,190 @@ public class ActivityDesignerTests {
         Assert.Null(Blazor.WorkflowEditor.Activity.State.BranchPorts.Get(one, "next"));
     }
 
+    /// <summary>
+    /// A validation run keeps its errors and its warnings apart, and reports the messages of the run in full.
+    /// </summary>
+    [Fact]
+    public void ValidationReportKeepsErrorsAndWarningsApart() {
+        var sequence = new Sequence { Activities = { new InvalidActivity(), new WarningActivity() } };
+
+        var report = ValidationReport.From(
+            System.Activities.Validation.ActivityValidationServices.Validate(sequence));
+
+        Assert.True(report.HasIssues);
+        Assert.Contains("Invalid test activity", report.Errors);
+        Assert.Contains("A test warning", report.Warnings);
+    }
+
+    /// <summary>A schema without a root, and a valid one, both report nothing at all.</summary>
+    [Fact]
+    public void ValidationReportWithoutResultsHasNoIssues() {
+        Assert.False(ValidationReport.From(null).HasIssues);
+        Assert.False(ValidationReport.Empty.HasIssues);
+        Assert.Empty(ValidationReport.Empty.Errors);
+        Assert.Empty(ValidationReport.Empty.Warnings);
+    }
+
+    /// <summary>
+    /// A schema restored from a draft is unsaved even though nothing was edited in this session, and the flag is
+    /// raised once.
+    /// </summary>
+    [Fact]
+    public void MarkDirtyReportsTheUnsavedChangesFlagOnce() {
+        using var service = new Service(new BlazorDiagram(), () => { });
+        var raised = 0;
+        service.DirtyChanged += () => raised++;
+
+        service.MarkDirty();
+        service.MarkDirty();
+
+        Assert.True(service.IsDirty);
+        Assert.Equal(1, raised);
+
+        service.MarkSaved();
+
+        Assert.False(service.IsDirty);
+        Assert.Equal(2, raised);
+    }
+
+    /// <summary>
+    /// The history keeps one step per state: the same state is not added twice, an edit after an undo drops the
+    /// steps that were taken back, and the state the schema was saved in is recognized.
+    /// </summary>
+    [Fact]
+    public void HistoryKeepsOneStepPerState() {
+        var history = new WorkflowHistory();
+        history.Reset("a");
+
+        Assert.False(history.CanUndo);
+        Assert.False(history.CanRedo);
+        Assert.True(history.IsAtSavedState);
+
+        Assert.True(history.Push("b"));
+        Assert.False(history.Push("b"));
+        Assert.True(history.CanUndo);
+
+        history.MarkSaved("b");
+        Assert.True(history.IsAtSavedState);
+
+        Assert.Equal("a", history.Undo());
+        Assert.False(history.IsAtSavedState);
+        Assert.True(history.CanRedo);
+
+        Assert.Equal("b", history.Redo());
+        Assert.True(history.IsAtSavedState);
+        Assert.Null(history.Redo());
+
+        //An edit that follows an undo throws the step that was taken back away.
+        Assert.Equal("a", history.Undo());
+        Assert.True(history.Push("c"));
+
+        Assert.False(history.CanRedo);
+        Assert.Null(history.Redo());
+    }
+
+    /// <summary>A schema that is not saved anywhere (a restored draft) has no step that counts as saved.</summary>
+    [Fact]
+    public void HistoryWithoutASavedStateReportsNoSavedStep() {
+        var history = new WorkflowHistory();
+        history.Reset("a");
+        history.MarkUnsaved();
+
+        Assert.False(history.IsAtSavedState);
+    }
+
+    /// <summary>The schema of the step before is put back by an undo, and the edit is applied again by a redo.</summary>
+    [Fact]
+    public void UndoAndRedoBringTheSchemaBack() {
+        using var service = new Service(new BlazorDiagram(), () => { });
+        service.SetActivityBuilder(new ActivityBuilder {
+            Implementation = new Sequence { Activities = { new WriteLine { DisplayName = "one" } } }
+        });
+        service.ResetHistory();
+
+        var sequence = Assert.IsType<Sequence>(service.GetActivityBuilder().Implementation);
+        sequence.Activities.Add(new Delay { DisplayName = "two" });
+        service.CaptureHistory();
+
+        Assert.True(service.CanUndo);
+
+        service.Undo();
+
+        var restored = Assert.IsType<Sequence>(service.GetActivityBuilder().Implementation);
+        Assert.IsType<WriteLine>(Assert.Single(restored.Activities));
+        Assert.True(service.CanRedo);
+
+        service.Redo();
+
+        var reapplied = Assert.IsType<Sequence>(service.GetActivityBuilder().Implementation);
+        Assert.IsType<Delay>(reapplied.Activities[1]);
+        Assert.Equal(2, reapplied.Activities.Count);
+    }
+
+    /// <summary>A step that is not the state the schema was opened with is unsaved, and going back to that state
+    /// clears the flag instead of asking for a save that was made.</summary>
+    [Fact]
+    public void UndoBackToTheSavedStepClearsTheUnsavedChangesFlag() {
+        using var service = new Service(new BlazorDiagram(), () => { });
+        service.SetActivityBuilder(new ActivityBuilder { Implementation = new Sequence { Activities = { new WriteLine() } } });
+        service.ResetHistory();
+
+        var sequence = Assert.IsType<Sequence>(service.GetActivityBuilder().Implementation);
+        sequence.Activities.Add(new Delay());
+        service.CaptureHistory();
+        service.MarkDirty();
+
+        Assert.True(service.IsDirty);
+
+        service.Undo();
+        Assert.False(service.IsDirty);
+
+        service.Redo();
+        Assert.True(service.IsDirty);
+    }
+
+    /// <summary>A capture that finds the schema where the history already has it adds no step, so an untouched
+    /// schema has nothing to undo.</summary>
+    [Fact]
+    public void CapturingTheSameSchemaAddsNoStep() {
+        using var service = new Service(new BlazorDiagram(), () => { });
+        service.SetActivityBuilder(new ActivityBuilder { Implementation = new Sequence() });
+        service.ResetHistory();
+
+        service.CaptureHistory();
+
+        Assert.False(service.CanUndo);
+        Assert.False(service.CanRedo);
+    }
+
+    /// <summary>The state of a workflow without a root activity survives the history, so taking the first drop
+    /// back returns to the empty surface.</summary>
+    [Fact]
+    public void UndoReturnsToTheEmptySchema() {
+        using var service = new Service(new BlazorDiagram(), () => { });
+        service.SetActivityBuilder(new ActivityBuilder());
+        service.ResetHistory();
+
+        service.GetActivityBuilder().Implementation = new Sequence();
+        service.CaptureHistory();
+
+        service.Undo();
+
+        Assert.Null(service.GetActivityBuilder().Implementation);
+    }
+
     private sealed class InvalidActivity : CodeActivity {
         protected override void Execute(CodeActivityContext context) { }
 
         protected override void CacheMetadata(CodeActivityMetadata metadata) =>
             metadata.AddValidationError("Invalid test activity");
+    }
+
+    private sealed class WarningActivity : CodeActivity {
+        protected override void Execute(CodeActivityContext context) { }
+
+        protected override void CacheMetadata(CodeActivityMetadata metadata) =>
+            metadata.AddValidationError(
+                new System.Activities.Validation.ValidationError("A test warning", isWarning: true));
     }
 }
