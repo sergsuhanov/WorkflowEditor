@@ -1,4 +1,4 @@
-namespace Blazor.WorkflowEditor.Activity;
+﻿namespace Blazor.WorkflowEditor.Activity;
 
 /// <summary>
 /// A single-activity slot of a node: an If branch, a loop body, a catch handler, a switch case. Unlike a

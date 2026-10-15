@@ -1,4 +1,4 @@
-using System.Activities;
+﻿using System.Activities;
 
 namespace Blazor.WorkflowEditor.Activity.Stack.Primitives;
 

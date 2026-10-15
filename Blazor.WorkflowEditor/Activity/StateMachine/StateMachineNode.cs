@@ -1,7 +1,7 @@
-﻿using Blazor.Diagrams.Core.Models;
+﻿using System.Activities.Statements;
+using Blazor.Diagrams.Core.Models;
 using WfState = System.Activities.Statements.State;
 using WfStateMachine = System.Activities.Statements.StateMachine;
-using System.Activities.Statements;
 
 namespace Blazor.WorkflowEditor.Activity.StateMachine;
 
@@ -82,7 +82,6 @@ public class StateMachineNode : DefaultNode, IGraphContainer {
         activity.InitialState = At(index);
         service.NotifyStateChanged();
     }
-
 
     public override IEnumerable<Variable> GetVariables() => GetVariables(activity.Variables);
 

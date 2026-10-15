@@ -1,4 +1,4 @@
-namespace Blazor.WorkflowEditor.Activity.Stack.Collections;
+﻿namespace Blazor.WorkflowEditor.Activity.Stack.Collections;
 
 [Pair(typeof(System.Activities.Statements.ClearCollection<>), typeof(ClearCollectionControl<>))]
 public class ClearCollectionNode<T> : DefaultNode {

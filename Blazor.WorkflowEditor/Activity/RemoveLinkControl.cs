@@ -1,4 +1,4 @@
-using Blazor.Diagrams.Core;
+﻿using Blazor.Diagrams.Core;
 using Blazor.Diagrams.Core.Controls;
 using Blazor.Diagrams.Core.Events;
 using Blazor.Diagrams.Core.Geometry;

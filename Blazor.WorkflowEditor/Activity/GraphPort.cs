@@ -1,4 +1,4 @@
-using Blazor.Diagrams.Core.Models;
+﻿using Blazor.Diagrams.Core.Models;
 using Blazor.Diagrams.Core.Models.Base;
 
 namespace Blazor.WorkflowEditor.Activity;

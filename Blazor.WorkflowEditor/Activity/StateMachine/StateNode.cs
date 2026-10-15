@@ -1,6 +1,6 @@
-﻿using Blazor.Diagrams.Core.Models;
+﻿using System.Activities.Statements;
+using Blazor.Diagrams.Core.Models;
 using WfState = System.Activities.Statements.State;
-using System.Activities.Statements;
 
 namespace Blazor.WorkflowEditor.Activity.StateMachine;
 

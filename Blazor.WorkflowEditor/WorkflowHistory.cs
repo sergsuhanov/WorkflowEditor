@@ -1,4 +1,4 @@
-namespace Blazor.WorkflowEditor;
+﻿namespace Blazor.WorkflowEditor;
 
 /// <summary>
 /// A bounded history of the schema, one step per state. A state is the schema as XAML, so an undo brings back

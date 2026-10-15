@@ -40,6 +40,14 @@ dotnet build web.slnf -c Release
 
 `web.slnf` is the solution filter that holds the three Web projects; `trunk.sln` also holds `WorkflowEditor.Win` and `glassPeople`, which target .NET Framework 4.7.2 and build on Windows only.
 
+The style of the Web graph is checked as well:
+
+```sh
+dotnet format web.slnf --verify-no-changes --severity warn
+```
+
+`.editorconfig` asks for LF line endings and a UTF-8 byte-order mark on C# files, and `.gitattributes` keeps the line endings that way on every platform; the check covers the rest of the file — `using` order, blank lines, whitespace — and CI runs it before the tests.
+
 Run the host with:
 
 ```sh

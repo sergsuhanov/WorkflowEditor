@@ -1,0 +1,6 @@
+# Line endings of the Web graph, which is written on Windows, Linux and macOS alike: git keeps them
+# LF, which is what .editorconfig asks for, instead of letting the editor of the day decide whether a
+# file is committed with CRLF. `text=auto` leaves whatever git reads as binary (images, fonts) alone.
+/Blazor.WorkflowEditor/**       text=auto eol=lf
+/Blazor.WorkflowEditor.Tests/** text=auto eol=lf
+/WorkflowEditor.Web/**          text=auto eol=lf

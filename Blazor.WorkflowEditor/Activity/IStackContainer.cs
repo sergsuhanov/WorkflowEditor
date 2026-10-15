@@ -1,4 +1,4 @@
-namespace Blazor.WorkflowEditor.Activity;
+﻿namespace Blazor.WorkflowEditor.Activity;
 
 /// <summary>
 /// Container whose children form an ordered list (Sequence). Unlike a graph container (Flowchart,

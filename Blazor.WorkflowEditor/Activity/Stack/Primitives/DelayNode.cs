@@ -1,4 +1,4 @@
-namespace Blazor.WorkflowEditor.Activity.Stack.Primitives;
+﻿namespace Blazor.WorkflowEditor.Activity.Stack.Primitives;
 
 [Pair(typeof(System.Activities.Statements.Delay), typeof(DelayControl))]
 public class DelayNode : DefaultNode {

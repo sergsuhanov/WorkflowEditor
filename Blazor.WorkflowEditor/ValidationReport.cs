@@ -1,4 +1,4 @@
-using System.Activities.Validation;
+﻿using System.Activities.Validation;
 
 namespace Blazor.WorkflowEditor;
 

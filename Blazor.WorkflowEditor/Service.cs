@@ -1,5 +1,6 @@
 ﻿using System.Activities;
 using System.Collections.ObjectModel;
+using System.Reflection;
 using Blazor.Diagrams;
 using Blazor.Diagrams.Core;
 using Blazor.Diagrams.Core.Anchors;
@@ -12,7 +13,6 @@ using Blazor.Diagrams.Core.Models.Base;
 using Blazor.Diagrams.Core.Positions;
 using Blazor.WorkflowEditor.Activity;
 using Blazor.WorkflowEditor.Activity.Flow;
-using System.Reflection;
 using Microsoft.AspNetCore.Components.Web;
 
 namespace Blazor.WorkflowEditor {
@@ -348,7 +348,6 @@ namespace Blazor.WorkflowEditor {
 
             this.updateState = updateState;
         }
-
 
         public void Dispose() {
             this.designer.SelectionChanged -= selectionChanged;

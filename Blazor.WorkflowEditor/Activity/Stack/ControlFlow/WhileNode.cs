@@ -1,4 +1,4 @@
-using System.Activities;
+﻿using System.Activities;
 using System.Activities.Statements;
 
 namespace Blazor.WorkflowEditor.Activity.Stack.ControlFlow;

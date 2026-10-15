@@ -1,5 +1,5 @@
-﻿using Blazor.Diagrams.Core.Models;
-using System.Activities.Statements;
+﻿using System.Activities.Statements;
+using Blazor.Diagrams.Core.Models;
 
 namespace Blazor.WorkflowEditor.Activity.Flow;
 

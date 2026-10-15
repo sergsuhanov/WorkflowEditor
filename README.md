@@ -29,6 +29,7 @@ The Web graph is built through the solution filter, because `trunk.sln` also hol
 ```sh
 dotnet test Blazor.WorkflowEditor.Tests/Blazor.WorkflowEditor.Tests.csproj -c Release
 dotnet build web.slnf -c Release
+dotnet format web.slnf --verify-no-changes --severity warn
 ```
 
 Do not change `WorkflowEditor.Win` or `glassPeople`.

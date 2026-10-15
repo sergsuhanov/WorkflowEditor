@@ -9,15 +9,15 @@ using Blazor.Diagrams.Core.Geometry;
 using Blazor.Diagrams.Core.Models;
 using Blazor.WorkflowEditor;
 using Blazor.WorkflowEditor.Activity;
+using Blazor.WorkflowEditor.Activity.Flow;
+using Blazor.WorkflowEditor.Activity.Stack.Collections;
 using Blazor.WorkflowEditor.Activity.Stack.ControlFlow;
 using Blazor.WorkflowEditor.Activity.Stack.Primitives;
-using Blazor.WorkflowEditor.Activity.Stack.Collections;
-using Blazor.WorkflowEditor.Activity.Flow;
 using Blazor.WorkflowEditor.Activity.StateMachine;
 using Microsoft.VisualBasic.Activities;
-using State = System.Activities.Statements.State;
-using Parallel = System.Activities.Statements.Parallel;
 using DefaultNode = Blazor.WorkflowEditor.Activity.DefaultNode;
+using Parallel = System.Activities.Statements.Parallel;
+using State = System.Activities.Statements.State;
 
 namespace Blazor.WorkflowEditor.Tests;
 
@@ -2190,7 +2190,8 @@ public class ActivityDesignerTests {
     }
 
     [Fact]
-    public void APressOnTheMiddleOfALongConnectionTakesNoEnd() {        var (service, diagram, chart, firstStep, secondStep, third, link) = chainedFlowchart();
+    public void APressOnTheMiddleOfALongConnectionTakesNoEnd() {
+        var (service, diagram, chart, firstStep, secondStep, third, link) = chainedFlowchart();
         using var _ = service;
 
         //A long connection is taken by its ends alone: the middle of the line is farther from both of them than
@@ -3321,7 +3322,6 @@ public class ActivityDesignerTests {
         measurePorts(service.Items.Select(i => i.Node).ToArray());
         service.DynamicLinks = false;
 
-
         //The cards are laid out in a row, so the connection leaves the first one on the right and arrives at the
         //second one on its left.
         Assert.Equal(PortAlignment.Right,
@@ -3363,7 +3363,6 @@ public class ActivityDesignerTests {
         service.Open(chartNode);
         measurePorts(service.Items.Select(i => i.Node).ToArray());
         service.DynamicLinks = false;
-
 
         //Two cases stand to the right of the switch and the default branch under it.
         service.FindPair(sw)!.Node.CenterPosition = new Point(200, 300);
@@ -3410,7 +3409,6 @@ public class ActivityDesignerTests {
         service.Open(service.Items.First(p => p.Activity == chart).Node);
         measurePorts(service.Items.Select(i => i.Node).ToArray());
         service.DynamicLinks = false;
-
 
         var link = Assert.Single(diagram.Links.OfType<LinkModel>());
         var end = EndOf(link, sourceEnd: false);
