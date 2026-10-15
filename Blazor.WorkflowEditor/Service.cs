@@ -98,6 +98,9 @@ namespace Blazor.WorkflowEditor {
         /// </summary>
         private PortModel? pressedPort;
 
+        /// <summary>How far a copy of a card is put from the card it copies.</summary>
+        private const double CopyOffset = 40;
+
         /// <summary>How far from an end of a connection the pointer has to be pressed to take that end.</summary>
         private const double LinkEndGrabRadius = 26;
 
@@ -439,6 +442,12 @@ namespace Blazor.WorkflowEditor {
                     Redo();
                     return;
                 }
+
+                //Ctrl+D adds a copy of the selected element behind it.
+                if (e.Key is "d" or "D") {
+                    DuplicateSelected();
+                    return;
+                }
             }
 
             //Alt with the arrows moves the selected card inside the column of an opened ordered container.
@@ -498,6 +507,94 @@ namespace Blazor.WorkflowEditor {
             items.Remove(item);
             notifyModelChanged();
             updateState();
+        }
+
+        /// <summary>
+        /// Adds a copy of the selected element right behind it, in the container that already holds it, and
+        /// selects the copy: the card the user selected last is the one copied, and the copy takes the selection
+        /// over. Nothing is added without a selection, by a place that holds a single element already — the root
+        /// of the workflow, the branch of a card — or by an element whose card holds no activity of its own
+        /// (a `FlowDecision`, a `FlowSwitch<T>`, a `State`).
+        /// </summary>
+        public bool DuplicateSelected() {
+            if (selectedItems.Count == 0)
+                return false;
+
+            var (hasAdded, copy) = copyBehind(selectedItems[^1]);
+            if (!hasAdded)
+                return false;
+
+            //The copy is the card the editor goes on with, so the cards selected before it are dropped.
+            clearSelection();
+            Select(copy.Node);
+            updateState();
+            return true;
+        }
+
+        /// <summary>
+        /// Puts a copy of a card right behind it, in the place that draws it: the surface of the opened container
+        /// draws the copy as a card of its own, while a list drawn inside another card draws it inline, exactly
+        /// like the original. On a graph surface the copy follows the original, and joins nothing: a copy carries
+        /// the elements of the original, not its connections.
+        /// </summary>
+        private (bool hasAdded, ActivityDesignerPair result) copyBehind(ActivityDesignerPair original) {
+            var owner = ownerOf(original.Node);
+            var opened = Path.LastOrDefault()?.Reference?.Node;
+            var inline = owner != null && !ReferenceEquals(owner, opened);
+            var target = owner ?? opened;
+            if (target == null)
+                return (false, default!);
+
+            //A branch (a slot of a card) holds one activity, so it has no room for a copy of the one it holds.
+            if (owner != null && holdsAsSlot(owner, original.Element))
+                return (false, default!);
+
+            if (cloneActivityOf(original) is not { } copy)
+                return (false, default!);
+
+            var elementType = copy.GetType();
+            if (!target.CanAdd(elementType.IsGenericType ? elementType.GetGenericTypeDefinition() : elementType))
+                return (false, default!);
+
+            //The place of the copy is read before it is placed: a list takes it right behind the original, while
+            //a graph surface only puts it beside it.
+            if (inline || target is IStackContainer) {
+                var index = (target as IStackContainer)?.IndexOf(original.Element) ?? -1;
+                if (index < 0)
+                    return (false, default!);
+
+                if (inline)
+                    SetInlineDropTarget(target, index + 1);
+                else
+                    SetDropInsertIndex(index + 1);
+            }
+
+            var position = new Diagrams.Core.Geometry.Point(
+                original.Node.CenterPosition.X + CopyOffset,
+                original.Node.CenterPosition.Y + CopyOffset);
+
+            var placed = placeActivity(copy, existing: null, existingOwner: null, initialPosition: position);
+            resetStackInteraction();
+            return placed;
+        }
+
+        /// <summary>Whether a card holds an element as one of the branches it draws, which hold one element each.</summary>
+        private static bool holdsAsSlot(DefaultNode owner, object element) =>
+            owner.Slots.Any(slot => ReferenceEquals(slot.Held, element));
+
+        /// <summary>
+        /// A copy of the activity a card shows: the element of the card when it is an Activity itself, or the
+        /// activity a graph surface wrapped into a node of its own (the step a `Flowchart` runs holds one). An
+        /// element of any other kind — a decision, a switch, a state — has no schema of its own, so it is not
+        /// copied, and neither are the connections of the card it was made from: a copy joins nothing.
+        /// </summary>
+        private static System.Activities.Activity? cloneActivityOf(ActivityDesignerPair card) {
+            var activity = card.Element is System.Activities.Activity element ? element : card.Activity;
+            if (activity == null)
+                return null;
+
+            var xaml = WorkflowXamlSerializer.SaveBuilder(new ActivityBuilder { Implementation = activity });
+            return WorkflowXamlSerializer.LoadBuilder(xaml).Implementation;
         }
 
         /// <summary>
@@ -1535,6 +1632,14 @@ namespace Blazor.WorkflowEditor {
                 selectedItems.Add(item);
 
             updateState();
+        }
+
+        /// <summary>Drops the whole selection, so that the card selected next is the only one selected.</summary>
+        private void clearSelection() {
+            foreach (var item in selectedItems.ToList())
+                designer.UnselectModel(item.Node);
+
+            selectedItems.Clear();
         }
 
         /// <summary>Clears the selection of the branch children, which the diagram does not track.</summary>

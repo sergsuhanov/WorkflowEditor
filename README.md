@@ -18,7 +18,7 @@ The toolbox includes stack activities (`Sequence`, `Assign`, `WriteLine`, `Delay
 
 While a schema has unsaved changes, the editor keeps a draft of it in the browser (not on any server), asks before a reload or a close, and offers that draft back when the page is opened again. The draft is dropped once the workflow is saved or another one is opened.
 
-Edits can be taken back and applied again with `Ctrl+Z` and `Ctrl+Y` (`Ctrl+Shift+Z`), or with the undo and redo commands of the toolbar.
+Edits can be taken back and applied again with `Ctrl+Z` and `Ctrl+Y` (`Ctrl+Shift+Z`), or with the undo and redo commands of the toolbar. `Ctrl+D`, or the copy command of a selected card, adds a copy of the activity that card shows right behind it.
 
 See [docs/WORK_PLAN.md](docs/WORK_PLAN.md) for implementation rules and coverage, and [docs/VISUAL_EDITOR_PLAN.md](docs/VISUAL_EDITOR_PLAN.md) for the active UX backlog.
 

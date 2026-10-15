@@ -51,6 +51,10 @@
               with red circles; the Delete key removes the selected card as well.*@
             @if (Node.Selected)
             {
+                <a href="" class="card-link" title="Duplicate (Ctrl+D)" aria-label="Duplicate this activity"
+                   @onclick="@duplicate" @onclick:preventDefault>
+                    <span class="oi oi-layers" aria-hidden="true"></span>
+                </a>
                 <a href="" class="card-link link-danger" title="Delete" @onclick="@delete" @onclick:preventDefault>
                     <span class="oi oi-circle-x" aria-hidden="true"></span>
                 </a>
@@ -221,6 +225,13 @@
     void delete()
     {
         Service.Delete(Node);
+    }
+
+    /// <summary>Adds a copy of this card behind it, in the container that holds it.</summary>
+    void duplicate()
+    {
+        Service?.Select(Node);
+        Service?.DuplicateSelected();
     }
 
     /// <summary>

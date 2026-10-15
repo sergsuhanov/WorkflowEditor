@@ -3850,6 +3850,130 @@ public class ActivityDesignerTests {
         Assert.Null(service.GetActivityBuilder().Implementation);
     }
 
+    /// <summary>
+    /// A copy of a card of an opened container takes the place right behind the original, carries what the
+    /// original holds, and is the card the editor goes on editing.
+    /// </summary>
+    [Fact]
+    public void DuplicatingACardOfAContainerPutsTheCopyBehindIt() {
+        using var service = new Service(new BlazorDiagram(), () => { });
+        var sequence = new Sequence {
+            Activities = { new WriteLine { DisplayName = "first", Text = new InArgument<string>("hello") } }
+        };
+        service.SetActivityBuilder(new ActivityBuilder { Implementation = sequence });
+        service.Open(service.Items.First(pair => pair.Activity == sequence).Node);
+
+        service.Select(service.Items.First(pair => pair.Activity is WriteLine).Node);
+
+        Assert.True(service.DuplicateSelected());
+
+        Assert.Equal(2, sequence.Activities.Count);
+        var copy = Assert.IsType<WriteLine>(sequence.Activities[1]);
+        Assert.NotSame(sequence.Activities[0], copy);
+        Assert.Equal("first", copy.DisplayName);
+        Assert.Equal("hello", ((Literal<string>)copy.Text.Expression!).Value);
+
+        //The editor goes on with the copy, which stands beside the card it was made from.
+        Assert.Same(copy, service.SelectedItems.Single().Activity);
+    }
+
+    /// <summary>A card drawn inside another card is copied into that list, so the copy is drawn there as well.</summary>
+    [Fact]
+    public void DuplicatingACardOfAnInlineListKeepsItInline() {
+        using var service = new Service(new BlazorDiagram(), () => { });
+        var sequence = new Sequence();
+        service.SetActivityBuilder(new ActivityBuilder { Implementation = sequence });
+        var listOwner = service.Items.Single(pair => pair.Activity == sequence).Node;
+
+        //A drop on the list the card draws puts the child inside that card instead of on the surface.
+        service.SetInlineDropTarget(listOwner, 0);
+        Assert.True(service.AddActivity(typeof(WriteLine)).hasAdded);
+
+        var card = service.Items.Single(pair => pair.Activity is WriteLine);
+        Assert.True(card.Node.IsEmbedded);
+        service.Select(card.Node);
+
+        Assert.True(service.DuplicateSelected());
+
+        Assert.Equal(2, sequence.Activities.Count);
+        Assert.Equal(2, sequence.Activities.OfType<WriteLine>().Count());
+        Assert.True(service.SelectedItems.Single().Node.IsEmbedded);
+        Assert.Same(listOwner, service.SelectedItems.Single().Node.EmbeddedOwner);
+    }
+
+    /// <summary>A branch holds one activity and the root of the workflow holds one as well, so neither takes a copy.</summary>
+    [Fact]
+    public void DuplicatingRefusesPlacesThatHoldASingleElement() {
+        using var service = new Service(new BlazorDiagram(), () => { });
+        var branchChild = new WriteLine { DisplayName = "then" };
+        var ifActivity = new If { Then = branchChild };
+        service.SetActivityBuilder(new ActivityBuilder { Implementation = ifActivity });
+
+        //The root activity of the workflow.
+        service.Select(service.Items.Single(pair => ReferenceEquals(pair.Activity, ifActivity)).Node);
+        Assert.False(service.DuplicateSelected());
+        Assert.Same(branchChild, ifActivity.Then);
+
+        //The activity of one branch.
+        service.Open(service.Items.Single(pair => ReferenceEquals(pair.Activity, ifActivity)).Node);
+        var childNode = service.Items.Single(pair => ReferenceEquals(pair.Activity, branchChild)).Node;
+        service.Select(childNode);
+
+        Assert.False(service.DuplicateSelected());
+        Assert.Same(branchChild, ifActivity.Then);
+    }
+
+    /// <summary>
+    /// The card selected last is the one copied, and the copy takes the whole selection over: a card keeps its
+    /// selection while another one is picked, so the command does not depend on a single selection.
+    /// </summary>
+    [Fact]
+    public void DuplicatingCopiesTheCardSelectedLast() {
+        using var service = new Service(new BlazorDiagram(), () => { });
+        var sequence = new Sequence {
+            Activities = { new WriteLine { DisplayName = "one" }, new WriteLine { DisplayName = "two" } }
+        };
+        service.SetActivityBuilder(new ActivityBuilder { Implementation = sequence });
+        service.Open(service.Items.Single(pair => pair.Activity == sequence).Node);
+
+        var cards = service.Items.Where(pair => pair.Activity is WriteLine).ToList();
+        service.Select(cards[0].Node);
+        service.Select(cards[1].Node);
+
+        Assert.True(service.DuplicateSelected());
+
+        Assert.Equal(3, sequence.Activities.Count);
+        Assert.Equal("two", ((WriteLine)sequence.Activities[2]).DisplayName);
+        Assert.Same(sequence.Activities[2], service.SelectedItems.Single().Activity);
+    }
+
+    /// <summary>
+    /// On a graph surface the copy follows the original and joins nothing: a copy carries the elements of a card,
+    /// not its connections.
+    /// </summary>
+    [Fact]
+    public void DuplicatingANodeOfAGraphAddsAnUnconnectedCopy() {
+        using var service = new Service(new BlazorDiagram(), () => { });
+        var firstAction = new WriteLine { DisplayName = "one" };
+        var first = new FlowStep { Action = firstAction };
+        var second = new FlowStep { Action = new WriteLine { DisplayName = "two" } };
+        first.Next = second;
+        var chart = new Flowchart { StartNode = first, Nodes = { first, second } };
+        service.SetActivityBuilder(new ActivityBuilder { Implementation = chart });
+        service.Open(service.Items.Single(p => ReferenceEquals(p.Activity, chart)).Node);
+
+        //A graph surface draws the activity a node runs, so the pair of the step is the pair of its action.
+        service.Select(service.Items.Single(p => ReferenceEquals(p.Element, firstAction)).Node);
+
+        Assert.True(service.DuplicateSelected());
+
+        Assert.Equal(3, chart.Nodes.Count);
+        var copy = Assert.IsType<FlowStep>(chart.Nodes[2]);
+        Assert.NotSame(firstAction, copy.Action);
+        Assert.Equal("one", copy.Action.DisplayName);
+        Assert.Null(copy.Next);
+    }
+
     private sealed class InvalidActivity : CodeActivity {
         protected override void Execute(CodeActivityContext context) { }
 
