@@ -11,7 +11,18 @@
       <NoWarn>1701;1702;IDE1006;IDE0073</NoWarn>
       <IsPublishable>True</IsPublishable>
       <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+      <Authors>Konstantin Sukhanov</Authors>
+      <Description>Edits Windows Workflow Foundation schemas as cards on a diagram: a Razor component library that keeps the workflow model of the UiPath.Workflow runtime in step with XAML.</Description>
+      <PackageTags>workflow;workflow-foundation;blazor;designer;diagram;xaml</PackageTags>
+      <PackageReadmeFile>PACKAGE.md</PackageReadmeFile>
+      <PackageLicenseExpression>MIT</PackageLicenseExpression>
+      <RepositoryUrl>https://github.com/sergsuhanov/WorkflowEditor</RepositoryUrl>
+      <RepositoryType>git</RepositoryType>
     </PropertyGroup>
+
+    <ItemGroup>
+        <None Include="PACKAGE.md" Pack="true" PackagePath="\" />
+    </ItemGroup>
 
     <ItemGroup>
         <SupportedPlatform Include="browser" />
