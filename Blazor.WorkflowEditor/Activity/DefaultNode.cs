@@ -2,6 +2,7 @@
 using Blazor.Diagrams.Core.Anchors;
 using Blazor.Diagrams.Core.Geometry;
 using Blazor.Diagrams.Core.Models;
+using Blazor.Diagrams.Core.Models.Base;
 
 namespace Blazor.WorkflowEditor.Activity;
 
@@ -677,6 +678,99 @@ public class DefaultNode : NodeModel {
     /// </summary>
     public (PortAlignment Source, PortAlignment Target) ConnectionEdges(DefaultNode to, PortAlignment canonicalSource) =>
         (EdgeTowards(to, canonicalSource), to.EdgeTowards(this, to.IncomingPort.Alignment));
+
+    /// <summary>Place along the given edge that faces another card: the middle of that card, seen from here.</summary>
+    public double ReferenceOn(PortAlignment edge, DefaultNode other) =>
+        edge is PortAlignment.Left or PortAlignment.Right ? other.CenterPosition.Y : other.CenterPosition.X;
+
+    /// <summary>Place along the given edge that faces a point taken by the other end of a connection.</summary>
+    public static double ReferenceOn(PortAlignment edge, PortModel other) =>
+        edge is PortAlignment.Left or PortAlignment.Right ? other.MiddlePosition.Y : other.MiddlePosition.X;
+
+    /// <summary>
+    /// Edges of this card an end of a connection to the other given card may take. An edge the model of the
+    /// activity pins is the only one offered — the entry of a decision, the side that names a branch — because
+    /// the name of a branch belongs to the edge it leaves from. Every other end leaves and arrives wherever the
+    /// route is cheapest, and the edges that point at least sideways towards the other card are offered first:
+    /// an edge turned away from it only makes a route that comes back around the card.
+    /// </summary>
+    public IReadOnlyList<PortAlignment> EdgeCandidates(PortAlignment canonical, DefaultNode other) {
+        if (EdgeIsPinned(canonical))
+            return new[] { canonical };
+
+        var offered = new List<PortAlignment>();
+        var towards = new List<PortAlignment>();
+        var dx = other.CenterPosition.X - CenterPosition.X;
+        var dy = other.CenterPosition.Y - CenterPosition.Y;
+        var reach = Math.Sqrt(dx * dx + dy * dy);
+
+        foreach (var edge in new[] { PortAlignment.Right, PortAlignment.Bottom, PortAlignment.Left, PortAlignment.Top }) {
+            if (!Ports.Any(port => port.Alignment == edge) || EdgeIsPinned(edge))
+                continue;
+
+            offered.Add(edge);
+            if (reach < 0.001 || OutwardDirection(edge) is not { } direction)
+                continue;
+
+            if (direction.X * dx / reach + direction.Y * dy / reach >= 0)
+                towards.Add(edge);
+        }
+
+        if (towards.Count > 0)
+            return towards;
+
+        return offered.Count > 0 ? offered : new[] { canonical };
+    }
+
+    /// <summary>
+    /// Point the given edge of this card offers for a connection to the given card: the point lying nearest to
+    /// it, which is the one that leaves the line straightest and so needs the fewest bends. A point another
+    /// connection already holds is passed over while a free one is left, so the connections of one edge stay
+    /// apart.
+    /// </summary>
+    /// <param name="taken">Connection whose end is being placed, which does not count as holding its own point.</param>
+    public PortModel? PortTowards(PortAlignment edge, DefaultNode other, BaseLinkModel? taken) =>
+        PortTowards(edge, ReferenceOn(edge, other), taken);
+
+    /// <summary>
+    /// Point of the given edge nearest to a place on the surface, measured along that edge. This is what joins
+    /// the two ends of a connection: an end is taken against the card it goes to, and then against the point the
+    /// other end took, so the line between them runs as straight as the points of the cards allow.
+    /// </summary>
+    public PortModel? PortTowards(PortAlignment edge, double reference, BaseLinkModel? taken) {
+        var points = new List<PortModel>();
+        foreach (var port in Ports)
+            if (port.Alignment == edge)
+                points.Add(port);
+
+        if (points.Count == 0)
+            return null;
+
+        //A connection meets the edge it leaves from sideways, so the place of a point along the edge is measured
+        //against the place of whatever stands at the other end of the line.
+        var alongY = edge is PortAlignment.Left or PortAlignment.Right;
+
+        PortModel? nearest = null;
+        PortModel? nearestFree = null;
+        var nearestDistance = double.MaxValue;
+        var nearestFreeDistance = double.MaxValue;
+        foreach (var port in points) {
+            var middle = port.MiddlePosition;
+            var distance = Math.Abs((alongY ? middle.Y : middle.X) - reference);
+            if (distance < nearestDistance) {
+                nearestDistance = distance;
+                nearest = port;
+            }
+
+            if (port.Links.Any(link => !ReferenceEquals(link, taken)) || distance >= nearestFreeDistance)
+                continue;
+
+            nearestFreeDistance = distance;
+            nearestFree = port;
+        }
+
+        return nearestFree ?? nearest;
+    }
 
     /// <summary>
     /// Whether a connection drawn from the given connection point takes the place of the connection the point

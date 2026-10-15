@@ -45,8 +45,40 @@ namespace Blazor.WorkflowEditor {
         /// </summary>
         private readonly Dictionary<(ActivityDesignerPair from, ActivityDesignerPair to), (PortPlace source, PortPlace target)> linkPlaces = new();
 
+        /// <summary>Whether the connections of the surface follow the cards instead of the points they were given.</summary>
+        private bool dynamicLinks = true;
+
+        /// <summary>
+        /// Whether the connections of a graph surface follow the cards: the two ends of a connection are picked as
+        /// a pair, by the cheapest route the two cards allow, and they are picked again whenever a card moves, so
+        /// an arranged diagram keeps short lines with as few bends as the surface allows — a connection that can
+        /// leave a card downwards and arrive on the side of the other one is not wrapped around both cards
+        /// because the two cards happen to lie in a row. Turned off, a connection keeps the point it was given —
+        /// the point of the branch the model asks for, or the point the user dragged its end onto, which is also
+        /// what a saved schema keeps.
+        /// <para>Switching the mode on or off draws the connections of the open surface again from the model,
+        /// which is a change of the picture only: the schema is left as it is.</para>
+        /// </summary>
+        public bool DynamicLinks {
+            get => dynamicLinks;
+            set {
+                if (dynamicLinks == value)
+                    return;
+
+                dynamicLinks = value;
+                currentGraphContainer?.RebuildLinks();
+                updateState();
+            }
+        }
+
         /// <summary>Distance the name of a branch keeps from the line it belongs to.</summary>
         private const double LinkLabelOffset = 24;
+
+        /// <summary>
+        /// How much cheaper another pair of connection points has to be before the ends of a connection are moved
+        /// onto it: one bend, so the ends do not trade places between routes that cost nearly the same.
+        /// </summary>
+        private const double EndChoiceMargin = WorkflowRouter.BendPenalty;
 
         /// <summary>
         /// End of a connection the pointer was pressed on, with the place of the press: the end is only taken
@@ -808,20 +840,7 @@ namespace Blazor.WorkflowEditor {
             //Port anchors: the ports are placed on the node border and the library rebuilds the link geometry
             //afterwards, so the line follows the node. They are also what the router of the editor needs in order
             //to build right-angled (Workflow Foundation style) routes.
-            var sourcePort = from.Node.OutcomingPort;
-            var targetPort = to.Node.IncomingPort;
-            var chosen = linkPlaces.TryGetValue((from, to), out var picked) ? picked : savedPlaces(from, to);
-            if (chosen is { } places) {
-                //The points the user dropped the ends on win over the ones the model of the activity asks for.
-                sourcePort = PortOf(from.Node, places.source, sourcePort, source: true);
-                targetPort = PortOf(to.Node, places.target, targetPort, source: false);
-            } else {
-                if (sourceEdge is { } edge)
-                    sourcePort = PortOnEdge(from.Node, edge, sourcePort, source: true);
-
-                if (targetEdge is { } end)
-                    targetPort = PortOnEdge(to.Node, end, targetPort, source: false);
-            }
+            var (sourcePort, targetPort) = linkPorts(from, to, sourceEdge, targetEdge);
 
             var linkModel = new LinkModel(
                 new SinglePortAnchor(sourcePort),
@@ -1054,8 +1073,12 @@ namespace Blazor.WorkflowEditor {
                 ? PortPlaceOf(moving.Link.Target, PortPlace.Of(moving.To.Node.IncomingPort))
                 : PortPlaceOf(moving.Link.Source, PortPlace.Of(moving.From.Node.OutcomingPort));
             linkPlaces.Remove((moving.From, moving.To));
-            linkPlaces[(source, end)] = moving.SourceEnd ? (dropped, kept) : (kept, dropped);
-            savePlaces(source, end);
+            //A connection that follows the cards is not given a point: it takes the points the cards ask for, so
+            //the choice is not kept (and the schema is not rewritten with a choice nobody made).
+            if (!DynamicLinks) {
+                linkPlaces[(source, end)] = moving.SourceEnd ? (dropped, kept) : (kept, dropped);
+                savePlaces(source, end);
+            }
 
             if (moved) {
                 container.Refresh();
@@ -1184,8 +1207,10 @@ namespace Blazor.WorkflowEditor {
             var sourcePort = PortPlaceOf(link.Source, PortPlace.Of(from.Node.OutcomingPort));
             if (currentGraphContainer is { } graph && graph.TryConnect(from, to, sourcePort.Edge)) {
                 //Keep the points the user dropped the ends on: the link is rebuilt from the model afterwards.
-                linkPlaces[(from, to)] = (sourcePort, PortPlaceOf(link.Target, PortPlace.Of(to.Node.IncomingPort)));
-                savePlaces(from, to);
+                if (!DynamicLinks) {
+                    linkPlaces[(from, to)] = (sourcePort, PortPlaceOf(link.Target, PortPlace.Of(to.Node.IncomingPort)));
+                    savePlaces(from, to);
+                }
                 graph.Refresh();
                 notifyModelChanged();
                 return;
@@ -1214,6 +1239,122 @@ namespace Blazor.WorkflowEditor {
         /// <summary>Place of the point a link end is anchored on, or the fallback one.</summary>
         private static PortPlace PortPlaceOf(Anchor? anchor, PortPlace fallback) =>
             anchor is SinglePortAnchor { Port: { } port } ? PortPlace.Of(port) : fallback;
+
+        /// <summary>
+        /// Ports the ends of a link take on the two cards it joins. A connection that follows the cards takes the
+        /// points the cards as they stand ask for; every other connection takes the points it was given — the ones
+        /// the user dragged its ends onto, or the points of the edges the model of the activity asks for.
+        /// </summary>
+        private (PortModel Source, PortModel Target) linkPorts(ActivityDesignerPair from, ActivityDesignerPair to,
+            PortAlignment? sourceEdge, PortAlignment? targetEdge) {
+            var sourceCanonical = sourceEdge ?? from.Node.OutcomingPort.Alignment;
+            var targetCanonical = targetEdge ?? to.Node.IncomingPort.Alignment;
+            if (DynamicLinks)
+                return bestEnds(from.Node, to.Node, sourceCanonical, targetCanonical, taken: null);
+
+            var chosen = linkPlaces.TryGetValue((from, to), out var picked) ? picked : savedPlaces(from, to);
+            if (chosen is { } places)
+                return (PortOf(from.Node, places.source, from.Node.OutcomingPort, source: true),
+                    PortOf(to.Node, places.target, to.Node.IncomingPort, source: false));
+
+            return (PortOnEdge(from.Node, sourceCanonical, from.Node.OutcomingPort, source: true),
+                PortOnEdge(to.Node, targetCanonical, to.Node.IncomingPort, source: false));
+        }
+
+        /// <summary>
+        /// Connection points a connection between two cards is drawn between while its ends follow the cards: of
+        /// every pair of edges the two cards offer, the pair whose route is the cheapest. The route of a pair is
+        /// measured with the router of the editor, so what is picked is what is drawn: a connection that can
+        /// leave a card downwards and arrive on the side of the other one is not wrapped around both cards just
+        /// because the two cards lie in a row.
+        /// </summary>
+        /// <param name="kept">Ends the connection has now, which are kept while no other pair is clearly better.</param>
+        private (PortModel Source, PortModel Target) bestEnds(DefaultNode from, DefaultNode to,
+            PortAlignment sourceCanonical, PortAlignment targetCanonical, BaseLinkModel? taken,
+            (PortModel Source, PortModel Target)? kept = null) {
+            (PortModel Source, PortModel Target)? best = null;
+            var bestCost = double.MaxValue;
+
+            foreach (var sourceEdge in from.EdgeCandidates(sourceCanonical, to)) {
+                if (from.PortTowards(sourceEdge, to, taken) is not { } sourcePort)
+                    continue;
+
+                foreach (var targetEdge in to.EdgeCandidates(targetCanonical, from)) {
+                    if (to.PortTowards(targetEdge, from, taken) is not { } targetPort)
+                        continue;
+
+                    if (endsCost(sourcePort, targetPort) is not { } cost || cost >= bestCost)
+                        continue;
+
+                    bestCost = cost;
+                    best = (sourcePort, targetPort);
+                }
+            }
+
+            //The points of the winning edges are then taken against each other instead of against the middles of
+            //the two cards, which lines the ends up and removes the little jog between two edges that meet at an
+            //angle.
+            if (best is { } winning
+                && from.PortTowards(winning.Source.Alignment, DefaultNode.ReferenceOn(winning.Source.Alignment, winning.Target), taken) is { } lined
+                && to.PortTowards(winning.Target.Alignment, DefaultNode.ReferenceOn(winning.Target.Alignment, lined), taken) is { } linedTarget)
+                best = (lined, linedTarget);
+
+            //The ends a connection has are only moved to a cheaper pair when that pair saves more than a bend:
+            //two routes that cost nearly the same would otherwise trade places while a card is being dragged.
+            if (kept is { } current && endsCost(current.Source, current.Target) is { } currentCost
+                && bestCost > currentCost - EndChoiceMargin)
+                return current;
+
+            return best ?? (from.PortTowards(sourceCanonical, to, taken) ?? from.OutcomingPort,
+                to.PortTowards(targetCanonical, from, taken) ?? to.IncomingPort);
+        }
+
+        /// <summary>What a route between two connection points costs, or null when none can be laid out.</summary>
+        private double? endsCost(PortModel source, PortModel target) =>
+            WorkflowRouter.MeasureRoute(designer, source, target)?.Cost;
+
+        /// <summary>
+        /// Gives the connections of the open surface the points the cards now ask for: a card that is moved takes
+        /// the ends of its connections with it, so the lines keep leaving and arriving on the edges that face the
+        /// cards they join, with as few bends as the two cards allow. A connection that already holds the point it
+        /// calls for is left untouched.
+        /// </summary>
+        private void followCards() {
+            if (!DynamicLinks || currentGraphContainer is not { } graph || designer.Container == null)
+                return;
+
+            //A gesture that holds an end of a connection decides where that end is, so nothing moves it meanwhile.
+            if (movingLinkEnd != null || pendingLinkEnd != null || pressedPort != null)
+                return;
+
+            foreach (var link in designer.Links.OfType<LinkModel>().ToList()) {
+                if (nodeOf(link.Source) is not DefaultNode source || nodeOf(link.Target) is not DefaultNode target)
+                    continue;
+
+                if (findPair(source) is not { } from || findPair(target) is not { } to)
+                    continue;
+
+                //The edge a connection leaves from is the one the model of the activity asks for — the side that
+                //names a branch of a decision — so the branch stays where its name is drawn.
+                var kept = link.SourcePort() is { } keptSource && link.TargetPort() is { } keptTarget
+                    ? (Source: keptSource, Target: keptTarget)
+                    : ((PortModel Source, PortModel Target)?)null;
+                var ends = bestEnds(source, target, graph.SourceEdge(from, to),
+                    target.IncomingPort.Alignment, link, kept);
+
+                if (!ReferenceEquals(ends.Source, link.SourcePort()))
+                    link.SetSource(new SinglePortAnchor(ends.Source));
+
+                if (!ReferenceEquals(ends.Target, link.TargetPort()))
+                    link.SetTarget(new SinglePortAnchor(ends.Target));
+            }
+        }
+
+        /// <summary>A card was moved: the connections that follow the cards take the points the cards now ask for.</summary>
+        private void onNodeMoved(NodeModel model) {
+            if (model is DefaultNode)
+                followCards();
+        }
 
         /// <summary>
         /// Port to anchor a link end on: the point of the card the connection was put on, when the card still
@@ -1794,6 +1935,7 @@ namespace Blazor.WorkflowEditor {
             //The library measures the card in the browser (expand/collapse changes its size), so the port
             //rectangles have to be measured again; otherwise link ends stay at the old card border.
             node.SizeChanged += onNodeSizeChanged;
+            node.Moving += onNodeMoved;
             ActivityDesignerPair result = new() { Activity = (activity as System.Activities.Activity)!, Element = activity, Node = node };
             items.Add(result);
             return result;

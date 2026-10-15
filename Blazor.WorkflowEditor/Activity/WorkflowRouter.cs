@@ -36,18 +36,63 @@ public class WorkflowRouter : Router {
     private const double CorridorMargin = 50;
 
     /// <summary>Cost of one bend in world units: a straight run is worth one extra corner at this price.</summary>
-    private const double BendPenalty = 20;
+    internal const double BendPenalty = 20;
 
     private readonly Router straight = new NormalRouter();
 
     public override Point[] GetRoute(Diagram diagram, BaseLinkModel link) =>
-        route(diagram, link) ?? straight.GetRoute(diagram, link);
+        route(diagram, link.Source, link.Target) ?? straight.GetRoute(diagram, link);
 
-    private static Point[]? route(Diagram diagram, BaseLinkModel link) {
-        if (!link.IsAttached)
-            return null;
+    /// <summary>
+    /// What a route costs: the corners it has and the length it covers, weighed the way the router weighs a
+    /// route — its length plus a price per corner. Used to pick the connection points a connection is drawn
+    /// between, so what is picked is the pair the router draws cheapest.
+    /// </summary>
+    public readonly record struct Measure(int Bends, double Length) {
+        public double Cost => Length + Bends * BendPenalty;
+    }
 
-        if (link.Source is not SinglePortAnchor sourceAnchor || link.Target is not SinglePortAnchor targetAnchor)
+    /// <summary>
+    /// Measures the route a right-angled connection between two connection points would take, or null when no
+    /// such route can be laid out at all (a point anchored on no edge of a card, a card that covers the other).
+    /// </summary>
+    public static Measure? MeasureRoute(Diagram diagram, PortModel source, PortModel target) =>
+        route(diagram, new SinglePortAnchor(source), new SinglePortAnchor(target)) is { } points
+            ? measure(source.MiddlePosition, points, target.MiddlePosition)
+            : null;
+
+    /// <summary>Corners and length of a route drawn between two anchors through the given cells.</summary>
+    private static Measure measure(Point source, Point[] route, Point target) {
+        var points = new List<Point> { source };
+        points.AddRange(route);
+        points.Add(target);
+
+        const int nothing = 0;
+        const int horizontal = 1;
+        const int vertical = 2;
+
+        var bends = 0;
+        var length = 0.0;
+        var direction = nothing;
+        for (var i = 1; i < points.Count; i++) {
+            var dx = points[i].X - points[i - 1].X;
+            var dy = points[i].Y - points[i - 1].Y;
+            if (Math.Abs(dx) < 0.001 && Math.Abs(dy) < 0.001)
+                continue;
+
+            var move = Math.Abs(dy) < 0.001 ? horizontal : Math.Abs(dx) < 0.001 ? vertical : nothing;
+            length += Math.Sqrt(dx * dx + dy * dy);
+            if (direction != nothing && direction != move)
+                bends++;
+
+            direction = move;
+        }
+
+        return new Measure(bends, length);
+    }
+
+    private static Point[]? route(Diagram diagram, Anchor source, Anchor target) {
+        if (source is not SinglePortAnchor sourceAnchor || target is not SinglePortAnchor targetAnchor)
             return null;
 
         if (DefaultNode.OutwardDirection(sourceAnchor.Port.Alignment) is not { } sourceDirection

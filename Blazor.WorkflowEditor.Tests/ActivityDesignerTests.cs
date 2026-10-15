@@ -3319,6 +3319,8 @@ public class ActivityDesignerTests {
         var chartNode = (FlowchartNode)service.Items.First(p => p.Activity == chart).Node;
         service.Open(chartNode);
         measurePorts(service.Items.Select(i => i.Node).ToArray());
+        service.DynamicLinks = false;
+
 
         //The cards are laid out in a row, so the connection leaves the first one on the right and arrives at the
         //second one on its left.
@@ -3360,6 +3362,8 @@ public class ActivityDesignerTests {
         var chartNode = (FlowchartNode)service.Items.First(p => p.Activity == chart).Node;
         service.Open(chartNode);
         measurePorts(service.Items.Select(i => i.Node).ToArray());
+        service.DynamicLinks = false;
+
 
         //Two cases stand to the right of the switch and the default branch under it.
         service.FindPair(sw)!.Node.CenterPosition = new Point(200, 300);
@@ -3405,6 +3409,8 @@ public class ActivityDesignerTests {
         service.SetActivityBuilder(new ActivityBuilder { Implementation = chart });
         service.Open(service.Items.First(p => p.Activity == chart).Node);
         measurePorts(service.Items.Select(i => i.Node).ToArray());
+        service.DynamicLinks = false;
+
 
         var link = Assert.Single(diagram.Links.OfType<LinkModel>());
         var end = EndOf(link, sourceEnd: false);
@@ -3432,6 +3438,7 @@ public class ActivityDesignerTests {
         var loaded = Assert.IsType<Flowchart>(WorkflowXamlSerializer.LoadBuilder(xaml).Implementation);
         var reloadedDiagram = new BlazorDiagram();
         using var reloaded = new Service(reloadedDiagram, () => { });
+        reloaded.DynamicLinks = false;
         reloaded.SetActivityBuilder(new ActivityBuilder { Implementation = loaded });
         reloaded.Open(reloaded.Items.First(p => p.Activity == loaded).Node);
         measurePorts(reloaded.Items.Select(i => i.Node).ToArray());
@@ -3450,6 +3457,225 @@ public class ActivityDesignerTests {
         var dx = Math.Max(Math.Max(node.Position.X - point.X, point.X - (node.Position.X + size.Width)), 0);
         var dy = Math.Max(Math.Max(node.Position.Y - point.Y, point.Y - (node.Position.Y + size.Height)), 0);
         return Math.Sqrt(dx * dx + dy * dy);
+    }
+
+    /// <summary>
+    /// In the mode where the connections follow the cards, a card that is moved takes the ends of its connections
+    /// with it: they are given the points of the edges that face the cards they join right away, without the drop
+    /// the ordinary mode waits for.
+    /// </summary>
+    [Fact]
+    public void ConnectionsThatFollowTheCardsAreRedrawnWhileACardMoves() {
+        var diagram = new BlazorDiagram();
+        diagram.SetContainer(new Rectangle(new Point(0, 0), new Size(1200, 800)));
+        diagram.Options.Links.DefaultRouter = new WorkflowRouter();
+        using var service = new Service(diagram, () => { });
+        var one = new WriteLine { DisplayName = "one" };
+        var two = new Delay { DisplayName = "two" };
+        var chart = new Flowchart();
+        var secondStep = new FlowStep { Action = two };
+        chart.Nodes.Add(new FlowStep { Action = one, Next = secondStep });
+        chart.Nodes.Add(secondStep);
+        chart.StartNode = chart.Nodes[0];
+        service.SetActivityBuilder(new ActivityBuilder { Implementation = chart });
+        service.Open(service.Items.First(p => p.Activity == chart).Node);
+        measurePorts(service.Items.Select(i => i.Node).ToArray());
+
+        service.DynamicLinks = true;
+
+        var first = service.FindPair(one)!.Node;
+        var second = service.FindPair(two)!.Node;
+        Assert.Equal(PortAlignment.Right, ((SinglePortAnchor)Assert.Single(diagram.Links.OfType<LinkModel>()).Source).Port.Alignment);
+
+        //The second card is put under the first one, which is a move of the card and nothing else: the connection
+        //leaves the bottom edge of the first one and arrives at the top edge of the second one. The cards stand on
+        //one vertical line and the points those edges carry are the ones the cards ask for, so the route between
+        //the two runs straight down: it is drawn with two points, which is a run without a bend.
+        first.CenterPosition = new Point(300, 150);
+        second.CenterPosition = new Point(300, 600);
+
+        var link = Assert.Single(diagram.Links.OfType<LinkModel>());
+        Assert.Equal(PortAlignment.Bottom, ((SinglePortAnchor)link.Source).Port.Alignment);
+        Assert.Equal(PortAlignment.Top, ((SinglePortAnchor)link.Target).Port.Alignment);
+        Assert.Equal(0.5, ((GraphPort)((SinglePortAnchor)link.Source).Port).Slot, 3);
+        Assert.Equal(0.5, ((GraphPort)((SinglePortAnchor)link.Target).Port).Slot, 3);
+        Assert.Equal(2, link.Route!.Length);
+    }
+
+    /// <summary>
+    /// In that mode the ends are picked together, by the route the two cards would take between them: a card that
+    /// stands under the right part of the card above it is left downwards, instead of the line being wrapped
+    /// around both cards just because the second card lies to the right of the first one.
+    /// </summary>
+    [Fact]
+    public void ConnectionsThatFollowTheCardsTakeTheCheapestEdges() {
+        var diagram = new BlazorDiagram();
+        diagram.SetContainer(new Rectangle(new Point(0, 0), new Size(1600, 900)));
+        diagram.Options.Links.DefaultRouter = new WorkflowRouter();
+        using var service = new Service(diagram, () => { });
+        var assign = new Assign { DisplayName = "assign" };
+        var delay = new Delay { DisplayName = "delay" };
+        var chart = new Flowchart();
+        var secondStep = new FlowStep { Action = delay };
+        chart.Nodes.Add(new FlowStep { Action = assign, Next = secondStep });
+        chart.Nodes.Add(secondStep);
+        chart.StartNode = chart.Nodes[0];
+        service.SetActivityBuilder(new ActivityBuilder { Implementation = chart });
+        service.Open(service.Items.First(p => p.Activity == chart).Node);
+        measurePorts(service.Items.Select(i => i.Node).ToArray());
+
+        service.DynamicLinks = true;
+
+        //The second card stands under the right part of the first one and close to it, which is the picture a
+        //diagram gets when a card is dropped on the surface below another one.
+        var sourceNode = service.FindPair(assign)!.Node;
+        var targetNode = service.FindPair(delay)!.Node;
+        sourceNode.CenterPosition = new Point(140, 140);
+        targetNode.CenterPosition = new Point(310, 270);
+
+        var link = Assert.Single(diagram.Links.OfType<LinkModel>());
+        var source = ((SinglePortAnchor)link.Source).Port;
+        var target = ((SinglePortAnchor)link.Target).Port;
+
+        //The connection leaves the card above downwards: the right edge it would leave by in a row of cards is
+        //not taken, because leaving there would wrap the line around both cards.
+        Assert.Equal(PortAlignment.Bottom, source.Alignment);
+
+        //What is drawn is the cheapest of the routes the two cards allow, which is why the ends are picked as a
+        //pair: the edges each end would take on its own cost the wrap around both cards.
+        var chosen = WorkflowRouter.MeasureRoute(diagram, source, target);
+        var wrapped = WorkflowRouter.MeasureRoute(diagram,
+            sourceNode.PortTowards(PortAlignment.Right, targetNode, null)!,
+            targetNode.PortTowards(PortAlignment.Left, sourceNode, null)!);
+
+        Assert.NotNull(chosen);
+        Assert.NotNull(wrapped);
+        Assert.True(chosen!.Value.Cost < wrapped!.Value.Cost,
+            $"chosen={chosen} wrapped={wrapped}");
+        //And it is a route without the four corners the wrap around the two cards has.
+        Assert.True(chosen.Value.Bends <= 2, $"bends={chosen.Value.Bends}");
+    }
+
+    /// <summary>
+    /// In that mode the points a connection was given are left out: the cards as they stand decide, and switching
+    /// the mode back off draws the connection on the point it was given again.
+    /// </summary>
+    [Fact]
+    public void ConnectionsThatFollowTheCardsIgnoreThePointsTheyWereGiven() {
+        var diagram = new BlazorDiagram();
+        diagram.SetContainer(new Rectangle(new Point(0, 0), new Size(1200, 800)));
+        using var service = new Service(diagram, () => { });
+        var one = new WriteLine { DisplayName = "one" };
+        var two = new Delay { DisplayName = "two" };
+        var chart = new Flowchart();
+        var secondStep = new FlowStep { Action = two };
+        chart.Nodes.Add(new FlowStep { Action = one, Next = secondStep });
+        chart.Nodes.Add(secondStep);
+        chart.StartNode = chart.Nodes[0];
+        service.SetActivityBuilder(new ActivityBuilder { Implementation = chart });
+        service.Open(service.Items.First(p => p.Activity == chart).Node);
+        measurePorts(service.Items.Select(i => i.Node).ToArray());
+        service.DynamicLinks = false;
+
+        //A schema in which the user once put both ends of the connection away from the edges they started on.
+        Blazor.WorkflowEditor.Activity.State.BranchPorts.Set(one, "next",
+            new PortPlace(PortAlignment.Left, 0.25), new PortPlace(PortAlignment.Bottom, 0.75));
+        var graph = (FlowchartNode)service.Items.First(p => p.Activity == chart).Node;
+        graph.RebuildLinks();
+
+        var given = Assert.Single(diagram.Links.OfType<LinkModel>());
+        Assert.Equal(PortAlignment.Left, ((SinglePortAnchor)given.Source).Port.Alignment);
+
+        service.DynamicLinks = true;
+
+        //Switching the mode is a change of the picture and not of the workflow.
+        Assert.False(service.IsDirty);
+
+        //The cards stand side by side, so the connection leaves the right edge and arrives at the left one now.
+        var followed = Assert.Single(diagram.Links.OfType<LinkModel>());
+        Assert.Equal(PortAlignment.Right, ((SinglePortAnchor)followed.Source).Port.Alignment);
+        Assert.Equal(PortAlignment.Left, ((SinglePortAnchor)followed.Target).Port.Alignment);
+
+        service.DynamicLinks = false;
+
+        //The point the connection was given is still there, and it is drawn on it again.
+        var restored = Assert.Single(diagram.Links.OfType<LinkModel>());
+        Assert.Equal(PortAlignment.Left, ((SinglePortAnchor)restored.Source).Port.Alignment);
+        Assert.Equal(PortAlignment.Bottom, ((SinglePortAnchor)restored.Target).Port.Alignment);
+    }
+
+    /// <summary>
+    /// Connections that leave a card through one edge stay apart in that mode as well: a point another connection
+    /// holds is passed over while a free one is left.
+    /// </summary>
+    [Fact]
+    public void ConnectionsThatFollowTheCardsStayApartOnOneEdge() {
+        var diagram = new BlazorDiagram();
+        diagram.SetContainer(new Rectangle(new Point(0, 0), new Size(1600, 800)));
+        using var service = new Service(diagram, () => { });
+        var chart = new Flowchart();
+        var sw = new FlowSwitch<string> { DisplayName = "mode" };
+        var a = new FlowStep { Action = new WriteLine { DisplayName = "a" } };
+        var b = new FlowStep { Action = new Delay { DisplayName = "b" } };
+        foreach (FlowNode node in new FlowNode[] { sw, a, b })
+            chart.Nodes.Add(node);
+        chart.StartNode = sw;
+        sw.Cases["a"] = a;
+        sw.Cases["b"] = b;
+        service.SetActivityBuilder(new ActivityBuilder { Implementation = chart });
+        service.Open(service.Items.First(p => p.Activity == chart).Node);
+        measurePorts(service.Items.Select(i => i.Node).ToArray());
+
+        service.DynamicLinks = true;
+
+        //Both cases stand to the right of the switch, at places that ask for the middle point of its right edge.
+        service.FindPair(sw)!.Node.CenterPosition = new Point(200, 400);
+        service.FindPair(a.Action)!.Node.CenterPosition = new Point(900, 390);
+        service.FindPair(b.Action)!.Node.CenterPosition = new Point(900, 410);
+
+        var slots = diagram.Links.OfType<LinkModel>()
+            .Select(link => ((SinglePortAnchor)link.Source).Port)
+            .ToList();
+        Assert.Equal(2, slots.Count);
+        Assert.All(slots, port => Assert.Equal(PortAlignment.Right, port.Alignment));
+        Assert.Equal(2, slots.Select(port => ((GraphPort)port).Slot).Distinct().Count());
+    }
+
+    /// <summary>
+    /// A connection whose end the user drags in that mode changes what it joins, and nothing else: no point is
+    /// remembered for it, so the schema is not rewritten with a choice the mode does not keep.
+    /// </summary>
+    [Fact]
+    public void ConnectionsThatFollowTheCardsAreNotGivenAPointByADrag() {
+        var diagram = new BlazorDiagram();
+        diagram.SetContainer(new Rectangle(new Point(0, 0), new Size(1200, 800)));
+        using var service = new Service(diagram, () => { });
+        var one = new WriteLine { DisplayName = "one" };
+        var two = new Delay { DisplayName = "two" };
+        var three = new WriteLine { DisplayName = "three" };
+        var chart = new Flowchart();
+        var secondStep = new FlowStep { Action = two };
+        chart.Nodes.Add(new FlowStep { Action = one, Next = secondStep });
+        chart.Nodes.Add(secondStep);
+        chart.Nodes.Add(new FlowStep { Action = three });
+        chart.StartNode = chart.Nodes[0];
+        service.SetActivityBuilder(new ActivityBuilder { Implementation = chart });
+        service.Open(service.Items.First(p => p.Activity == chart).Node);
+        measurePorts(service.Items.Select(i => i.Node).ToArray());
+
+        service.DynamicLinks = true;
+
+        var link = Assert.Single(diagram.Links.OfType<LinkModel>());
+        var end = EndOf(link, sourceEnd: false);
+        Assert.True(service.StartLinkEndDrag(link, end.X, end.Y));
+
+        var stop = service.FindPair(three)!.Node.PortOn(PortAlignment.Top, 0).MiddlePosition;
+        Assert.True(service.DragLinkEnd(stop.X, stop.Y));
+        service.DropLinkEnd(stop.X, stop.Y);
+
+        //The connection runs to the card it was dropped on, and no point was kept for it.
+        Assert.Same(chart.Nodes[2], ((FlowStep)chart.Nodes[0]).Next);
+        Assert.Null(Blazor.WorkflowEditor.Activity.State.BranchPorts.Get(one, "next"));
     }
 
     private sealed class InvalidActivity : CodeActivity {

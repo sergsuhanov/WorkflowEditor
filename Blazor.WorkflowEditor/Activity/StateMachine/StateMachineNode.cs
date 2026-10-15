@@ -38,6 +38,13 @@ public class StateMachineNode : DefaultNode, IGraphContainer {
     }
 
     /// <summary>
+    /// Edge a transition leaves from: a transition names no branch of its own, so it leaves on the canonical edge
+    /// of the state and the surface decides where it goes from there.
+    /// </summary>
+    public PortAlignment SourceEdge(ActivityDesignerPair from, ActivityDesignerPair to) =>
+        from.Node.OutcomingPort.Alignment;
+
+    /// <summary>
     /// Key of a transition: the state it arrives at, which is what tells the transitions of a state apart, since
     /// a state keeps one transition per target.
     /// </summary>

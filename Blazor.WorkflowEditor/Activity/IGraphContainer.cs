@@ -1,4 +1,4 @@
-using Blazor.Diagrams.Core.Models;
+﻿using Blazor.Diagrams.Core.Models;
 
 namespace Blazor.WorkflowEditor.Activity;
 
@@ -33,6 +33,15 @@ public interface IGraphContainer {
 
     /// <summary>Short label of a connection (True/False, switch case, transition trigger) or null.</summary>
     string? LinkLabel(ActivityDesignerPair from, ActivityDesignerPair to);
+
+    /// <summary>
+    /// Edge of the card a connection leaves from when the model of the activity names one for it: the side of a
+    /// decision that carries the branch the connection sets, the bottom edge of a switch that carries its default
+    /// branch, and the canonical edge of the source element for every connection that names no branch. A surface
+    /// that draws its connections again from the cards as they stand uses it to keep a named branch on the edge
+    /// its name is drawn beside.
+    /// </summary>
+    PortAlignment SourceEdge(ActivityDesignerPair from, ActivityDesignerPair to);
 
     /// <summary>
     /// Key of the connection between two child elements, under which the edges a user picked for it are kept
