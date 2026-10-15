@@ -101,6 +101,9 @@ namespace Blazor.WorkflowEditor {
         /// <summary>How far a copy of a card is put from the card it copies.</summary>
         private const double CopyOffset = 40;
 
+        /// <summary>How far a pasted element is put from the middle of the view.</summary>
+        private const double PasteOffset = 24;
+
         /// <summary>How far from an end of a connection the pointer has to be pressed to take that end.</summary>
         private const double LinkEndGrabRadius = 26;
 
@@ -120,6 +123,9 @@ namespace Blazor.WorkflowEditor {
 
         /// <summary>Steps the user can go back and forward through with the undo and redo commands.</summary>
         private readonly WorkflowHistory history = new();
+
+        /// <summary>Element the copy command put on the clipboard, kept as the activity it was copied as.</summary>
+        private System.Activities.Activity? clipboard;
 
         /// <summary>Set when the ports have to be measured again after the next render.</summary>
         private bool portGeometryDirty;
@@ -443,9 +449,20 @@ namespace Blazor.WorkflowEditor {
                     return;
                 }
 
-                //Ctrl+D adds a copy of the selected element behind it.
+                //Ctrl+D adds a copy of the selected element behind it, while Ctrl+C and Ctrl+V put one on the
+                //clipboard and add it to the opened container.
                 if (e.Key is "d" or "D") {
                     DuplicateSelected();
+                    return;
+                }
+
+                if (e.Key is "c" or "C") {
+                    CopySelected();
+                    return;
+                }
+
+                if (e.Key is "v" or "V") {
+                    PasteCopied();
                     return;
                 }
             }
@@ -532,6 +549,57 @@ namespace Blazor.WorkflowEditor {
         }
 
         /// <summary>
+        /// Copies the element the selected card shows, so that it can be pasted into another container. The card
+        /// selected last is the one copied, exactly like the copy command.
+        /// </summary>
+        public bool CopySelected() {
+            if (selectedItems.Count == 0)
+                return false;
+
+            if (activityOf(selectedItems[^1]) is not { } activity)
+                return false;
+
+            clipboard = activity;
+            return true;
+        }
+
+        /// <summary>
+        /// Adds the copied element to the opened container and selects it. The element stays in the clipboard, so
+        /// it can be pasted more than once, and every paste is a copy of its own. Nothing is added without a
+        /// clipboard, or when the opened container does not take the element (the root of the workflow holds one
+        /// activity, and a container of another kind does not hold it at all).
+        /// </summary>
+        public bool PasteCopied() {
+            if (clipboard is not { } copied)
+                return false;
+
+            var target = Path.LastOrDefault()?.Reference?.Node;
+            var elementType = copied.GetType();
+            if (target == null || !target.CanAdd(elementType.IsGenericType ? elementType.GetGenericTypeDefinition() : elementType))
+                return false;
+
+            if (cloneActivity(copied) is not { } copy)
+                return false;
+
+            //A paste has no pointer to land on, so a card of a graph surface goes in the middle of what the user
+            //sees; a container that lays out its children gives it a place of its own.
+            var position = VisibleViewport is { } viewport
+                ? new Diagrams.Core.Geometry.Point(
+                    viewport.Left + (viewport.Width / 2) + PasteOffset,
+                    viewport.Top + (viewport.Height / 2) + PasteOffset)
+                : null;
+
+            var (hasAdded, placed) = placeActivity(copy, existing: null, existingOwner: null, initialPosition: position);
+            if (!hasAdded)
+                return false;
+
+            clearSelection();
+            Select(placed.Node);
+            updateState();
+            return true;
+        }
+
+        /// <summary>
         /// Puts a copy of a card right behind it, in the place that draws it: the surface of the opened container
         /// draws the copy as a card of its own, while a list drawn inside another card draws it inline, exactly
         /// like the original. On a graph surface the copy follows the original, and joins nothing: a copy carries
@@ -588,11 +656,18 @@ namespace Blazor.WorkflowEditor {
         /// element of any other kind — a decision, a switch, a state — has no schema of its own, so it is not
         /// copied, and neither are the connections of the card it was made from: a copy joins nothing.
         /// </summary>
-        private static System.Activities.Activity? cloneActivityOf(ActivityDesignerPair card) {
-            var activity = card.Element is System.Activities.Activity element ? element : card.Activity;
-            if (activity == null)
-                return null;
+        private static System.Activities.Activity? cloneActivityOf(ActivityDesignerPair card) =>
+            activityOf(card) is { } activity ? cloneActivity(activity) : null;
 
+        /// <summary>The activity a card shows, or null when the card holds an element that is not an activity.</summary>
+        private static System.Activities.Activity? activityOf(ActivityDesignerPair card) =>
+            card.Element is System.Activities.Activity element ? element : card.Activity;
+
+        /// <summary>
+        /// A copy of an activity: it is written as a schema of its own and read back, so the copy carries the
+        /// arguments and the variables of the original and shares nothing with it.
+        /// </summary>
+        private static System.Activities.Activity? cloneActivity(System.Activities.Activity activity) {
             var xaml = WorkflowXamlSerializer.SaveBuilder(new ActivityBuilder { Implementation = activity });
             return WorkflowXamlSerializer.LoadBuilder(xaml).Implementation;
         }

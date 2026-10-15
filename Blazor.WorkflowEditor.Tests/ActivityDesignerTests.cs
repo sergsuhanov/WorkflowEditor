@@ -3974,6 +3974,62 @@ public class ActivityDesignerTests {
         Assert.Null(copy.Next);
     }
 
+    /// <summary>
+    /// A copied card is pasted into the opened container, at the end of it, and every paste adds a copy of its
+    /// own: the clipboard holds what was copied.
+    /// </summary>
+    [Fact]
+    public void PastingAddsACopyToTheOpenedContainer() {
+        using var service = new Service(new BlazorDiagram(), () => { });
+        var sequence = new Sequence {
+            Activities = { new WriteLine { DisplayName = "first", Text = new InArgument<string>("hello") } }
+        };
+        service.SetActivityBuilder(new ActivityBuilder { Implementation = sequence });
+        service.Open(service.Items.Single(pair => pair.Activity == sequence).Node);
+        service.Select(service.Items.Single(pair => pair.Activity is WriteLine).Node);
+
+        Assert.True(service.CopySelected());
+        Assert.True(service.PasteCopied());
+
+        Assert.Equal(2, sequence.Activities.Count);
+        var firstPaste = Assert.IsType<WriteLine>(sequence.Activities[1]);
+        Assert.NotSame(sequence.Activities[0], firstPaste);
+        Assert.Equal("hello", ((Literal<string>)firstPaste.Text.Expression!).Value);
+        Assert.Same(firstPaste, service.SelectedItems.Single().Activity);
+
+        Assert.True(service.PasteCopied());
+
+        Assert.Equal(3, sequence.Activities.Count);
+        Assert.NotSame(firstPaste, sequence.Activities[2]);
+    }
+
+    /// <summary>A paste without a clipboard, or into a container that holds one activity, adds nothing.</summary>
+    [Fact]
+    public void PastingRefusesAnEmptyClipboardAndAPlaceThatHoldsOneElement() {
+        using var service = new Service(new BlazorDiagram(), () => { });
+        var root = new Sequence { Activities = { new WriteLine() } };
+        service.SetActivityBuilder(new ActivityBuilder { Implementation = root });
+
+        //Nothing was copied yet.
+        Assert.False(service.PasteCopied());
+
+        //The root of the workflow is open and holds a single activity.
+        service.Select(service.Items.Single(pair => pair.Activity is WriteLine).Node);
+        Assert.True(service.CopySelected());
+        Assert.False(service.PasteCopied());
+        Assert.Single(root.Activities);
+
+        //An element that is not an activity has nothing to copy.
+        var chart = new Flowchart { Nodes = { new FlowStep { Action = new WriteLine() } } };
+        service.SetActivityBuilder(new ActivityBuilder { Implementation = chart });
+        service.Open(service.Items.Single(pair => pair.Activity == chart).Node);
+        service.Select(service.Items.Single(pair => pair.Activity is WriteLine).Node);
+
+        Assert.True(service.CopySelected());
+        Assert.True(service.PasteCopied());
+        Assert.Equal(2, chart.Nodes.Count);
+    }
+
     private sealed class InvalidActivity : CodeActivity {
         protected override void Execute(CodeActivityContext context) { }
 
