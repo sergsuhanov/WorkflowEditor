@@ -48,6 +48,8 @@ dotnet format web.slnf --verify-no-changes --severity warn
 
 `.editorconfig` asks for LF line endings and a UTF-8 byte-order mark on C# files, and `.gitattributes` keeps the line endings that way on every platform; the check covers the rest of the file — `using` order, blank lines, whitespace — and CI runs it before the tests.
 
+The tests of `Blazor.WorkflowEditor.Tests` cover the workflow model and, through bUnit, the components: the toolbox panel (its groups, the search, the header that collapses it), the dialogs, and the editor component itself — what it draws for a workflow without a root activity, what it reports as unsaved, and what a validation run returns. The browser is faked there (loose JS interop plus the rectangle of the canvas), so a test covers what a component decides, while the diagram itself is still checked in the browser.
+
 Run the host with:
 
 ```sh
