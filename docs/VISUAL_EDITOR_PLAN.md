@@ -1,6 +1,6 @@
 ﻿# Web editor UX instructions
 
-Keep the browser editor understandable, keyboard-accessible, and reliable for creating, opening, editing, validating, and saving WF workflows.
+Keep the browser editor understandable and reliable for creating, opening, editing, validating, and saving WF workflows.
 
 ## Scope
 
@@ -8,6 +8,7 @@ Keep the browser editor understandable, keyboard-accessible, and reliable for cr
 - Do not change or migrate `WorkflowEditor.Win` or `glassPeople`.
 - Keep this file to current behavior, open UX work, acceptance checks, and known limitations. Do not add implementation diaries or closed-step logs.
 - Activity coverage and code patterns belong in [WORK_PLAN.md](WORK_PLAN.md).
+- The pointer drives the editing surface: a drop, a connection and the `START` badge of a `Flowchart` are made with it, and a keyboard-only path for them is out of scope. Controls keep the accessible names they have, and a command that has a key (`Ctrl+Z`, `Ctrl+D`, `Ctrl+C`, `Ctrl+V`, `Delete`) keeps it.
 
 ## Already implemented
 
@@ -42,9 +43,8 @@ Keep the browser editor understandable, keyboard-accessible, and reliable for cr
 1. **Root, Sequence and branch semantics:** keep a new workflow empty until the user adds its single root Activity; reject a second drop at the `ActivityBuilder` root. Show a presentation-only `START` cue only on a `Flowchart`, where the start node is a choice of the user (it marks the chosen node on its card, and asks for a node or for the choice itself while there is none); every other surface — the root, `Sequence`, `Parallel`, `StateMachine` — only draws a drop hint while it holds no element yet, with no `START` badge. Add or arrange Sequence children only after opening the Sequence. An activity that holds one Activity per branch (`If`, `While`, `DoWhile`, `ForEach<T>`, `TryCatch`, `Switch<T>`) fills only the branch the drop landed on and renders it inside its own card, so it is never opened.
 2. **Workflow Foundation visual comparison:** use the legacy desktop editor as a read-only reference, not as a migration target. Compare its activity toolbox, property inspector, commands, toolbar views, and design surface with the Web editor, then resolve the remaining Web UX gaps. Reference composition: [MainWindow.xaml](../WorkflowEditor.Win/MainWindow.xaml), [MainWindow.xaml.cs](../WorkflowEditor.Win/MainWindow.xaml.cs), and [DesignerService.cs](../WorkflowEditor.Win/DesignerService.cs).
 3. **Sequence editing:** the children of an opened `Sequence` form a column (the "ordered container"): the model order decides the place of every card, a drop lands at the index of the drop point, and a card the user drags — or moves with `Alt+↑/↓` — takes a new index. A card of the column is dragged as a card, so it can also leave the column for another target; moving a node can never silently change the execution order in another way.
-4. **Keyboard operation:** provide a way to find and add toolbox activities without drag-and-drop. Ensure controls, panels, dialogs, and node actions have accessible names, visible focus, and predictable Enter/Space behavior.
-5. **Property context and variables:** make it obvious where each supported Activity is edited, how to open its child region, and which workflow scope owns its variables. A branch surface has no variables of its own, so the variables panel resolves to the nearest enclosing scope that can hold them. Retain an explicit fallback for unsupported properties.
-6. **Responsive layout (lower priority):** keep the editor usable at narrow sizes, but prioritize the large-screen workflow canvas used for diagram editing.
+4. **Property context and variables:** make it obvious where each supported Activity is edited, how to open its child region, and which workflow scope owns its variables. A branch surface has no variables of its own, so the variables panel resolves to the nearest enclosing scope that can hold them. Retain an explicit fallback for unsupported properties.
+5. **Responsive layout (lower priority):** keep the editor usable at narrow sizes, but prioritize the large-screen workflow canvas used for diagram editing.
 
 ## Acceptance checks
 
@@ -77,7 +77,7 @@ Keep the browser editor understandable, keyboard-accessible, and reliable for cr
 ## Verification and known limits
 
 - Run the unit tests and Release Web build from the repository root; manually check the browser after restarting the host following a rebuild.
-- Exercise empty, nested, graph, invalid, and large workflows on the primary large-screen layout; reload the page with unsaved changes and with a stored draft; check narrow sizes and keyboard-only navigation as secondary coverage.
+- Exercise empty, nested, graph, invalid, and large workflows on the primary large-screen layout; reload the page with unsaved changes and with a stored draft; check narrow sizes as secondary coverage.
 - The toolbox panel, the dialogs, the search of the properties panel and the editor component are covered by bUnit tests (`Blazor.WorkflowEditor.Tests`), which run in CI; what a test cannot see — dragging, dropping, connections, the geometry of the cards and what the browser paints — is checked by hand in the browser.
 - The undo history keeps 20 steps or 2 M characters of XAML, whichever comes first, and a step is a burst of edits: the editor records one 250 ms after the last edit of a burst, so an undo takes back a group of edits rather than one character. `Ctrl+Z` belongs to the canvas and needs its focus; inside a field of the properties panel or the variables panel the browser keeps its own undo for the text being typed.
 - The cards drawn inside another card keep their selection when a second one is picked, so the commands that act on one card — `Ctrl+D` and the properties panel — work on the card picked last. A copy is made from the element of a card, so a `FlowDecision`, a `FlowSwitch<T>` or a `State` is not copied: a copy of one would join nothing and would have nothing to run.
@@ -85,5 +85,5 @@ Keep the browser editor understandable, keyboard-accessible, and reliable for cr
 - A designer that lives in a library of its own needs `Microsoft.AspNetCore.Components.Web` in its `_Imports.razor`, and the type list of the drop dialog is not filtered by the generic constraints of the activity being dropped.
 - The ends of a connection are picked again while a card that can meet the band of that connection moves, and only then: a card dragged far from a connection leaves its ends where they are, even if the router would have moved them (a connection the user pointed somewhere keeps that choice until a card near it moves, or until the container draws its connections again).
 - Graph layout is basic and does not minimize link crossings by itself: the cards are arranged by the user, while a route keeps its own distance from every card of the surface (a connection of a crowded schema falls back to the reach of the connection points, which is the narrowest a right-angled route can be), prefers the shortest run with the fewest bends, and a connection takes the edges that face the two cards it joins — an edge that stands for a named branch never moves on its own (in the mode above the two ends are picked together instead, by the cheapest route of the two cards); the connection point a hand-picked end of a connection was dropped on — its edge and the place on that edge — is kept with the element the connection leaves from, so it outlives a save and a reload; link bends are not draggable, and a connection is moved by taking either of its ends — on the line, or on the connection point the end arrives at.
-- The `START` badge is a pointer handle: the start node is chosen by dragging the badge onto the card that runs first, and the card of a `Flowchart` carries no list of nodes to choose it from (it is the size of any other container card), so that one choice is made with the pointer only — a keyboard path for it is a known gap.
+- The `START` badge is a pointer handle: the start node is chosen by dragging the badge onto the card that runs first, and the card of a `Flowchart` carries no list of nodes to choose it from (it is the size of any other container card), so that one choice is made with the pointer only — no keyboard path is planned for it.
 - The children of a `Sequence` have no scrolling or fit action of their own: a long sequence keeps growing downwards, on its card and on its own surface, so a deep tree is reached by panning (and a deeply nested tree makes tall cards). A `bwas:Designer.CenterX`/`CenterY` left on a Sequence child by an older build stays in the file (it is ignored, not rewritten).
