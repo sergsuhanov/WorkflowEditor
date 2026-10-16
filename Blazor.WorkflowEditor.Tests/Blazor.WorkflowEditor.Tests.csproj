@@ -16,6 +16,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Blazor.WorkflowEditor\Blazor.WorkflowEditor.csproj" />
+    <ProjectReference Include="..\WorkflowEditor.TestActivities\WorkflowEditor.TestActivities.csproj" />
   </ItemGroup>
 
   <ItemGroup>

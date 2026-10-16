@@ -4,7 +4,11 @@ using Microsoft.VisualBasic.Activities;
 
 namespace Blazor.WorkflowEditor.Activity;
 
-internal static class ActivityArguments {
+/// <summary>
+/// Reads and writes the expression behind a workflow argument. Public because a designer of an activity that
+/// lives in another assembly needs exactly this to edit the arguments of its own activity.
+/// </summary>
+public static class ActivityArguments {
     public static string GetText<T>(InArgument<T>? argument) {
         var expression = argument?.Expression;
         if (expression == null)

@@ -1,0 +1,6 @@
+@*Importing the web components is what tells the Razor compiler how the HTML elements of a card take part in
+  binding and in events: without it a control compiles with its @bind and @on... attributes left as markup,
+  which fails the build for a bound field and silently leaves the fields of a card inert.*@
+@using Microsoft.AspNetCore.Components.Web
+@using Blazor.WorkflowEditor.Components
+@using WorkflowEditor.TestActivities

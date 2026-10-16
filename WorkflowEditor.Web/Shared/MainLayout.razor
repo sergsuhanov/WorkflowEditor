@@ -1,4 +1,4 @@
-﻿@using System.Activities
+@using System.Activities
 @using System.Text
 @using Blazor.WorkflowEditor
 @using Blazor.WorkflowEditor.Components.Modals
@@ -283,12 +283,20 @@
         stateMachine.Add(typeof(System.Activities.Statements.State));
         groups.Add(stateMachine);
 
+        //A group of an activity that lives in a project of its own: the editor finds its card by looking for the
+        //[Pair] attribute in every loaded assembly, so a group only names the activity, and the type its input
+        //takes is chosen in the drop dialog out of the same collection the variables panel reads.
+        var testActivities = new Blazor.WorkflowEditor.ToolBoxGroup() { Name = "Test activities" };
+        testActivities.Add(typeof(WorkflowEditor.TestActivities.TestBranch<>));
+        groups.Add(testActivities);
+
 
         TypeCollection.Add(typeof(System.Object));
         TypeCollection.Add(typeof(System.Int32));
         TypeCollection.Add(typeof(System.String));
         TypeCollection.Add(typeof(System.Boolean));
         TypeCollection.Add(typeof(System.Collections.Generic.List<>));
+        TypeCollection.Add(typeof(WorkflowEditor.TestActivities.TestInput));
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)

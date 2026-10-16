@@ -1,4 +1,4 @@
-# WorkflowEditor
+﻿# WorkflowEditor
 
 Experimental Windows Workflow Foundation editor. The repository contains a legacy Windows application and a browser-based editor; current development targets the Web editor.
 
@@ -13,6 +13,8 @@ dotnet run --project WorkflowEditor.Web/WorkflowEditor.Web.csproj --urls http://
 After rebuilding, stop and restart the host before checking the browser at <http://localhost:5199>.
 
 ## Current Web capabilities
+
+The toolbox also carries a group of activities that live in a project of their own (`WorkflowEditor.TestActivities`), which is the worked example of a user activity: `TestBranch<T>` takes one input and holds three branches, of which it draws one at random when it runs. The type of the input is chosen in the dialog that appears when the activity is dropped, the card shows a field for the input and one region per branch, and a schema that uses it is saved and opened like any other.
 
 The toolbox includes stack activities (`Sequence`, `Assign`, `WriteLine`, `Delay`, `If`, `While`, `DoWhile`, `ForEach<T>`, `Parallel`, `TryCatch`, `Switch<T>`, and collection activities), plus `Flowchart` and `StateMachine` editors. XAML can be opened, edited, validated, and saved. Validation reports every error and warning with the name of the argument each one belongs to. Unsupported loaded activities use a generic display-name editor.
 

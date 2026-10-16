@@ -4,7 +4,8 @@
     "projects": [
       "Blazor.WorkflowEditor\\Blazor.WorkflowEditor.csproj",
       "Blazor.WorkflowEditor.Tests\\Blazor.WorkflowEditor.Tests.csproj",
-      "WorkflowEditor.Web\\WorkflowEditor.Web.csproj"
+      "WorkflowEditor.Web\\WorkflowEditor.Web.csproj",
+      "WorkflowEditor.TestActivities\\WorkflowEditor.TestActivities.csproj"
     ]
   }
 }

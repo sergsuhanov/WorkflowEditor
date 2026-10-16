@@ -1,0 +1,46 @@
+@using Blazor.WorkflowEditor.Components
+@typeparam T
+
+<ActivityControl Node="@Node">
+    <Preview>@fields</Preview>
+    <Edit>
+        @fields
+        @*Each of the three branches holds a single activity, rendered inside the card. The activity draws one of
+          them when it runs, so all three are shown at once.*@
+        <div class="we-branches we-branches-stacked">
+            <ActivityRegion Node="Node" Slot="@Node.FirstSlot" Label="@Node.FirstSlot.SlotLabel">
+                <EmbeddedActivity Slot="@Node.FirstSlot" />
+            </ActivityRegion>
+            <ActivityRegion Node="Node" Slot="@Node.SecondSlot" Label="@Node.SecondSlot.SlotLabel">
+                <EmbeddedActivity Slot="@Node.SecondSlot" />
+            </ActivityRegion>
+            <ActivityRegion Node="Node" Slot="@Node.ThirdSlot" Label="@Node.ThirdSlot.SlotLabel">
+                <EmbeddedActivity Slot="@Node.ThirdSlot" />
+            </ActivityRegion>
+        </div>
+    </Edit>
+</ActivityControl>
+
+@code {
+    [Parameter]
+    public TestBranchNode<T> Node { get; set; } = default!;
+
+    /// <summary>Several cards can be on the diagram at once, so the field needs an id of its own.</summary>
+    private string inputId => $"we-testbranch-input-{Node.Id}";
+
+    /// <summary>The type was chosen when the activity was dropped, so the placeholder can name it.</summary>
+    private string inputPlaceholder => $"{typeof(T).Name} expression";
+
+    /// <summary>
+    /// The single input of the activity. The type of it was chosen when the activity was dropped, so the field
+    /// takes the expression that fills the argument and the card only names the class it is filled with.
+    /// </summary>
+    private RenderFragment fields => @<text>
+        <div class="we-field-row">
+            <label class="we-field-label" for="@inputId">Input</label>
+            <input type="text" class="form-control we-field-input" id="@inputId" aria-label="Input"
+                   placeholder="@inputPlaceholder" @bind-value="Node.Input" @onmousedown:stopPropagation
+                   @onmouseup:stopPropagation @onmousemove:stopPropagation />
+        </div>
+    </text>;
+}
