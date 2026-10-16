@@ -44,9 +44,6 @@ else
                         <ul class="items list-unstyled @(group.Collapsed ? "collapse" : "")">
                             @foreach (var item in group.Items)
                             {
-                                @*ondragstart = "event.dataTransfer.setData('', event.target.id);"*@
-                                @*@ondragstart= "(p) => OnDragStart(p, item)"*@
-
                                 <li @key="item" draggable="true" @ondragstart="() => OnDragStart(item)" @ondragend="OnDragEnd"
                                     @ondragenter="() => OnDragEnter(item)"
                                     class="@((item.Image == null ? "activityItemWithoutIcon" : "activityItem"))">

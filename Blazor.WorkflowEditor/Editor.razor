@@ -201,8 +201,7 @@
         //around every card of the surface.
         diagram.Options.Links.DefaultRouter = new Activity.WorkflowRouter();
         diagram.Options.Links.DefaultPathGenerator = new StraightPathGenerator(8);
-        // DeleteKey = "Delete"
-        
+
         this.service = new Service(this.diagram, this.StateHasChanged);
         this.service.DirtyChanged += onDirtyChanged;
         this.service.ModelChanged += onModelChanged;

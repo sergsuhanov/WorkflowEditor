@@ -159,14 +159,5 @@ namespace Blazor.WorkflowEditor {
         /// <summary>The graph container currently opened in the editor, if any (Flowchart, StateMachine).</summary>
         private IGraphContainer? currentGraphContainer => Path.LastOrDefault()?.Reference?.Node as IGraphContainer;
 
-        private void zoomChanged() {
-            //this.Path.Last().Reference.Node.
-            //throw new NotImplementedException();
-        }
-
-        private void panChanged() {
-            //throw new NotImplementedException();
-        }
-
     }
 }

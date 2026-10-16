@@ -118,8 +118,6 @@ namespace Blazor.WorkflowEditor {
             this.designer.PointerDown += pointerDown;
             this.designer.PointerMove += pointerMove;
             this.designer.PointerUp += pointerUp;
-            this.designer.PanChanged += panChanged;
-            this.designer.ZoomChanged += zoomChanged;
             this.designer.KeyDown += keyDown;
             this.designer.ContainerChanged += onContainerChanged;
             this.designer.Links.Added += linksAdded;
@@ -145,8 +143,6 @@ namespace Blazor.WorkflowEditor {
 
             this.designer.PointerUp -= pointerUp;
 
-            this.designer.PanChanged -= panChanged;
-            this.designer.ZoomChanged -= zoomChanged;
             this.designer.KeyDown -= keyDown;
             this.designer.ContainerChanged -= onContainerChanged;
             this.designer.Links.Added -= linksAdded;

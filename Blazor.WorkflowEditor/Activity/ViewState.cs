@@ -3,15 +3,6 @@
 namespace Blazor.WorkflowEditor.Activity.State;
 
 public static class Designer {
-    //public static readonly AttachableMemberIdentifier ViewStateIdentifier = new(typeof(Designer), "ViewState");
-    //public static ViewState Get(object target) {
-    //    AttachablePropertyServices.TryGetProperty<ViewState>(target, ViewStateIdentifier, out var value);
-    //    return value;
-    //}
-    //public static void Set(object target, ViewState value) {
-    //    AttachablePropertyServices.SetProperty(target, ViewStateIdentifier, value);
-    //}
-
     static T? getValue<T>(object target, AttachableMemberIdentifier propery) {
         return AttachablePropertyServices.TryGetProperty<T>(target, propery, out var v) ? v : default;
     }
@@ -135,13 +126,6 @@ public enum PortAlignment {
 
 /*
 public class ViewState {
-
-    //public static readonly AttachableMemberIdentifier CenterXProperty = new(typeof(ViewState), "CenterX");
-    //public static int? GetCenterX(object target) =>
-    //     AttachablePropertyServices.TryGetProperty<int?>(target, CenterXProperty, out var v) ? v : null;
-    //public static void SetCenterX(object target, int? centerX) =>
-    //     AttachablePropertyServices.SetProperty(target, CenterXProperty, centerX);
-
 
     public int? CenterX { get; set; }
     public int? CenterY { get; set; }
