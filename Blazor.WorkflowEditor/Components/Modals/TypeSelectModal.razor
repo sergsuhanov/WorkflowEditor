@@ -20,6 +20,12 @@
             {
               <span class="we-generic-key">@item.Label</span>
             }
+            @*The field says what the parameter it fills requires, which is why the list it offers may be
+              shorter than the types the page knows.*@
+            @if (GenericTypeConstraints.Describe(item.Parameter) is { } requirement)
+            {
+              <span class="we-generic-hint">@requirement</span>
+            }
             <VariableTypeConstructorComponent @key="item" @ref="item.ObjRef" TypeCollection="TypeCollection"
                                               Parameter="item.Parameter" VariableType="item.Value" ChooseAgain="true">
             </VariableTypeConstructorComponent>
@@ -91,7 +97,7 @@
         if (GenericTypeConstraints.Meets(type, field.Parameter))
           continue;
 
-        typeError = $"The type {type} does not meet the constraints of {describe(field)}: it has to be "
+        typeError = $"The type {type.DisplayName()} does not meet the constraints of {describe(field)}: it has to be "
             + $"{GenericTypeConstraints.Describe(field.Parameter)}.";
         return;
       }

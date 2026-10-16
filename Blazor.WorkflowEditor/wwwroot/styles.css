@@ -1062,6 +1062,23 @@
     font-weight: 600;
 }
 
+/*What a field asks for: the parameter a type fills and the constraint it has to meet. It stays quiet, because
+  the field is there to choose a type and this only explains why the list of types is short.*/
+.we-generic-form .we-generic-hint,
+.we-vtc-parameter {
+    flex: none;
+    color: #6c757d;
+    font-weight: 400;
+    font-size: 0.72rem;
+}
+
+/*A field of a type that is put together names the parameter it fills above the picker it holds.*/
+.we-vtc-parameter {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+
 .we-generic-form .row {
     margin-right: 0;
     margin-left: 0;

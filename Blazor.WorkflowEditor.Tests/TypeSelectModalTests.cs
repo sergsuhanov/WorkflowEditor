@@ -35,7 +35,7 @@ public class TypeSelectModalTests {
 
         var dialog = renderDialog(context, offered, new TypeSelectModal.TypeField());
 
-        Assert.Equal(offered.Select(type => type!.ToString()),
+        Assert.Equal(new[] { "String", "Int32", "List<T>" },
             dialog.FindAll(".option-text").Select(option => option.TextContent.Trim()));
     }
 
@@ -49,8 +49,12 @@ public class TypeSelectModalTests {
         var dialog = renderDialog(context, offered,
             field(TestGenerics.Parameter(typeof(TestGenerics.ValueOnly<>))));
 
-        Assert.Equal(new[] { typeof(int), typeof(bool) }.Select(type => type.ToString()),
+        Assert.Equal(new[] { "Int32", "Boolean" },
             dialog.FindAll(".option-text").Select(option => option.TextContent.Trim()));
+
+        //The field says what its parameter requires, which is why the list is shorter than the types the page knows.
+        Assert.Equal("T", dialog.Find(".we-generic-key").TextContent.Trim());
+        Assert.Equal("a value type", dialog.Find(".we-generic-hint").TextContent.Trim());
     }
 
     /// <summary>A type that is put together in the dialog is judged on the whole type: `List&lt;int&gt;` fills a
@@ -65,21 +69,40 @@ public class TypeSelectModalTests {
             field(TestGenerics.Parameter(typeof(TestGenerics.TextOnly<>))));
 
         //Only the type that is still open is offered: it is the one that can still become a list of text.
-        Assert.Equal(new[] { typeof(List<>) }.Select(type => type.ToString()),
-            dialog.FindAll(".option-text").Select(option => option.TextContent.Trim()));
+        Assert.Equal(new[] { "List<T>" }, dialog.FindAll(".option-text").Select(option => option.TextContent.Trim()));
 
         //The element of the list is the field of the list itself, which takes any type.
-        dialog.FindAll("li.option").First(option => option.TextContent.Contains("List", StringComparison.Ordinal)).Click();
+        choose(dialog, "List<T>");
         dialog.Find(".we-vtc-options a").Click();
-        dialog.FindAll("li.option").First(option => option.TextContent.Trim() == typeof(int).ToString()).Click();
+        choose(dialog, "Int32");
 
         dialog.Find("button.btn-primary").Click();
 
         var error = dialog.Find(".alert").TextContent;
-        Assert.Contains(typeof(List<int>).ToString()!, error);
+        Assert.Contains("The type List<Int32>", error);
         Assert.Contains("does not meet the constraints of T", error);
-        Assert.Contains($"it has to be a type assignable to {typeof(IEnumerable<string>)}", error);
+        Assert.Contains("it has to be a type assignable to IEnumerable<String>", error);
     }
+
+    /// <summary>A row of a picker shows the short name of a type and keeps the CLR name in its tooltip, so a
+    /// name that two types of different namespaces share can still be told apart.</summary>
+    [Fact]
+    public void ARowShowsTheShortNameAndItsTooltipTheFullOne() {
+        using var context = new BunitContext();
+        var offered = new List<Type?> { typeof(System.Collections.Generic.List<int>) };
+
+        var dialog = renderDialog(context, offered, new TypeSelectModal.TypeField());
+
+        var option = dialog.Find("li.option");
+        Assert.Equal("List<Int32>", option.QuerySelector(".option-text")!.TextContent.Trim());
+        Assert.Equal(typeof(System.Collections.Generic.List<int>).ToString(), option.GetAttribute("title"));
+    }
+
+    /// <summary>Chooses the row of a picker by the name it shows.</summary>
+    private static void choose(IRenderedComponent<TypeSelectModal> dialog, string name) =>
+        dialog.FindAll("li.option")
+            .First(option => option.QuerySelector(".option-text")?.TextContent.Trim() == name)
+            .Click();
 
     /// <summary>A complete choice that fills its parameter is applied, and the dialog hands the types over.</summary>
     [Fact]
@@ -90,9 +113,9 @@ public class TypeSelectModalTests {
         var dialog = renderDialog(context, offered,
             field(TestGenerics.Parameter(typeof(TestGenerics.TextOnly<>))));
 
-        dialog.FindAll("li.option").First(option => option.TextContent.Contains("List", StringComparison.Ordinal)).Click();
+        choose(dialog, "List<T>");
         dialog.Find(".we-vtc-options a").Click();
-        dialog.FindAll("li.option").First(option => option.TextContent.Trim() == typeof(string).ToString()).Click();
+        choose(dialog, "String");
 
         dialog.Find("button.btn-primary").Click();
 

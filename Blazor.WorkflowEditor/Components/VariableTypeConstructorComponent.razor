@@ -9,11 +9,12 @@
     <div class="col">
       @if (ChooseAgain)
       {
-        <button type="button" class="we-vtc-type link-primary" @onclick="chooseAgain">@Value.Value?.ToString()</button>
+        <button type="button" class="we-vtc-type link-primary" title="@Value.Value?.ToString()"
+                @onclick="chooseAgain">@Value.Value.DisplayName()</button>
       }
       else
       {
-        <label class="col-form-label">@Value.Value?.ToString()</label>
+        <label class="col-form-label" title="@Value.Value?.ToString()">@Value.Value.DisplayName()</label>
       }
       <button type="button" class="btn" @onclick="clearType">
         <span class="oi oi-x text-primary" aria-hidden="true"></span>
@@ -26,9 +27,17 @@
           {
             var child = Value.Childs[index];
             @*A type that is put together here fills the parameters of its definition, so each of its fields is
-              offered the types that meet the constraint of the parameter it fills.*@
+              offered the types that meet the constraint of the parameter it fills, and it says which parameter
+              that is and what it takes.*@
             var childParameter = parametersOf(Value.Value, index);
             <li class="option">
+              <span class="we-vtc-parameter">
+                <span class="we-generic-key">@(childParameter?.Name ?? string.Empty)</span>
+                @if (requirementOf(childParameter) is { } requirement)
+                {
+                  <span class="we-generic-hint">@requirement</span>
+                }
+              </span>
               <VariableTypeConstructorComponent @key="child" @ref="child.ObjRef" TypeCollection="TypeCollection"
                                                 Parameter="childParameter" Value="child">
               </VariableTypeConstructorComponent>
@@ -161,6 +170,10 @@
     var parameters = definition?.GetGenericArguments() ?? Array.Empty<Type>();
     return index < parameters.Length ? parameters[index] : null;
   }
+
+  /// <summary>What the parameter of a field requires, shown next to its name, or null when it requires
+  /// nothing.</summary>
+  private static string? requirementOf(Type? parameter) => GenericTypeConstraints.Describe(parameter);
 
   public Type? BuildedType { get => Value.BuildType(); }
 

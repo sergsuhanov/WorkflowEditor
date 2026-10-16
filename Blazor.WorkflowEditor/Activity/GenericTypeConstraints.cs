@@ -88,7 +88,7 @@ public static class GenericTypeConstraints {
 
             requirements.Add(constraint.IsGenericParameter
                 ? $"the type chosen for {constraint.Name}"
-                : $"a type assignable to {constraint}");
+                : $"a type assignable to {constraint.DisplayName()}");
         }
 
         return requirements.Count == 0 ? null : string.Join(", ", requirements);

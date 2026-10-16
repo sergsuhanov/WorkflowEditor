@@ -356,6 +356,13 @@
     color: #adb5bd !important;
 }
 
+/*The form that asks for a type says what a field requires in a quiet grey, which the dark theme has to lift
+  the way it lifts every other muted text.*/
+.we-generic-form .we-generic-hint,
+.we-vtc-parameter {
+    color: #adb5bd;
+}
+
 /* The auto-complete list is painted white by the base sheet, so its options were light on light. */
 .we-autocomplete .options {
     background-color: #343a40;

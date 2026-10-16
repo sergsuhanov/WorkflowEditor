@@ -17,7 +17,8 @@
           }
           else
           {
-            <a href="#" class="link-primary" @onclick="@(() => _collapsed = !_collapsed)">@ConvertValueToString(_value)</a>
+            <a href="#" class="link-primary" title="@titleOf(_value)"
+               @onclick="@(() => _collapsed = !_collapsed)">@ConvertValueToString(_value)</a>
           }
         </div>
       </div>
@@ -37,7 +38,7 @@
         </li>
         @foreach (var item in SelectCollection.Where(p => FilteringCollection(p, _filter) == true).ToList())
         {
-          <li class="option" @onclick="@(() => onValueSelected(item))">
+          <li class="option" title="@titleOf(item)" @onclick="@(() => onValueSelected(item))">
             <span class="option-text">@ConvertValueToListItemString(item)</span>
           </li>
         }
@@ -62,6 +63,13 @@
 
   [Parameter]
   public Func<T?, string> ConvertValueToListItemString { get; set; } = default!;
+
+  /// <summary>
+  /// The full name of a value the list shows by a shorter one (`List&lt;Int32&gt;`), for the tooltip of the
+  /// places it is shown: null, the default, leaves a value without a tooltip.
+  /// </summary>
+  [Parameter]
+  public Func<T?, string?>? ConvertValueToTitle { get; set; }
 
   [Parameter]
   public T? SelectedValue { get; set; }
@@ -98,6 +106,9 @@
   {
     _filter = e?.Value?.ToString() ?? string.Empty;
   }
+
+  /// <summary>The tooltip of a value, when the list was given a way to name it in full.</summary>
+  private string? titleOf(T? value) => ConvertValueToTitle?.Invoke(value);
 
   private void onValueSelected(T? value)
   {

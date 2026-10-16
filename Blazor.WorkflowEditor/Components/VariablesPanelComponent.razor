@@ -68,8 +68,8 @@
                          @onchange="e => renameVariable(variable, e.Value?.ToString())" />
                   <button type="button" class="we-vtc-type link-primary we-variable-type"
                           title="Change the type of this variable"
-                          aria-label="@($"Type of the variable {variable.Name}: {typeName(variable.Type)}")"
-                          @onclick="() => changeType(variable)">@typeName(variable.Type)</button>
+                          aria-label="@($"Type of the variable {variable.Name}: {variable.Type.DisplayName()}")"
+                          @onclick="() => changeType(variable)">@variable.Type.DisplayName()</button>
                   <input type="text" class="form-control form-control-sm we-variable-value"
                          aria-label="@($"Default value of the variable {variable.Name}")"
                          value="@variable.DefaultValue"
@@ -252,21 +252,6 @@
   /// <summary>The default value as the field carries it.</summary>
   private static string defaultValueOf(Blazor.WorkflowEditor.Variable variable)
     => variable.DefaultValue?.ToString() ?? string.Empty;
-
-  /// <summary>The type as the row shows it: a type that takes parameters reads as `List<Int32>` instead of
-  /// the CLR name of its definition, which is long enough to wrap a cell of the table.</summary>
-  private static string typeName(Type? type)
-  {
-    if (type == null)
-      return string.Empty;
-
-    if (!type.IsGenericType)
-      return type.Name;
-
-    var name = type.Name;
-    var arguments = string.Join(", ", type.GenericTypeArguments.Select(typeName));
-    return $"{name[..name.IndexOf('`')]}<{arguments}>";
-  }
 
   /// <summary>Adds a variable to the scope the panel is on. A surface that holds no variables of its own adds
   /// to the nearest scope that does, so the command never leaves the panel unchanged without a word (the panel

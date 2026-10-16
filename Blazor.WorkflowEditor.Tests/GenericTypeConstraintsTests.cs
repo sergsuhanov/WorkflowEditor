@@ -118,7 +118,7 @@ public class GenericTypeConstraintsTests {
         Assert.Equal("a value type", GenericTypeConstraints.Describe(parameter(typeof(TestGenerics.ValueOnly<>))));
         Assert.Equal("a type with a public parameterless constructor",
             GenericTypeConstraints.Describe(parameter(typeof(TestGenerics.NewOnly<>))));
-        Assert.Equal($"a type assignable to {typeof(IEnumerable<int>)}",
+        Assert.Equal("a type assignable to IEnumerable<Int32>",
             GenericTypeConstraints.Describe(parameter(typeof(TestGenerics.NumbersOnly<>))));
         Assert.Null(GenericTypeConstraints.Describe(parameter(typeof(TestGenerics.Related<,>), 1)));
     }

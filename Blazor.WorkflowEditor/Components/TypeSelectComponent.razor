@@ -3,6 +3,7 @@
 
 <SelectComponent T=Type Label="@Label" @bind-SelectedValue="BoundValue" SelectCollection="TypeCollection"
   FilteringCollection="FilteringCollection" ConvertValueToString="ConvertValueToString"
+  ConvertValueToTitle="ConvertValueToTitle"
   ConvertValueToListItemString="ConvertValueToListItemString" StartOpen="StartOpen">
 </SelectComponent>
 
@@ -37,17 +38,30 @@
 
   private bool FilteringCollection(Type type, string filter)
   {
-    return filter.Length >= 1 ? type.ToString().ToLower().Contains(filter.ToLower()) : true;
+    //The user types what the list shows, so the short name of a type matches as well as the CLR name of it
+    //(a filter of `System` still finds a type whose row reads `List<Int32>`).
+    if (filter.Length == 0)
+      return true;
+
+    var needle = filter.ToLower();
+    return type.DisplayName().ToLower().Contains(needle) || type.ToString().ToLower().Contains(needle);
   }
 
   private string ConvertValueToString(Type? type)
   {
-    return type?.ToString() ?? string.Empty;
+    return type.DisplayName();
   }
 
   private string ConvertValueToListItemString(Type? type)
   {
-    return $"{type?.ToString() ?? string.Empty}";
+    return type.DisplayName();
+  }
+
+  /// <summary>The CLR name of a type, for the tooltip of the row: the short name the row shows could belong
+  /// to two types of different namespaces.</summary>
+  private static string? ConvertValueToTitle(Type? type)
+  {
+    return type?.ToString();
   }
 
   public void Dispose()
