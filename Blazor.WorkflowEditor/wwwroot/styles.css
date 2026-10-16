@@ -591,6 +591,11 @@
     cursor: pointer;
     font-weight: 600;
     font-size: 0.8rem;
+    /*The header of a scope stays in view while its rows scroll, so a long list never leaves the user
+      without the name of the scope the variables belong to.*/
+    position: sticky;
+    top: 0;
+    z-index: 1;
 }
 
 .we-variable-group-header:hover {
@@ -599,6 +604,17 @@
 
 .we-variable-group-header .we-panel-title {
     font-weight: 600;
+    /*The name keeps the count next to it instead of pushing it to the far edge: a name that is too long
+      is truncated, while the count of the scope stays visible.*/
+    flex: 0 1 auto;
+}
+
+/*How many variables a scope holds is read on its header, so a collapsed scope says what it hides.*/
+.we-variable-group-count {
+    flex: none;
+    color: #6c757d;
+    font-weight: 400;
+    font-size: 0.72rem;
 }
 
 /*The kind of activity that owns a scope sits after its name and stays quiet: it tells two scopes with the
@@ -631,29 +647,53 @@
     margin: 0 0 0.5rem;
 }
 
-/*A row of the variables table carries the fields of the variable it shows instead of its text, so the table
-  needs no header row and no edit command: the name and the default value are edited in the cells and the
-  type is the command that opens the dialog which chooses it.*/
-.we-variables-table td {
-    vertical-align: middle;
+/*The header of a scope pins to the top of the scroller, so the scroller keeps no padding above it: the rows
+  scroll under the header instead of showing a sliver of the row that left the panel, and the group keeps the
+  distance from the top edge of the panel by the margin of the first thing the panel draws.*/
+.we-variables-panel .we-panel-body {
+    padding-top: 0;
 }
 
-.we-variables-table .we-variable-name,
-.we-variables-table .we-variable-value {
-    width: 32%;
+.we-variables-panel .we-panel-body > :first-child {
+    margin-top: 0.5rem;
 }
 
-.we-variables-table .we-variable-type {
-    width: 24%;
+/*A row of the grid carries the fields of the variable it shows instead of its text, so the grid needs no
+  header row and no edit command: the name and the default value are edited in the fields and the type is
+  the command that opens the dialog which chooses it. The panel is wide and short, so the rows flow into as
+  many columns as its width allows — one when the panel is narrow — instead of forming one long list.*/
+.we-variables-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(19rem, 1fr));
+    gap: 0.3rem 0.75rem;
+    margin-bottom: 0.4rem;
 }
 
-.we-variables-table .we-variable-actions {
-    width: 1%;
-    text-align: right;
+.we-variable-row {
+    display: grid;
+    grid-template-columns: minmax(6rem, 1.7fr) auto minmax(4rem, 1fr) auto;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+/*A row of the grid is denser than a field of a card or of the properties panel: the panel lists many of
+  them, and the name and the default value of a variable are short.*/
+.we-panel-body .we-variable-row .form-control {
+    min-height: 1.5rem;
+    padding: 0.05rem 0.35rem;
+    font-size: 0.78rem;
+}
+
+.we-variable-row .we-variable-type {
+    justify-self: start;
     white-space: nowrap;
 }
 
-/*The type a picker shows is the command that opens the picker again — in the variables table, and in the
+.we-variable-row .we-variable-actions {
+    justify-self: end;
+}
+
+/*The type a picker shows is the command that opens the picker again — in the row of a variable, and in the
   dialog that chooses a type for a value which already has one — so it keeps the look of the name it shows.*/
 .we-vtc-type {
     padding: 0;

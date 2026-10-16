@@ -110,6 +110,10 @@
     color: #adb5bd;
 }
 
+.we-variable-group-count {
+    color: #adb5bd;
+}
+
 .we-variable-group-header.is-add-scope {
     border-color: #2f6feb;
 }
@@ -181,17 +185,6 @@
 
 .we-panel .form-control::placeholder {
     color: #adb5bd;
-}
-
-.we-panel .table th,
-.we-panel .table td {
-    color: #e9ecef;
-    background-color: transparent;
-    border-color: #4d5157;
-}
-
-.we-panel .table thead th {
-    color: #ced4da;
 }
 
 .we-panel .we-panel-title,

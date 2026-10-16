@@ -74,9 +74,41 @@ public class VariablesPanelComponentTests {
         Assert.Equal(new[] { "counter" }, outer.Variables.Select(variable => variable.Name));
         Assert.Equal(new[] { "total", "variable1" }, inner.Variables.Select(variable => variable.Name));
 
-        var tables = panel.FindAll(".we-variables-table");
-        Assert.Equal(2, tables.Count);
-        Assert.Equal(2, tables[1].QuerySelectorAll("tbody tr").Length);
+        var grids = panel.FindAll(".we-variables-grid");
+        Assert.Equal(2, grids.Count);
+        Assert.Equal(2, grids[1].QuerySelectorAll(".we-variable-row").Length);
+    }
+
+    /// <summary>
+    /// A scope of many variables is read in the space the panel has: the rows of a scope form one grid, which
+    /// flows into as many columns as the width of the panel allows, the header of each scope says how many
+    /// variables it holds (also while it is collapsed), and a row keeps the four controls of a variable in the
+    /// order they are read and tabbed through.
+    /// </summary>
+    [Fact]
+    public void TheRowsOfAScopeFormOneGridAndTheHeaderSaysHowManyAreThere() {
+        using var context = new BunitContext();
+        var outer = new Sequence { DisplayName = "Prepare" };
+        var inner = new Sequence { DisplayName = "Loop" };
+        using var service = openTwoSequences(outer, inner);
+
+        var panel = renderPanel(context, service);
+        panel.Find(".we-panel-action").Click();
+
+        Assert.Equal(new[] { "1", "2" },
+            panel.FindAll(".we-variable-group-count").Select(count => count.TextContent.Trim()));
+        Assert.Contains("1 variable.", panel.FindAll(".we-variable-group-header")[0].GetAttribute("aria-label"));
+        Assert.Contains("2 variables.", panel.FindAll(".we-variable-group-header")[1].GetAttribute("aria-label"));
+
+        var grid = panel.FindAll(".we-variables-grid")[1];
+        var rows = grid.QuerySelectorAll(".we-variable-row");
+        Assert.Equal(2, rows.Length);
+
+        //The four controls of a row are read and tabbed through in the order they are named for the screen
+        //reader: the name, the type it is changed through, the default value and the delete command.
+        Assert.Equal(new[] { "we-variable-name", "we-variable-type", "we-variable-value", "we-variable-actions" },
+            rows[0].QuerySelectorAll("input, button")
+                .Select(control => control.ClassList.First(name => name.StartsWith("we-variable", StringComparison.Ordinal))));
     }
 
     /// <summary>A workflow whose path holds no scope that keeps variables says why the add command is
@@ -105,11 +137,11 @@ public class VariablesPanelComponentTests {
         using var service = openTwoSequences(outer, inner);
 
         var panel = renderPanel(context, service);
-        Assert.Equal(2, panel.FindAll(".we-variables-table").Count);
+        Assert.Equal(2, panel.FindAll(".we-variables-grid").Count);
 
         panel.FindAll(".we-variable-group-header")[0].Click();
 
-        Assert.Single(panel.FindAll(".we-variables-table"));
+        Assert.Single(panel.FindAll(".we-variables-grid"));
         Assert.Equal(new[] { "false", "true" },
             panel.FindAll(".we-variable-group-header").Select(header => header.GetAttribute("aria-expanded")));
     }
@@ -134,6 +166,6 @@ public class VariablesPanelComponentTests {
         Assert.Equal("ActivityBuilder",
             Assert.Single(panel.FindAll(".we-variable-group-kind")).TextContent.Trim());
         Assert.Equal("counter",
-            Assert.Single(panel.FindAll(".we-variable-name input")).GetAttribute("value"));
+            Assert.Single(panel.FindAll("input.we-variable-name")).GetAttribute("value"));
     }
 }

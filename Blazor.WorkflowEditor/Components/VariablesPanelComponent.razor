@@ -1,4 +1,4 @@
-@using System.Activities;
+﻿@using System.Activities;
 @using Blazor.WorkflowEditor;
 @using Blazor.WorkflowEditor.Activity;
 @implements IDisposable
@@ -38,11 +38,15 @@
         <div class="we-variable-group" @key="item.Activity">
           <div class="we-variable-group-header @(ownsNewVariables(item) ? "is-add-scope" : null)" role="button" tabindex="0"
                aria-expanded="@(isGroupCollapsed(item) ? "false" : "true")"
+               aria-label="@groupTitle(item)"
                title="@groupTitle(item)"
                @onclick="() => toggleGroup(item)">
             <span class="oi @(isGroupCollapsed(item) ? "oi-caret-right" : "oi-caret-bottom") we-panel-caret"
                   aria-hidden="true"></span>
             <span class="we-panel-title">@(item.Activity?.DisplayName ?? "...")</span>
+            @*How many variables the scope holds stays on the header, so a scope that is collapsed says what
+              it hides and a long list is read at a glance.*@
+            <span class="we-variable-group-count" aria-hidden="true">@item.Variables.Count</span>
             @*The kind of activity that owns the scope tells two scopes with the same display name apart, and
               the mark says which scope the add command above fills.*@
             <span class="we-variable-group-kind">@scopeKind(item.Activity)</span>
@@ -51,40 +55,32 @@
           @if (!isGroupCollapsed(item))
           {
             @*The variables are edited in place: a row carries the fields of the variable it shows, so the
-              table needs no header and no edit command — the several shapes of a type are chosen in the
-              dialog the type opens, and the delete command is the only action left.*@
-            <table @key="_tableRevision" class="table table-sm mb-2 we-variables-table">
-              <tbody>
-                @foreach (var variable in item.Variables)
-                {
-                  <tr @key="variable">
-                    <td class="we-variable-name">
-                      <input type="text" class="form-control form-control-sm"
-                             aria-label="@($"Name of the variable {variable.Name}")" value="@variable.Name"
-                             @onchange="e => renameVariable(variable, e.Value?.ToString())" />
-                    </td>
-                    <td class="we-variable-type">
-                      <button type="button" class="we-vtc-type link-primary"
-                              title="Change the type of this variable"
-                              aria-label="@($"Type of the variable {variable.Name}: {typeName(variable.Type)}")"
-                              @onclick="() => changeType(variable)">@typeName(variable.Type)</button>
-                    </td>
-                    <td class="we-variable-value">
-                      <input type="text" class="form-control form-control-sm"
-                             aria-label="@($"Default value of the variable {variable.Name}")"
-                             value="@variable.DefaultValue"
-                             @onchange="e => setDefaultValue(variable, e.Value?.ToString())" />
-                    </td>
-                    <td class="we-variable-actions">
-                      <button type="button" class="btn we-panel-action" title="Delete the variable"
-                              aria-label="@($"Delete variable {variable.Name}")" @onclick="() => removeVariable(variable)">
-                        <span class="oi oi-x text-danger" aria-hidden="true"></span>
-                      </button>
-                    </td>
-                  </tr>
-                }
-              </tbody>
-            </table>
+              grid needs no header row and no edit command — the several shapes of a type are chosen in the
+              dialog the type opens, and the delete command is the only action left. The rows flow into as
+              many columns as the width of the panel allows, because the panel is wide and short: a scope of
+              many variables is read and scrolled in the place the panel has instead of in one long list.*@
+            <div @key="_gridRevision" class="we-variables-grid">
+              @foreach (var variable in item.Variables)
+              {
+                <div class="we-variable-row" @key="variable">
+                  <input type="text" class="form-control form-control-sm we-variable-name"
+                         aria-label="@($"Name of the variable {variable.Name}")" value="@variable.Name"
+                         @onchange="e => renameVariable(variable, e.Value?.ToString())" />
+                  <button type="button" class="we-vtc-type link-primary we-variable-type"
+                          title="Change the type of this variable"
+                          aria-label="@($"Type of the variable {variable.Name}: {typeName(variable.Type)}")"
+                          @onclick="() => changeType(variable)">@typeName(variable.Type)</button>
+                  <input type="text" class="form-control form-control-sm we-variable-value"
+                         aria-label="@($"Default value of the variable {variable.Name}")"
+                         value="@variable.DefaultValue"
+                         @onchange="e => setDefaultValue(variable, e.Value?.ToString())" />
+                  <button type="button" class="btn we-panel-action we-variable-actions" title="Delete the variable"
+                          aria-label="@($"Delete variable {variable.Name}")" @onclick="() => removeVariable(variable)">
+                    <span class="oi oi-x text-danger" aria-hidden="true"></span>
+                  </button>
+                </div>
+              }
+            </div>
           }
         </div>
       }
@@ -106,8 +102,8 @@
   private readonly HashSet<System.Activities.Activity> _collapsedGroups = new();
   private bool _collapsed { get; set; } = false;
 
-  /// <summary>Bumped when a change was refused: the table is built again so its fields show the model.</summary>
-  private int _tableRevision;
+  /// <summary>Bumped when a change was refused: the grid is built again so its fields show the model.</summary>
+  private int _gridRevision;
 
   private List<GroupedActivityVariable> _groupedVariables
   {
@@ -202,8 +198,8 @@
 
     if (name.Length == 0 || name == variable.Name)
     {
-      //The browser keeps what the user typed, so the table is built again to show the model value.
-      _tableRevision++;
+      //The browser keeps what the user typed, so the grid is built again to show the model value.
+      _gridRevision++;
       return;
     }
 
@@ -324,10 +320,11 @@
   {
     var name = group.Activity?.DisplayName ?? "this scope";
     var kind = scopeKind(group.Activity);
+    var count = group.Variables.Count == 1 ? "1 variable" : $"{group.Variables.Count} variables";
     var action = isGroupCollapsed(group) ? "Show" : "Hide";
     var hint = ownsNewVariables(group) ? " The add command above fills this scope." : string.Empty;
     var named = kind.Length == 0 ? name : $"{name} ({kind})";
-    return $"{action} the variables of {named}.{hint}";
+    return $"{action} the variables of {named}. {count}.{hint}";
   }
 
   protected override void OnInitialized()
