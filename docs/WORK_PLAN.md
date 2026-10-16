@@ -8,6 +8,7 @@ Use this file for current implementation state and engineering rules. The visual
 - Do not change or migrate `WorkflowEditor.Win` or `glassPeople`.
 - Preserve WF XAML load/save behavior. Keep user Activity separate from the legacy Windows library.
 - Web projects target .NET 10; do not upgrade unrelated solution projects.
+- `Service` is one class in several files, by topic: the state, the lifecycle and the path the editor is on stay in `Service.cs`, the connections in `Service.Links.cs`, the cards and their commands in `Service.Cards.cs`, the graph surfaces in `Service.Graph.cs`, the validation in `Service.Validation.cs`, the undo history in `Service.History.cs` and the variables in `Service.Variables.cs`. A new member goes into the file of its topic; a member that another topic needs is `internal` or public rather than copied.
 
 ## Current state
 

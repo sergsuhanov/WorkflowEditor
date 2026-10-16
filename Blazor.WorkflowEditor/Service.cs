@@ -16,7 +16,13 @@ using Blazor.WorkflowEditor.Activity.Flow;
 using Microsoft.AspNetCore.Components.Web;
 
 namespace Blazor.WorkflowEditor {
-
+    /// <summary>
+    /// The editor behind the surface: the schema it holds, the cards and the connections it is made of, and
+    /// what it reports about them. The parts of it are here: the connections of a graph surface in
+    /// `Service.Links.cs`, the cards in `Service.Cards.cs`, the surfaces in `Service.Graph.cs`, the validation
+    /// in `Service.Validation.cs`, the history in `Service.History.cs` and the variables in
+    /// `Service.Variables.cs`.
+    /// </summary>
     public partial class Service : IDisposable {
         private class ActivityPairType {
             public Type Type;
@@ -35,51 +41,6 @@ namespace Blazor.WorkflowEditor {
         private readonly List<(ActivityDesignerPair, ActivityDesignerPair)> selectedLinks = new();
         private readonly Dictionary<Type, ActivityPairType> typePairAttributes = new();
 
-        /// <summary>True while links are added/removed from the model, to avoid reacting to our own changes.</summary>
-        private bool suppressLinkSync;
-
-        /// <summary>
-        /// Points of the cards the user picked while drawing a connection. A graph link is rebuilt from the
-        /// workflow model on every change, so the choice of anchor has to be remembered here, otherwise the
-        /// rebuilt link would jump back to the points the model alone would pick.
-        /// </summary>
-        private readonly Dictionary<(ActivityDesignerPair from, ActivityDesignerPair to), (PortPlace source, PortPlace target)> linkPlaces = new();
-
-        /// <summary>Whether the connections of the surface follow the cards instead of the points they were given.</summary>
-        private bool dynamicLinks = true;
-
-        /// <summary>
-        /// Whether the connections of a graph surface follow the cards: the two ends of a connection are picked as
-        /// a pair, by the cheapest route the two cards allow, and they are picked again whenever a card moves, so
-        /// an arranged diagram keeps short lines with as few bends as the surface allows — a connection that can
-        /// leave a card downwards and arrive on the side of the other one is not wrapped around both cards
-        /// because the two cards happen to lie in a row. Turned off, a connection keeps the point it was given —
-        /// the point of the branch the model asks for, or the point the user dragged its end onto, which is also
-        /// what a saved schema keeps.
-        /// <para>Switching the mode on or off draws the connections of the open surface again from the model,
-        /// which is a change of the picture only: the schema is left as it is.</para>
-        /// </summary>
-        public bool DynamicLinks {
-            get => dynamicLinks;
-            set {
-                if (dynamicLinks == value)
-                    return;
-
-                dynamicLinks = value;
-                currentGraphContainer?.RebuildLinks();
-                updateState();
-            }
-        }
-
-        /// <summary>Distance the name of a branch keeps from the line it belongs to.</summary>
-        private const double LinkLabelOffset = 24;
-
-        /// <summary>
-        /// How much cheaper another pair of connection points has to be before the ends of a connection are moved
-        /// onto it: one bend, so the ends do not trade places between routes that cost nearly the same.
-        /// </summary>
-        private const double EndChoiceMargin = WorkflowRouter.BendPenalty;
-
         /// <summary>
         /// End of a connection the pointer was pressed on, with the place of the press: the end is only taken
         /// away from the link once the pointer has moved, so that a press that stays where it was (a click that
@@ -91,44 +52,6 @@ namespace Blazor.WorkflowEditor {
         /// <summary>End of a connection that follows the pointer while the user moves it, or null.</summary>
         private (LinkModel Link, ActivityDesignerPair From, ActivityDesignerPair To, bool SourceEnd,
                  PortAlignment SourceEdge, PositionAnchor Floating)? movingLinkEnd;
-
-        /// <summary>
-        /// Connection point locked for the gesture that took the connection ending there, or null. The lock keeps
-        /// the library from drawing a new link from that point while the user moves the connection instead.
-        /// </summary>
-        private PortModel? pressedPort;
-
-        /// <summary>How far a copy of a card is put from the card it copies.</summary>
-        private const double CopyOffset = 40;
-
-        /// <summary>How far a pasted element is put from the middle of the view.</summary>
-        private const double PasteOffset = 24;
-
-        /// <summary>How far from an end of a connection the pointer has to be pressed to take that end.</summary>
-        private const double LinkEndGrabRadius = 26;
-
-        /// <summary>Distance within which a moving end of a connection takes a connection point of a card.</summary>
-        private const double LinkEndSnapRadius = 60;
-
-        /// <summary>How far the pointer moves before a press on a connection counts as a drag of its end.</summary>
-        private const double LinkEndDragThreshold = 4;
-
-        /// <summary>Validation messages per activity (key = the model object that produced the error).</summary>
-        private readonly Dictionary<object, List<string>> validationErrors = new();
-
-        /// <summary>Elements that hold validation messages, in themselves or in a nested element.</summary>
-        private readonly HashSet<object> elementsWithErrors = new(ReferenceEqualityComparer.Instance);
-
-        private bool isDirty;
-
-        /// <summary>Steps the user can go back and forward through with the undo and redo commands.</summary>
-        private readonly WorkflowHistory history = new();
-
-        /// <summary>Element the copy command put on the clipboard, kept as the activity it was copied as.</summary>
-        private System.Activities.Activity? clipboard;
-
-        /// <summary>Set when the ports have to be measured again after the next render.</summary>
-        private bool portGeometryDirty;
 
         /// <summary>Set when an opened path was laid out before the diagram viewport was measured.</summary>
         private bool pendingInitialLayout;
@@ -160,51 +83,8 @@ namespace Blazor.WorkflowEditor {
 
         public int LinkCount => designer.Links.Count;
 
-        public ToolBoxItem? DraggedToolboxItem { get; set; }
-
-        /// <summary>
-        /// Node that should receive the next dropped activity (for example an If branch region).
-        /// Null means the currently opened container. Cleared after the next add.
-        /// </summary>
-        public DefaultNode? DropTarget { get; set; }
-
-        /// <summary>
-        /// Slot that should receive the next dropped activity (the branch region of an activity that holds one
-        /// Activity per branch). Cleared after the next add. Takes precedence over <see cref="DropTarget"/>.
-        /// </summary>
-        public IActivityHolder? DropSlot { get; set; }
-
-        /// <summary>
-        /// Index a new element takes in the column of the opened stack container (Sequence) when it is dropped
-        /// at the current pointer place. Null while no stack is opened or the pointer is over another surface.
-        /// Set while an activity is dragged over the canvas, so the column can show where the element lands.
-        /// </summary>
-        public int? DropInsertIndex { get; private set; }
-
-        /// <summary>
-        /// Card the user drags with the mouse, or null. A card can be dragged when another card draws it
-        /// inside itself (a branch child, a card of an inline list) or when the opened ordered container draws
-        /// it in its column; the card keeps the activity it shows and the drop only changes what draws it.
-        /// </summary>
-        public DefaultNode? DraggedCard { get; private set; }
-
         /// <summary>Raised when the workflow model changed (used to re-run validation).</summary>
         public event Action? ModelChanged;
-
-        /// <summary>Raised when the unsaved-changes flag changes.</summary>
-        public event Action? DirtyChanged;
-
-        /// <summary>Raised when an undo or a redo becomes available or unavailable.</summary>
-        public event Action? HistoryChanged;
-
-        /// <summary>True when the schema contains changes that are not saved to XAML yet.</summary>
-        public bool IsDirty => isDirty;
-
-        /// <summary>Whether an edit can be taken back.</summary>
-        public bool CanUndo => history.CanUndo;
-
-        /// <summary>Whether the edit an undo took back can be applied again.</summary>
-        public bool CanRedo => history.CanRedo;
 
         /// <summary>The graph container currently opened in the editor, if any (Flowchart, StateMachine).</summary>
         public IGraphContainer? OpenedGraph => currentGraphContainer;
@@ -222,45 +102,6 @@ namespace Blazor.WorkflowEditor {
         public bool IsRootCanvas => Path.Count == 0 || IsRootPath;
 
         /// <summary>
-        /// What the current canvas asks for, or null when it asks for nothing: every surface but a Flowchart is
-        /// started by its first element, so it asks for that element only while it holds none, and a Flowchart
-        /// asks for its start node until one is chosen.
-        /// </summary>
-        public string? StartHint {
-            get {
-                if (IsRootCanvas)
-                    return activityBuilder?.Implementation == null ? "Drop the first activity here" : null;
-
-                if (Path.LastOrDefault()?.Reference?.Node is not { } container)
-                    return "Drop the first activity here";
-
-                //A container that holds nothing asks for its first element exactly like the empty root does; a
-                //Flowchart also asks for the start node while it is not chosen yet, and the START badge of the
-                //canvas is what re-binds it.
-                return container switch {
-                    FlowchartNode { Count: 0 } => "Add a node to create the flowchart start",
-                    FlowchartNode flowchart => flowchart.StartElement == null ? "Drag START onto the node that runs first" : null,
-                    _ => container.EmptyHint
-                };
-            }
-        }
-
-        /// <summary>
-        /// Card that carries the start badge of the opened container, or null when the surface marks no start
-        /// element. Only a Flowchart does: its start node is a choice of the user, while every other surface —
-        /// the root, a `Sequence`, a `StateMachine` — is started by its first element and needs no mark.
-        /// </summary>
-        public DefaultNode? StartBadgeNode {
-            get {
-                if (Path.LastOrDefault()?.Reference?.Node is not FlowchartNode flowchart
-                    || flowchart.StartElement is not { } element)
-                    return null;
-
-                return items.FirstOrDefault(p => ReferenceEquals(p.Element, element))?.Node;
-            }
-        }
-
-        /// <summary>
         /// Card the START drag of the opened Flowchart points at, or null. It is highlighted as the place the
         /// start node lands, exactly like a drop target of an activity.
         /// </summary>
@@ -268,61 +109,6 @@ namespace Blazor.WorkflowEditor {
 
         /// <summary>True while the user points the START badge of the opened Flowchart at another card.</summary>
         public bool IsRebindingStart { get; private set; }
-
-        /// <summary>
-        /// Takes the START badge of the opened Flowchart: the next card the drag points at becomes the start
-        /// node, so the first activity of the flowchart is re-bound without leaving the canvas.
-        /// </summary>
-        public void BeginStartRebind() {
-            if (OpenedGraph is not FlowchartNode)
-                return;
-
-            IsRebindingStart = true;
-            StartDropTarget = null;
-            updateState();
-        }
-
-        /// <summary>Card the START drag currently points at; null clears the highlight.</summary>
-        public void HoverStartTarget(DefaultNode? node) {
-            if (!IsRebindingStart || ReferenceEquals(StartDropTarget, node))
-                return;
-
-            StartDropTarget = node;
-            updateState();
-        }
-
-        /// <summary>Ends the START drag, whether or not the badge was dropped on a card.</summary>
-        public void EndStartRebind() {
-            if (!IsRebindingStart && StartDropTarget == null)
-                return;
-
-            IsRebindingStart = false;
-            StartDropTarget = null;
-            updateState();
-        }
-
-        /// <summary>
-        /// Makes the card the START badge was dropped on the start of the opened Flowchart. Returns false when
-        /// no drag was running or the card is not a node of that flowchart (or already starts it).
-        /// </summary>
-        public bool RebindStart(DefaultNode node) {
-            var flowchart = IsRebindingStart ? OpenedGraph as FlowchartNode : null;
-            if (flowchart == null) {
-                EndStartRebind();
-                return false;
-            }
-
-            IsRebindingStart = false;
-            StartDropTarget = null;
-
-            //Setting the start notifies the view, which also drops the highlight; the same card leaves it to a
-            //plain refresh.
-            var changed = flowchart.SetStartElement(node.Element);
-            if (!changed)
-                updateState();
-
-            return changed;
-        }
 
         public Service(BlazorDiagram designer, Action updateState) {
             this.designer = designer;
@@ -367,66 +153,6 @@ namespace Blazor.WorkflowEditor {
             this.designer.Links.Removed -= linksRemoved;
 
             GC.SuppressFinalize(this);
-        }
-
-        /// <summary>
-        /// True when the ports have to be measured again before the next frame is painted.
-        /// </summary>
-        public bool PortGeometryDirty => portGeometryDirty;
-
-        /// <summary>
-        /// Asks for a port re-measurement. The measure itself is deferred to <see cref="RefreshPortGeometry"/>
-        /// because the library reads the port rectangles from the DOM: doing it right away would capture the
-        /// layout of the *previous* frame (the nodes were just re-arranged) and the port would stay at a stale
-        /// position, which is what makes links look detached from the node borders.
-        /// </summary>
-        private void requestPortGeometryRefresh() {
-            if (portGeometryDirty)
-                return;
-
-            portGeometryDirty = true;
-            updateState();
-        }
-
-        /// <summary>
-        /// Recomputes the port rectangles and the link routes of every displayed node. Ports are placed from
-        /// the node box (see <see cref="DefaultNode.UpdatePortGeometry"/>) instead of the DOM measurement of
-        /// the library, so a node that was moved, expanded or resized keeps its links attached.
-        /// </summary>
-        public void RefreshPortGeometry() {
-            portGeometryDirty = false;
-
-            foreach (var item in items.Where(i => i.Node != null)) {
-                //A card of the column of an ordered container has no ports and no connections to refresh.
-                if (item.Node.IsStackChild || !IsDisplayed(item.Node))
-                    continue;
-
-                item.Node.UpdatePortGeometry();
-            }
-
-            foreach (var item in items.Where(i => i.Node != null)) {
-                if (!item.Node.IsStackChild)
-                    item.Node.RefreshLinks();
-            }
-
-            //A card that grew (an expanded node, a branch holding an activity) is laid out again so it does not
-            //overlap the next one; the layout only moves nodes it placed itself.
-            Path.LastOrDefault()?.Reference?.Node.RelayoutChildren();
-
-            updateState();
-        }
-
-        private void onContainerChanged() {
-            CompletePendingInitialLayout();
-            requestPortGeometryRefresh();
-        }
-
-        /// <summary>Re-measures the ports and rebuilds the link routes after the node card changed its size.</summary>
-        private void onNodeSizeChanged(NodeModel model) {
-            if (model is not DefaultNode)
-                return;
-
-            requestPortGeometryRefresh();
         }
 
         /// <summary>Delete removes the selected connections or the selected nodes.</summary>
@@ -497,107 +223,6 @@ namespace Blazor.WorkflowEditor {
             notifyModelChanged();
         }
 
-        public void Delete(Activity.DefaultNode node) {
-            var item = getById(node.Id);
-            if (item is null)
-                return;
-
-            RemoveAllLinks(node);
-            selectedLinks.RemoveAll(l => l.Item1 == item || l.Item2 == item);
-            //The port a connection was drawn from is remembered per pair of cards; a card that is gone keeps
-            //no such choice.
-            foreach (var key in linkPlaces.Keys.Where(k => k.from == item || k.to == item).ToList())
-                linkPlaces.Remove(key);
-
-            designer.Nodes.Remove(node);
-
-            //A branch child belongs to the card that renders it, not to the opened container.
-            if (node.EmbeddedOwner is { } owner)
-                owner.RemoveElement(item.Element);
-            else
-                Path.LastOrDefault()?.Reference?.Node?.RemoveElement(item.Element);
-
-            removeEmbeddedDescendants(node);
-
-            selectedItems.Remove(item);
-            items.Remove(item);
-            notifyModelChanged();
-            updateState();
-        }
-
-        /// <summary>
-        /// Adds a copy of the selected element right behind it, in the container that already holds it, and
-        /// selects the copy: the card the user selected last is the one copied, and the copy takes the selection
-        /// over. Nothing is added without a selection, by a place that holds a single element already — the root
-        /// of the workflow, the branch of a card — or by an element whose card holds no activity of its own
-        /// (a `FlowDecision`, a `FlowSwitch<T>`, a `State`).
-        /// </summary>
-        public bool DuplicateSelected() {
-            if (selectedItems.Count == 0)
-                return false;
-
-            var (hasAdded, copy) = copyBehind(selectedItems[^1]);
-            if (!hasAdded)
-                return false;
-
-            //The copy is the card the editor goes on with, so the cards selected before it are dropped.
-            clearSelection();
-            Select(copy.Node);
-            updateState();
-            return true;
-        }
-
-        /// <summary>
-        /// Copies the element the selected card shows, so that it can be pasted into another container. The card
-        /// selected last is the one copied, exactly like the copy command.
-        /// </summary>
-        public bool CopySelected() {
-            if (selectedItems.Count == 0)
-                return false;
-
-            if (activityOf(selectedItems[^1]) is not { } activity)
-                return false;
-
-            clipboard = activity;
-            return true;
-        }
-
-        /// <summary>
-        /// Adds the copied element to the opened container and selects it. The element stays in the clipboard, so
-        /// it can be pasted more than once, and every paste is a copy of its own. Nothing is added without a
-        /// clipboard, or when the opened container does not take the element (the root of the workflow holds one
-        /// activity, and a container of another kind does not hold it at all).
-        /// </summary>
-        public bool PasteCopied() {
-            if (clipboard is not { } copied)
-                return false;
-
-            var target = Path.LastOrDefault()?.Reference?.Node;
-            var elementType = copied.GetType();
-            if (target == null || !target.CanAdd(elementType.IsGenericType ? elementType.GetGenericTypeDefinition() : elementType))
-                return false;
-
-            if (cloneActivity(copied) is not { } copy)
-                return false;
-
-            //A paste has no pointer to land on, so a card of a graph surface goes in the middle of what the user
-            //sees; a container that lays out its children gives it a place of its own.
-            var position = VisibleViewport is { } viewport
-                ? new Diagrams.Core.Geometry.Point(
-                    viewport.Left + (viewport.Width / 2) + PasteOffset,
-                    viewport.Top + (viewport.Height / 2) + PasteOffset)
-                : null;
-
-            var (hasAdded, placed) = placeActivity(copy, existing: null, existingOwner: null, initialPosition: position);
-            if (!hasAdded)
-                return false;
-
-            clearSelection();
-            Select(placed.Node);
-            updateState();
-            return true;
-        }
-
         /// <summary>
         /// Puts a copy of a card right behind it, in the place that draws it: the surface of the opened container
         /// draws the copy as a card of its own, while a list drawn inside another card draws it inline, exactly
@@ -643,32 +268,6 @@ namespace Blazor.WorkflowEditor {
             var placed = placeActivity(copy, existing: null, existingOwner: null, initialPosition: position);
             resetStackInteraction();
             return placed;
-        }
-
-        /// <summary>Whether a card holds an element as one of the branches it draws, which hold one element each.</summary>
-        private static bool holdsAsSlot(DefaultNode owner, object element) =>
-            owner.Slots.Any(slot => ReferenceEquals(slot.Held, element));
-
-        /// <summary>
-        /// A copy of the activity a card shows: the element of the card when it is an Activity itself, or the
-        /// activity a graph surface wrapped into a node of its own (the step a `Flowchart` runs holds one). An
-        /// element of any other kind — a decision, a switch, a state — has no schema of its own, so it is not
-        /// copied, and neither are the connections of the card it was made from: a copy joins nothing.
-        /// </summary>
-        private static System.Activities.Activity? cloneActivityOf(ActivityDesignerPair card) =>
-            activityOf(card) is { } activity ? cloneActivity(activity) : null;
-
-        /// <summary>The activity a card shows, or null when the card holds an element that is not an activity.</summary>
-        private static System.Activities.Activity? activityOf(ActivityDesignerPair card) =>
-            card.Element is System.Activities.Activity element ? element : card.Activity;
-
-        /// <summary>
-        /// A copy of an activity: it is written as a schema of its own and read back, so the copy carries the
-        /// arguments and the variables of the original and shares nothing with it.
-        /// </summary>
-        private static System.Activities.Activity? cloneActivity(System.Activities.Activity activity) {
-            var xaml = WorkflowXamlSerializer.SaveBuilder(new ActivityBuilder { Implementation = activity });
-            return WorkflowXamlSerializer.LoadBuilder(xaml).Implementation;
         }
 
         /// <summary>
@@ -792,43 +391,6 @@ namespace Blazor.WorkflowEditor {
             return (true, result);
         }
 
-        /// <summary>
-        /// Marks a card as drawn inside the card of <paramref name="owner"/> instead of by a surface of its own,
-        /// so a card taken out of the column of an opened container leaves the canvas.
-        /// </summary>
-        private void adoptEmbedded(DefaultNode node, DefaultNode owner) {
-            node.IsEmbedded = true;
-            node.EmbeddedOwner = owner;
-            node.IsStackChild = false;
-            designer.Nodes.Remove(node);
-        }
-
-        /// <summary>
-        /// Marks a card as drawn by the surface of the opened container, so a card that comes out of a branch or
-        /// an inline list appears on the canvas.
-        /// </summary>
-        private void adoptSurface(DefaultNode node) {
-            node.IsEmbedded = false;
-            node.EmbeddedOwner = null;
-            node.IsStackChild = false;
-
-            if (!designer.Nodes.Contains(node))
-                designer.Nodes.Add(node);
-        }
-
-        /// <summary>Takes a card out of whatever draws it, so that the target can take it.</summary>
-        private void detachFromOwner(ActivityDesignerPair? card, DefaultNode? owner) {
-            if (card == null || owner == null)
-                return;
-
-            owner.RemoveElement(card.Element);
-            card.Node.IsStackChild = false;
-        }
-
-        /// <summary>Whether a card is the target itself, or one the target draws, which would close a cycle.</summary>
-        private static bool wouldCarryItself(DefaultNode target, DefaultNode card) =>
-            ReferenceEquals(target, card) || isCarriedBy(target, card);
-
         public ActivityBuilder GetActivityBuilder() {
             return this.activityBuilder;
         }
@@ -848,146 +410,6 @@ namespace Blazor.WorkflowEditor {
             isDirty = true;
             DirtyChanged?.Invoke();
         }
-
-        /// <summary>Clears the unsaved-changes flag (after saving or after loading a schema).</summary>
-        public void MarkSaved() {
-            if (!isDirty)
-                return;
-
-            isDirty = false;
-            DirtyChanged?.Invoke();
-        }
-
-        /// <summary>
-        /// Remembers the schema that was just saved as the state the history compares against, so that undoing
-        /// back to it clears the unsaved-changes flag again instead of asking for a save that was made.
-        /// </summary>
-        public void CaptureSavedState() {
-            if (activityBuilder == null)
-                return;
-
-            var state = WorkflowXamlSerializer.SaveBuilder(activityBuilder);
-            history.Push(state);
-            history.MarkSaved(state);
-            HistoryChanged?.Invoke();
-        }
-
-        /// <summary>
-        /// Sets the unsaved-changes flag without editing the schema: a draft the page restored after a reload was
-        /// never saved, so the editor keeps offering to save it.
-        /// </summary>
-        public void MarkDirty() {
-            if (isDirty)
-                return;
-
-            isDirty = true;
-            DirtyChanged?.Invoke();
-        }
-
-        /// <summary>
-        /// Records the schema as a step of the history. The editor calls it once a burst of edits has settled, so
-        /// a burst is one step instead of one step per keystroke.
-        /// </summary>
-        public void CaptureHistory() {
-            if (activityBuilder == null)
-                return;
-
-            if (history.Push(WorkflowXamlSerializer.SaveBuilder(activityBuilder)))
-                HistoryChanged?.Invoke();
-        }
-
-        /// <summary>
-        /// Starts a new history. A schema that is restored as a draft was never saved, so the history is told that
-        /// it has no saved state to compare against.
-        /// </summary>
-        public void ResetHistory(bool saved = true) {
-            if (activityBuilder == null)
-                return;
-
-            history.Reset(WorkflowXamlSerializer.SaveBuilder(activityBuilder));
-            if (!saved)
-                history.MarkUnsaved();
-
-            HistoryChanged?.Invoke();
-        }
-
-        /// <summary>Takes the last step of the history back, when there is one.</summary>
-        public void Undo() => restoreHistory(history.Undo());
-
-        /// <summary>Applies the step an undo took back, when there is one.</summary>
-        public void Redo() => restoreHistory(history.Redo());
-
-        /// <summary>
-        /// Puts the schema of a step back in place. The step carries the view properties, so cards return to the
-        /// places and notes they had, while the surface goes back to the root of the workflow: the step is opened
-        /// as a schema of its own, and the path belonged to the schema that was left.
-        /// </summary>
-        private void restoreHistory(string? state) {
-            if (state == null)
-                return;
-
-            SetActivityBuilder(WorkflowXamlSerializer.LoadBuilder(state));
-
-            //A step is not necessarily the state the schema was saved in, so the flag follows the history.
-            if (history.IsAtSavedState)
-                MarkSaved();
-            else
-                MarkDirty();
-
-            HistoryChanged?.Invoke();
-        }
-
-        /// <summary>Replaces the per-activity validation messages with the last validation results.</summary>
-        public void SetValidationErrors(System.Activities.Activity? implementation, IEnumerable<System.Activities.Validation.ValidationError> errors) {
-            validationErrors.Clear();
-            foreach (var error in errors) {
-                if (error.Source == null)
-                    continue;
-
-                if (!validationErrors.TryGetValue(error.Source, out var list))
-                    validationErrors[error.Source] = list = new List<string>();
-
-                var message = string.IsNullOrWhiteSpace(error.PropertyName) ? error.Message : $"{error.PropertyName}: {error.Message}";
-                if (!list.Contains(message))
-                    list.Add(message);
-            }
-
-            elementsWithErrors.Clear();
-            if (implementation != null)
-                markElementsWithErrors(implementation, new HashSet<object>(ReferenceEqualityComparer.Instance));
-
-            updateState();
-        }
-
-        /// <summary>
-        /// Marks the elements that hold a validation error, in themselves or in a nested element. A card
-        /// without nodes for its content (a container that is not opened, for example) shows an error this
-        /// way, so a broken element can always be reached from the outside.
-        /// </summary>
-        private bool markElementsWithErrors(object element, HashSet<object> visited) {
-            if (!visited.Add(element))
-                return elementsWithErrors.Contains(element);
-
-            var hasErrors = ErrorCount(element) > 0;
-            foreach (var child in ModelTree.Children(element))
-                if (markElementsWithErrors(child, visited))
-                    hasErrors = true;
-
-            if (hasErrors)
-                elementsWithErrors.Add(element);
-
-            return hasErrors;
-        }
-
-        /// <summary>Validation messages of one model element (an activity, a State, a FlowNode, ...).</summary>
-        public IReadOnlyList<string> ErrorsFor(object? element) =>
-            element != null && validationErrors.TryGetValue(element, out var list) ? list : Array.Empty<string>();
-
-        public int ErrorCount(object? element) => ErrorsFor(element).Count;
-
-        /// <summary>Whether the element itself or anything inside it has validation messages.</summary>
-        public bool HasErrorsInTree(object? element) =>
-            element != null && elementsWithErrors.Contains(element);
 
         public void SetActivityBuilder(ActivityBuilder activityBuilder) {
             resetStackInteraction();
@@ -1094,9 +516,6 @@ namespace Blazor.WorkflowEditor {
         /// <summary>Whether a node is currently shown on the diagram.</summary>
         public bool IsDisplayed(DefaultNode node) => designer.Nodes.Contains(node);
 
-        /// <summary>The graph container currently opened in the editor, if any (Flowchart, StateMachine).</summary>
-        private IGraphContainer? currentGraphContainer => Path.LastOrDefault()?.Reference?.Node as IGraphContainer;
-
         private ActivityDesignerPair? findPair(NodeModel? node) =>
             node == null ? null : items.FirstOrDefault(p => ReferenceEquals(p.Node, node));
 
@@ -1109,96 +528,6 @@ namespace Blazor.WorkflowEditor {
             PortModel port => port.Parent,
             _ => null
         };
-
-        internal void RemoveAllLinks(DefaultNode node) {
-            foreach (var link in designer.Links.OfType<LinkModel>().Where(l => nodeOf(l.Source) == node || nodeOf(l.Target) == node).ToList())
-                removeLink(link);
-        }
-
-        internal LinkModel LinkFromTo(ActivityDesignerPair from, ActivityDesignerPair to, string? label = null,
-            PortAlignment? sourceEdge = null, PortAlignment? targetEdge = null) {
-            //Port anchors: the ports are placed on the node border and the library rebuilds the link geometry
-            //afterwards, so the line follows the node. They are also what the router of the editor needs in order
-            //to build right-angled (Workflow Foundation style) routes.
-            var (sourcePort, targetPort) = linkPorts(from, to, sourceEdge, targetEdge);
-
-            var linkModel = new LinkModel(
-                new SinglePortAnchor(sourcePort),
-                new SinglePortAnchor(targetPort)) {
-                TargetMarker = LinkMarker.Arrow
-            };
-
-            if (!string.IsNullOrWhiteSpace(label))
-                //The name of the branch sits above the line instead of on it, because the commands of the link
-                //are drawn on the line, at the middle of its route.
-                linkModel.AddLabel(label, offset: new Point(0, -LinkLabelOffset));
-
-            addLink(linkModel);
-
-            //A picked link offers its one command, exactly like a picked card: removing it. Removing the link
-            //raises Links.Removed, which translates it into TryDisconnect of the open container; the connection
-            //itself is moved by taking one of its ends on the line, which needs no command of its own.
-            designer.Controls.AddFor(linkModel, ControlsType.OnSelection)
-                .Add(new RemoveLinkControl(new LinkCommandPositionProvider(0)));
-
-            return linkModel;
-        }
-
-        /// <summary>Adds a link without re-entering the user link handlers (the model is already up to date).</summary>
-        private void addLink(LinkModel link) {
-            suppressLinkSync = true;
-            try { designer.Links.Add(link); } finally { suppressLinkSync = false; }
-        }
-
-        /// <summary>Removes a link without re-entering the user link handlers.</summary>
-        private void removeLink(LinkModel link) {
-            suppressLinkSync = true;
-            try { designer.Links.Remove(link); } finally { suppressLinkSync = false; }
-        }
-
-        /// <summary>
-        /// A press on a connection takes the end of it the pointer is nearest to, so that end can be dragged onto
-        /// another connection point; a press that does not move only picks the link, which the library does on
-        /// its own. A press on a connection point that already receives a connection takes the end that arrives
-        /// there, and a press anywhere else on a point starts a new connection, which the library draws.
-        /// </summary>
-        private void pointerDown(Model? model, Diagrams.Core.Events.PointerEventArgs e) {
-            //A press starts a gesture of its own: an end left following the pointer by a release the canvas never
-            //saw goes back to the connection the model keeps, and a point locked for the previous gesture is free
-            //again before this press takes one.
-            releasePressedPort();
-            if (movingLinkEnd != null)
-                CancelLinkEndDrag();
-
-            if (model is PortModel port) {
-                StartLinkEndDragFromPort(port, e.ClientX, e.ClientY);
-                return;
-            }
-
-            if (model is LinkModel link)
-                StartLinkEndDrag(link, e.ClientX, e.ClientY);
-        }
-
-        /// <summary>
-        /// Takes the end of the connection that belongs to a connection point, so a drag started on that point
-        /// detaches the connection from the card instead of drawing one more: the point is what the user grabs to
-        /// put the connection somewhere else. Returns false when no connection belongs there or when the point
-        /// adds connections instead of replacing one, which leaves the press to the library, that draws a new one.
-        /// </summary>
-        public bool StartLinkEndDragFromPort(PortModel port, double clientX, double clientY) {
-            pendingLinkEnd = null;
-            if (attachedLinkOf(port) is not { } attached)
-                return false;
-
-            if (!beginLinkEndDrag(attached.Link, attached.SourceEnd, clientX, clientY))
-                return false;
-
-            //The library would start a new link from the pressed point; it is locked for this gesture, which is
-            //what makes the press take the connection that belongs there instead.
-            port.Locked = true;
-            pressedPort = port;
-            return true;
-        }
 
         /// <summary>
         /// Connection a press on a connection point takes, with the end of it that is moved. A connection that
@@ -1223,302 +552,6 @@ namespace Blazor.WorkflowEditor {
 
             return (outgoing, true);
         }
-
-        /// <summary>Frees the connection point a gesture locked, if any.</summary>
-        private void releasePressedPort() {
-            if (pressedPort == null)
-                return;
-
-            pressedPort.Locked = false;
-            pressedPort = null;
-        }
-
-        /// <summary>
-        /// Takes the end of a connection the pointer was pressed on: a press on the line near one of its ends
-        /// starts with that end, which is what lets the user move a connection by its beginning or by its end
-        /// instead of drawing it again. Returns false when the link does not belong to the container that is open
-        /// or the press is not near an end of it.
-        /// </summary>
-        public bool StartLinkEndDrag(LinkModel link, double clientX, double clientY) {
-            pendingLinkEnd = null;
-            //The end of the link follows the pointer in canvas coordinates, so the canvas has to be measured
-            //before it can be taken.
-            if (designer.Container is null)
-                return false;
-
-            return linkEndAt(link, designer.GetRelativeMousePoint(clientX, clientY)) is { } sourceEnd
-                && beginLinkEndDrag(link, sourceEnd, clientX, clientY);
-        }
-
-        /// <summary>
-        /// Takes one end of a connection, so that end follows the pointer once the press turns into a drag.
-        /// Returns false when the link does not belong to the container that is open.
-        /// </summary>
-        private bool beginLinkEndDrag(LinkModel link, bool sourceEnd, double clientX, double clientY) {
-            pendingLinkEnd = null;
-            var from = findPair(nodeOf(link.Source));
-            var to = findPair(nodeOf(link.Target));
-            if (from == null || to == null || currentGraphContainer == null || designer.Container is null)
-                return false;
-
-            pendingLinkEnd = (link, from, to, sourceEnd,
-                PortPlaceOf(link.Source, PortPlace.Of(from.Node.OutcomingPort)).Edge, clientX, clientY);
-            return true;
-        }
-
-        /// <summary>
-        /// Lets the end of the pressed connection follow the pointer, once the press has turned into a drag.
-        /// Returns false while nothing is pending or the pointer has not moved far enough, so a click on the line
-        /// picks it instead of moving it.
-        /// </summary>
-        public bool DragLinkEnd(double clientX, double clientY) {
-            if (pendingLinkEnd is not { } pending)
-                return false;
-
-            if (Math.Abs(clientX - pending.ClientX) < LinkEndDragThreshold
-                && Math.Abs(clientY - pending.ClientY) < LinkEndDragThreshold)
-                return false;
-
-            pendingLinkEnd = null;
-            var floating = new PositionAnchor(designer.GetRelativeMousePoint(clientX, clientY));
-            moveLinkEnd(pending.Link, pending.SourceEnd, floating);
-            movingLinkEnd = (pending.Link, pending.From, pending.To, pending.SourceEnd, pending.SourceEdge, floating);
-            return true;
-        }
-
-        /// <summary>
-        /// Puts an end of a connection that is following the pointer back on the connection the model keeps,
-        /// which is where it was before the drag: a release the canvas never saw (the pointer left it while the
-        /// end was moving) leaves the end with nothing holding it, and the line is drawn from the model again.
-        /// </summary>
-        public void CancelLinkEndDrag() {
-            if (movingLinkEnd == null && pendingLinkEnd == null)
-                return;
-
-            movingLinkEnd = null;
-            pendingLinkEnd = null;
-            releasePressedPort();
-            currentGraphContainer?.RebuildLinks();
-            updateState();
-        }
-
-        /// <summary>
-        /// Leaves the end of the moving connection on the connection point the pointer was released on: the connection keeps the
-        /// end that did not move and takes that point, and the line is drawn from the model afterwards, so it
-        /// arrives and leaves on the points the user put it between. A drop away from every point, or on a point
-        /// the container refuses (a card into itself), leaves the connection as it was — moving a connection is
-        /// not the way to remove it.
-        /// </summary>
-        public void DropLinkEnd(double clientX, double clientY) {
-            if (movingLinkEnd is not { } moving)
-                return;
-
-            movingLinkEnd = null;
-            //The gesture that took the end of the connection is over, so the point it was taken from is free
-            //again for the next press.
-            releasePressedPort();
-            if (currentGraphContainer is not { } container || designer.Container is null)
-                return;
-
-            //The point the pointer was released on is what counts, and not the place the end was last put: a move
-            //that never reached the handler would otherwise leave the end somewhere the user did not point at.
-            var at = designer.GetRelativeMousePoint(clientX, clientY);
-            var port = findPortNear(at);
-            var pair = port == null ? null : findPair(port.Parent);
-
-            //The end that did not move stays where it is; the other one takes the point it was dropped on, and
-            //the point it leaves from on its own card names the branch when it is the start of the connection.
-            var source = moving.SourceEnd ? pair : moving.From;
-            var end = moving.SourceEnd ? moving.To : pair;
-            var edge = moving.SourceEnd ? port?.Alignment ?? moving.SourceEdge : moving.SourceEdge;
-            if (source == null || end == null) {
-                container.RebuildLinks();
-                updateState();
-                return;
-            }
-
-            var moved = !ReferenceEquals(source, moving.From) || !ReferenceEquals(end, moving.To);
-            container.TryDisconnect(moving.From, moving.To);
-            if (!container.TryConnect(source, end, edge)) {
-                container.TryConnect(moving.From, moving.To, moving.SourceEdge);
-                container.Refresh();
-                updateState();
-                return;
-            }
-
-            //The end that moved keeps the point it was dropped on, so drawing the line again does not send it
-            //back to the point the model of the activity would pick.
-            var dropped = PortPlace.Of(port!);
-            var kept = moving.SourceEnd
-                ? PortPlaceOf(moving.Link.Target, PortPlace.Of(moving.To.Node.IncomingPort))
-                : PortPlaceOf(moving.Link.Source, PortPlace.Of(moving.From.Node.OutcomingPort));
-            linkPlaces.Remove((moving.From, moving.To));
-            //A connection that follows the cards is not given a point: it takes the points the cards ask for, so
-            //the choice is not kept (and the schema is not rewritten with a choice nobody made).
-            if (!DynamicLinks) {
-                linkPlaces[(source, end)] = moving.SourceEnd ? (dropped, kept) : (kept, dropped);
-                savePlaces(source, end);
-            }
-
-            if (moved) {
-                container.Refresh();
-                notifyModelChanged();
-            } else {
-                //The same connection, arriving where the user put the end: nothing changed to report.
-                container.RebuildLinks();
-                updateState();
-            }
-        }
-
-        /// <summary>
-        /// Puts one end of a link on the given anchor, redrawing the line: the library only redraws a link whose
-        /// own port changed, and an end that follows the pointer belongs to no port.
-        /// </summary>
-        private static void moveLinkEnd(LinkModel link, bool sourceEnd, Anchor anchor) {
-            if (sourceEnd)
-                link.SetSource(anchor);
-            else
-                link.SetTarget(anchor);
-
-            link.Refresh();
-            link.RefreshLinks();
-        }
-
-        /// <summary>
-        /// Which end of a link a point of the canvas takes: the source end, the target end, or null when the
-        /// point is not near either of them. The line runs from one end of its route to the other, so the nearer
-        /// end is the one the user reached for.
-        /// </summary>
-        private static bool? linkEndAt(LinkModel link, Point point) {
-            var path = link.PathGeneratorResult?.FullPath;
-            if (path == null || path.Length <= 0)
-                return null;
-
-            var source = path.GetPointAtLength(0);
-            var target = path.GetPointAtLength(path.Length);
-            var toSource = distance(point, source.X, source.Y);
-            var toTarget = distance(point, target.X, target.Y);
-            if (Math.Min(toSource, toTarget) > LinkEndGrabRadius)
-                return null;
-
-            return toSource <= toTarget;
-        }
-
-        /// <summary>Connection point nearest to a point of the canvas, within the radius a moving end snaps in.</summary>
-        private PortModel? findPortNear(Point point) {
-            PortModel? nearest = null;
-            var nearestDistance = LinkEndSnapRadius;
-            foreach (var port in designer.Nodes.SelectMany(node => node.Ports)) {
-                if (port.Locked)
-                    continue;
-
-                var middle = port.MiddlePosition;
-                var away = distance(point, middle.X, middle.Y);
-                if (away <= nearestDistance) {
-                    nearest = port;
-                    nearestDistance = away;
-                }
-            }
-
-            return nearest;
-        }
-
-        private static double distance(Point one, double x, double y) =>
-            Math.Sqrt(Math.Pow(one.X - x, 2) + Math.Pow(one.Y - y, 2));
-
-        /// <summary>
-        /// Follows the pointer with the moving end: the end takes the connection point it points at, and lets go
-        /// of it when the pointer moves away from every point.
-        /// </summary>
-        private void pointerMove(Model? model, Diagrams.Core.Events.PointerEventArgs e) {
-            //An end that follows the pointer belongs to a press: a pointer that moves with no button down has lost
-            //its release, so the end goes back where the model has it instead of following the pointer on its own.
-            if (movingLinkEnd != null && e.Buttons == 0) {
-                CancelLinkEndDrag();
-                return;
-            }
-
-            if (DragLinkEnd(e.ClientX, e.ClientY) || movingLinkEnd is not { } moving)
-                return;
-
-            var point = designer.GetRelativeMousePoint(e.ClientX, e.ClientY);
-            moving.Floating.SetPosition(point);
-            var port = findPortNear(point);
-            moveLinkEnd(moving.Link, moving.SourceEnd,
-                port == null ? moving.Floating : new SinglePortAnchor(port));
-        }
-
-        /// <summary>A link added to the diagram: either an ongoing drag link or a completed one.</summary>
-        private void linksAdded(BaseLinkModel model) {
-            if (suppressLinkSync || model is not LinkModel link)
-                return;
-
-            if (!link.IsAttached) {
-                //Ongoing drag link: it still has a floating end, so wait until the user attaches a target.
-                link.TargetAttached += linkTargetAttached;
-                return;
-            }
-
-            applyOrDropLink(link);
-        }
-
-        private void linkTargetAttached(BaseLinkModel model) {
-            model.TargetAttached -= linkTargetAttached;
-            applyOrDropLink(model);
-        }
-
-        /// <summary>Translates a finished link into a model connection of the open graph container.</summary>
-        private void applyOrDropLink(BaseLinkModel model) {
-            if (suppressLinkSync || model is not LinkModel link)
-                return;
-
-            var from = findPair(nodeOf(link.Source));
-            var to = findPair(nodeOf(link.Target));
-            if (from == null || to == null) {
-                //Not a valid connection for the current container: drop the drawn link.
-                removeLink(link);
-                updateState();
-                return;
-            }
-
-            //The edge the link was drawn from names the branch the connection replaces (True/False of a
-            //decision, the default branch of a switch), so a branch is moved by drawing it again instead of
-            //one more branch being added next to it.
-            var sourcePort = PortPlaceOf(link.Source, PortPlace.Of(from.Node.OutcomingPort));
-            if (currentGraphContainer is { } graph && graph.TryConnect(from, to, sourcePort.Edge)) {
-                //Keep the points the user dropped the ends on: the link is rebuilt from the model afterwards.
-                if (!DynamicLinks) {
-                    linkPlaces[(from, to)] = (sourcePort, PortPlaceOf(link.Target, PortPlace.Of(to.Node.IncomingPort)));
-                    savePlaces(from, to);
-                }
-                graph.Refresh();
-                notifyModelChanged();
-                return;
-            }
-
-            //Not a valid connection for the current container: drop the drawn link, and put back the connection
-            //the drag took the end of.
-            removeLink(link);
-            updateState();
-        }
-
-        /// <summary>A link removed by the user: remove the matching model connection.</summary>
-        private void linksRemoved(BaseLinkModel model) {
-            if (suppressLinkSync || model is not LinkModel link)
-                return;
-
-            var from = findPair(nodeOf(link.Source));
-            var to = findPair(nodeOf(link.Target));
-            if (from != null && to != null && currentGraphContainer is { } graph && graph.TryDisconnect(from, to)) {
-                linkPlaces.Remove((from, to));
-                graph.Refresh();
-                notifyModelChanged();
-            }
-        }
-
-        /// <summary>Place of the point a link end is anchored on, or the fallback one.</summary>
-        private static PortPlace PortPlaceOf(Anchor? anchor, PortPlace fallback) =>
-            anchor is SinglePortAnchor { Port: { } port } ? PortPlace.Of(port) : fallback;
 
         /// <summary>
         /// Ports the ends of a link take on the two cards it joins. A connection that follows the cards takes the
@@ -1589,90 +622,6 @@ namespace Blazor.WorkflowEditor {
                 to.PortTowards(targetCanonical, from, taken) ?? to.IncomingPort);
         }
 
-        /// <summary>What a route between two connection points costs, or null when none can be laid out.</summary>
-        private double? endsCost(PortModel source, PortModel target) =>
-            WorkflowRouter.MeasureRoute(designer, source, target)?.Cost;
-
-        /// <summary>
-        /// Gives the connections of the open surface the points the cards now ask for: a card that is moved takes
-        /// the ends of its connections with it, so the lines keep leaving and arriving on the edges that face the
-        /// cards they join, with as few bends as the two cards allow. A connection that already holds the point it
-        /// calls for is left untouched.
-        /// <para>
-        /// <paramref name="movedCard"/> is the card the surface moved, when the pass follows a card. Only the
-        /// connections whose band a route between their cards is searched in can meet it: every cost of the rest
-        /// is what it was when their ends were picked, so they are left alone instead of being measured again —
-        /// a surface of many cards would otherwise pay for every connection on each frame of the drag.
-        /// </para>
-        /// </summary>
-        internal void FollowCards(DefaultNode? movedCard = null) {
-            if (!DynamicLinks || currentGraphContainer is not { } graph || designer.Container == null)
-                return;
-
-            //A gesture that holds an end of a connection decides where that end is, so nothing moves it meanwhile.
-            if (movingLinkEnd != null || pendingLinkEnd != null || pressedPort != null)
-                return;
-
-            var movedBounds = movedCard?.GetBounds();
-
-            foreach (var link in designer.Links.OfType<LinkModel>().ToList()) {
-                if (nodeOf(link.Source) is not DefaultNode source || nodeOf(link.Target) is not DefaultNode target)
-                    continue;
-
-                if (movedBounds is { } bounds && !WorkflowRouter.MeetsCorridor(source, target, bounds))
-                    continue;
-
-                if (findPair(source) is not { } from || findPair(target) is not { } to)
-                    continue;
-
-                //The edge a connection leaves from is the one the model of the activity asks for — the side that
-                //names a branch of a decision — so the branch stays where its name is drawn.
-                var kept = link.SourcePort() is { } keptSource && link.TargetPort() is { } keptTarget
-                    ? (Source: keptSource, Target: keptTarget)
-                    : ((PortModel Source, PortModel Target)?)null;
-                var ends = bestEnds(source, target, graph.SourceEdge(from, to),
-                    target.IncomingPort.Alignment, link, kept);
-
-                if (!ReferenceEquals(ends.Source, link.SourcePort()))
-                    link.SetSource(new SinglePortAnchor(ends.Source));
-
-                if (!ReferenceEquals(ends.Target, link.TargetPort()))
-                    link.SetTarget(new SinglePortAnchor(ends.Target));
-            }
-        }
-
-        /// <summary>A card was moved: the connections that follow the cards take the points the cards now ask for.</summary>
-        private void onNodeMoved(NodeModel model) {
-            if (model is DefaultNode card)
-                FollowCards(card);
-        }
-
-        /// <summary>
-        /// Port to anchor a link end on: the point of the card the connection was put on, when the card still
-        /// offers it. A card whose edges changed since the schema was saved takes the point of that edge that
-        /// lies nearest to it instead.
-        /// </summary>
-        private PortModel PortOf(DefaultNode node, PortPlace place, PortModel fallback, bool source) =>
-            node.PortAt(place) ?? PortOnEdge(node, place.Edge, fallback, source);
-
-        /// <summary>
-        /// Port of an edge a link end takes when the model of the activity asks for that edge: the ends that
-        /// share one take its points in order, so two connections leaving through the same side do not cover
-        /// each other. A card that offers no such edge keeps the canonical port of that end of a link (the right
-        /// edge for its start, the left one for its end).
-        /// </summary>
-        private PortModel PortOnEdge(DefaultNode node, PortAlignment edge, PortModel fallback, bool source) =>
-            node.Ports.Any(p => p.Alignment == edge)
-                ? node.PortOn(edge, endsOn(node, edge, source))
-                : fallback;
-
-        /// <summary>Connections already anchored on an end of the card, which is how the points of an edge are shared out.</summary>
-        private int endsOn(DefaultNode node, PortAlignment edge, bool source) =>
-            designer.Links.OfType<LinkModel>().Count(link => portOf(link, source) is { } port
-                && ReferenceEquals(port.Parent, node) && port.Alignment == edge);
-
-        private static PortModel? portOf(LinkModel link, bool source) => source ? link.SourcePort() : link.TargetPort();
-
         /// <summary>
         /// Edges a user picked for a connection of the open container, kept with the element the connection
         /// leaves from so that they outlive the schema: a line that was dragged onto another edge of a card is
@@ -1683,57 +632,12 @@ namespace Blazor.WorkflowEditor {
                 ? Blazor.WorkflowEditor.Activity.State.BranchPorts.Get(from.Element, key)
                 : null;
 
-        /// <summary>Keeps the points of a connection the user moved with the element the connection leaves from.</summary>
-        private void savePlaces(ActivityDesignerPair from, ActivityDesignerPair to) {
-            if (currentGraphContainer is not { } graph || graph.BranchKey(from, to) is not { } key)
-                return;
-
-            if (linkPlaces.TryGetValue((from, to), out var places))
-                Blazor.WorkflowEditor.Activity.State.BranchPorts.Set(from.Element, key, places.source, places.target);
-        }
-
         public ActivityDesignerPair? FindPair(object element) => this.items.FirstOrDefault(p => ReferenceEquals(p.Element, element));
         internal ActivityDesignerPair GetPair(System.Activities.Activity source) => this.items.First(p => p.Activity == source);
         internal ActivityDesignerPair GetPair(DefaultNode node) => this.items.First(p => p.Node == node);
 
         /// <summary>Control component registered for the node, used to render a branch child inside its owner card.</summary>
         public Type? GetControlType(DefaultNode node) => designer.GetComponent(node);
-
-        /// <summary>
-        /// Selects a node from the UI. A branch child is rendered inside another card instead of the diagram,
-        /// so the diagram selection never picks it up.
-        /// </summary>
-        public void Select(DefaultNode node) {
-            var item = getById(node.Id);
-            if (item is null)
-                return;
-
-            designer.SelectModel(node, true);
-
-            if (!item.Node.IsEmbedded)
-                clearEmbeddedSelection();
-
-            if (!selectedItems.Contains(item))
-                selectedItems.Add(item);
-
-            updateState();
-        }
-
-        /// <summary>Drops the whole selection, so that the card selected next is the only one selected.</summary>
-        private void clearSelection() {
-            foreach (var item in selectedItems.ToList())
-                designer.UnselectModel(item.Node);
-
-            selectedItems.Clear();
-        }
-
-        /// <summary>Clears the selection of the branch children, which the diagram does not track.</summary>
-        private void clearEmbeddedSelection() {
-            foreach (var item in selectedItems.Where(i => i.Node.IsEmbedded).ToList()) {
-                designer.UnselectModel(item.Node);
-                selectedItems.Remove(item);
-            }
-        }
 
         private ActivityDesignerPair? getById(string id) => this.items.FirstOrDefault(p => p.Node.Id == id);
 
@@ -1815,271 +719,8 @@ namespace Blazor.WorkflowEditor {
             }
         }
 
-        /// <summary>Forgets the card drag and the drop place an interaction showed.</summary>
-        private void resetStackInteraction() {
-            DraggedCard = null;
-            DropInsertIndex = null;
-        }
-
-        /// <summary>The displayed children of a stack container, in model order.</summary>
-        private IEnumerable<ActivityDesignerPair> stackChildren(IStackContainer stack) =>
-            items.Where(p => p.Node.IsStackChild && stack.IndexOf(p.Element) >= 0)
-                .OrderBy(p => stack.IndexOf(p.Element));
-
         /// <summary>Index of a card in the column of the opened ordered container, or -1.</summary>
         public int StackIndexOf(DefaultNode node) => OpenedStack?.IndexOf(node.Element) ?? -1;
-
-        /// <summary>
-        /// Place a new element dropped at the given diagram point takes in the opened stack container: before the
-        /// first card whose middle is below the point, or at the end of the column. Null when no ordered
-        /// container is opened, which is also how the column learns that the caret has to disappear. The place
-        /// counts every card of the column, so it is the same number the caret is drawn from; a card that is
-        /// dragged inside the column is taken out of it first, which is why the drop shifts the place by one.
-        /// </summary>
-        public void UpdateDropInsertIndex(Diagrams.Core.Geometry.Point position) {
-            //A card that owns the drop (a branch region, or the list a container draws inside itself) decides the
-            //place itself, so the surface must not overwrite it with a place of its own.
-            if (DropTarget != null || DropSlot != null)
-                return;
-
-            var index = OpenedStack is { } stack
-                ? stackChildren(stack).Count(p => position.Y >= p.Node.CenterPosition.Y)
-                : (int?)null;
-
-            if (DropInsertIndex == index)
-                return;
-
-            DropInsertIndex = index;
-            updateState();
-        }
-
-        /// <summary>Shows the place a dropped element takes in the list of an ordered container.</summary>
-        public void SetDropInsertIndex(int index) {
-            if (DropInsertIndex == index)
-                return;
-
-            DropInsertIndex = index;
-            updateState();
-        }
-
-        /// <summary>Forgets the place the column showed for a drop, once the drag or the drop is over.</summary>
-        public void ClearDropInsertIndex() {
-            if (DropInsertIndex is null)
-                return;
-
-            DropInsertIndex = null;
-            updateState();
-        }
-
-        /// <summary>Whether the column draws the place of a new element above the given card.</summary>
-        public bool StackCaretAbove(DefaultNode node) {
-            if (DropTarget != null || DropSlot != null)
-                return false;
-
-            var index = StackIndexOf(node);
-            if (index < 0)
-                return false;
-
-            return DropInsertIndex == index;
-        }
-
-        /// <summary>Whether the column draws the place of a new element below the given card.</summary>
-        public bool StackCaretBelow(DefaultNode node) {
-            if (DropTarget != null || DropSlot != null)
-                return false;
-
-            var index = StackIndexOf(node);
-            if (index < 0 || index != StackCount - 1)
-                return false;
-
-            return DropInsertIndex == StackCount;
-        }
-
-        /// <summary>Moves a card of an ordered container one place up or down.</summary>
-        public bool MoveInStack(DefaultNode node, int delta) {
-            if (stackOf(node) is not { } stack)
-                return false;
-
-            var index = stack.IndexOf(node.Element);
-            if (index < 0)
-                return false;
-
-            var target = index + delta;
-            if (target < 0 || target >= stack.Count)
-                return false;
-
-            stack.MoveChild(index, target);
-            updateState();
-            return true;
-        }
-
-        /// <summary>
-        /// Ordered container a card belongs to: the card that draws it inside itself (the list of a container
-        /// shown on a surface), or the container that is opened and draws it in its column.
-        /// </summary>
-        private IStackContainer? stackOf(DefaultNode node) {
-            if (node.EmbeddedOwner is IStackContainer owner)
-                return owner;
-
-            return node.IsStackChild ? Path.LastOrDefault()?.Reference?.Node as IStackContainer : null;
-        }
-
-        /// <summary>Whether a card is drawn inside the card of another one, anywhere below it.</summary>
-        private static bool isCarriedBy(DefaultNode node, DefaultNode ancestor) {
-            for (var owner = node.EmbeddedOwner; owner != null; owner = owner.EmbeddedOwner) {
-                if (ReferenceEquals(owner, ancestor))
-                    return true;
-            }
-
-            return false;
-        }
-
-        /// <summary>
-        /// Whether a card can be dragged as a card: one that a card draws inside itself (a branch child, a card
-        /// of an inline list) or one the opened ordered container draws in its column. Every other card is drawn
-        /// by a surface of its own, which is what the user drags.
-        /// </summary>
-        public bool CanDragCard(DefaultNode node) =>
-            node.IsEmbedded || StackIndexOf(node) >= 0;
-
-        /// <summary>
-        /// Starts dragging a card the user picked up. The card keeps the activity it shows; the drop only
-        /// changes what draws it (a list, a branch region, the column of the opened container).
-        /// </summary>
-        public void StartCardDrag(DefaultNode node) {
-            if (!CanDragCard(node))
-                return;
-
-            DraggedCard = node;
-            DropTarget = null;
-            DropSlot = null;
-
-            //A new drag shows a place of its own, so the one the last interaction left is forgotten.
-            ClearDropInsertIndex();
-        }
-
-        /// <summary>Ends a card drag, whether or not the card was dropped on a place.</summary>
-        public void EndCardDrag() {
-            if (DraggedCard is null)
-                return;
-
-            DraggedCard = null;
-
-            //A card drag has no toolbox item behind it, so nothing else needs the place the drag showed:
-            //forgetting it here keeps the caret of a finished drag from staying on a target.
-            DropTarget = null;
-            DropSlot = null;
-            ClearDropInsertIndex();
-        }
-
-        /// <summary>
-        /// Card that draws the given one: the node whose inline list or branch region holds it, or the ordered
-        /// container that is opened and draws it in its column. Null when nothing draws it.
-        /// </summary>
-        private DefaultNode? ownerOf(DefaultNode card) {
-            if (card.EmbeddedOwner is { } owner)
-                return owner;
-
-            return StackIndexOf(card) >= 0 ? OpenedStack as DefaultNode : null;
-        }
-
-        /// <summary>
-        /// Moves the card the user drags to the place the drag showed, and ends the drag: a branch region or a
-        /// container that takes the activity, the list of a card (which the list itself handles through
-        /// <see cref="MoveInlineChild"/>), or the column of the opened ordered container. The card leaves what
-        /// draws it and the target draws it from then on. A drop that points at no place leaves the schema as
-        /// it is.
-        /// </summary>
-        public bool MoveDraggedActivity(Diagrams.Core.Geometry.Point? initialPosition = null) {
-            if (DraggedCard is null)
-                return false;
-
-            var moved = moveDraggedCard(initialPosition);
-
-            //The drag is over either way, so the place it showed is forgotten.
-            DraggedCard = null;
-            DropTarget = null;
-            DropSlot = null;
-            ClearDropInsertIndex();
-
-            return moved;
-        }
-
-        private bool moveDraggedCard(Diagrams.Core.Geometry.Point? initialPosition) {
-            if (DraggedCard is not { } dragged)
-                return false;
-
-            if (FindPair(dragged.Element) is not { } card || ownerOf(dragged) is not { } owner)
-                return false;
-
-            //The drag has to point at a card that takes the activity: a drop anywhere else leaves the card where
-            //it is instead of placing it in the opened container by accident. The column of the opened ordered
-            //container is the exception, because the place it showed (DropInsertIndex) is a target of its own.
-            if (DropTarget is null && DropSlot is null && DropInsertIndex is null)
-                return false;
-
-            return placeActivity(dragged.Element, card, owner, initialPosition).hasAdded;
-        }
-
-        /// <summary>
-        /// Makes a card the drop target and shows the place a dropped element takes in its inline list: the gap
-        /// before the child at the given index. Used by the card that draws the list, and by its gaps.
-        /// </summary>
-        public void SetInlineDropTarget(DefaultNode owner, int index) {
-            DropTarget = owner;
-            DropSlot = null;
-            SetDropInsertIndex(index);
-        }
-
-        /// <summary>
-        /// Moves a card to the place a drop showed on the inline list of <paramref name="owner"/>: the gap
-        /// before the child at the given index. The gap counts the children of the list that took the drop as
-        /// they are now, so a card of that same list is taken out of it first, while a card that another list,
-        /// branch or column draws leaves it and is inserted at the gap.
-        /// </summary>
-        public bool MoveInlineChild(DefaultNode owner, DefaultNode dragged, int gapIndex) {
-            if (owner is not IStackContainer target)
-                return false;
-
-            //A container cannot hold itself: a card dropped on its own list, or on the list of a container it
-            //carries, would close a cycle in the model.
-            if (ReferenceEquals(owner, dragged) || isCarriedBy(owner, dragged))
-                return false;
-
-            if (FindPair(dragged.Element) is not { } pair || ownerOf(dragged) is not { } sourceOwner)
-                return false;
-
-            //A card of the list that takes the drop only changes its place in that list.
-            if (ReferenceEquals(sourceOwner, owner)) {
-                var from = target.IndexOf(dragged.Element);
-                if (from < 0)
-                    return false;
-
-                var to = gapIndex > from ? gapIndex - 1 : gapIndex;
-                if (to == from)
-                    return false;
-
-                target.MoveChild(from, to);
-                updateState();
-                return true;
-            }
-
-            //The card leaves what drew it, and the list that took the drop draws it from then on.
-            detachFromOwner(pair, sourceOwner);
-            adoptEmbedded(dragged, owner);
-            target.InsertChild(gapIndex, pair);
-            updateState();
-            return true;
-        }
-
-        private void zoomChanged() {
-            //this.Path.Last().Reference.Node.
-            //throw new NotImplementedException();
-        }
-
-        private void panChanged() {
-            //throw new NotImplementedException();
-        }
 
         private void updatePath() {
             //TODO: for variable try use
@@ -2193,8 +834,6 @@ namespace Blazor.WorkflowEditor {
             }
         }
 
-        private ActivityDesignerPair addActivity(System.Activities.Activity activity) => addElement(activity);
-
         private ActivityDesignerPair addElement(object activity) => addElement(activity, addNode: true);
 
         private ActivityDesignerPair addElement(
@@ -2240,23 +879,6 @@ namespace Blazor.WorkflowEditor {
             return result;
         }
 
-        public void RefreshVariables() {
-            Variables.Clear();
-            foreach (var item in Path.SelectMany(p => p.Node.GetVariables()))
-                Variables.Add(item);
-        }
-
-        private static ICollection<System.Activities.Variable>? getVariableCollection(object? activity) => activity switch {
-            System.Activities.Statements.Sequence sequence => sequence.Variables,
-            System.Activities.Statements.Flowchart flowchart => flowchart.Variables,
-            System.Activities.Statements.DoWhile doWhile => doWhile.Variables,
-            System.Activities.Statements.StateMachine stateMachine => stateMachine.Variables,
-            //The editor shows the root as an ActivityBuilder wrapper (DynamicActivity) and its panel lists the
-            //variables of the implementation (usually the root Sequence), so adds have to go there as well.
-            System.Activities.DynamicActivity dynamicActivity => getVariableCollection(dynamicActivity.Implementation?.Invoke()),
-            _ => null
-        };
-
         public virtual void AddVariable<TActivity>(TActivity activity, string name, Type type, string defaultValue) where TActivity : class {
             var genType = typeof(System.Activities.Variable<>).MakeGenericType(type);
             object?[] constructorParams;
@@ -2290,19 +912,6 @@ namespace Blazor.WorkflowEditor {
                 list.RemoveAt(list.Count - 1);
                 list.Insert(index, moved);
             }
-        }
-
-        private static int indexOf(ICollection<System.Activities.Variable>? collection, string name) {
-            if (collection == null)
-                return -1;
-
-            var index = 0;
-            foreach (var item in collection) {
-                if (item.Name == name)
-                    return index;
-                index++;
-            }
-            return -1;
         }
     }
 }
