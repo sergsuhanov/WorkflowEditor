@@ -720,10 +720,22 @@
 }
 
 
+/*A button keeps no mark of a click on it — the glow Bootstrap draws for a focused button is left out — while a
+  button the keyboard reached says where the focus is, with the same ring the other controls of the editor draw
+  (the toolbar commands of the page draw theirs the same way).*/
 .btn:focus,
 .btn:active {
-    outline: none !important;
     box-shadow: none;
+}
+
+.btn:focus:not(:focus-visible),
+.btn:active:not(:focus-visible) {
+    outline: none !important;
+}
+
+.btn:focus-visible {
+    outline: 2px solid #0d6efd;
+    outline-offset: 1px;
 }
 
 /*Resizable panels*/
