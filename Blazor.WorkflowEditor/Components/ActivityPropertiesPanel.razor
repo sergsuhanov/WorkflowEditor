@@ -33,6 +33,9 @@ else
             {
                 var node = selectedItems[0];
                 <p class="text-muted">@activityTypeName(node)</p>
+                @*The panel says what it edits and where the rest of the activity is edited, so a card whose
+                  fields live on the card itself is not mistaken for one with nothing to edit.*@
+                <p class="form-text we-editing-hint">@editingHint(node)</p>
                 @if (Service.ErrorCount(node.Element) > 0)
                 {
                     <ul class="we-panel-errors" role="alert">
@@ -92,7 +95,6 @@ else
                         <label for="we-if-condition" class="form-label">Condition (Visual Basic expression)</label>
                         <input id="we-if-condition" class="form-control" @bind="conditional.Condition" />
                     </div>
-                    <p class="form-text">Drop an activity onto Then or Else; it is edited on the node itself.</p>
                 }
                 else if (node is WhileNode loop)
                 {
@@ -100,11 +102,10 @@ else
                         <label for="we-while-condition" class="form-label">Condition (Visual Basic expression)</label>
                         <input id="we-while-condition" class="form-control" @bind="loop.Condition" />
                     </div>
-                    <p class="form-text">Open the body branch on the node to edit the activity it holds.</p>
                 }
                 else if (node is SequenceNode sequence)
                 {
-                    <p class="form-text">Activities in this sequence run in order: they are edited and reordered inside this card, or on a surface of their own after Open.</p>
+                    <p class="form-text">Activities in this sequence run in order.</p>
                 }
                 else if (isAddToCollectionNode(node))
                 {
@@ -112,7 +113,8 @@ else
                 }
                 else
                 {
-                    <p class="text-muted">No additional property editor is available for this activity yet.</p>
+                    <p class="text-muted">No property editor is available for this activity yet: its display name
+                        and its note are the fields edited here.</p>
                 }
 
                 @if (sequencePlace(node) is { } place)
@@ -165,6 +167,24 @@ else
 
     private static string activityTypeName(DefaultNode node) =>
         node.GetType().Name.Replace("Node", string.Empty, StringComparison.Ordinal);
+
+    /// <summary>
+    /// Where the selected activity is edited. The panel edits the activity itself; an activity that holds one
+    /// Activity per branch shows each branch inside its own card, and the children of a container are edited on
+    /// the surface the card opens. Every activity edits its fields on its own card, so a card that is neither a
+    /// container nor a holder says so instead of leaving the panel silent about it.
+    /// </summary>
+    private static string editingHint(DefaultNode node)
+    {
+        if (node.IsContainer)
+            return "Its children are edited on the surface the card opens: use Open on the card, or double-click it.";
+
+        if (node.Slots.Count > 0)
+            return "Each branch of this activity is edited inside this card: open the chevron and drop an "
+                + "activity into the region that should hold it.";
+
+        return "Its fields are edited on the card; the panel shows the ones it supports.";
+    }
 
     /// <summary>
     /// Where the card sits in its ordered container, when it belongs to one: the list drawn inside the card of

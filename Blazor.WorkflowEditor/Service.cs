@@ -742,11 +742,15 @@ namespace Blazor.WorkflowEditor {
             }
 
             Variables.Clear();
-            foreach (var item in Path.SelectMany(p => p.Node.GetVariables()))
-                Variables.Add(item);
-
             Path.Last().Reference.Node.LoadElements(addElement);
             ensureEmbeddedChildren();
+
+            //The variables are collected once the surface is loaded: the root lists the variables of the
+            //implementation it holds, which it can only see once the implementation is a card of the surface.
+            //Collecting them before the load would leave a workflow that was just opened — or one an undo put
+            //back — without the variables of its root scope until the next navigation.
+            foreach (var item in Path.SelectMany(p => p.Node.GetVariables()))
+                Variables.Add(item);
 
             pendingInitialLayout = VisibleViewport == null;
             updateState();
@@ -885,15 +889,23 @@ namespace Blazor.WorkflowEditor {
                 constructorParams = new object?[] { name };
             }
             var variable = Activator.CreateInstance(genType, constructorParams);
-            if (variable != null)
-                getVariableCollection(activity)?.Add((System.Activities.Variable)variable);
+            var collection = getVariableCollection(activity);
+            if (variable == null || collection == null)
+                return;
+
+            collection.Add((System.Activities.Variable)variable);
+            //A variable is part of the schema, so the command of the panel marks the workflow as changed and
+            //lets the editor record the step, exactly like an edit of a card does.
+            notifyModelChanged();
         }
 
         public virtual void RemoveVariable<TActivity>(TActivity activity, string name) where TActivity : class {
             var collection = getVariableCollection(activity);
             var variable = collection?.FirstOrDefault(p => p.Name == name);
-            if (variable != null)
+            if (variable != null) {
                 collection!.Remove(variable);
+                notifyModelChanged();
+            }
         }
 
         public virtual void UpdateVariable<TActivity>(TActivity activity, string oldName, string name, Type type, string defaultValue) where TActivity : class {

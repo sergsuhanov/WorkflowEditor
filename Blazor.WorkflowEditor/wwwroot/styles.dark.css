@@ -104,6 +104,20 @@
     background-color: #3d444b;
 }
 
+.we-variable-group-kind {
+    border-color: #6c757d;
+    background-color: #212529;
+    color: #adb5bd;
+}
+
+.we-variable-group-header.is-add-scope {
+    border-color: #2f6feb;
+}
+
+.we-variable-group-header.is-add-scope:hover {
+    background-color: #2b3b52;
+}
+
 .we-toolbox .groupItem .groupName {
     background-color: #343a40;
     border-color: #4d5157;

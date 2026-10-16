@@ -981,6 +981,121 @@ public class ActivityDesignerTests {
     }
 
     /// <summary>
+    /// The panel lists the variables the editor holds as soon as the surface has settled: a workflow that was
+    /// just opened — or one an undo put back — shows the variables of its root scope at once instead of waiting
+    /// for the next navigation to fill the panel.
+    /// </summary>
+    [Fact]
+    public void AWorkflowThatWasJustLoadedListsTheVariablesOfItsRootScope() {
+        var xaml = WorkflowXamlSerializer.SaveBuilder(new ActivityBuilder {
+            Implementation = new Sequence {
+                Variables = { new System.Activities.Variable<int>("counter") }
+            }
+        });
+
+        using var service = new Service(new BlazorDiagram(), () => { });
+        service.SetActivityBuilder(WorkflowXamlSerializer.LoadBuilder(xaml));
+
+        Assert.Equal("counter", Assert.Single(service.Variables).Name);
+    }
+
+    /// <summary>
+    /// A variable is part of the schema, so the commands of the panel mark the workflow as changed: the editor
+    /// then records the step, offers to save and keeps the draft, and a command that changes nothing reports
+    /// nothing either.
+    /// </summary>
+    [Fact]
+    public void TheVariableCommandsMarkTheSchemaAsChanged() {
+        using var service = new Service(new BlazorDiagram(), () => { });
+        service.SetActivityBuilder(new ActivityBuilder { Implementation = new Sequence() });
+        var scope = service.VariableScope!.Element;
+
+        var changes = 0;
+        var dirtyChanges = 0;
+        service.ModelChanged += () => changes++;
+        service.DirtyChanged += () => dirtyChanges++;
+        Assert.False(service.IsDirty);
+
+        service.AddVariable(scope, "counter", typeof(int), "1");
+
+        Assert.True(service.IsDirty);
+        Assert.Equal(1, dirtyChanges);
+        Assert.Equal(1, changes);
+
+        service.UpdateVariable(scope, "counter", "count", typeof(int), "2");
+        service.RemoveVariable(scope, "count");
+
+        Assert.True(service.IsDirty);
+        //The flag changed once: it stays set until the workflow is saved.
+        Assert.Equal(1, dirtyChanges);
+
+        //An activity that holds no variables is not a change of the schema.
+        var before = changes;
+        service.AddVariable(new If(), "counter", typeof(int), "1");
+        service.RemoveVariable(new If(), "counter");
+        Assert.Equal(before, changes);
+    }
+
+    /// <summary>
+    /// A variable belongs to a scope, and every activity whose variables a card lists has to be a scope the
+    /// panel can change as well: the commands look the collection up by the activity, so a scope missing from
+    /// that lookup would list its variables and refuse to add, rename or remove one without a word. The root of
+    /// the diagram resolves to the scope its implementation holds.
+    /// </summary>
+    [Theory]
+    [InlineData(typeof(Sequence))]
+    [InlineData(typeof(While))]
+    [InlineData(typeof(DoWhile))]
+    [InlineData(typeof(Parallel))]
+    [InlineData(typeof(TryCatch))]
+    [InlineData(typeof(Flowchart))]
+    [InlineData(typeof(StateMachine))]
+    public void EveryScopeKeepsTheVariablesOfTheWorkflowRoot(Type activityType) {
+        using var service = new Service(new BlazorDiagram(), () => { });
+        var root = (System.Activities.Activity)Activator.CreateInstance(activityType)!;
+        service.SetActivityBuilder(new ActivityBuilder { Implementation = root });
+        var variables = (ICollection<System.Activities.Variable>)activityType.GetProperty("Variables")!.GetValue(root)!;
+
+        //The root surface is the only place of the path, and it resolves to the activity it holds.
+        var scope = service.VariableScope;
+        Assert.NotNull(scope);
+        Assert.Same(service.Path.Last().Node.Element, scope!.Element);
+
+        service.AddVariable(scope.Element, "counter", typeof(int), "1");
+        service.RefreshVariables();
+
+        var variable = Assert.Single(service.Variables);
+        Assert.Equal("counter", variable.Name);
+        Assert.Equal(typeof(int), variable.Type);
+        Assert.Equal("counter", Assert.Single(variables).Name);
+
+        //Renaming and removing reach the same collection, so a row of the panel stays a command of its scope.
+        service.UpdateVariable(variable.Activity, "counter", "count", typeof(int), "2");
+        service.RemoveVariable(variable.Activity, "count");
+        service.RefreshVariables();
+
+        Assert.Empty(service.Variables);
+        Assert.Empty(variables);
+    }
+
+    /// <summary>
+    /// A workflow whose root holds no variables of its own has no scope to add one to, and the panel says so
+    /// instead of adding to the last place of the path and leaving the model unchanged.
+    /// </summary>
+    [Fact]
+    public void AWorkflowWithoutAScopeToHoldVariablesOffersNone() {
+        using var service = new Service(new BlazorDiagram(), () => { });
+        service.SetActivityBuilder(new ActivityBuilder { Implementation = new If() });
+
+        Assert.False(Service.CanHoldVariables(service.Path.Last().Node.Element));
+        Assert.Null(service.VariableScope);
+
+        //The variables of the implementation are still the ones the panel lists for the root.
+        service.SetActivityBuilder(new ActivityBuilder());
+        Assert.Null(service.VariableScope);
+    }
+
+    /// <summary>
     /// The root of the diagram is an ActivityBuilder wrapper (DynamicActivity) and the variables panel lists
     /// the variables of its implementation, so adding and renaming a variable from the root has to land in
     /// that collection instead of doing nothing.

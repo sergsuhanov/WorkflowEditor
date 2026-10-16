@@ -110,6 +110,12 @@
     padding: 0.75rem;
 }
 
+/*The context of the selected activity reads as a note of the panel and not as another field of it.*/
+.we-properties-panel .we-editing-hint {
+    margin: 0 0 0.5rem;
+    font-style: italic;
+}
+
 .we-activity-path {
     flex: none;
     height: 24px;
@@ -593,6 +599,36 @@
 
 .we-variable-group-header .we-panel-title {
     font-weight: 600;
+}
+
+/*The kind of activity that owns a scope sits after its name and stays quiet: it tells two scopes with the
+  same display name apart, so it needs no emphasis of its own.*/
+.we-variable-group-kind {
+    margin-left: auto;
+    padding: 0 0.3rem;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    background-color: #ffffff;
+    color: #6c757d;
+    font-weight: 400;
+    font-size: 0.68rem;
+}
+
+/*The scope the add command of the panel fills is marked on the header of its group, so a variable lands
+  where the user expects it without a dialog in between.*/
+.we-variable-group-header.is-add-scope {
+    border-color: #9ec5fe;
+    box-shadow: inset 2px 0 0 0 #0d6efd;
+}
+
+.we-variable-group-header.is-add-scope:hover {
+    background-color: #e7f1ff;
+}
+
+/*A workflow whose path holds no scope that keeps variables says so above the groups: the add command has
+  nothing to fill and the reason is not left to the tooltip of a disabled button.*/
+.we-variables-hint {
+    margin: 0 0 0.5rem;
 }
 
 /*A row of the variables table carries the fields of the variable it shows instead of its text, so the table

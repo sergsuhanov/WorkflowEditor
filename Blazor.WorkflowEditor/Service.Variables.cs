@@ -27,16 +27,37 @@ namespace Blazor.WorkflowEditor {
                 Variables.Add(item);
         }
 
+        /// <summary>
+        /// The collection that holds the variables of an activity, or null when the activity holds none of its
+        /// own. Every scope whose variables a node lists has to be here: the panel adds, renames and removes a
+        /// variable through this collection, so a scope that is missing here would show its variables and refuse
+        /// to change them without a word.
+        /// </summary>
         private static ICollection<System.Activities.Variable>? getVariableCollection(object? activity) => activity switch {
             System.Activities.Statements.Sequence sequence => sequence.Variables,
             System.Activities.Statements.Flowchart flowchart => flowchart.Variables,
             System.Activities.Statements.DoWhile doWhile => doWhile.Variables,
+            System.Activities.Statements.While whileLoop => whileLoop.Variables,
+            System.Activities.Statements.TryCatch tryCatch => tryCatch.Variables,
+            System.Activities.Statements.Parallel parallel => parallel.Variables,
             System.Activities.Statements.StateMachine stateMachine => stateMachine.Variables,
             //The editor shows the root as an ActivityBuilder wrapper (DynamicActivity) and its panel lists the
             //variables of the implementation (usually the root Sequence), so adds have to go there as well.
             System.Activities.DynamicActivity dynamicActivity => getVariableCollection(dynamicActivity.Implementation?.Invoke()),
             _ => null
         };
+
+        /// <summary>Whether an activity holds variables of its own: a scope the variables panel can add one to.</summary>
+        public static bool CanHoldVariables(object? activity) => getVariableCollection(activity) != null;
+
+        /// <summary>
+        /// The scope a variable added in the panel belongs to: the innermost activity of the opened path that
+        /// holds variables. A surface without variables of its own — a branch region holds none, and the root
+        /// only holds them while its implementation is a scope — resolves outwards to the nearest scope that
+        /// does, and the panel says so when the path holds none at all.
+        /// </summary>
+        public DefaultNode? VariableScope =>
+            Path.Select(pathItem => pathItem.Node).LastOrDefault(node => CanHoldVariables(node.Element));
 
         private static int indexOf(ICollection<System.Activities.Variable>? collection, string name) {
             if (collection == null)

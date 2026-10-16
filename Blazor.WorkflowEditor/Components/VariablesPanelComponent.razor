@@ -13,7 +13,8 @@
     <span class="we-panel-title">Variables</span>
     <span class="we-panel-actions">
       @*The add button must not toggle the panel, so it stops the click from bubbling to the header.*@
-      <button type="button" class="btn we-panel-action" title="Add a variable" aria-label="Add a variable"
+      <button type="button" class="btn we-panel-action" disabled="@(addScope == null)"
+              title="@addVariableTitle" aria-label="@addVariableTitle"
               @onclick="() => addVariable()" @onclick:stopPropagation="true">
         <span class="oi oi-plus text-primary" aria-hidden="true"></span>
       </button>
@@ -23,22 +24,31 @@
   @if (!_collapsed)
   {
     <div class="we-panel-body">
+      @*A variable belongs to a scope that holds it, so a workflow whose path holds none says why the command
+        above has nothing to add to instead of leaving the button inert without a reason.*@
+      @if (addScope == null)
+      {
+        <p class="form-text we-variables-hint" role="status">@noScopeHint</p>
+      }
       @foreach (var item in _groupedVariables)
       {
         @*The group is keyed by its activity, which is the object that stays the same between renders: the
           group itself is built again on every render, and a key that changed with it would discard the state
           of the fields the user is editing (a type that is half chosen, for instance).*@
         <div class="we-variable-group" @key="item.Activity">
-          <div class="we-variable-group-header" role="button" tabindex="0"
-               aria-expanded="@(getCollapsedGroup(item) ? "false" : "true")"
-               title="@(getCollapsedGroup(item) ? "Show variables of this activity" : "Hide variables of this activity")"
-               @onclick="() => reversValueCollapsedGroup(item)">
-            <span class="oi @(getCollapsedGroup(item) ? "oi-caret-right" : "oi-caret-bottom") we-panel-caret"
+          <div class="we-variable-group-header @(ownsNewVariables(item) ? "is-add-scope" : null)" role="button" tabindex="0"
+               aria-expanded="@(isGroupCollapsed(item) ? "false" : "true")"
+               title="@groupTitle(item)"
+               @onclick="() => toggleGroup(item)">
+            <span class="oi @(isGroupCollapsed(item) ? "oi-caret-right" : "oi-caret-bottom") we-panel-caret"
                   aria-hidden="true"></span>
             <span class="we-panel-title">@(item.Activity?.DisplayName ?? "...")</span>
+            @*The kind of activity that owns the scope tells two scopes with the same display name apart, and
+              the mark says which scope the add command above fills.*@
+            <span class="we-variable-group-kind">@scopeKind(item.Activity)</span>
           </div>
 
-          @if (!getCollapsedGroup(item))
+          @if (!isGroupCollapsed(item))
           {
             @*The variables are edited in place: a row carries the fields of the variable it shows, so the
               table needs no header and no edit command — the several shapes of a type are chosen in the
@@ -91,7 +101,9 @@
     public List<Blazor.WorkflowEditor.Variable> Variables { get; set; } = new();
   }
 
-  private Dictionary<string, bool> _collapsedGroup = new();
+  /// <summary>The scopes whose groups the user collapsed. An activity is its own key: scopes are compared by
+  /// identity, so two of a kind stay independent.</summary>
+  private readonly HashSet<System.Activities.Activity> _collapsedGroups = new();
   private bool _collapsed { get; set; } = false;
 
   /// <summary>Bumped when a change was refused: the table is built again so its fields show the model.</summary>
@@ -116,12 +128,7 @@
           result.Add(group);
         }
         group.Variables.Add(item);
-        if (!_collapsedGroup.ContainsKey($"{group?.Activity?.DisplayName ?? ""}"))
-        {
-          _collapsedGroup.Add($"{group?.Activity?.DisplayName ?? ""}", false);
-        }
       }
-      ;
       return result;
     }
   }
@@ -149,18 +156,20 @@
   }
 
 
-  private bool getCollapsedGroup(GroupedActivityVariable group)
-  {
-    return _collapsedGroup.ContainsKey($"{group?.Activity?.DisplayName ??
-""}") ? _collapsedGroup[$"{group?.Activity?.DisplayName ?? ""}"] : false;
-  }
+  /// <summary>
+  /// Whether the group is collapsed. The state is kept per scope and not per name, because two scopes of the
+  /// same kind carry the same display name ("Sequence") and collapsing one must not collapse the other.
+  /// </summary>
+  private bool isGroupCollapsed(GroupedActivityVariable group) =>
+      group.Activity != null && _collapsedGroups.Contains(group.Activity);
 
-  private void reversValueCollapsedGroup(GroupedActivityVariable group)
+  private void toggleGroup(GroupedActivityVariable group)
   {
-    if (_collapsedGroup.ContainsKey($"{group?.Activity?.DisplayName ?? ""}"))
-    {
-      _collapsedGroup[$"{group?.Activity?.DisplayName ?? ""}"] = !_collapsedGroup[$"{group?.Activity?.DisplayName ?? ""}"];
-    }
+    if (group.Activity is not { } activity)
+      return;
+
+    if (!_collapsedGroups.Add(activity))
+      _collapsedGroups.Remove(activity);
   }
 
   private async Task removeVariable(Blazor.WorkflowEditor.Variable variable)
@@ -263,11 +272,12 @@
     return $"{name[..name.IndexOf('`')]}<{arguments}>";
   }
 
-  /// <summary>Adds a variable of a fresh name: its row is the form, so the name it starts with only has to
-  /// be one nothing else uses, and the user renames it in place.</summary>
+  /// <summary>Adds a variable to the scope the panel is on. A surface that holds no variables of its own adds
+  /// to the nearest scope that does, so the command never leaves the panel unchanged without a word (the panel
+  /// names the scope above, and says which one is missing when the path holds none).</summary>
   private void addVariable()
   {
-    var activity = Service.Path.LastOrDefault()?.Activity;
+    var activity = addScope?.Element;
     if (activity == null)
       return;
 
@@ -281,6 +291,43 @@
 
     Service.AddVariable(activity, name, typeof(object), string.Empty);
     Service.RefreshVariables();
+  }
+
+  /// <summary>The scope the add command fills: the innermost activity of the path that holds variables. Null
+  /// while the path holds none, or while the panel has no workflow yet.</summary>
+  private DefaultNode? addScope => Service?.VariableScope;
+
+  /// <summary>The scope the add command fills, named by its activity and its kind.</summary>
+  private string addVariableTitle => addScope is { } scope
+      ? $"Add a variable to {scope.DisplayName} ({scopeKind(scope.Element)})"
+      : "Add a variable";
+
+  /// <summary>Why the add command has nothing to fill: no activity of the opened path holds variables.</summary>
+  private const string noScopeHint =
+      "No scope here holds variables: a variable belongs to an activity that keeps them — a Sequence, a "
+      + "While, a Parallel, a Flowchart or a StateMachine. Open a surface that holds one, or add such an "
+      + "activity to the workflow.";
+
+  /// <summary>The kind of activity that owns a scope, which tells two scopes of the same display name apart.</summary>
+  private static string scopeKind(object? element) => element switch {
+    null => string.Empty,
+    System.Activities.DynamicActivity => "ActivityBuilder",
+    System.Activities.Activity activity => activity.GetType().Name,
+    _ => element.GetType().Name
+  };
+
+  /// <summary>Whether the add command fills this group: the group of the innermost scope of the path.</summary>
+  private bool ownsNewVariables(GroupedActivityVariable group) =>
+      group.Activity != null && ReferenceEquals(addScope?.Element, group.Activity);
+
+  private string groupTitle(GroupedActivityVariable group)
+  {
+    var name = group.Activity?.DisplayName ?? "this scope";
+    var kind = scopeKind(group.Activity);
+    var action = isGroupCollapsed(group) ? "Show" : "Hide";
+    var hint = ownsNewVariables(group) ? " The add command above fills this scope." : string.Empty;
+    var named = kind.Length == 0 ? name : $"{name} ({kind})";
+    return $"{action} the variables of {named}.{hint}";
   }
 
   protected override void OnInitialized()
