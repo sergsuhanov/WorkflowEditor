@@ -171,6 +171,27 @@ public class ActivityDesignerTests {
         Assert.Same(elseActivity, ifNode.ElseSlot.Held);
     }
 
+    /// <summary>
+    /// A type the activity cannot take makes the closed activity fail to build, which the dialog refuses before
+    /// the drop: an activity that is added from anywhere else — with a constraint the dialog cannot judge, such
+    /// as `where T2 : T1` — is refused as well instead of failing inside the caller.
+    /// </summary>
+    [Fact]
+    public void AnActivityThatCannotBeBuiltFromTheTypesIsRefused() {
+        using var service = new Service(new BlazorDiagram(), () => { });
+        service.SetActivityBuilder(new ActivityBuilder { Implementation = new Sequence() });
+
+        var (hasAdded, result) = service.AddActivity(typeof(ConstrainedActivity<>), typeof(int));
+
+        Assert.False(hasAdded);
+        Assert.Null(result);
+        Assert.DoesNotContain(service.Items, pair => pair.Activity.GetType().Name.StartsWith("ConstrainedActivity", StringComparison.Ordinal));
+    }
+
+    /// <summary>An activity of the tests that only takes a reference type, so a value type makes it fail to
+    /// build the way a user activity with a constrained parameter does.</summary>
+    private sealed class ConstrainedActivity<T> : System.Activities.Activity where T : class { }
+
     [Fact]
     public void SelectingABranchChildFillsThePropertiesPanelAndTheDiagramNodeTakesItOver() {
         using var service = new Service(new BlazorDiagram(), () => { });

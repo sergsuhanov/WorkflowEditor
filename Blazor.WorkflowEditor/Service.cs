@@ -284,10 +284,15 @@ namespace Blazor.WorkflowEditor {
             Diagrams.Core.Geometry.Point? initialPosition,
             Type[] types) {
             object? activityObject;
-            if (types != null && types.Length > 0) {
-                activityObject = Activator.CreateInstance(activityType.MakeGenericType(types));
-            } else {
-                activityObject = Activator.CreateInstance(activityType);
+            try {
+                activityObject = types != null && types.Length > 0
+                    ? Activator.CreateInstance(activityType.MakeGenericType(types))
+                    : Activator.CreateInstance(activityType);
+            } catch (Exception ex) when (ex is ArgumentException or MissingMethodException or MemberAccessException or NotSupportedException) {
+                //A type the activity cannot take (a constraint its parameter puts on it), or an activity that
+                //cannot be built at all: the drop is refused here instead of failing inside the caller. The
+                //dialog that asks for the types of an activity refuses such a type before this point.
+                return (false, default!);
             }
 
             //A new activity has no node yet, so it gets one where it is placed.

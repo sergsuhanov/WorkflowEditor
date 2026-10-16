@@ -59,6 +59,14 @@ dotnet format web.slnf --verify-no-changes --severity warn
 
 The tests of `Blazor.WorkflowEditor.Tests` cover the workflow model and, through bUnit, the components: the toolbox panel (its groups, the search, the header that collapses it), the dialogs, and the editor component itself — what it draws for a workflow without a root activity, what it reports as unsaved, and what a validation run returns. The browser is faked there (loose JS interop plus the rectangle of the canvas), so a test covers what a component decides, while the diagram itself is still checked in the browser.
 
+A published build is checked on its own before it is trusted, because the publish optimizes the assemblies for size:
+
+```sh
+dotnet publish WorkflowEditor.Web/WorkflowEditor.Web.csproj -c Release -o <folder>
+```
+
+Serve `<folder>/wwwroot` over HTTP (the host has to answer `application/wasm` for the framework files; the development server does) and drive it in the browser: drop an activity of the editor and one of a project of its own through the dialog that asks for its type, fill a field, let the draft be written and reload the page to restore it.
+
 Run the host with:
 
 ```sh
@@ -71,3 +79,4 @@ After any rebuild, restart it and verify XAML open → edit → save → reopen 
 
 - The variables panel is to be reworked rather than patched: the owner rejected its current shape (see the priority in [VISUAL_EDITOR_PLAN.md](VISUAL_EDITOR_PLAN.md), which also lists what has to be decided with the owner first). Its behavior as it stands is recorded in the current state above.
 - Windows `sap2010:WorkflowViewState` interoperability; Web currently persists its own center coordinates and note properties.
+- Trimming is verified: `dotnet publish -c Release` optimizes the assemblies for size without a warning, and the published app was driven in the browser — a workflow was dropped, completed through the dialog that asks for a type, written to XAML and read back — with the pair scan, the generic construction and the XAML reader all working. Blazor keeps the assemblies of the app from being trimmed away, which is why the reflection the editor is built on survives.
