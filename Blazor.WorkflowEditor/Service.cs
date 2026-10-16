@@ -883,7 +883,10 @@ namespace Blazor.WorkflowEditor {
             var genType = typeof(System.Activities.Variable<>).MakeGenericType(type);
             object?[] constructorParams;
             try {
-                var defType = Convert.ChangeType(defaultValue, type);
+                //A value a nullable type holds is a value of the type inside it, which is the one the typed
+                //default value can be made of.
+                var valueType = Nullable.GetUnderlyingType(type) ?? type;
+                var defType = Convert.ChangeType(defaultValue, valueType);
                 constructorParams = new object?[] { name, defType };
             } catch {
                 constructorParams = new object?[] { name };

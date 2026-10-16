@@ -1,3 +1,4 @@
+﻿@using Blazor.WorkflowEditor.Activity
 @implements IDisposable
 @implements IModal
 
@@ -20,7 +21,7 @@
               <span class="we-generic-key">@item.Label</span>
             }
             <VariableTypeConstructorComponent @key="item" @ref="item.ObjRef" TypeCollection="TypeCollection"
-                                              VariableType="item.Value" ChooseAgain="true">
+                                              Parameter="item.Parameter" VariableType="item.Value" ChooseAgain="true">
             </VariableTypeConstructorComponent>
           </div>
         }
@@ -46,6 +47,12 @@
         public string Label { get; set; } = string.Empty;
         public Type? Value { get; set; } = null;
         public object? ObjRef { get; set; } = null;
+
+        /// <summary>Generic parameter the chosen type fills, when the field completes an activity that is
+        /// dropped: the picker offers the types that meet its constraints, and the dialog refuses a type that
+        /// the whole choice shows not to. Null for a field that asks for a type nothing constrains, such as the
+        /// type of a variable.</summary>
+        public Type? Parameter { get; set; } = null;
     }
 
     public Modal? Modal { get; set; } = new()!;
@@ -74,9 +81,28 @@
         return;
       }
 
+      //A type that was put together in the dialog (`List<T>` whose element was chosen) is judged on the whole
+      //type and not on the definition the picker offered, so a choice the activity cannot take is refused here,
+      //naming the parameter it does not fill, instead of failing when the activity is built.
+      for (var index = 0; index < Fields.Count; index++)
+      {
+        var field = Fields[index];
+        var type = types[index];
+        if (GenericTypeConstraints.Meets(type, field.Parameter))
+          continue;
+
+        typeError = $"The type {type} does not meet the constraints of {describe(field)}: it has to be "
+            + $"{GenericTypeConstraints.Describe(field.Parameter)}.";
+        return;
+      }
+
       typeError = null;
       Modal!.Apply();
     }
+
+    /// <summary>The field as a message names it: the generic parameter it fills where it says which one that is,
+    /// and the field itself otherwise.</summary>
+    private static string describe(TypeField field) => string.IsNullOrEmpty(field.Label) ? "this field" : field.Label;
 
     public Task<ModalResult> Show() {
         return Modal!.Show();

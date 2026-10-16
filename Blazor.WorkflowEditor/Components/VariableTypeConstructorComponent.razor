@@ -1,5 +1,6 @@
 @using System.ComponentModel
 @using System.Runtime.CompilerServices
+@using Blazor.WorkflowEditor.Activity
 @implements IDisposable
 
 <div class="row">
@@ -21,11 +22,15 @@
       @if (Value.Childs.Count > 0)
       {
         <ul class="we-vtc-options">
-          @foreach (var child in Value.Childs)
+          @for (var index = 0; index < Value.Childs.Count; index++)
           {
+            var child = Value.Childs[index];
+            @*A type that is put together here fills the parameters of its definition, so each of its fields is
+              offered the types that meet the constraint of the parameter it fills.*@
+            var childParameter = parametersOf(Value.Value, index);
             <li class="option">
               <VariableTypeConstructorComponent @key="child" @ref="child.ObjRef" TypeCollection="TypeCollection"
-                                                Value="child">
+                                                Parameter="childParameter" Value="child">
               </VariableTypeConstructorComponent>
             </li>
           }
@@ -36,7 +41,7 @@
   @if (Value.Value == null)
   {
     <div class="@(Value.Value != null ? "col-8" : "")">
-      <TypeSelectComponent TypeCollection="TypeCollection" Value="Value.Value" ValueChanged="onTypeSelected"
+      <TypeSelectComponent TypeCollection="acceptedTypes" Value="Value.Value" ValueChanged="onTypeSelected"
                            StartOpen="ChooseAgain">
       </TypeSelectComponent>
     </div>
@@ -90,6 +95,13 @@
       if (_value == null || !isGeneric(_value)) return _value;
       var types = Childs.Select(s => s.BuildType()).ToArray();
       if (types.Any(p => p == null)) return null;
+
+      //A type whose arguments do not meet its own parameters cannot be built at all (`MakeGenericType` refuses
+      //it), so the form leaves the field incomplete instead of failing: the dialog refuses what it can judge by
+      //the whole type.
+      var parameters = _value.GetGenericArguments();
+      if (types.Where((type, index) => !GenericTypeConstraints.Meets(type, parameters[index])).Any()) return null;
+
       return _value.MakeGenericType(types!);
     }
 
@@ -124,11 +136,31 @@
   [Parameter]
   public bool ChooseAgain { get; set; }
 
+  /// <summary>
+  /// Generic parameter the chosen type fills when the field belongs to an activity that is completed: the
+  /// picker offers the types that meet the constraints of that parameter, which is what keeps a type that the
+  /// activity cannot take out of the list. Null when nothing constrains the field, as in the field that chooses
+  /// the type of a variable.
+  /// </summary>
+  [Parameter]
+  public Type? Parameter { get; set; }
+
   [Parameter]
   public TypeItem Value { get; set; } = new();
 
   [Parameter, EditorRequired]
   public List<Type>? TypeCollection { get; set; }
+
+  /// <summary>The types the picker of this field offers: the ones that meet the constraint of the parameter
+  /// the field fills, which is every type when nothing constrains it.</summary>
+  private List<Type> acceptedTypes => GenericTypeConstraints.Accepts(TypeCollection, Parameter);
+
+  /// <summary>The parameter a field of a type that is put together fills: the field at
+  /// <paramref name="index"/> of the definition the user chose fills that parameter of its definition.</summary>
+  private static Type? parametersOf(Type? definition, int index) {
+    var parameters = definition?.GetGenericArguments() ?? Array.Empty<Type>();
+    return index < parameters.Length ? parameters[index] : null;
+  }
 
   public Type? BuildedType { get => Value.BuildType(); }
 

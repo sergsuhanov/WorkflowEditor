@@ -296,6 +296,9 @@
         TypeCollection.Add(typeof(System.String));
         TypeCollection.Add(typeof(System.Boolean));
         TypeCollection.Add(typeof(System.Collections.Generic.List<>));
+        //A generic type whose parameter is constrained: the dialog offers the types that meet the constraints
+        //of the parameter a field fills, so this one offers the value types alone.
+        TypeCollection.Add(typeof(System.Nullable<>));
         TypeCollection.Add(typeof(WorkflowEditor.TestActivities.TestInput));
     }
 

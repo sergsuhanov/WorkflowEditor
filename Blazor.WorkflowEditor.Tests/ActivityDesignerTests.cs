@@ -1037,6 +1037,24 @@ public class ActivityDesignerTests {
     }
 
     /// <summary>
+    /// A variable whose type is a `Nullable<T>` is a type like any other: the default value its row is given is
+    /// a value of the type inside it, so it is converted from that type instead of being dropped without a word.
+    /// </summary>
+    [Fact]
+    public void AVariableOfANullableTypeKeepsItsDefaultValue() {
+        using var service = new Service(new BlazorDiagram(), () => { });
+        var sequence = new Sequence();
+        service.SetActivityBuilder(new ActivityBuilder { Implementation = sequence });
+
+        service.AddVariable(service.VariableScope!.Element, "counter", typeof(int?), "3");
+        service.RefreshVariables();
+
+        var variable = Assert.Single(service.Variables);
+        Assert.Equal(typeof(int?), variable.Type);
+        Assert.Equal("3", variable.DefaultValue?.ToString());
+    }
+
+    /// <summary>
     /// A variable belongs to a scope, and every activity whose variables a card lists has to be a scope the
     /// panel can change as well: the commands look the collection up by the activity, so a scope missing from
     /// that lookup would list its variables and refuse to add, rename or remove one without a word. The root of

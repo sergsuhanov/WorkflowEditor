@@ -473,10 +473,12 @@
         {
             if (draggedItem.TypeOfActivity.IsGenericType)
             {
+                //One field per generic parameter of the activity, each offered the types that meet the
+                //constraints of the parameter it fills: a type the activity cannot take never reaches the drop.
                 var genericTypes = draggedItem.TypeOfActivity
                     .GetGenericArguments()
                     .Where(t => t.IsGenericParameter)
-                    .Select(s => new TypeSelectModal.TypeField { Label = s.ToString() })
+                    .Select(s => new TypeSelectModal.TypeField { Label = s.ToString(), Parameter = s })
                     .ToList();
 
                 if (modalService == null)
