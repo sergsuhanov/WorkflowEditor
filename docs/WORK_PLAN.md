@@ -69,5 +69,6 @@ After any rebuild, restart it and verify XAML open → edit → save → reopen 
 
 ## Deferred
 
+- The variables panel is to be reworked rather than patched: the owner rejected its current shape (see the priority in [VISUAL_EDITOR_PLAN.md](VISUAL_EDITOR_PLAN.md), which also lists what has to be decided with the owner first). Its behavior as it stands is recorded in the current state above.
 - Windows `sap2010:WorkflowViewState` interoperability; Web currently persists its own center coordinates and note properties.
 - The type list of the drop dialog is not filtered by the generic constraints of the activity that is dropped: a constrained type parameter and a type that does not meet it fail the drop instead of being refused.
