@@ -29,6 +29,11 @@ namespace ITAP.Components.Dialog.InputEditors {
     }
 }
 namespace ITAP.glassCAD {
+    public enum DocOperEnums {
+        ManufacturingOrders, ExternalRequests, OrderPortfolios, Payments, GoodsAndMaterialsDocuments, ShipmentPlanningDocuments, FinishedGoodsDocuments, Export, DefectRegistration, TimeTrackingTimesheet, FinishedGoodsRepackaging, DailyTransportSheet, TransportPyramids, GlassWarehouse, WorkOrder, PackingTask, CuttingTask, Invoice, Processes, MaterialSupplyPlanning, FinishedGoodsProcurement, Services, PaymentPlan, Sales, TrafficSources, Balance, MaterialPrices, MaterialWastePercentages, SemiFinishedProductWriteOff, BoxProduction, AssignedTasks, ProfileCuttingTask, ProfileWarehouse, ExcelVariableSetsDictionary, CalculationConstantsDictionary, CalendarsDictionary, OperationsDictionary, EmployeesDictionary, ProductPricesDictionary, MaterialsDictionary, ProductsDictionary, CounterpartiesDictionary, TechnologicalOperationsInCalendarPlan, Products, Events, BusinessProcessTemplates, DocumentTemplates, Administration, RegisterConsolidation
+    }
+}
+namespace ITAP.glassCAD {
     public enum FrameType {
         Aluminum, PVC, TPS, Structural, StainlessSteel, WarmEdge
     }
@@ -51,6 +56,11 @@ namespace ITAP.glassCAD {
 namespace ITAP.glassCAD {
     public enum CriterionGroupResultMode {
         Overwrite, All
+    }
+}
+namespace ITAP.glassCAD {
+    public enum ObjectAttributes {
+        ClosedPeriodBreakdowns, OrderRejectionReasons, DefectActAttributes, OrderEmailAttachment1, OrderEmailAttachment2, OrderEmailAttachment3, OrderEmailAttachment4, OrderEmailAttachment5, CounterpartyAttributes, TransportPyramidMovementDocumentAttributes, OrderAttributes, OrderItemAttributes, OrderProductAttributes, TimesheetAttributes, FinishedGoodsMovementDocumentAttributes, ShipmentPlanAndTransport, SalesJson, EmployeeAttributes, SupplyRequestAttributes, MaterialMovementDocumentAttributes, ServiceDocumentAttributes, SalesDocumentAttributes, GlassWarehouseDocumentAttributes, ObjectLock, ObjectHistory, MaterialAttributes, PaymentAttributes, BusinessProcessLogging, ProductionTaskAttributes, AppointmentsItemsChange, GroupCodeAdditionalAttributes
     }
 }
 namespace ITAP.glassCAD {
@@ -386,6 +396,13 @@ namespace ITAP.glassCAD.Helpers {
     public partial class FormParameters {
         public enum SelectedMode {
             Single, Multiple
+        }
+    }
+}
+namespace ITAP.glassCAD.Helpers {
+    public partial class FormParameters {
+        public enum GridSizeMode {
+            Small, Medium, Large
         }
     }
 }
