@@ -4141,6 +4141,7 @@ namespace glassPeople.ActivityLibrary.glassCAD.Planing.Tasks {
     public partial class DefectiveAppointmentItemTask : glassPeople.ActivityLibrary.glassCAD.Planing.Tasks.Task {
 		public System.Int32 IDAppointmentsItem { get; set; } 
 		public System.Int32 IDCauseDefective { get; set; } 
+		public System.String PartialDefectLink { get; set; } 
     }
 }
 namespace glassPeople.ActivityLibrary.glassCAD.Planing.Tasks {
